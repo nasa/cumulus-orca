@@ -3,7 +3,9 @@ Name: migrate_db.py
 
 Description: Migrates the current ORCA schema version to the latest version.
 """
-from typing import Dict, List
+from typing import List
+
+from orca_shared.database.entities import PostgresConnectionInfo
 
 from migrations.migrate_versions_1_to_2.migrate import migrate_versions_1_to_2
 from migrations.migrate_versions_2_to_3.migrate import migrate_versions_2_to_3
@@ -13,7 +15,7 @@ from migrations.migrate_versions_5_to_6.migrate import migrate_versions_5_to_6
 
 
 def perform_migration(
-    current_schema_version: int, config: Dict[str, str], orca_buckets: List[str]
+    current_schema_version: int, config: PostgresConnectionInfo, orca_buckets: List[str]
 ) -> None:
     """
     Performs a migration of the ORCA database. Determines the order and
@@ -21,7 +23,7 @@ def perform_migration(
 
     Args:
         current_schema_version: Current version of the ORCA schema
-        config: Dictionary containing database connection information
+        config: Database connection information
         orca_buckets: List of ORCA bucket names used to create partition tables for v5.
 
     Returns:

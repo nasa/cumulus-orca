@@ -3,26 +3,28 @@ Name: migrate_db_v3.py
 
 Description: Migrates the ORCA schema from version 2 to version 3.
 """
-from typing import Dict
-
-from orca_shared.database.shared_db import get_admin_connection, logger
+from orca_shared.database.entities import PostgresConnectionInfo
+from orca_shared.database.shared_db import logger
+from orca_shared.database.use_cases import create_admin_uri
+from sqlalchemy import create_engine
 
 import migrations.migrate_versions_2_to_3.migrate_sql as sql
 
 
-def migrate_versions_2_to_3(config: Dict[str, str], is_latest_version: bool) -> None:
+def migrate_versions_2_to_3(config: PostgresConnectionInfo, is_latest_version: bool) -> None:
     """
     Performs the migration of the ORCA schema from version 2 to version 3 of
     the ORCA schema.
     Args:
-        config (Dict): Connection information for the database.
-        is_latest_version (bool): Flag to determine if version 3 is the latest schema version.
+        config: Connection information for the database.
+        is_latest_version: Flag to determine if version 3 is the latest schema version.
     """
     # Get the admin engine to the app database
-    admin_app_connection = get_admin_connection(config, config["user_database"])
+    user_admin_engine = \
+        create_engine(create_admin_uri(config, logger, config.user_database_name), future=True)
 
-    # Create all of the new objects, users, roles, etc.
-    with admin_app_connection.connect() as connection:
+    # Create new objects, users, roles, etc.
+    with user_admin_engine.connect() as connection:
         # Change to DBO role and set search path
         logger.debug("Changing to the dbo role to modify objects ...")
         connection.execute(sql.text("SET ROLE orca_dbo;"))

@@ -30,12 +30,19 @@ and includes an additional section for migration notes.
   Previously was a general `JsonSchemaException`.
   Now is a `ExtractFilePathsError` with a description of which file could not be placed.
   - `extract_filepaths_for_granule` now takes the first match in `fileBucketMaps` instead of the last.
+- *ORCA-461*
+  - Invalid database connection parameters will now be detected earlier and more consistently.
+  - Postgres table/user names can now begin with an '_' and contain '$' if your Postgres DB version supports this.
 
 ### Migration Notes
 - If utilizing the `copied_to_glacier` [output property](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/tasks/copy_to_glacier/schemas/output.json#L47) of `copy_to_glacier`, 
   rename to new key `copied_to_orca`.
 - If utilizing the `orca_lambda_copy_to_glacier_arn` [output of Terraform](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/outputs.tf#L8), likely as a means of pulling the lambda into your workflows, 
   rename to new key `orca_lambda_copy_to_archive_arn`
+
+## [6.0.2]
+### Changed
+- *ORCA-570* Fixed an error that could prevent deployment of the database on fresh installations.
 
 ## [6.0.1]
 ### Changed

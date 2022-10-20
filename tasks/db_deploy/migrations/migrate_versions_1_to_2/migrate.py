@@ -3,49 +3,51 @@ Name: migrate_db_v2.py
 
 Description: Migrates the ORCA schema from version 1 to version 2.
 """
-from typing import Dict
-
-from orca_shared.database.shared_db import get_admin_connection, logger
+from orca_shared.database.entities import PostgresConnectionInfo
+from orca_shared.database.shared_db import logger
+from orca_shared.database.use_cases import create_admin_uri
+from sqlalchemy import create_engine
 
 import migrations.migrate_versions_1_to_2.migrate_sql as sql
 
 
-def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> None:
+def migrate_versions_1_to_2(config: PostgresConnectionInfo, is_latest_version: bool) -> None:
     """
     Performs the migration of the ORCA schema from version 1 to version 2 of
     the ORCA schema.
     Args:
-        config (Dict): Connection information for the database.
-        is_latest_version (bool): Flag to determine if version 2 is the latest schema version.
+        config: Connection information for the database.
+        is_latest_version: Flag to determine if version 2 is the latest schema version.
 
     Returns:
         None
     """
-    if config["user_username"] is None or len(config["user_username"]) == 0:
+    if config.user_username is None or len(config.user_username) == 0:
         logger.critical("Username must be non-empty.")
         raise Exception("Username must be non-empty.")
-    if len(config["user_username"]) > 63:
+    if len(config.user_username) > 63:
         logger.critical("Username must be less than 64 characters.")
         raise Exception("Username must be less than 64 characters.")
 
-    if config["user_password"] is None or len(config["user_password"]) < 12:
+    if config.user_password is None or len(config.user_password) < 12:
         logger.critical("User password must be at least 12 characters long.")
         raise Exception("User password must be at least 12 characters long.")
 
     # Get the admin engine to the app database
-    admin_app_connection = get_admin_connection(config, config["user_database"])
+    user_admin_engine = \
+        create_engine(create_admin_uri(config, logger, config.user_database_name), future=True)
 
     # Create all the new objects, users, roles, etc.
-    with admin_app_connection.connect() as connection:
+    with user_admin_engine.connect() as connection:
         # Create the roles first since they are needed by schema and users
         logger.debug("Creating the ORCA dbo role ...")
         connection.execute(
-            sql.dbo_role_sql(config["user_database"], config["admin_username"])
+            sql.dbo_role_sql(config.user_database_name, config.admin_username)
         )
         logger.info("ORCA dbo role created.")
 
         logger.debug("Creating the ORCA app role ...")
-        connection.execute(sql.app_role_sql(config["user_database"]))
+        connection.execute(sql.app_role_sql(config.user_database_name))
         logger.info("ORCA app role created.")
 
         # Create the schema next
@@ -55,14 +57,13 @@ def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> 
 
         # Create the users last
         logger.debug("Creating the ORCA application user ...")
-        # todo: Fully move app_username to the dictionary of parameters.
         # https://bugs.earthdata.nasa.gov/browse/ORCA-461
         connection.execute(
-            sql.app_user_sql(config["user_username"]),
+            sql.app_user_sql(config.user_username),
             [
                 {
-                    "user_name": config["user_username"],
-                    "user_password": config["user_password"],
+                    "user_name": config.user_username,
+                    "user_password": config.user_password,
                 }
             ],
         )
@@ -97,7 +98,7 @@ def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> 
         connection.commit()
 
     # Migrate the data and drop old tables, schema, users, roles
-    with admin_app_connection.connect() as connection:
+    with user_admin_engine.connect() as connection:
         # Change to admin role and set search path
         logger.debug("Changing to the admin role ...")
         connection.execute(sql.text("RESET ROLE;"))
@@ -137,15 +138,15 @@ def migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> 
 
         # Remove the users and roles
         logger.debug("Dropping drdbo_role role ...")
-        connection.execute(sql.drop_drdbo_role_sql(config["user_database"]))
+        connection.execute(sql.drop_drdbo_role_sql(config.user_database_name))
         logger.info("drdbo_role role removed.")
 
         logger.debug("Dropping dr_role role ...")
-        connection.execute(sql.drop_dr_role_sql(config["user_database"]))
+        connection.execute(sql.drop_dr_role_sql(config.user_database_name))
         logger.info("dr_role role removed.")
 
         logger.debug("Dropping dbo user ...")
-        connection.execute(sql.drop_dbo_user_sql(config["user_database"]))
+        connection.execute(sql.drop_dbo_user_sql(config.user_database_name))
         logger.info("dbo user removed")
 
         logger.debug("Dropping druser user ...")

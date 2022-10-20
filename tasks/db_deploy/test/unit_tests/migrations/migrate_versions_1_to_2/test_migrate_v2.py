@@ -7,6 +7,8 @@ Description: Runs unit tests for the migrations/migrate_versions_1_to_2/migrate.
 import unittest
 from unittest.mock import MagicMock, Mock, call, patch
 
+from orca_shared.database.entities import PostgresConnectionInfo
+
 from migrations.migrate_versions_1_to_2 import migrate
 
 
@@ -20,16 +22,12 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         Set up test.
         """
         # todo: Use randomized values on a per-test basis.
-        self.config = {
-            "admin_database": "admin_db",
-            "admin_password": "admin123",
-            "admin_username": "admin",
-            "host": "aws.postgresrds.host",
-            "port": 5432,
-            "user_database": "user_db",
-            "user_password": "pass56789012",
-            "user_username": "user56789012",
-        }
+        self.config = PostgresConnectionInfo(  # nosec
+            admin_database_name="admin_db",
+            admin_username="admin", admin_password="admin123",
+            user_username="user56789012", user_password="pass56789012",
+            user_database_name="user_db", host="aws.postgresrds.host", port="5432"
+        )
 
     def tearDown(self):
         """
@@ -62,10 +60,12 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
     @patch("migrations.migrate_versions_1_to_2.migrate.sql.orca_schema_sql")
     @patch("migrations.migrate_versions_1_to_2.migrate.sql.app_role_sql")
     @patch("migrations.migrate_versions_1_to_2.migrate.sql.dbo_role_sql")
-    @patch("migrations.migrate_versions_1_to_2.migrate.get_admin_connection")
+    @patch("migrations.migrate_versions_1_to_2.migrate.create_engine")
+    @patch("migrations.migrate_versions_1_to_2.migrate.create_admin_uri")
     def test_migrate_versions_1_to_2_happy_path(
         self,
-        mock_connection: MagicMock,
+        mock_create_admin_uri: MagicMock,
+        mock_create_engine: MagicMock,
         mock_dbo_role_sql: MagicMock,
         mock_app_role_sql: MagicMock,
         mock_orca_schema_sql: MagicMock,
@@ -91,17 +91,16 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         """
         for latest_version in [True, False]:
             with self.subTest(latest_version=latest_version):
-                # Set up the mock object that conn.execute is a part of in
-                # the connection with block
-                mock_conn_enter = mock_connection().connect().__enter__()
-
                 # Run the function
                 migrate.migrate_versions_1_to_2(self.config, latest_version)
 
                 # Check that all the functions were called the correct
                 # number of times with the proper values
-                mock_connection.assert_any_call(
-                    self.config, self.config["user_database"]
+                mock_create_admin_uri.assert_called_once_with(
+                    self.config, migrate.logger, self.config.user_database_name
+                )
+                mock_create_engine.assert_called_once_with(
+                    mock_create_admin_uri.return_value, future=True
                 )
 
                 # First commit block
@@ -109,11 +108,11 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 # assert_called_once should never be used, and all assert_has_calls
                 # should be followed by a check on the call count.
                 mock_dbo_role_sql.assert_called_once_with(
-                    self.config["user_database"], self.config["admin_username"]
+                    self.config.user_database_name, self.config.admin_username
                 )
                 mock_app_role_sql.assert_called_once()
                 mock_orca_schema_sql.assert_called_once()
-                mock_app_user_sql.assert_called_once_with(self.config["user_username"])
+                mock_app_user_sql.assert_called_once_with(self.config.user_username)
                 mock_schema_versions_table.assert_called_once()
                 mock_recovery_status_table.assert_called_once()
                 mock_recovery_job_table.assert_called_once()
@@ -151,11 +150,11 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                         call.execute(mock_app_role_sql()),
                         call.execute(mock_orca_schema_sql()),
                         call.execute(
-                            mock_app_user_sql(self.config["user_password"]),
+                            mock_app_user_sql(self.config.user_password),
                             [
                                 {
-                                    "user_name": self.config["user_username"],
-                                    "user_password": self.config["user_password"],
+                                    "user_name": self.config.user_username,
+                                    "user_password": self.config.user_password,
                                 }
                             ],
                         ),
@@ -190,11 +189,11 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                         call.execute(mock_app_role_sql()),
                         call.execute(mock_orca_schema_sql()),
                         call.execute(
-                            mock_app_user_sql(self.config["user_password"]),
+                            mock_app_user_sql(self.config.user_password),
                             [
                                 {
-                                    "user_name": self.config["user_username"],
-                                    "user_password": self.config["user_password"],
+                                    "user_name": self.config.user_username,
+                                    "user_password": self.config.user_password,
                                 }
                             ],
                         ),
@@ -222,11 +221,13 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                     ]
 
                 # Check that items were called in the proper order
+                mock_conn_enter = mock_create_engine().connect().__enter__()
                 mock_conn_enter.assert_has_calls(execution_order, any_order=False)
                 self.assertEqual(len(execution_order), len(mock_conn_enter.method_calls))
 
                 # Reset the mocks for next loop
-                mock_connection.reset_mock()
+                mock_create_admin_uri.reset_mock()
+                mock_create_engine.reset_mock()
                 mock_dbo_role_sql.reset_mock()
                 mock_app_role_sql.reset_mock()
                 mock_orca_schema_sql.reset_mock()
@@ -253,6 +254,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         a minimum of 12 characters,
         or if user_name is not set or is over 64 characters.
         """
+        # nosec
         bad_passwords = [None, "", "abc123", "1234567890", "AbCdEfG1234"]
         message = "User password must be at least 12 characters long."
 
@@ -260,7 +262,12 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
             with self.subTest(bad_password=bad_password):
                 with self.assertRaises(Exception) as cm:
                     migrate.migrate_versions_1_to_2(
-                        {"user_username": "orcauser", "user_password": bad_password},
+                        PostgresConnectionInfo(
+                            admin_database_name=Mock(), admin_username=Mock(),
+                            admin_password=Mock(),
+                            user_username="orcauser", user_password=bad_password,
+                            user_database_name=Mock(), host=Mock(), port=Mock()
+                        ),
                         Mock(),
                     )
                 self.assertEqual(str(cm.exception), message)
@@ -271,10 +278,12 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
             with self.subTest(bad_user_name=bad_user_name):
                 with self.assertRaises(Exception) as cm:
                     migrate.migrate_versions_1_to_2(
-                        {
-                            "user_username": bad_user_name,
-                            "user_password": "AbCdEfG12345",
-                        },
+                        PostgresConnectionInfo(  # nosec
+                            admin_database_name=Mock(), admin_username=Mock(),
+                            admin_password=Mock(),
+                            user_username=bad_user_name, user_password="AbCdEfG12345",
+                            user_database_name=Mock(), host=Mock(), port=Mock()
+                        ),
                         Mock(),
                     )
                 self.assertEqual(str(cm.exception), message)
@@ -284,7 +293,12 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         with self.subTest(bad_user_name=bad_user_name) as _:
             with self.assertRaises(Exception) as cm:
                 migrate.migrate_versions_1_to_2(
-                    {"user_username": bad_user_name, "user_password": "AbCdEfG12345"},
+                    PostgresConnectionInfo(  # nosec
+                        admin_database_name=Mock(), admin_username=Mock(),
+                        admin_password=Mock(),
+                        user_username=bad_user_name, user_password="AbCdEfG12345",
+                        user_database_name=Mock(), host=Mock(), port=Mock()
+                    ),
                     Mock(),
                 )
             self.assertEqual(str(cm.exception), message)
