@@ -4,14 +4,18 @@ Name: extract_filepaths_for_granule.py
 Description:  Extracts the keys (filepaths) for a granule's files from a Cumulus Message.
 """
 
+import json
 import re
-from typing import Dict, List
+from http import HTTPStatus
+from typing import Any, Dict, List, Union
 
-from cumulus_logger import CumulusLogger
-from run_cumulus_task import run_cumulus_task
+import fastjsonschema as fastjsonschema
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext
+from fastjsonschema import JsonSchemaException
 
-# instantiate Cumulus logger
-LOGGER = CumulusLogger(name="ORCA")
+# Set AWS powertools logger
+LOGGER = Logger()
 
 CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY = "excludedFileExtensions"
 CONFIG_FILE_BUCKETS_KEY = "fileBucketMaps"
@@ -40,7 +44,7 @@ def task(event, context):  # pylint: disable-msg=unused-argument
         Raises:
             ExtractFilePathsError: An error occurred parsing the input.
     """
-    LOGGER.debug("event: {event}", event=event)
+    LOGGER.debug(f"event: {event}")
     try:
         config = event["config"]
         exclude_file_types = config.get(CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY, None)
@@ -56,9 +60,9 @@ def task(event, context):  # pylint: disable-msg=unused-argument
                 f"list {exclude_file_types} was found."
             )
     except KeyError as ke:
-        message = "Key {key} is missing from the event configuration: {config}"
-        LOGGER.error(message, key=ke, config=config)
-        raise KeyError(message.format(key=ke, config=config))
+        message = f"Key {ke} is missing from the event configuration: {config}"
+        LOGGER.error(message)
+        raise KeyError(message)
     result = {}
     try:
         regex_buckets = get_regex_buckets(event)
@@ -86,9 +90,7 @@ def task(event, context):  # pylint: disable-msg=unused-argument
                         raise ExtractFilePathsError(f"No matching regex for '{file_key}'")
                     destination_bucket = regex_buckets[matching_regex]
                     LOGGER.debug(
-                        "Found retrieval destination {destination_bucket} for {file}",
-                        destination_bucket=destination_bucket,
-                        file=file_name,
+                        f"Found retrieval destination {destination_bucket} for {file_name}"
                     )
 
                     files.append(
@@ -168,7 +170,35 @@ def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> b
     return False
 
 
-def handler(event, context):  # pylint: disable-msg=unused-argument
+def create_http_error_dict(
+        error_type: str, http_status_code: int, request_id: str, message: str
+) -> Dict[str, Any]:
+    """
+    Creates a standardized dictionary for error reporting.
+    Args:
+        error_type: The string representation of http_status_code.
+        http_status_code: The integer representation of the http error.
+        request_id: The incoming request's id.
+        message: The message to display to the user and to record for debugging.
+    Returns:
+        A dict with the following keys:
+            'errorType' (str)
+            'httpStatus' (int)
+            'requestId' (str)
+            'message' (str)
+    """
+    LOGGER.error(message)
+    return {
+        "errorType": error_type,
+        "httpStatus": http_status_code,
+        "requestId": request_id,
+        "message": message,
+    }
+
+
+@LOGGER.inject_lambda_context
+def handler(event: Dict[str, Union[str, int]],
+            context: LambdaContext):  # pylint: disable-msg=unused-argument
     """Lambda handler. Extracts the key's for a granule from an input dict.
 
     Args:
@@ -200,7 +230,8 @@ def handler(event, context):  # pylint: disable-msg=unused-argument
                         }
                         }
 
-        context (Object): None
+        context: This object provides information about the lambda invocation, function,
+            and execution env.
 
     Returns:
         dict: A dict with the following keys:
@@ -217,6 +248,38 @@ def handler(event, context):  # pylint: disable-msg=unused-argument
     Raises:
         ExtractFilePathsError: An error occurred parsing the input.
     """
-    LOGGER.setMetadata(event, context)
-    result = run_cumulus_task(task, event, context)
+
+    # Generating schema validators can take time, so do it once and reuse.
+    try:
+        with open("schemas/input.json", "r") as raw_schema:
+            input_schema = json.loads(raw_schema.read())
+            _VALIDATE_INPUT = fastjsonschema.compile(input_schema)
+        # with open("schemas/config.json", "r") as raw_schema:
+        #     config_schema = json.loads(raw_schema.read())
+        #     _VALIDATE_CONFIG = fastjsonschema.compile(config_schema)
+    except Exception as ex:
+        LOGGER.error(f"Could not build schema validator: {ex}")
+        raise
+
+    try:
+        _VALIDATE_INPUT(event["payload"])
+    except JsonSchemaException as json_schema_exception:
+        return create_http_error_dict(
+            "BadRequest",
+            HTTPStatus.BAD_REQUEST,
+            context.aws_request_id,
+            json_schema_exception.__str__(),
+        )
+
+    # try:
+    #     _VALIDATE_CONFIG(event["config"])
+    # except JsonSchemaException as json_schema_exception:
+    #     return create_http_error_dict(
+    #         "BadRequest",
+    #         HTTPStatus.BAD_REQUEST,
+    #         context.aws_request_id,
+    #         json_schema_exception.__str__(),
+    #     )
+
+    result = task(event, context)
     return result
