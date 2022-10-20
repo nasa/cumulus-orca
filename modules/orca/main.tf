@@ -87,7 +87,6 @@ module "orca_lambdas_secondary" {
   orca_reconciliation_lambda_memory_size = var.orca_reconciliation_lambda_memory_size
   orca_reconciliation_lambda_timeout     = var.orca_reconciliation_lambda_timeout
   s3_report_frequency                    = var.s3_report_frequency
-  powertools_service_name                = var.powertools_service_name
   log_level                              = var.log_level
 }
 
