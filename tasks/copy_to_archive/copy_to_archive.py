@@ -8,13 +8,12 @@ import re
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Union
 
-import boto3
-
 # Third party libraries
-from aws_lambda_powertools import Logger
-from aws_lambda_powertools.utilities.typing import LambdaContext
+import boto3
 from boto3.s3.transfer import MB, TransferConfig
 from run_cumulus_task import run_cumulus_task
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext
 
 import sqs_library
 

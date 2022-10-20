@@ -1,8 +1,8 @@
 ## Local Variables
 locals {
-  db_name = lower(var.db_name != null ? var.db_name : replace("${var.prefix}_orca", "-", "_"))
+  db_name      = lower(var.db_name != null ? var.db_name : replace("${var.prefix}_orca", "-", "_"))
   db_user_name = replace("${var.prefix}_orcauser", "-", "_")
-  tags = merge(var.tags, { Deployment = var.prefix }, { team = "ORCA", application = "ORCA" })
+  tags         = merge(var.tags, { Deployment = var.prefix }, { team = "ORCA", application = "ORCA" })
 }
 
 
@@ -38,7 +38,7 @@ module "orca" {
   orca_reports_bucket_name = var.orca_reports_bucket_name
   s3_access_key            = var.s3_access_key
   s3_secret_key            = var.s3_secret_key
-  
+
   ## OPTIONAL
   db_admin_username                                    = var.db_admin_username
   db_name                                              = local.db_name

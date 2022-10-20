@@ -10,16 +10,14 @@ from typing import Any, Dict, List, Optional, Union
 
 import boto3
 import fastjsonschema
-
-# noinspection PyPackageRequirements
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
+from orca_shared.recovery import shared_recovery
+
+# noinspection PyPackageRequirements
 from boto3.s3.transfer import MB, TransferConfig
 from botocore.client import BaseClient
 from botocore.exceptions import ClientError
-
-# noinspection PyPackageRequirements
-from orca_shared.recovery import shared_recovery
 
 OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY = "STATUS_UPDATE_QUEUE_URL"
 

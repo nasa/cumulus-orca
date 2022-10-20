@@ -166,9 +166,9 @@ variable "orca_default_recovery_type" {
 
 
 variable "orca_default_storage_class" {
-  type           = string
+  type        = string
   description = "The class of storage to use when ingesting files. Can be overridden by collection config. Must match value in storage_class table."
-  default        = "GLACIER"
+  default     = "GLACIER"
   validation {
     condition     = contains(["GLACIER", "DEEP_ARCHIVE"], var.orca_default_storage_class)
     error_message = "Valid values are 'GLACIER'|'DEEP_ARCHIVE'."
@@ -179,7 +179,7 @@ variable "orca_default_storage_class" {
 variable "orca_delete_old_reconcile_jobs_frequency_cron" {
   type        = string
   description = "Frequency cron for running the delete_old_reconcile_jobs lambda."
-  default     = "cron(0 0 ? * SUN *)"  # UTC Sunday Midnight
+  default     = "cron(0 0 ? * SUN *)" # UTC Sunday Midnight
 }
 
 
@@ -323,7 +323,11 @@ variable "vpc_endpoint_id" {
 
 
 variable "log_level" {
-  type        = string
-  description = "Sets the verbose of powertools logger. Must be one of 'INFO', 'DEBUG', 'WARN', 'ERROR'. Defaults to 'INFO'."
-  default     = "INFO"
+  type            = string
+  description     = "Sets the verbose of powertools logger. Must be one of 'INFO', 'DEBUG', 'WARN', 'ERROR'. Defaults to 'INFO'."
+  default         = "INFO"
+  validation {
+    condition     = contains(["INFO", "DEBUG", "WARN", "ERROR"], var.log_level)
+    error_message = "Valid values are 'INFO'|'DEBUG'|'WARN'|'ERROR'."
+  }
 }
