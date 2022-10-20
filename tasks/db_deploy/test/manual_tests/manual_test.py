@@ -6,6 +6,8 @@ Description: Runs the db_deploy Lambda code to perform manual tests.
 import os
 import sys
 
+from orca_shared.database.entities import PostgresConnectionInfo
+
 
 def set_search_path():
     """
@@ -16,7 +18,7 @@ def set_search_path():
         sys.path.insert(0, our_base)
 
 
-def get_configuration():
+def get_configuration() -> PostgresConnectionInfo:
     """
     Sets a static configuration so testing is easy. Only HOST and PASSWORDS
     are variable per user. Username is variable for the non-admin user.
@@ -25,16 +27,16 @@ def get_configuration():
     my_admin_pass = os.getenv("ADMIN_PASSWORD")
     my_app_pass = os.getenv("APPLICATION_PASSWORD")
 
-    return {
-        "admin_database": "postgres",
-        "admin_password": my_admin_pass,
-        "admin_username": "postgres",
-        "host": my_host,
-        "port": "5433",
-        "user_database": "orca",
-        "user_password": my_app_pass,
-        "user_username": "orcauser",
-    }
+    return PostgresConnectionInfo(
+        admin_database_name="postgres",
+        admin_password=my_admin_pass,
+        admin_username="postgres",
+        host=my_host,
+        port="5433",
+        user_database_name="orca",
+        user_password=my_app_pass,
+        user_username="orcauser",
+    )
 
 
 if __name__ == "__main__":
