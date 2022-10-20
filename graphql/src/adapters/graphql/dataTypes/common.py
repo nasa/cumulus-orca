@@ -4,13 +4,18 @@ import traceback
 import strawberry
 
 
+@strawberry.interface
+class ErrorStrawberryTypeInterface:
+    message: str
+
+
 @strawberry.type
-class InternalServerErrorStrawberryType:
-    message: str = "An unexpected error has occurred. " \
-                   "Please review the logs and contact support if needed."
+class InternalServerErrorStrawberryType(ErrorStrawberryTypeInterface):
     exception_message: str
     stack_trace: str
 
     def __init__(self, ex: Exception):
+        self.message = "An unexpected error has occurred. " \
+                       "Please review the logs and contact support if needed."
         self.exception_message = str(ex)
-        self.stack_trace = traceback.format_exc(ex)
+        self.stack_trace = traceback.format_exc()
