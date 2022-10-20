@@ -29,7 +29,7 @@ resource "aws_lambda_function" "post_to_queue_and_trigger_step_function" {
       PREFIX                  = var.prefix
       STEP_FUNCTION_ARN       = var.orca_sfn_internal_reconciliation_workflow_arn,
       TARGET_QUEUE_URL        = var.orca_sqs_internal_report_queue_id,
-      POWERTOOLS_SERVICE_NAME = aws_lambda_function.post_to_queue_and_trigger_step_function.function_name
+      POWERTOOLS_SERVICE_NAME = "orca.internal_reconciliation"
       LOG_LEVEL               = var.log_level
     }
   }
