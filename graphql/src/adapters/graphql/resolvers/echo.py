@@ -1,5 +1,3 @@
-import traceback
-
 from src import use_cases
 from src.adapters.graphql import initialized_adapters
 from src.adapters.graphql.dataTypes.common import InternalServerErrorStrawberryType

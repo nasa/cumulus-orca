@@ -11,4 +11,4 @@ class UvicornSettings(BaseSettings):
     DEV: bool = True if os.environ.get("ORCA_ENV", "development") == "development" else False
 
 
-instantiated_settings = UvicornSettings()
+INSTANTIATED_WEBSERVER_SETTINGS = UvicornSettings()
