@@ -108,7 +108,7 @@ Copy an Amazon S3 bucket object
 #### handler
 
 ```python
-def handler(event: Dict[str, Any], context: object) -> None
+def handler(event: Dict[str, Any], context: LambdaContext) -> None
 ```
 
 Lambda handler. Copies a file from its temporary s3 bucket to the s3 archive.
@@ -132,7 +132,8 @@ drdb-host (string): the database host
 
   event:
   A dict from the SQS queue. See schemas/input.json for more information.
-- `context` - An object required by AWS Lambda. Unused.
+- `context` - This object provides information about the lambda invocation, function,
+  and execution env.
 
 **Raises**:
 
