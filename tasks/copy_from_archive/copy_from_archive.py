@@ -231,7 +231,7 @@ def copy_object(
     return None
 
 
-# noinspection PyUnusedLocal
+@LOGGER.inject_lambda_context
 def handler(
     event: Dict[str, Any], context: LambdaContext
 ) -> None:  # pylint: disable-msg=unused-argument

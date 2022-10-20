@@ -108,6 +108,7 @@ Copy an Amazon S3 bucket object
 #### handler
 
 ```python
+@LOGGER.inject_lambda_context
 def handler(event: Dict[str, Any], context: LambdaContext) -> None
 ```
 
