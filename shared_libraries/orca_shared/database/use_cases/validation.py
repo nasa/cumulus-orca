@@ -32,7 +32,7 @@ def _validate_password(password: str, context: str, logger: logging.Logger) -> N
 def validate_postgres_name(name: str, context: str, logger: logging.Logger) -> None:
     """
     Validates the given name against documented Postgres restrictions.
-    https://www.postgresql.org/docs/7.0/syntax525.htm
+    https://www.postgresql.org/docs/14/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS
 
     Raises:
         Exception: If value is empty, is more than 63 characters, or contains illegal characters.
@@ -41,13 +41,14 @@ def validate_postgres_name(name: str, context: str, logger: logging.Logger) -> N
         msg = f"{context} must be non-empty."
         logger.critical(msg)
         raise Exception(msg)
-    if len(name) > 63:  # todo: Postgres docs limit to 31 characters by default. Why 63?
+    if len(name) > 63:
         msg = f"{context} must be less than 64 characters."
         logger.critical(msg)
         raise Exception(msg)
     # noinspection RegExpSimplifiable
-    if not re.compile("^[a-zA-Z][a-zA-Z0-9_]*$").match(name):
-        msg = f"{context} must start with an English letter " \
-              "and contain only English letters, numbers, or underscores."
+    # todo: Add support for non-english characters mentioned in postgres docs. ORCA-572
+    if not re.compile("^[a-zA-Z_][a-zA-Z0-9_$]*$").match(name):
+        msg = f"{context} must start with an English letter or '_' " \
+              "and contain only English letters, numbers, '$', or '_'."
         logger.critical(msg)
         raise Exception(msg)

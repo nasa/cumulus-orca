@@ -84,7 +84,7 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
         """
         A name of any length starting with a letter should be accepted.
         """
-        names = ["A", "a_", "C1"]
+        names = ["A", "a_", "C1", "_$"]
         context = Mock()
         logger = Mock()
         for name in names:
@@ -128,5 +128,5 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
                 with self.assertRaises(Exception) as cm:
                     validate_postgres_name(name, context, logger)
                 self.assertEqual(str(cm.exception),
-                                 f"{context} must start with an English letter "
-                                 "and contain only English letters, numbers, or underscores.")
+                                 f"{context} must start with an English letter or '_' "
+                                 "and contain only English letters, numbers, '$', or '_'.")
