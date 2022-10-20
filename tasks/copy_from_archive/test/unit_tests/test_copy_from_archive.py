@@ -475,6 +475,34 @@ class TestCopyFromArchive(TestCase):
         )
         self.assertEqual(expected_result, result)
 
+    @patch.dict(
+        os.environ,
+        {
+            "COPY_RETRIES": "703",
+            "COPY_RETRY_SLEEP_SECS": "108.5",
+            copy_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY: "something.blah",
+            "DEFAULT_MULTIPART_CHUNKSIZE_MB": "42",
+            "RECOVERY_QUEUE_URL": "something_else.blah",
+        },
+        clear=True,
+    )
+    @patch("copy_from_archive.LOGGER")
+    @patch("copy_from_archive.task")
+    def test_handler_decorator(
+        self,
+        mock_task: MagicMock,
+        mock_logger: MagicMock,
+    ):
+        records = [Mock()]
+        event = {"Records": records}
+        context = Mock()
+        result = copy_from_archive.handler(event, context)
+        self.assertEqual(result, "2")
+
+        mock_task.assert_called_with(
+            records, 703, 108.5, "something.blah", 42, "something_else.blah"
+        )
+
 
 if __name__ == "__main__":
     unittest.main(argv=["start"])
