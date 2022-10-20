@@ -99,6 +99,8 @@
   * [storage\_class\_table\_sql](#migrations/migrate_versions_5_to_6/migrate_sql.storage_class_table_sql)
   * [storage\_class\_data\_sql](#migrations/migrate_versions_5_to_6/migrate_sql.storage_class_data_sql)
   * [add\_files\_storage\_class\_id\_column\_sql](#migrations/migrate_versions_5_to_6/migrate_sql.add_files_storage_class_id_column_sql)
+  * [add\_mismatch\_storage\_class\_columns\_sql](#migrations/migrate_versions_5_to_6/migrate_sql.add_mismatch_storage_class_columns_sql)
+  * [add\_phantom\_storage\_class\_column\_sql](#migrations/migrate_versions_5_to_6/migrate_sql.add_phantom_storage_class_column_sql)
 
 <a name="db_deploy"></a>
 # db\_deploy
@@ -111,21 +113,25 @@ Description: Performs database installation and migration for the ORCA schema.
 #### handler
 
 ```python
-handler(event: Dict[str, Any], context: object) -> None
+@LOGGER.inject_lambda_context
+handler(event: Dict[str, Any], context: LambdaContext) -> None
 ```
 
 Lambda handler for db_deploy. The handler generates the database connection
 configuration information, sets logging handler information and calls the
-Lambda task function. See the `shared_db.get_configuration(db_connect_info_secret_arn)` function for
-information on the needed environment variables and parameter store names
+Lambda task function. See the `shared_db.get_configuration(db_connect_info_secret_arn)`
+function for information on the needed environment variables and parameter store names
 required by this Lambda.
 
 **Arguments**:
 
 - `event` _Dict_ - Event dictionary passed by AWS.
-- `context` _object_ - An object required by AWS Lambda.
+- `context` - This object provides information about the lambda invocation, function,
+  and execution env.
   Environment Vars:
-- `DB_CONNECT_INFO_SECRET_ARN` _string_ - Secret ARN of the AWS secretsmanager secret for connecting to the database.
+  DB_CONNECT_INFO_SECRET_ARN (string):
+  Secret ARN of the AWS secretsmanager secret
+  for connecting to the database.
   See shared_db.py's get_configuration for further details.
   
 
@@ -425,7 +431,7 @@ Full SQL for creating the ORCA application database.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating database.
+  SQL for creating database.
 
 <a name="install/orca_sql.app_database_comment_sql"></a>
 #### app\_database\_comment\_sql
@@ -449,7 +455,7 @@ objects.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating orca_dbo role.
+  SQL for creating orca_dbo role.
 
 <a name="install/orca_sql.app_role_sql"></a>
 #### app\_role\_sql
@@ -463,7 +469,7 @@ to interact with the ORCA schema.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating orca_app role.
+  SQL for creating orca_app role.
 
 <a name="install/orca_sql.orca_schema_sql"></a>
 #### orca\_schema\_sql
@@ -478,7 +484,7 @@ before the app_user_sql and ORCA objects.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating orca schema.
+  SQL for creating orca schema.
 
 <a name="install/orca_sql.app_user_sql"></a>
 #### app\_user\_sql
@@ -497,7 +503,7 @@ after the app_role_sql and orca_schema_sql.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating PREFIX_orcauser user.
+  SQL for creating PREFIX_orcauser user.
 
 <a name="install/orca_sql.create_extension"></a>
 #### create\_extension
@@ -511,7 +517,7 @@ from a CSV file in an AWS bucket into the database.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating extension for the database.
+  SQL for creating extension for the database.
 
 <a name="install/orca_sql.schema_versions_table_sql"></a>
 #### schema\_versions\_table\_sql
@@ -524,7 +530,7 @@ Full SQL for creating the schema_versions table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating schema_versions table.
+  SQL for creating schema_versions table.
 
 <a name="install/orca_sql.schema_versions_data_sql"></a>
 #### schema\_versions\_data\_sql
@@ -538,7 +544,7 @@ version into the table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for populating schema_versions table.
+  SQL for populating schema_versions table.
 
 <a name="install/orca_sql.recovery_status_table_sql"></a>
 #### recovery\_status\_table\_sql
@@ -552,7 +558,7 @@ before any of the other recovery table sql.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating recovery_status table.
+  SQL for creating recovery_status table.
 
 <a name="install/orca_sql.recovery_status_data_sql"></a>
 #### recovery\_status\_data\_sql
@@ -566,7 +572,7 @@ the table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for populating recovery_status table.
+  SQL for populating recovery_status table.
 
 <a name="install/orca_sql.recovery_job_table_sql"></a>
 #### recovery\_job\_table\_sql
@@ -581,7 +587,7 @@ table sql to maintain key dependencies.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating recovery_job table.
+  SQL for creating recovery_job table.
 
 <a name="install/orca_sql.recovery_file_table_sql"></a>
 #### recovery\_file\_table\_sql
@@ -595,7 +601,7 @@ after the recovery_job table sql to maintain key dependencies.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating recovery_file table.
+  SQL for creating recovery_file table.
 
 <a name="install/orca_sql.providers_table_sql"></a>
 #### providers\_table\_sql
@@ -608,7 +614,7 @@ Full SQL for creating the providers table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating providers table.
+  SQL for creating providers table.
 
 <a name="install/orca_sql.collections_table_sql"></a>
 #### collections\_table\_sql
@@ -621,7 +627,7 @@ Full SQL for creating the collections table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating collections table.
+  SQL for creating collections table.
 
 <a name="install/orca_sql.granules_table_sql"></a>
 #### granules\_table\_sql
@@ -634,7 +640,7 @@ Full SQL for creating the catalog granules table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating granules table.
+  SQL for creating granules table.
 
 <a name="install/orca_sql.storage_class_table_sql"></a>
 #### storage\_class\_table\_sql
@@ -675,7 +681,7 @@ Full SQL for creating the catalog files table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating files table.
+  SQL for creating files table.
 
 <a name="install/orca_sql.reconcile_status_table_sql"></a>
 #### reconcile\_status\_table\_sql
@@ -688,7 +694,7 @@ Full SQL for creating the reconcile_status table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_status table.
+  SQL for creating reconcile_status table.
 
 <a name="install/orca_sql.reconcile_job_table_sql"></a>
 #### reconcile\_job\_table\_sql
@@ -701,7 +707,7 @@ Full SQL for creating the reconcile_job table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_job table.
+  SQL for creating reconcile_job table.
 
 <a name="install/orca_sql.reconcile_s3_object_table_sql"></a>
 #### reconcile\_s3\_object\_table\_sql
@@ -714,7 +720,7 @@ Full SQL for creating the reconcile_s3_object table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_s3_object table.
+  SQL for creating reconcile_s3_object table.
 
 <a name="install/orca_sql.reconcile_s3_object_partition_sql"></a>
 #### reconcile\_s3\_object\_partition\_sql
@@ -734,7 +740,7 @@ of `{"bucket_name": value}` when executing the SQL via the driver.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_s3_object partition table.
+  SQL for creating reconcile_s3_object partition table.
 
 <a name="install/orca_sql.reconcile_catalog_mismatch_report_table_sql"></a>
 #### reconcile\_catalog\_mismatch\_report\_table\_sql
@@ -747,7 +753,7 @@ Full SQL for creating the reconcile_catalog_mismatch_report table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_catalog_mismatch_report.
+  SQL for creating reconcile_catalog_mismatch_report.
 
 <a name="install/orca_sql.reconcile_orphan_report_table_sql"></a>
 #### reconcile\_orphan\_report\_table\_sql
@@ -760,7 +766,7 @@ Full SQL for creating the reconcile_orphan_report table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_orphan_report table.
+  SQL for creating reconcile_orphan_report table.
 
 <a name="install/orca_sql.reconcile_phantom_report_table_sql"></a>
 #### reconcile\_phantom\_report\_table\_sql
@@ -773,7 +779,7 @@ Full SQL for creating the reconcile_phantom_report table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_phantom_report table.
+  SQL for creating reconcile_phantom_report table.
 
 <a name="migrations/migrate_db"></a>
 # migrations/migrate\_db
@@ -849,7 +855,7 @@ objects.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating orca_dbo role.
+  SQL for creating orca_dbo role.
 
 <a name="migrations/migrate_versions_1_to_2/migrate_sql.app_role_sql"></a>
 #### app\_role\_sql
@@ -863,7 +869,7 @@ to interact with the ORCA schema.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating orca_app role.
+  SQL for creating orca_app role.
 
 <a name="migrations/migrate_versions_1_to_2/migrate_sql.orca_schema_sql"></a>
 #### orca\_schema\_sql
@@ -878,7 +884,7 @@ before the app_user_sql and ORCA objects.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating orca schema.
+  SQL for creating orca schema.
 
 <a name="migrations/migrate_versions_1_to_2/migrate_sql.app_user_sql"></a>
 #### app\_user\_sql
@@ -897,7 +903,7 @@ after the app_role_sql and orca_schema_sql.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating PREFIX_orcauser user.
+  SQL for creating PREFIX_orcauser user.
 
 <a name="migrations/migrate_versions_1_to_2/migrate_sql.schema_versions_table_sql"></a>
 #### schema\_versions\_table\_sql
@@ -910,7 +916,7 @@ Full SQL for creating the schema_versions table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating schema_versions table.
+  SQL for creating schema_versions table.
 
 <a name="migrations/migrate_versions_1_to_2/migrate_sql.schema_versions_data_sql"></a>
 #### schema\_versions\_data\_sql
@@ -924,7 +930,7 @@ version into the table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for populating schema_versions table.
+  SQL for populating schema_versions table.
 
 <a name="migrations/migrate_versions_1_to_2/migrate_sql.recovery_status_table_sql"></a>
 #### recovery\_status\_table\_sql
@@ -938,7 +944,7 @@ before any of the other recovery table sql.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating recovery_status table.
+  SQL for creating recovery_status table.
 
 <a name="migrations/migrate_versions_1_to_2/migrate_sql.recovery_status_data_sql"></a>
 #### recovery\_status\_data\_sql
@@ -952,7 +958,7 @@ the table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for populating recovery_status table.
+  SQL for populating recovery_status table.
 
 <a name="migrations/migrate_versions_1_to_2/migrate_sql.recovery_job_table_sql"></a>
 #### recovery\_job\_table\_sql
@@ -967,7 +973,7 @@ table sql to maintain key dependencies.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating recovery_job table.
+  SQL for creating recovery_job table.
 
 <a name="migrations/migrate_versions_1_to_2/migrate_sql.recovery_file_table_sql"></a>
 #### recovery\_file\_table\_sql
@@ -981,7 +987,7 @@ after the recovery_job table sql to maintain key dependencies.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating recovery_file table.
+  SQL for creating recovery_file table.
 
 <a name="migrations/migrate_versions_1_to_2/migrate_sql.migrate_recovery_job_data_sql"></a>
 #### migrate\_recovery\_job\_data\_sql
@@ -995,7 +1001,7 @@ orca.recovery_job table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for populating recovery_job table.
+  SQL for populating recovery_job table.
 
 <a name="migrations/migrate_versions_1_to_2/migrate_sql.migrate_recovery_file_data_sql"></a>
 #### migrate\_recovery\_file\_data\_sql
@@ -1009,7 +1015,7 @@ orca.recovery_file table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for populating recovery_file table.
+  SQL for populating recovery_file table.
 
 <a name="migrations/migrate_versions_1_to_2/migrate_sql.drop_request_status_table_sql"></a>
 #### drop\_request\_status\_table\_sql
@@ -1022,7 +1028,7 @@ SQL that removes the dr.request_status table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for dropping request_status table.
+  SQL for dropping request_status table.
 
 <a name="migrations/migrate_versions_1_to_2/migrate_sql.drop_dr_schema_sql"></a>
 #### drop\_dr\_schema\_sql
@@ -1035,7 +1041,7 @@ SQL that removes the dr schema.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for dropping dr schema.
+  SQL for dropping dr schema.
 
 <a name="migrations/migrate_versions_1_to_2/migrate_sql.drop_druser_user_sql"></a>
 #### drop\_druser\_user\_sql
@@ -1048,7 +1054,7 @@ SQL that removes the druser user.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for dropping druser user.
+  SQL for dropping druser user.
 
 <a name="migrations/migrate_versions_1_to_2/migrate_sql.drop_dbo_user_sql"></a>
 #### drop\_dbo\_user\_sql
@@ -1061,7 +1067,7 @@ SQL that removes the dbo user.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for dropping dbo user.
+  SQL for dropping dbo user.
 
 <a name="migrations/migrate_versions_1_to_2/migrate_sql.drop_dr_role_sql"></a>
 #### drop\_dr\_role\_sql
@@ -1074,7 +1080,7 @@ SQL that removes the dr_role role.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for dropping dr_role role.
+  SQL for dropping dr_role role.
 
 <a name="migrations/migrate_versions_1_to_2/migrate_sql.drop_drdbo_role_sql"></a>
 #### drop\_drdbo\_role\_sql
@@ -1087,8 +1093,7 @@ SQL that removes the drdbo_role role.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for dropping drdbo_role role.
-  f
+  SQL for dropping drdbo_role role.
 
 <a name="migrations/migrate_versions_2_to_3/migrate"></a>
 # migrations/migrate\_versions\_2\_to\_3/migrate
@@ -1142,7 +1147,7 @@ version into the table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for populating schema_versions table.
+  SQL for populating schema_versions table.
 
 <a name="migrations/migrate_versions_3_to_4/migrate"></a>
 # migrations/migrate\_versions\_3\_to\_4/migrate
@@ -1188,7 +1193,7 @@ Full SQL for creating the providers table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating providers table.
+  SQL for creating providers table.
 
 <a name="migrations/migrate_versions_3_to_4/migrate_sql.collections_table_sql"></a>
 #### collections\_table\_sql
@@ -1201,7 +1206,7 @@ Full SQL for creating the collections table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating collections table.
+  SQL for creating collections table.
 
 <a name="migrations/migrate_versions_3_to_4/migrate_sql.granules_table_sql"></a>
 #### granules\_table\_sql
@@ -1214,7 +1219,7 @@ Full SQL for creating the catalog granules table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating granules table.
+  SQL for creating granules table.
 
 <a name="migrations/migrate_versions_3_to_4/migrate_sql.files_table_sql"></a>
 #### files\_table\_sql
@@ -1227,7 +1232,7 @@ Full SQL for creating the catalog files table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating files table.
+  SQL for creating files table.
 
 <a name="migrations/migrate_versions_3_to_4/migrate_sql.schema_versions_data_sql"></a>
 #### schema\_versions\_data\_sql
@@ -1241,7 +1246,7 @@ version into the table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for populating schema_versions table.
+  SQL for populating schema_versions table.
 
 <a name="migrations/migrate_versions_4_to_5/migrate"></a>
 # migrations/migrate\_versions\_4\_to\_5/migrate
@@ -1298,7 +1303,7 @@ version into the table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for populating schema_versions table.
+  SQL for populating schema_versions table.
 
 <a name="migrations/migrate_versions_4_to_5/migrate_sql.create_extension"></a>
 #### create\_extension
@@ -1312,7 +1317,7 @@ from a CSV file in an AWS bucket into the database.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating extension for the database.
+  SQL for creating extension for the database.
 
 <a name="migrations/migrate_versions_4_to_5/migrate_sql.reconcile_status_table_sql"></a>
 #### reconcile\_status\_table\_sql
@@ -1325,7 +1330,7 @@ Full SQL for creating the reconcile_status table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_status table.
+  SQL for creating reconcile_status table.
 
 <a name="migrations/migrate_versions_4_to_5/migrate_sql.reconcile_job_table_sql"></a>
 #### reconcile\_job\_table\_sql
@@ -1338,7 +1343,7 @@ Full SQL for creating the reconcile_job table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_job table.
+  SQL for creating reconcile_job table.
 
 <a name="migrations/migrate_versions_4_to_5/migrate_sql.reconcile_s3_object_table_sql"></a>
 #### reconcile\_s3\_object\_table\_sql
@@ -1351,7 +1356,7 @@ Full SQL for creating the reconcile_s3_object table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_s3_object table.
+  SQL for creating reconcile_s3_object table.
 
 <a name="migrations/migrate_versions_4_to_5/migrate_sql.reconcile_s3_object_partition_sql"></a>
 #### reconcile\_s3\_object\_partition\_sql
@@ -1371,7 +1376,7 @@ of `{"bucket_name": value}` when executing the SQL via the driver.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_s3_object partition table.
+  SQL for creating reconcile_s3_object partition table.
 
 <a name="migrations/migrate_versions_4_to_5/migrate_sql.reconcile_catalog_mismatch_report_table_sql"></a>
 #### reconcile\_catalog\_mismatch\_report\_table\_sql
@@ -1384,7 +1389,7 @@ Full SQL for creating the reconcile_catalog_mismatch_report table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_catalog_mismatch_report.
+  SQL for creating reconcile_catalog_mismatch_report.
 
 <a name="migrations/migrate_versions_4_to_5/migrate_sql.reconcile_orphan_report_table_sql"></a>
 #### reconcile\_orphan\_report\_table\_sql
@@ -1397,7 +1402,7 @@ Full SQL for creating the reconcile_orphan_report table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_orphan_report table.
+  SQL for creating reconcile_orphan_report table.
 
 <a name="migrations/migrate_versions_4_to_5/migrate_sql.reconcile_phantom_report_table_sql"></a>
 #### reconcile\_phantom\_report\_table\_sql
@@ -1410,14 +1415,14 @@ Full SQL for creating the reconcile_phantom_report table.
 
 **Returns**:
 
-- `(sqlalchemy.sql.element.TextClause)` - SQL for creating reconcile_phantom_report table.
+  SQL for creating reconcile_phantom_report table.
 
 <a name="migrations/migrate_versions_5_to_6/migrate"></a>
 # migrations/migrate\_versions\_5\_to\_6/migrate
 
 Name: migrate.py
 
-Description: Migrates the ORCA schema from version 4 to version 5.
+Description: Migrates the ORCA schema from version 5 to version 6.
 
 <a name="migrations/migrate_versions_5_to_6/migrate.migrate_versions_5_to_6"></a>
 #### migrate\_versions\_5\_to\_6
@@ -1436,7 +1441,7 @@ and adding the following columns
 **Arguments**:
 
 - `config` - Connection information for the database.
-- `is_latest_version` - Flag to determine if version 5 is the latest
+- `is_latest_version` - Flag to determine if version 6 is the latest
   schema version.
 
 **Returns**:
@@ -1448,7 +1453,7 @@ and adding the following columns
 
 Name: migrate_sql.py
 
-Description: All the SQL used for creating and migrating the ORCA schema to version 5.
+Description: All the SQL used for creating and migrating the ORCA schema to version 6.
 
 <a name="migrations/migrate_versions_5_to_6/migrate_sql.schema_versions_data_sql"></a>
 #### schema\_versions\_data\_sql
@@ -1494,6 +1499,31 @@ add_files_storage_class_id_column_sql() -> text
 ```
 
 SQL for adding the storage_class_id column to the files table.
+New cells will contain '1', the id for GLACIER.
+
+Returns: SQL for adding the column.
+
+<a name="migrations/migrate_versions_5_to_6/migrate_sql.add_mismatch_storage_class_columns_sql"></a>
+#### add\_mismatch\_storage\_class\_columns\_sql
+
+```python
+add_mismatch_storage_class_columns_sql() -> text
+```
+
+SQL for adding the orca_storage_class_id and s3_storage_class columns
+to the reconcile_catalog_mismatch_report table.
+New cells will contain '1', the id for GLACIER.
+
+Returns: SQL for adding the column.
+
+<a name="migrations/migrate_versions_5_to_6/migrate_sql.add_phantom_storage_class_column_sql"></a>
+#### add\_phantom\_storage\_class\_column\_sql
+
+```python
+add_phantom_storage_class_column_sql() -> text
+```
+
+SQL for adding the orca_storage_class column to the reconcile_phantom_report table.
 New cells will contain '1', the id for GLACIER.
 
 Returns: SQL for adding the column.

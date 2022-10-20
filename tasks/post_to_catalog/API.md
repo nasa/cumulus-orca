@@ -76,10 +76,12 @@ Posts the information to the catalog database.
 #### handler
 
 ```python
-def handler(event: Dict[str, List], context) -> None
+@LOGGER.inject_lambda_context
+def handler(event: Dict[str, List], context: LambdaContext) -> None
 ```
 
-Lambda handler. Receives a list of queue entries from an SQS queue, and posts them to a database.
+Lambda handler. Receives a list of queue entries from an SQS queue,
+and posts them to a database.
 
 **Arguments**:
 
@@ -89,8 +91,10 @@ Lambda handler. Receives a list of queue entries from an SQS queue, and posts th
   'receiptHandle' (str)
 - `'body'` _str_ - A json string representing a dict.
   See catalog_record_input in schemas for details.
-- `context` - An object passed through by AWS. Used for tracking.
+- `context` - This object provides information about the lambda invocation, function,
+  and execution env.
   Environment Vars:
-- `DB_CONNECT_INFO_SECRET_ARN` _string_ - Secret ARN of the AWS secretsmanager secret for connecting to the database.
+  DB_CONNECT_INFO_SECRET_ARN (string):
+  Secret ARN of the AWS secretsmanager secret for connecting to the database.
   See shared_db.py's get_configuration for further details.
 

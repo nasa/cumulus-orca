@@ -419,6 +419,7 @@ def remove_job_from_queue(internal_report_queue_url: str, message_receipt_handle
     )
 
 
+@LOGGER.inject_lambda_context
 def handler(
     event: Dict[str, Dict[str, Dict[str, Union[str, int]]]], context: LambdaContext
 ) -> Dict[str, Any]:

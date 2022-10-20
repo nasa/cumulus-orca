@@ -197,6 +197,7 @@ def create_http_error_dict(
     }
 
 
+@LOGGER.inject_lambda_context
 def handler(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:
     """
     Entry point for the request_status_for_job Lambda.

@@ -47,7 +47,8 @@ Deconstructs a record to its components and calls send_values_to_database with t
   Contains key/value pairs of column names and values for those columns.
   Must match one of the schemas.
 - `'messageAttributes'` _dict_ - Contains the following keys:
-- `'RequestMethod'` _str_ - 'post' or 'put', depending on if row should be created or updated respectively.
+- `'RequestMethod'` _str_ - 'post' or 'put',
+  depending on if row should be created or updated respectively.
 - `engine` - The sqlalchemy engine to use for contacting the database.
 
 <a id="post_to_database.create_status_for_job_and_files"></a>
@@ -55,7 +56,9 @@ Deconstructs a record to its components and calls send_values_to_database with t
 #### create\_status\_for\_job\_and\_files
 
 ```python
-@shared_db.retry_operational_error()
+@shared_db.retry_operational_error(
+    # Retry all files due to transactional behavior of engine.begin
+)
 def create_status_for_job_and_files(job_id: str, granule_id: str,
                                     request_time: str,
                                     archive_destination: str,
@@ -80,14 +83,16 @@ Posts the entry for the job, followed by individual entries for each file.
 
 ```python
 @shared_db.retry_operational_error(
-)  # Retry all files due to transactional behavior of engine.begin
+    # Retry all files due to transactional behavior of engine.begin
+)
 def update_status_for_file(job_id: str, granule_id: str, filename: str,
                            last_update: str, completion_time: Optional[str],
                            status_id: int, error_message: Optional[str],
                            engine: Engine) -> None
 ```
 
-Updates a given file's status entry, modifying the job if all files for that job have advanced in status.
+Updates a given file's status entry, modifying the job if all files
+for that job have advanced in status.
 
 **Arguments**:
 
@@ -106,10 +111,12 @@ Updates a given file's status entry, modifying the job if all files for that job
 #### handler
 
 ```python
-def handler(event: Dict[str, List], context) -> None
+@LOGGER.inject_lambda_context
+def handler(event: Dict[str, List], context: LambdaContext) -> None
 ```
 
-Lambda handler. Receives a list of queue entries from an SQS queue, and posts them to a database.
+Lambda handler. Receives a list of queue entries from an SQS queue,
+and posts them to a database.
 
 **Arguments**:
 
@@ -120,10 +127,13 @@ Lambda handler. Receives a list of queue entries from an SQS queue, and posts th
 - `'body'` _str_ - A json string representing a dict.
   See files in schemas for details.
   'attributes' (Dict)
-- `'messageAttributes'` _Dict_ - A dict with the following keys defined in the functions that write to queue.
+- `'messageAttributes'` _Dict_ - A dict with the following keys
+  defined in the functions that write to queue.
 - `'RequestMethod'` _str_ - Matches to a shared_recovery.RequestMethod.
-- `context` - An object passed through by AWS. Used for tracking.
+- `context` - This object provides information about the lambda invocation, function,
+  and execution env.
   Environment Vars:
-- `DB_CONNECT_INFO_SECRET_ARN` _string_ - Secret ARN of the AWS secretsmanager secret for connecting to the database.
+  DB_CONNECT_INFO_SECRET_ARN (string):
+  Secret ARN of the AWS secretsmanager secret for connecting to the database.
   See shared_db.py's get_configuration for further details.
 

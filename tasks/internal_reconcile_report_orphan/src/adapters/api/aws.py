@@ -92,6 +92,7 @@ def create_http_error_dict(
 OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY = "DB_CONNECT_INFO_SECRET_ARN"  # nosec
 
 
+@LOGGER.inject_lambda_context
 def handler(
         event: Dict[str, Union[str, int]], context: LambdaContext
 ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:

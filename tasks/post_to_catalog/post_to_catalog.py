@@ -245,6 +245,7 @@ def create_file_sql() -> text:  # pragma: no cover
     # EXCLUDED refers to the row that would have been inserted.
 
 
+@LOGGER.inject_lambda_context
 def handler(event: Dict[str, List], context: LambdaContext) -> None:
     """
     Lambda handler. Receives a list of queue entries from an SQS queue,

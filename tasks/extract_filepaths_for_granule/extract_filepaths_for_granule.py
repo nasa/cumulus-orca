@@ -167,6 +167,7 @@ def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> b
     return False
 
 
+@LOGGER.inject_lambda_context
 def handler(event: Dict[str, Union[str, int]],
             context: LambdaContext):  # pylint: disable-msg=unused-argument
     """Lambda handler. Extracts the key's for a granule from an input dict.

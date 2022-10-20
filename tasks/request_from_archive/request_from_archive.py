@@ -593,6 +593,7 @@ def restore_object(
     )
 
 
+@LOGGER.inject_lambda_context
 def handler(event: Dict[str, Any], context: LambdaContext):  # pylint: disable-msg=unused-argument
     """Lambda handler. Initiates a restore_object request from archive for each file of a granule.
     Note that this function is set up to accept a list of granules, (because Cumulus sends a list),

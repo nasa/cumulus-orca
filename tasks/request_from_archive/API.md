@@ -221,7 +221,8 @@ Restore an archived S3 object in an Amazon S3 bucket.
 #### handler
 
 ```python
-def handler(event: Dict[str, Any], context)
+@LOGGER.inject_lambda_context
+def handler(event: Dict[str, Any], context: LambdaContext)
 ```
 
 Lambda handler. Initiates a restore_object request from archive for each file of a granule.
@@ -251,7 +252,8 @@ The bucket to use if destBucket is not set.
 **Arguments**:
 
 - `event` - See schemas/input.json and combine with knowledge of CumulusMessageAdapter.
-- `context` - An object required by AWS Lambda. Unused.
+- `context` - This object provides information about the lambda invocation, function,
+  and execution env.
 
 **Returns**:
 

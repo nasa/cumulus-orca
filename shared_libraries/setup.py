@@ -28,7 +28,7 @@ def get_version():
 
 
 # General installation requirements
-install_requirements = ["cumulus-process==0.8.0"]
+install_requirements = ["aws_lambda_powertools==1.31.0"]
 
 
 # Additional library dependencies

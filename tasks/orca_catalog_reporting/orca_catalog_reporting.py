@@ -213,6 +213,7 @@ def create_http_error_dict(
     }
 
 
+@LOGGER.inject_lambda_context
 def handler(
     event: Dict[str, Union[str, int]], context: LambdaContext
 ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:

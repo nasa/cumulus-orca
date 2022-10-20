@@ -568,7 +568,6 @@ Description: Shared library for database objects needed by the various libraries
 #### get\_configuration
 
 ```python
-@deprecated
 def get_configuration(db_connect_info_secret_arn: str) -> Dict[str, str]
 ```
 
@@ -601,7 +600,6 @@ Environment Variables:
 #### get\_admin\_connection
 
 ```python
-@deprecated
 def get_admin_connection(config: Dict[str, str],
                          database: str = None) -> Engine
 ```
@@ -621,7 +619,6 @@ Creates a connection engine to a database as a superuser.
 #### get\_user\_connection
 
 ```python
-@deprecated
 def get_user_connection(config: Dict[str, str]) -> Engine
 ```
 
@@ -677,7 +674,7 @@ Decorator takes arguments to adjust number of retries and backoff strategy.
 
 ```python
 def get_configuration(db_connect_info_secret_arn: str,
-                      LOGGER: logging.Logger) -> PostgresConnectionInfo
+                      logger: logging.Logger) -> PostgresConnectionInfo
 ```
 
 Create a dictionary of configuration values based on environment variables
@@ -692,7 +689,7 @@ Environment Variables:
 **Arguments**:
 
 - `db_connect_info_secret_arn` - The secret ARN of the secret in AWS secretsmanager.
-- `LOGGER` - The logger to use.
+- `logger` - The logger to use.
   
 
 **Returns**:
@@ -715,7 +712,7 @@ Environment Variables:
 
 ```python
 def create_user_uri(db_connect_info: PostgresConnectionInfo,
-                    LOGGER: logging.Logger) -> str
+                    logger: logging.Logger) -> str
 ```
 
 Creates a connection URI for application database as the application
@@ -724,7 +721,7 @@ database user.
 **Arguments**:
 
 - `db_connect_info` - Configuration containing connection information.
-- `LOGGER` - The logger to use.
+- `logger` - The logger to use.
   
 
 **Returns**:
@@ -737,7 +734,7 @@ database user.
 
 ```python
 def create_admin_uri(db_connect_info: PostgresConnectionInfo,
-                     LOGGER: logging.Logger,
+                     logger: logging.Logger,
                      database_name_overwrite: str = None) -> str
 ```
 
@@ -746,7 +743,7 @@ Creates a connection URI for a database as a superuser.
 **Arguments**:
 
 - `db_connect_info` - Configuration containing connection information.
-- `LOGGER` - The logger to use.
+- `logger` - The logger to use.
 - `database_name_overwrite` - Database to connect to. Defaults to admin_database.
   
 

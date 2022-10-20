@@ -102,6 +102,7 @@ Tests whether or not file is included in {excludedFileExtensions} from copy_to_a
 #### handler
 
 ```python
+@LOGGER.inject_lambda_context
 def handler(event: Dict[str, Union[str, int]], context: LambdaContext)
 ```
 

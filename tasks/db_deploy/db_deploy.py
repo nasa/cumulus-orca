@@ -27,6 +27,7 @@ LATEST_ORCA_SCHEMA_VERSION = 6
 MAX_RETRIES = 3
 
 
+@LOGGER.inject_lambda_context
 def handler(
     event: Dict[str, Any], context: LambdaContext
 ) -> None:  # pylint: disable-msg=unused-argument

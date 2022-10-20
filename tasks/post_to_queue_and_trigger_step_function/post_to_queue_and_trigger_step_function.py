@@ -103,6 +103,7 @@ def trigger_step_function(
     boto3.client("stepfunctions").start_execution(stateMachineArn=step_function_arn)
 
 
+@LOGGER.inject_lambda_context
 def handler(event: Dict[str, Any], context: LambdaContext) -> None:
     """
     Lambda handler.

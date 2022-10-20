@@ -23,7 +23,8 @@
 
 Name: get_current_archive_list.py
 
-Description: Receives a list of s3 events from an SQS queue, and loads the s3 inventory specified into postgres.
+Description: Receives a list of s3 events from an SQS queue,
+and loads the s3 inventory specified into postgres.
 
 <a id="get_current_archive_list.task"></a>
 
@@ -35,7 +36,8 @@ def task(report_bucket_region: str, report_bucket_name: str, manifest_key: str,
          db_connect_info: Dict) -> Dict[str, Any]
 ```
 
-Reads the record to find the location of manifest.json, then uses that information to spawn of business logic
+Reads the record to find the location of manifest.json,
+then uses that information to spawn of business logic
 for pulling manifest's data into sql.
 
 **Arguments**:
@@ -43,8 +45,10 @@ for pulling manifest's data into sql.
 - `report_bucket_region` - The region the report bucket resides in.
 - `report_bucket_name` - The name of the report bucket.
 - `manifest_key` - The key/path to the manifest within the report bucket.
-- `s3_access_key` - The access key that, when paired with s3_secret_key, allows postgres to access s3.
-- `s3_secret_key` - The secret key that, when paired with s3_access_key, allows postgres to access s3.
+- `s3_access_key` - The access key that, when paired with s3_secret_key,
+  allows postgres to access s3.
+- `s3_secret_key` - The secret key that, when paired with s3_access_key,
+  allows postgres to access s3.
 - `db_connect_info` - See shared_db.py's get_configuration for further details.
   
 - `Returns` - See output.json for details.
@@ -118,13 +122,15 @@ def update_job_with_s3_inventory_in_postgres(s3_access_key: str,
                                              engine: Engine) -> None
 ```
 
-Constructs a temporary table capable of holding full data from s3 inventory report, triggers load into that table,
-then moves that data into the proper partition.
+Constructs a temporary table capable of holding full data from s3 inventory report,
+triggers load into that table, then moves that data into the proper partition.
 
 **Arguments**:
 
-- `s3_access_key` - The access key that, when paired with s3_secret_key, allows postgres to access s3.
-- `s3_secret_key` - The secret key that, when paired with s3_access_key, allows postgres to access s3.
+- `s3_access_key` - The access key that, when paired with s3_secret_key,
+  allows postgres to access s3.
+- `s3_secret_key` - The secret key that, when paired with s3_access_key,
+  allows postgres to access s3.
 - `report_bucket_name` - The name of the bucket the csv is located in.
 - `report_bucket_region` - The name of the region the report bucket resides in.
 - `csv_key_paths` - The paths of the csvs within the report bucket.
@@ -161,11 +167,14 @@ Columns used by our database are given standardized names.
 
 **Arguments**:
 
-- `manifest_file_schema` - An ordered CSV representing columns in the CSV the manifest points to.
+- `manifest_file_schema` - An ordered CSV representing columns
+  in the CSV the manifest points to.
   
 - `Returns` - A string representing SQL columns to create.
   Columns required for import but unused by orca will be filled in with `junk` values.
-  For example, 'orca_archive_location text, key_path text, size_in_bytes bigint, last_update timestamptz, etag text, storage_class text, junk7 text, junk8 text, junk9 text, junk10 text, junk11 text, junk12 text, junk13 text, junk14 text'
+  For example, 'orca_archive_location text, key_path text, size_in_bytes bigint,
+  last_update timestamptz, etag text,storage_class text, junk7 text, junk8 text,
+  junk9 text, junk10 text, junk11 text, junk12 text, junk13 text'
 
 <a id="get_current_archive_list.create_temporary_table_sql"></a>
 
@@ -281,19 +290,25 @@ Checks for the lambda environment variable.
 #### handler
 
 ```python
-def handler(event: Dict[str, List], context) -> Dict[str, Any]
+@LOGGER.inject_lambda_context
+def handler(event: Dict[str, List], context: LambdaContext) -> Dict[str, Any]
 ```
 
-Lambda handler. Receives a list of s3 events from an SQS queue, and loads the s3 inventory specified into postgres.
+Lambda handler. Receives a list of s3 events from an SQS queue,
+and loads the s3 inventory specified into postgres.
 
 **Arguments**:
 
 - `event` - Unused. Data is pulled in by contacting INTERNAL_REPORT_QUEUE_URL
-- `context` - An object passed through by AWS. Used for tracking.
+- `context` - This object provides information about the lambda invocation, function,
+  and execution env.
   Environment Vars:
-- `INTERNAL_REPORT_QUEUE_URL` _string_ - The URL of the SQS queue the job came from.
-- `S3_CREDENTIALS_SECRET_ARN` _string_ - The ARN of the secret containing s3 credentials.
-- `DB_CONNECT_INFO_SECRET_ARN` _string_ - Secret ARN of the AWS secretsmanager secret for connecting to the database.
+  INTERNAL_REPORT_QUEUE_URL (string):
+  The URL of the SQS queue the job came from.
+  S3_CREDENTIALS_SECRET_ARN (string):
+  The ARN of the secret containing s3 credentials.
+  DB_CONNECT_INFO_SECRET_ARN (string):
+  Secret ARN of the AWS secretsmanager secret for connecting to the database.
   See shared_db.py's get_configuration for further details.
   
 - `Returns` - See output.json for details.

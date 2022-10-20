@@ -191,6 +191,7 @@ def check_env_variable(env_name: str) -> str:
     return env_value
 
 
+@LOGGER.inject_lambda_context
 def handler(
     event: Dict[str, Union[str, int]], context: LambdaContext
 ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
