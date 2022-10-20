@@ -320,3 +320,10 @@ variable "vpc_endpoint_id" {
   description = "NGAP vpc endpoint id needed to access the api. Defaults to null."
   default     = null
 }
+
+
+variable "log_level" {
+  type        = string
+  description = "Sets the verbose of powertools logger. Must be one of 'INFO', 'DEBUG', 'WARN', 'ERROR'. Defaults to 'INFO'."
+  default     = "INFO"
+}

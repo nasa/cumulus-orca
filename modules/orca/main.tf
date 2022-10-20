@@ -53,7 +53,7 @@ module "orca_lambdas" {
   orca_recovery_retry_limit                     = var.orca_recovery_retry_limit
   orca_recovery_retry_interval                  = var.orca_recovery_retry_interval
   orca_recovery_retry_backoff                   = var.orca_recovery_retry_backoff
-
+  log_level                                     = var.log_level
 }
 
 ## orca_lambdas_secondary - lambdas module that is dependent on resources that presently are created after most lambdas

@@ -81,9 +81,7 @@ variable "s3_report_frequency" {
 }
 
 
-# Set to Default value of "INFO"
 variable "log_level" {
   type        = string
-  description = "Sets the verbose of powertools logger"
-  default     = "INFO"
+  description = "Sets the verbose of powertools logger. Must be one of 'INFO', 'DEBUG', 'WARN', 'ERROR'. Defaults to 'INFO'."
 }
