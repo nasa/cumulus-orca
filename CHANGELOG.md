@@ -15,6 +15,8 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 ### Changed
+- *ORCA-522*
+  - Removed `run_cumulus_task` function from extract_filepath_for_granule lambda to decouple ORCA from Cumulus.
 - *ORCA-537*
   - Renamed step-function `OrcaCopyToGlacierWorkflow` to `OrcaCopyToArchiveWorkflow`.
   - Renamed lambda `PREFIX_copy_to_glacier` to `PREFIX_copy_to_orca`. Renamed ORCA repository internal task from `copy_to_glacier` to `copy_to_archive`.
