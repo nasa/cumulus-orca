@@ -97,7 +97,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 # Check that all the functions were called the correct
                 # number of times with the proper values
                 mock_create_admin_uri.assert_called_once_with(
-                    self.config, migrate.logger, self.config.user_database_name
+                    self.config, migrate.LOGGER, self.config.user_database_name
                 )
                 mock_create_engine.assert_called_once_with(
                     mock_create_admin_uri.return_value, future=True
