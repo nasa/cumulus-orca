@@ -14,7 +14,8 @@ import boto3
 import fastjsonschema
 
 # noinspection PyPackageRequirements
-from cumulus_logger import CumulusLogger
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext
 
 import sqs_library
 from sqs_library import retry_error
@@ -28,7 +29,8 @@ OUTPUT_MANIFEST_KEY_KEY = "manifestKey"
 
 RT = TypeVar("RT")  # return type
 
-LOGGER = CumulusLogger(name="ORCA")
+# Set AWS powertools logger
+LOGGER = Logger()
 # Generating schema validators can take time, so do it once and reuse.
 try:
     with open("schemas/input.json", "r") as raw_schema:
@@ -101,20 +103,20 @@ def trigger_step_function(
     boto3.client("stepfunctions").start_execution(stateMachineArn=step_function_arn)
 
 
-def handler(event: Dict[str, Any], context) -> None:
+@LOGGER.inject_lambda_context
+def handler(event: Dict[str, Any], context: LambdaContext) -> None:
     """
     Lambda handler.
     Receives an events from an SQS queue, translates to get_current_archive_list's input format,
     sends it to another queue, then triggers the internal report step function.
     Args:
         event: See input.json for details.
-        context: An object passed through by AWS. Used for tracking.
+        context: This object provides information about the lambda invocation, function,
+            and execution env.
     Environment Vars:
         TARGET_QUEUE_URL (string): The URL of the SQS queue the job came from.
     Returns: See output.json for details.
     """
-    LOGGER.setMetadata(event, context)
-
     _INPUT_VALIDATE(event)
 
     try:

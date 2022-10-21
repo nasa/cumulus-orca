@@ -63,6 +63,7 @@ class TestPostCopyRequestToQueue(TestCase):
                 {"s3": {"object": {"key": key_path}, "bucket": {"name": bucket_name}}}
             ]
         }
+        context = Mock()
 
         db_queue_url = uuid.uuid4().__str__()
         recovery_queue_url = uuid.uuid4().__str__()
@@ -89,7 +90,7 @@ class TestPostCopyRequestToQueue(TestCase):
             },
             clear=True,
         ):
-            handler(event, None)
+            handler(event, context)
         mock_task.assert_called_once_with(
             key_path,
             bucket_name,
@@ -125,6 +126,7 @@ class TestPostCopyRequestToQueue(TestCase):
                 },
             ]
         }
+        context = Mock()
 
         with self.assertRaises(ValueError) as cm:
             with patch.dict(
@@ -145,7 +147,7 @@ class TestPostCopyRequestToQueue(TestCase):
                 },
                 clear=True,
             ):
-                handler(event, None)
+                handler(event, context)
         self.assertEqual("Must be passed a single record. Was 2", str(cm.exception))
         mock_task.assert_not_called()
 
@@ -177,6 +179,7 @@ class TestPostCopyRequestToQueue(TestCase):
                 {"s3": {"object": {"key": key_path}, "bucket": {"name": bucket_name}}}
             ]
         }
+        context = Mock()
 
         env_names = [
             post_copy_request_to_queue.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY,
@@ -203,7 +206,7 @@ class TestPostCopyRequestToQueue(TestCase):
                         Exception,
                         handler,
                         event,
-                        context=None,
+                        context,
                     )
                     # Reset the value
                     os.environ[name] = good_value
@@ -235,6 +238,7 @@ class TestPostCopyRequestToQueue(TestCase):
                 {"s3": {"object": {"key": key_path}, "bucket": {"name": bucket_name}}}
             ]
         }
+        context = Mock()
 
         env_names = [
             post_copy_request_to_queue.OS_ENVIRON_MAX_RETRIES_KEY,
@@ -260,7 +264,7 @@ class TestPostCopyRequestToQueue(TestCase):
                         with self.assertRaises(ValueError) as cm:
                             handler(
                                 event,
-                                context=None,
+                                context,
                             )
                         message = f"{name} must be set to an integer."
                         self.assertEqual(str(cm.exception), message)
@@ -295,6 +299,7 @@ class TestPostCopyRequestToQueue(TestCase):
                 "key": "name",
             },
         ]
+        context = Mock()
 
         db_queue_url = uuid.uuid4().__str__()
         recovery_queue_url = uuid.uuid4().__str__()
@@ -324,7 +329,7 @@ class TestPostCopyRequestToQueue(TestCase):
             for bad_event in bad_events:
                 with self.subTest(bad_event=bad_event):
                     with self.assertRaises(KeyError) as cm:
-                        handler(bad_event["event"], None)
+                        handler(bad_event["event"], context)
                     self.assertEqual(f"'{bad_event['key']}'", str(cm.exception))
                     mock_task.assert_not_called()
 
@@ -444,16 +449,16 @@ class TestPostCopyRequestToQueue(TestCase):
             db_connect_info_secret_arn,
         ]
         # calling the task function
-        message = "Error sending message to recovery_queue_url for {new_data}"
+        message = f"Error sending message to recovery_queue_url for {row}"
         with self.assertRaises(Exception) as cm:
             task(key_path, bucket_name, *environment_args)
             # Check the message from the exception
-        self.assertEqual(str.format(message, new_data=row), cm.exception.args[0])
+        self.assertEqual(message, cm.exception.args[0])
         mock_query_db.assert_called_once_with(
             key_path, bucket_name, db_connect_info_secret_arn
         )
         # verify the logging captured matches the expected message
-        mock_LOGGER.critical.assert_called_once_with(message, new_data=str(row))
+        mock_LOGGER.critical.assert_called_once_with(message)
         mock_update_status_for_file.assert_called_once_with(
             job_id,
             granule_id,
@@ -526,14 +531,11 @@ class TestPostCopyRequestToQueue(TestCase):
             db_connect_info_secret_arn,
         ]
         # calling the task function
-        # calling the task function
-        message = "Error sending message to status_update_queue_url for {row}"
+        message = f"Error sending message to status_update_queue_url for {row}"
         with self.assertRaises(Exception) as cm:
             task(key_path, bucket_name, *environment_args)
         # Check the message from the exception
-        self.assertEqual(str.format(message, row=row), cm.exception.args[0])
-        # verify the logging captured matches the expected message
-        mock_LOGGER.critical.assert_called_once_with(message, new_data=str(row))
+        self.assertEqual(message, cm.exception.args[0])
         mock_update_status_for_file.assert_has_calls(
             [
                 call(

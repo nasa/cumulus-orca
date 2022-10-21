@@ -27,7 +27,6 @@ class TestRequestStatusForJobUnit(
     # noinspection PyPep8Naming
     @patch("request_status_for_job.task")
     @patch("orca_shared.database.shared_db.get_configuration")
-    @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
         os.environ,
         {"DB_CONNECT_INFO_SECRET_ARN": "test"},
@@ -35,7 +34,6 @@ class TestRequestStatusForJobUnit(
     )
     def test_handler_happy_path(
         self,
-        mock_setMetadata: MagicMock,
         mock_get_dbconnect_info: MagicMock,
         mock_task: MagicMock,
     ):
@@ -65,7 +63,6 @@ class TestRequestStatusForJobUnit(
 
         result = request_status_for_job.handler(event, context)
 
-        mock_setMetadata.assert_called_once_with(event, context)
         mock_task.assert_called_once_with(
             job_id, mock_get_dbconnect_info.return_value
         )
@@ -74,14 +71,14 @@ class TestRequestStatusForJobUnit(
     # noinspection PyPep8Naming,PyUnusedLocal
     @patch("request_status_for_job.create_http_error_dict")
     @patch("orca_shared.database.shared_db.get_configuration")
-    @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
         os.environ,
         {"DB_CONNECT_INFO_SECRET_ARN": "test"},
         clear=True,
     )
     def test_handler_missing_job_id_returns_error_code(
-        self, mock_setMetadata: MagicMock, mock_get_dbconnect_info: MagicMock,
+        self,
+        mock_get_dbconnect_info: MagicMock,
         mock_create_http_error_dict: MagicMock,
     ):
         """
@@ -101,10 +98,9 @@ class TestRequestStatusForJobUnit(
 
     # noinspection PyPep8Naming,PyUnusedLocal
     @patch("request_status_for_job.create_http_error_dict")
-    @patch("cumulus_logger.CumulusLogger.error")
+    @patch("request_status_for_job.LOGGER.error")
     @patch("request_status_for_job.task")
     @patch("orca_shared.database.shared_db.get_configuration")
-    @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
         os.environ,
         {"DB_CONNECT_INFO_SECRET_ARN": "test"},
@@ -112,10 +108,9 @@ class TestRequestStatusForJobUnit(
     )
     def test_handler_exception_returns_proper_error_code(
         self,
-        mock_setMetadata: MagicMock,
         mock_get_dbconnect_info: MagicMock,
         mock_task: MagicMock,
-        mock_cumulus_logger_error: MagicMock,
+        mock_logger_error: MagicMock,
         mock_create_http_error_dict: MagicMock,
     ):
         """
@@ -168,7 +163,6 @@ class TestRequestStatusForJobUnit(
     @patch("request_status_for_job.create_http_error_dict")
     @patch("request_status_for_job.task")
     @patch("orca_shared.database.shared_db.get_configuration")
-    @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
         os.environ,
         {"DB_CONNECT_INFO_SECRET_ARN": "test"},
@@ -176,7 +170,6 @@ class TestRequestStatusForJobUnit(
     )
     def test_handler_invalid_output_raises_error(
         self,
-        mock_setMetadata: MagicMock,
         mock_get_dbconnect_info: MagicMock,
         mock_task: MagicMock,
         mock_create_http_error_dict: MagicMock,
@@ -206,7 +199,6 @@ class TestRequestStatusForJobUnit(
 
         result = request_status_for_job.handler(event, context)
 
-        mock_setMetadata.assert_called_once_with(event, context)
         mock_task.assert_called_once_with(
             job_id, mock_get_dbconnect_info.return_value,
         )
@@ -358,7 +350,7 @@ class TestRequestStatusForJobUnit(
             return
         self.fail("Error not raised.")
 
-    @patch("cumulus_logger.CumulusLogger.error")
+    @patch("request_status_for_job.LOGGER.error")
     def test_create_http_error_dict_happy_path(self, mock_error: MagicMock):
         error_type = uuid.uuid4().__str__()
         http_status_code = random.randint(0, 9999)  # nosec

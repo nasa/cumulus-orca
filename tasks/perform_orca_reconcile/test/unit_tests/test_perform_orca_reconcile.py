@@ -319,7 +319,6 @@ class TestPerformOrcaReconcile(
         ):
             result = perform_orca_reconcile.handler(event, mock_context)
 
-        mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
         mock_get_configuration.assert_called_once_with(
             os.environ["DB_CONNECT_INFO_SECRET_ARN"]
         )
@@ -377,7 +376,6 @@ class TestPerformOrcaReconcile(
             with self.assertRaises(Exception) as cm:
                 perform_orca_reconcile.handler(event, mock_context)
 
-        mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
         mock_task.assert_not_called()
         self.assertEqual(
             f"data.event must contain ['{perform_orca_reconcile.EVENT_JOB_ID_KEY}', "
@@ -435,7 +433,6 @@ class TestPerformOrcaReconcile(
             with self.assertRaises(Exception) as cm:
                 perform_orca_reconcile.handler(event, mock_context)
 
-        mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
         mock_get_configuration.assert_called_once_with(
             os.environ["DB_CONNECT_INFO_SECRET_ARN"]
         )

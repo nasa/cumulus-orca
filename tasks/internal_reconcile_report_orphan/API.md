@@ -14,9 +14,9 @@
   * [check\_env\_variable](#src.adapters.api.aws.check_env_variable)
   * [create\_http\_error\_dict](#src.adapters.api.aws.create_http_error_dict)
   * [handler](#src.adapters.api.aws.handler)
-* [src.use\_cases](#src.use_cases)
 * [src.use\_cases.get\_orphans\_page](#src.use_cases.get_orphans_page)
   * [task](#src.use_cases.get_orphans_page.task)
+* [src.use\_cases](#src.use_cases)
 * [src.use\_cases.adapter\_interfaces](#src.use_cases.adapter_interfaces)
 * [src.use\_cases.adapter\_interfaces.storage](#src.use_cases.adapter_interfaces.storage)
   * [OrphansPageStorageInterface](#src.use_cases.adapter_interfaces.storage.OrphansPageStorageInterface)
@@ -65,7 +65,8 @@ def __init__(connection_uri: str)
 
 ```python
 @shared_db.retry_operational_error()
-def get_orphans_page(orphan_record_filter: OrphanRecordFilter, logger: logging.Logger) -> OrphanRecordPage
+def get_orphans_page(orphan_record_filter: OrphanRecordFilter,
+                     LOGGER: logging.Logger) -> OrphanRecordPage
 ```
 
 Gets orphans for the given job/page, up to PAGE_SIZE + 1 results.
@@ -73,7 +74,7 @@ Gets orphans for the given job/page, up to PAGE_SIZE + 1 results.
 **Arguments**:
 
 - `orphan_record_filter` - The filter designating which orphans to return.
-- `logger` - The logger to use.
+- `LOGGER` - The logger to use.
   
 
 **Returns**:
@@ -129,7 +130,8 @@ Checks for the lambda environment variable.
 #### create\_http\_error\_dict
 
 ```python
-def create_http_error_dict(error_type: str, http_status_code: int, request_id: str, message: str) -> Dict[str, Any]
+def create_http_error_dict(error_type: str, http_status_code: int,
+                           request_id: str, message: str) -> Dict[str, Any]
 ```
 
 Creates a standardized dictionary for error reporting.
@@ -154,7 +156,10 @@ Creates a standardized dictionary for error reporting.
 #### handler
 
 ```python
-def handler(event: Dict[str, Union[str, int]], context: Any) -> Union[List[Dict[str, Any]], Dict[str, Any]]
+@LOGGER.inject_lambda_context
+def handler(
+        event: Dict[str, Union[str, int]],
+        context: LambdaContext) -> Union[List[Dict[str, Any]], Dict[str, Any]]
 ```
 
 Entry point for the internal_reconcile_report_orphan Lambda.
@@ -162,10 +167,12 @@ Entry point for the internal_reconcile_report_orphan Lambda.
 **Arguments**:
 
 - `event` - See schemas/input.json for details.
-- `context` - An object provided by AWS Lambda. Used for context tracking.
+- `context` - This object provides information about the lambda invocation, function,
+  and execution env.
   
   Environment Vars:
-- `DB_CONNECT_INFO_SECRET_ARN` _string_ - Secret ARN of the AWS secretsmanager secret for connecting to the database.
+  DB_CONNECT_INFO_SECRET_ARN (string):
+  Secret ARN of the AWS secretsmanager secret for connecting to the database.
   See shared_db.py's get_configuration for further details.
   
 
@@ -173,11 +180,8 @@ Entry point for the internal_reconcile_report_orphan Lambda.
 
   See schemas/output.json
   Or, if an error occurs, see create_http_error_dict
-  400 if input does not match schemas/input.json. 500 if an error occurs when querying the database.
-
-<a id="src.use_cases"></a>
-
-# src.use\_cases
+  400 if input does not match schemas/input.json.
+  500 if an error occurs when querying the database.
 
 <a id="src.use_cases.get_orphans_page"></a>
 
@@ -188,20 +192,26 @@ Entry point for the internal_reconcile_report_orphan Lambda.
 #### task
 
 ```python
-def task(orphan_record_filter: OrphanRecordFilter, orphans_page_storage: OrphansPageStorageInterface, logger: logging.Logger) -> OrphanRecordPage
+def task(orphan_record_filter: OrphanRecordFilter,
+         orphans_page_storage: OrphansPageStorageInterface,
+         LOGGER: logging.Logger) -> OrphanRecordPage
 ```
 
 **Arguments**:
 
 - `orphan_record_filter` - The filter designating which orphans to return.
 - `orphans_page_storage` - The helper class for getting the page from the DB.
-- `logger` - The logger to use.
+- `LOGGER` - The logger to use.
   
 
 **Returns**:
 
   A list containing orphan records.
   A bool indicating if there are further pages to retrieve.
+
+<a id="src.use_cases"></a>
+
+# src.use\_cases
 
 <a id="src.use_cases.adapter_interfaces"></a>
 

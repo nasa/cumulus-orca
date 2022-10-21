@@ -10,9 +10,11 @@ from http import HTTPStatus
 from typing import Any, Dict, List, Union
 
 import fastjsonschema as fastjsonschema
+from fastjsonschema import JsonSchemaException
+from typing import Dict, List, Union
+
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
-from fastjsonschema import JsonSchemaException
 
 # Set AWS powertools logger
 LOGGER = Logger()

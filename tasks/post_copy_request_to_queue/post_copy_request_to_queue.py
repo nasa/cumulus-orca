@@ -9,7 +9,8 @@ import random
 import time
 from typing import Any, Dict, List
 
-from cumulus_logger import CumulusLogger
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext
 from orca_shared.database import shared_db
 from orca_shared.database.shared_db import retry_operational_error
 from orca_shared.recovery import shared_recovery
@@ -31,8 +32,8 @@ SOURCE_KEY_KEY = "sourceKey"
 TARGET_KEY_KEY = "targetKey"
 SOURCE_BUCKET_KEY = "sourceBucket"
 
-# instantiate CumulusLogger
-LOGGER = CumulusLogger()
+# Set AWS powertools logger
+LOGGER = Logger()
 
 
 def task(
@@ -90,23 +91,17 @@ def task(
                 )
                 break
             except Exception as ex:
-                # Can't use f"" because of '{}' bug in CumulusLogger.
                 LOGGER.error(
-                    "Ran into error posting to SQS {status_update_queue_url} {attempt} "
+                    f"Ran into error posting to SQS {status_update_queue_url} {attempt+1} "
                     f"time(s) with exception {ex}",
-                    status_update_queue_url=status_update_queue_url,
-                    attempt=attempt + 1,
-                    ex=str(ex),
                 )
                 if attempt < max_retries:
                     my_base_delay = exponential_delay(my_base_delay, retry_backoff)
                 continue
         else:
-            message = "Error sending message to status_update_queue_url for {row}"
-            LOGGER.critical(
-                message, new_data=str(row)
-            )  # Cumulus will update this library in the future to be better behaved.
-            raise Exception(message.format(row=str(row)))
+            message = f"Error sending message to status_update_queue_url for {row}"
+            LOGGER.critical(message)
+            raise Exception(message)
 
         # resetting my_base_delay
         my_base_delay = retry_sleep_secs
@@ -118,23 +113,17 @@ def task(
                 shared_recovery.post_entry_to_standard_queue(row, recovery_queue_url)
                 break
             except Exception as ex:
-                # Can't use f"" because of '{}' bug in CumulusLogger.
                 LOGGER.error(
-                    "Ran into error posting to SQS {recovery_queue_url} {attempt} "
-                    f"time(s) with exception {ex}",
-                    recovery_queue_url=recovery_queue_url,
-                    attempt=attempt + 1,
-                    ex=str(ex),
+                    f"Ran into error posting to SQS {recovery_queue_url} {attempt+1} "
+                    f"time(s) with exception {ex}"
                 )
                 if attempt < max_retries:
                     my_base_delay = exponential_delay(my_base_delay, retry_backoff)
                 continue
         else:
-            message = "Error sending message to recovery_queue_url for {new_data}"
-            LOGGER.critical(
-                message, new_data=str(row)
-            )  # Cumulus will update this library in the future to be better behaved.
-            raise Exception(message.format(new_data=str(row)))
+            message = f"Error sending message to recovery_queue_url for {row}"
+            LOGGER.critical(message)
+            raise Exception(message)
 
 
 # Define our exponential delay function
@@ -156,8 +145,7 @@ def exponential_delay(base_delay: int, exponential_backoff: int = 2) -> int:
         base_delay = int(base_delay)
         exponential_backoff = int(exponential_backoff)
     except ValueError as ve:
-        # Can't use f"" because of '{}' bug in CumulusLogger.
-        LOGGER.error("arguments are not integer. Raised ValueError: {ve}", ve=ve)
+        LOGGER.error(f"arguments are not integer. Raised ValueError: {ve}")
         raise ve
 
     random_addition = random.randint(0, 1000) / 1000.0  # nosec
@@ -206,7 +194,7 @@ def query_db(
         LOGGER.debug("Retrieved the database connection info")
 
         engine = shared_db.get_user_connection(db_connect_info)
-        LOGGER.debug("Querying database for metadata on {path}", path=key_path)
+        LOGGER.debug(f"Querying database for metadata on {key_path}")
 
         # It is possible to have multiple returns, so we capture all of
         # them to update status
@@ -245,9 +233,9 @@ def query_db(
 
     except Exception as ex:
         message = (
-            "Unable to retrieve {key_path} metadata. Exception '{ex}' encountered."
+            f"Unable to retrieve {key_path} metadata. Exception '{ex}' encountered."
         )
-        LOGGER.error(message, key_path=key_path, ex=ex, exc_info=True)
+        LOGGER.error(message, exc_info=True)
         raise Exception(message.format(key_path=key_path, ex=ex))
     return rows
 
@@ -275,7 +263,8 @@ def get_metadata_sql(key_path: str) -> text:
     )
 
 
-def handler(event: Dict[str, Any], context) -> None:
+@LOGGER.inject_lambda_context
+def handler(event: Dict[str, Any], context: LambdaContext) -> None:
     """
     Lambda handler. This lambda calls the task function to perform db queries
     and send message to SQS.
@@ -296,15 +285,14 @@ def handler(event: Dict[str, Any], context) -> None:
     Args:
         event:
             A dictionary from the S3 bucket. See schemas/input.json for more information.
-        context: An object required by AWS Lambda. Unused.
+        context: This object provides information about the lambda invocation, function,
+            and execution env.
     Returns:
         None
     Raises:
         Exception: If unable to retrieve the SQS URLs or
             exponential retry fields from env variables.
     """
-    LOGGER.setMetadata(event, context)
-
     # retrieving values from the env variables
     backoff_env = [  # This order must exactly match the parameters in task.
         OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY,
@@ -339,7 +327,7 @@ def handler(event: Dict[str, Any], context) -> None:
     if len(records) != 1:
         raise ValueError(f"Must be passed a single record. Was {len(records)}")
     record = records[0]
-    LOGGER.debug("Event passed = {event}", event=event)
+    LOGGER.debug(f"Event passed = {event}")
     # grab the key_path and bucket name from record
     key_path = record["s3"]["object"]["key"]
     bucket_name = record["s3"]["bucket"]["name"]

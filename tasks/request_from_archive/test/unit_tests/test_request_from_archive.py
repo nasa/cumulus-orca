@@ -9,7 +9,7 @@ import random
 import unittest
 import uuid
 from random import randint, uniform
-from test.request_helpers import LambdaContextMock, create_handler_event
+from test.request_helpers import create_handler_event
 from unittest import mock
 from unittest.mock import MagicMock, Mock, call, patch
 
@@ -1244,7 +1244,7 @@ class TestRequestFromArchive(unittest.TestCase):
             result, config[request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY]
         )
 
-    @patch("cumulus_logger.CumulusLogger.error")
+    @patch("request_from_archive.LOGGER.error")
     def test_get_archive_recovery_type_invalid_config_raises_valueerror(
         self, mock_logger_error: MagicMock
     ):
@@ -1279,7 +1279,7 @@ class TestRequestFromArchive(unittest.TestCase):
             result, os.environ[request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY]
         )
 
-    @patch("cumulus_logger.CumulusLogger.error")
+    @patch("request_from_archive.LOGGER.error")
     @patch.dict(
         os.environ,
         {request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY: "Nope"},
@@ -1469,7 +1469,7 @@ class TestRequestFromArchive(unittest.TestCase):
     @patch("orca_shared.recovery.shared_recovery.update_status_for_file")
     @patch("time.sleep")
     @patch("request_from_archive.restore_object")
-    @patch("cumulus_logger.CumulusLogger.error")
+    @patch("request_from_archive.LOGGER.error")
     def test_process_granule_client_errors_retries_until_cap(
         self,
         mock_logger_error: MagicMock,
@@ -1587,7 +1587,7 @@ class TestRequestFromArchive(unittest.TestCase):
     @patch("orca_shared.recovery.shared_recovery.update_status_for_file")
     @patch("time.sleep")
     @patch("request_from_archive.restore_object")
-    @patch("cumulus_logger.CumulusLogger.error")
+    @patch("request_from_archive.LOGGER.error")
     def test_process_granule_error_when_posting_status_raises_after_retries(
         self,
         mock_logger_error: MagicMock,
@@ -1789,7 +1789,7 @@ class TestRequestFromArchive(unittest.TestCase):
         )
 
     # noinspection PyUnusedLocal
-    @patch("cumulus_logger.CumulusLogger.info")
+    @patch("request_from_archive.LOGGER.info")
     def test_restore_object_client_error_raises(self, mock_logger_info: MagicMock):
         job_id = uuid.uuid4().__str__()
         archive_bucket_name = uuid.uuid4().__str__()
@@ -1823,7 +1823,7 @@ class TestRequestFromArchive(unittest.TestCase):
             )
 
     # noinspection PyUnusedLocal
-    @patch("cumulus_logger.CumulusLogger.info")
+    @patch("request_from_archive.LOGGER.info")
     def test_restore_object_200_returned_raises(self, mock_logger_info: MagicMock):
         """
         A 200 indicates that the file is already restored,  and thus cannot
@@ -1895,7 +1895,7 @@ class TestRequestFromArchive(unittest.TestCase):
             ],
             "asyncOperationId": "some_job_id",
         }
-        context = LambdaContextMock()
+        context = Mock()
         result = request_from_archive.handler(input_event, context)
         mock_task.assert_called_once_with(expected_task_input, context)
 
@@ -1968,7 +1968,7 @@ class TestRequestFromArchive(unittest.TestCase):
             {"ResponseMetadata": {"HTTPStatusCode": 202}},
         ]
 
-        context = LambdaContextMock()
+        context = Mock()
         result = request_from_archive.handler(input_event, context)
 
         result_value = result["payload"]

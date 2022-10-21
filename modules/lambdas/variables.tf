@@ -118,7 +118,7 @@ variable "orca_default_recovery_type" {
 
 
 variable "orca_default_storage_class" {
-  type           = string
+  type        = string
   description = "The class of storage to use when ingesting files. Can be overridden by collection config. Must match value in storage_class table."
 }
 
@@ -200,7 +200,14 @@ variable "orca_recovery_retry_interval" {
   description = "Number of seconds to wait between recovery failure retries."
 }
 
+
 variable "orca_recovery_retry_backoff" {
   type        = number
   description = "The multiplier by which the retry interval increases during each attempt."
+}
+
+
+variable "log_level" {
+  type        = string
+  description = "Sets the verbose of powertools logger. Must be one of 'INFO', 'DEBUG', 'WARN', 'ERROR'. Defaults to 'INFO'."
 }

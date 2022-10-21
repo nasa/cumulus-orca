@@ -17,6 +17,8 @@ and includes an additional section for migration notes.
 ### Changed
 - *ORCA-522*
   - Removed `run_cumulus_task` function from extract_filepath_for_granule lambda to decouple ORCA from Cumulus.
+- *ORCA-521*
+  - Replaced CumulusLogger with AWS powertools logger in all of the lambdas currently present in ORCA.
 - *ORCA-537*
   - Renamed step-function `OrcaCopyToGlacierWorkflow` to `OrcaCopyToArchiveWorkflow`.
   - Renamed lambda `PREFIX_copy_to_glacier` to `PREFIX_copy_to_orca`. Renamed ORCA repository internal task from `copy_to_glacier` to `copy_to_archive`.
@@ -32,6 +34,9 @@ and includes an additional section for migration notes.
   Previously was a general `JsonSchemaException`.
   Now is a `ExtractFilePathsError` with a description of which file could not be placed.
   - `extract_filepaths_for_granule` now takes the first match in `fileBucketMaps` instead of the last.
+- *ORCA-461*
+  - Invalid database connection parameters will now be detected earlier and more consistently.
+  - Postgres table/user names can now begin with an '_' and contain '$' if your Postgres DB version supports this.
 
 ### Migration Notes
 - If utilizing the `copied_to_glacier` [output property](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/tasks/copy_to_glacier/schemas/output.json#L47) of `copy_to_glacier`, 

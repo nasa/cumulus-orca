@@ -3,24 +3,27 @@ Name: create_db.py
 
 Description: Creates the current version on the ORCA database.
 """
-from typing import Dict, List
+from typing import List
 
-from orca_shared.database.shared_db import get_admin_connection, logger
+from orca_shared.database.entities import PostgresConnectionInfo
+from orca_shared.database.shared_db import LOGGER
+from orca_shared.database.use_cases import create_admin_uri
 from orca_shared.reconciliation.shared_reconciliation import (
     get_partition_name_from_bucket_name,
 )
+from sqlalchemy import create_engine
 from sqlalchemy.future import Connection
 
 import install.orca_sql as sql
 
 
-def create_fresh_orca_install(config: Dict[str, str], orca_buckets: List[str]) -> None:
+def create_fresh_orca_install(config: PostgresConnectionInfo, orca_buckets: List[str]) -> None:
     """
     This task will create the ORCA roles, users, schema, and tables needed
     by the ORCA application as a fresh installation.
 
     Args:
-        config: Dictionary with database connection information
+        config: Database connection information
         orca_buckets: List of ORCA buckets needed to create
                                   partitioned tables for reporting.
 
@@ -30,16 +33,17 @@ def create_fresh_orca_install(config: Dict[str, str], orca_buckets: List[str]) -
     # Assume the database has been created at this point. Connect to the ORCA
     # database as a superuser and create the roles, users,  schema, and
     # objects.
-    admin_app_connection = get_admin_connection(config, config["user_database"])
+    admin_app_connection = \
+        create_engine(create_admin_uri(config, LOGGER, config.user_database_name), future=True)
 
     with admin_app_connection.connect() as conn:
         # Create the roles, schema and user
         create_app_schema_role_users(
             conn,
-            config["user_username"],
-            config["user_password"],
-            config["user_database"],
-            config["admin_username"],
+            config.user_username,
+            config.user_password,
+            config.user_database_name,
+            config.admin_username,
         )
 
         # Change to DBO role and set search path
@@ -57,12 +61,12 @@ def create_fresh_orca_install(config: Dict[str, str], orca_buckets: List[str]) -
         conn.commit()
 
 
-def create_database(config: Dict[str, str]) -> None:
+def create_database(config: PostgresConnectionInfo) -> None:
     """
     Creates the orca database
     """
     # Create the connection as an admin
-    postgres_admin_engine = get_admin_connection(config)
+    postgres_admin_engine = create_engine(create_admin_uri(config, LOGGER), future=True)
     # Connect as admin user to the postgres database
     with postgres_admin_engine.connect() as connection:
         # Code to create the database
@@ -70,10 +74,10 @@ def create_database(config: Dict[str, str]) -> None:
             sql.commit_sql()
         )  # exit the default transaction to allow database creation.
         connection.execute(
-            sql.app_database_sql(config["user_database"], config["admin_username"])
+            sql.app_database_sql(config.user_database_name, config.admin_username)
         )
-        connection.execute(sql.app_database_comment_sql(config["user_database"]))
-        logger.info("Database created.")
+        connection.execute(sql.app_database_comment_sql(config.user_database_name))
+        LOGGER.info("Database created.")
 
 
 def create_app_schema_role_users(
@@ -96,45 +100,34 @@ def create_app_schema_role_users(
     Returns:
         None
     """
-    if app_username is None or len(app_username) == 0:
-        logger.critical("Username must be non-empty.")
-        raise Exception("Username must be non-empty.")
-    if len(app_username) > 63:
-        logger.critical("Username must be less than 64 characters.")
-        raise Exception("Username must be less than 64 characters.")
-
-    if app_password is None or len(app_password) < 12:
-        logger.critical("User password must be at least 12 characters long.")
-        raise Exception("User password must be at least 12 characters long.")
-
     # Create the roles first since they are needed by schema and users
-    logger.debug("Creating the ORCA dbo role ...")
+    LOGGER.debug("Creating the ORCA dbo role ...")
     connection.execute(sql.dbo_role_sql(db_name, admin_username))
-    logger.info("ORCA dbo role created.")
+    LOGGER.info("ORCA dbo role created.")
 
-    logger.debug("Creating the ORCA app role ...")
+    LOGGER.debug("Creating the ORCA app role ...")
     connection.execute(sql.app_role_sql(db_name))
-    logger.info("ORCA app role created.")
+    LOGGER.info("ORCA app role created.")
 
     # Create the schema next
-    logger.debug("Creating the ORCA schema ...")
+    LOGGER.debug("Creating the ORCA schema ...")
     connection.execute(sql.orca_schema_sql())
-    logger.info("ORCA schema created.")
+    LOGGER.info("ORCA schema created.")
 
     # Create the users last
-    logger.debug("Creating the ORCA application user ...")
+    LOGGER.debug("Creating the ORCA application user ...")
     # todo: Fully move app_username to the dictionary of parameters.
     # https://bugs.earthdata.nasa.gov/browse/ORCA-461
     connection.execute(
         sql.app_user_sql(app_username),
         [{"user_name": app_username, "user_password": app_password}],
     )
-    logger.info("ORCA application user created.")
+    LOGGER.info("ORCA application user created.")
 
     # Create extension for the database
-    logger.debug("Creating extension aws_s3 ...")
+    LOGGER.debug("Creating extension aws_s3 ...")
     connection.execute(sql.create_extension())
-    logger.info("extension aws_s3 created.")
+    LOGGER.info("extension aws_s3 created.")
 
 
 def set_search_path_and_role(connection: Connection) -> None:
@@ -150,10 +143,10 @@ def set_search_path_and_role(connection: Connection) -> None:
         None
     """
     # Set the user and search_path for the installation
-    logger.debug("Changing to the dbo role to create objects ...")
+    LOGGER.debug("Changing to the dbo role to create objects ...")
     connection.execute(sql.text("SET ROLE orca_dbo;"))
 
-    logger.debug("Setting search path to the ORCA schema to create objects ...")
+    LOGGER.debug("Setting search path to the ORCA schema to create objects ...")
     connection.execute(sql.text("SET search_path TO orca, public;"))
 
 
@@ -170,14 +163,14 @@ def create_metadata_objects(connection: Connection) -> None:
         None
     """
     # Create metadata tables
-    logger.debug("Creating schema_versions table ...")
+    LOGGER.debug("Creating schema_versions table ...")
     connection.execute(sql.schema_versions_table_sql())
-    logger.info("schema_versions table created.")
+    LOGGER.info("schema_versions table created.")
 
     # Populate the table with data
-    logger.debug("Populating the schema_versions table with data ...")
+    LOGGER.debug("Populating the schema_versions table with data ...")
     connection.execute(sql.schema_versions_data_sql())
-    logger.info("Data added to the schema_versions table.")
+    LOGGER.info("Data added to the schema_versions table.")
 
 
 def create_recovery_objects(connection: Connection) -> None:
@@ -195,23 +188,23 @@ def create_recovery_objects(connection: Connection) -> None:
     """
     # Create recovery table objects
     # Create the recovery_status table
-    logger.debug("Creating recovery_status table ...")
+    LOGGER.debug("Creating recovery_status table ...")
     connection.execute(sql.recovery_status_table_sql())
-    logger.info("recovery_status table created.")
+    LOGGER.info("recovery_status table created.")
 
     # Populate the table with data
-    logger.debug("Populating the recovery_status table with data ...")
+    LOGGER.debug("Populating the recovery_status table with data ...")
     connection.execute(sql.recovery_status_data_sql())
-    logger.info("Data added to the recovery_status table.")
+    LOGGER.info("Data added to the recovery_status table.")
 
     # Create the recovery_job and recovery_file tables
-    logger.debug("Creating recovery_job table ...")
+    LOGGER.debug("Creating recovery_job table ...")
     connection.execute(sql.recovery_job_table_sql())
-    logger.info("recovery_job table created.")
+    LOGGER.info("recovery_job table created.")
 
-    logger.debug("Creating recovery_file table ...")
+    LOGGER.debug("Creating recovery_file table ...")
     connection.execute(sql.recovery_file_table_sql())
-    logger.info("recovery_file table created.")
+    LOGGER.info("recovery_file table created.")
 
 
 def create_inventory_objects(connection: Connection) -> None:
@@ -231,31 +224,30 @@ def create_inventory_objects(connection: Connection) -> None:
         None
     """
     # Create providers table
-    logger.debug("Creating providers table ...")
+    LOGGER.debug("Creating providers table ...")
     connection.execute(sql.providers_table_sql())
-    logger.info("providers table created.")
+    LOGGER.info("providers table created.")
 
     # Create collections table
-    logger.debug("Creating collections table ...")
+    LOGGER.debug("Creating collections table ...")
     connection.execute(sql.collections_table_sql())
-    logger.info("collections table created.")
+    LOGGER.info("collections table created.")
 
     # Create granules table
-    logger.debug("Creating granules table ...")
+    LOGGER.debug("Creating granules table ...")
     connection.execute(sql.granules_table_sql())
-    logger.info("granules table created.")
+    LOGGER.info("granules table created.")
 
     # Create storage_class table
-    logger.debug("Creating storage_class table ...")
+    LOGGER.debug("Creating storage_class table ...")
     connection.execute(sql.storage_class_table_sql())
-    logger.info("Populating storage_class table ...")
+    LOGGER.info("Populating storage_class table ...")
     connection.execute(sql.storage_class_data_sql())
-    logger.info("storage_class table created.")
+    LOGGER.info("storage_class table created.")
 
     # Create files table
-    logger.debug("Creating files table ...")
     connection.execute(sql.files_table_sql())
-    logger.info("files table created.")
+    LOGGER.info("files table created.")
 
 
 def create_internal_reconciliation_objects(
@@ -279,45 +271,45 @@ def create_internal_reconciliation_objects(
         None
     """
     # Create reconcile_status table
-    logger.debug("Creating reconcile_status table ...")
+    LOGGER.debug("Creating reconcile_status table ...")
     connection.execute(sql.reconcile_status_table_sql())
-    logger.info("reconcile_status table created.")
+    LOGGER.info("reconcile_status table created.")
 
     # Create reconcile_job table
-    logger.debug("Creating reconcile_job table ...")
+    LOGGER.debug("Creating reconcile_job table ...")
     connection.execute(sql.reconcile_job_table_sql())
-    logger.info("reconcile_job table created.")
+    LOGGER.info("reconcile_job table created.")
 
     # Create reconcile_s3_object table
-    logger.debug("Creating reconcile_s3_object table ...")
+    LOGGER.debug("Creating reconcile_s3_object table ...")
     connection.execute(sql.reconcile_s3_object_table_sql())
-    logger.info("reconcile_s3_object table created.")
+    LOGGER.info("reconcile_s3_object table created.")
 
     # Create partitioned tables for the reconcile_s3_object table
     for bucket_name in orca_buckets:
         _partition_name = get_partition_name_from_bucket_name(bucket_name)
-        logger.debug(
+        LOGGER.debug(
             f"Creating partition table {_partition_name} for reconcile_s3_object ..."
         )
         connection.execute(
             sql.reconcile_s3_object_partition_sql(_partition_name),
             {"bucket_name": bucket_name},
         )
-        logger.info(
+        LOGGER.info(
             f"Partition table {_partition_name} for reconcile_s3_object created."
         )
 
     # Create reconcile_catalog_mismatch_report table
-    logger.debug("Creating reconcile_catalog_mismatch_report table ...")
+    LOGGER.debug("Creating reconcile_catalog_mismatch_report table ...")
     connection.execute(sql.reconcile_catalog_mismatch_report_table_sql())
-    logger.info("reconcile_catalog_mismatch_report table created.")
+    LOGGER.info("reconcile_catalog_mismatch_report table created.")
 
     # Create reconcile_orphan_report table
-    logger.debug("Creating reconcile_orphan_report table ...")
+    LOGGER.debug("Creating reconcile_orphan_report table ...")
     connection.execute(sql.reconcile_orphan_report_table_sql())
-    logger.info("reconcile_orphan_report table created.")
+    LOGGER.info("reconcile_orphan_report table created.")
 
     # Create reconcile_phantom_report table
-    logger.debug("Creating reconcile_phantom_report table ...")
+    LOGGER.debug("Creating reconcile_phantom_report table ...")
     connection.execute(sql.reconcile_phantom_report_table_sql())
-    logger.info("reconcile_phantom_report table created.")
+    LOGGER.info("reconcile_phantom_report table created.")

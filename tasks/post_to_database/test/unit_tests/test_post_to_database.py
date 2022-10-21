@@ -27,7 +27,6 @@ class TestPostToDatabase(
 
     @patch("post_to_database.task")
     @patch("orca_shared.database.shared_db.get_configuration")
-    @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
         os.environ,
         {"DB_CONNECT_INFO_SECRET_ARN": "test"},
@@ -35,7 +34,6 @@ class TestPostToDatabase(
     )
     def test_handler_happy_path(
         self,
-        mock_set_metadata: MagicMock,
         mock_get_configuration: MagicMock,
         mock_task: MagicMock,
     ):
@@ -43,7 +41,6 @@ class TestPostToDatabase(
         event = {"Records": records}
         context = Mock()
         post_to_database.handler(event, context)
-        mock_set_metadata.assert_called_once_with(event, context)
         mock_task.assert_called_once_with(records, mock_get_configuration.return_value)
 
     @patch("orca_shared.database.shared_db.get_user_connection")

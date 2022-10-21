@@ -58,11 +58,11 @@ class TestRDBMS(unittest.TestCase):
         mock_make_url.assert_called_once_with(connection_uri)
         mock_create_engine.assert_called_once_with(mock_make_url.return_value, future=True)
 
-        logger = Mock()
+        LOGGER = Mock()
 
         result = storage_adapter.get_orphans_page(
             OrphanRecordFilter(job_id=job_id, page_index=page_index, page_size=page_size),
-            logger
+            LOGGER
         )
 
         mock_enter.__enter__.assert_called_once_with()
@@ -126,11 +126,11 @@ class TestRDBMS(unittest.TestCase):
         mock_make_url.assert_called_once_with(connection_uri)
         mock_create_engine.assert_called_once_with(mock_make_url.return_value, future=True)
 
-        logger = Mock()
+        LOGGER = Mock()
 
         result = storage_adapter.get_orphans_page(
             OrphanRecordFilter(job_id=job_id, page_index=page_index, page_size=page_size),
-            logger
+            LOGGER
         )
 
         mock_enter.__enter__.assert_called_once_with()
@@ -208,11 +208,11 @@ class TestRDBMS(unittest.TestCase):
         mock_make_url.assert_called_once_with(connection_uri)
         mock_create_engine.assert_called_once_with(mock_make_url.return_value, future=True)
 
-        logger = Mock()
+        LOGGER = Mock()
 
         result = storage_adapter.get_orphans_page(
             OrphanRecordFilter(job_id=job_id, page_index=page_index, page_size=page_size),
-            logger
+            LOGGER
         )
 
         mock_enter.__enter__.assert_called_once_with()

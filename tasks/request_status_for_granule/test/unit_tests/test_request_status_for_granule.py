@@ -27,7 +27,6 @@ class TestRequestStatusForGranuleUnit(
     # noinspection PyPep8Naming
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("request_status_for_granule.task")
-    @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
         os.environ,
         {"DB_CONNECT_INFO_SECRET_ARN": "test"},
@@ -35,7 +34,6 @@ class TestRequestStatusForGranuleUnit(
     )
     def test_handler_happy_path(
         self,
-        mock_setMetadata: MagicMock,
         mock_task: MagicMock,
         mock_get_dbconnect_info: MagicMock,
     ):
@@ -69,7 +67,6 @@ class TestRequestStatusForGranuleUnit(
 
         result = request_status_for_granule.handler(event, context)
 
-        mock_setMetadata.assert_called_once_with(event, context)
         mock_task.assert_called_once_with(
             granule_id,
             mock_get_dbconnect_info.return_value,
@@ -122,9 +119,8 @@ class TestRequestStatusForGranuleUnit(
 
     # noinspection PyPep8Naming
     @patch("request_status_for_granule.create_http_error_dict")
-    @patch("cumulus_logger.CumulusLogger.error")
+    @patch("request_status_for_granule.LOGGER.error")
     @patch("orca_shared.database.shared_db.get_configuration")
-    @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
         os.environ,
         {"DB_CONNECT_INFO_SECRET_ARN": "test"},
@@ -132,9 +128,8 @@ class TestRequestStatusForGranuleUnit(
     )
     def test_handler_missing_granule_id_returns_error_code(
         self,
-        mock_setMetadata: MagicMock,
         mock_get_dbconnect_info: MagicMock,
-        mock_cumulus_logger_error,
+        mock_logger_error,
         mock_create_http_error_dict: MagicMock,
     ):
         """
@@ -156,10 +151,9 @@ class TestRequestStatusForGranuleUnit(
 
     # noinspection PyPep8Naming
     @patch("request_status_for_granule.create_http_error_dict")
-    @patch("cumulus_logger.CumulusLogger.error")
+    @patch("request_status_for_granule.LOGGER.error")
     @patch("request_status_for_granule.task")
     @patch("orca_shared.database.shared_db.get_configuration")
-    @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
         os.environ,
         {"DB_CONNECT_INFO_SECRET_ARN": "test"},
@@ -167,10 +161,9 @@ class TestRequestStatusForGranuleUnit(
     )
     def test_handler_exception_returns_proper_error_code(
         self,
-        mock_setMetadata: MagicMock,
         mock_get_dbconnect_info: MagicMock,
         mock_task: MagicMock,
-        mock_cumulus_logger_error: MagicMock,
+        mock_logger_error: MagicMock,
         mock_create_http_error_dict: MagicMock,
     ):
         """
@@ -239,7 +232,6 @@ class TestRequestStatusForGranuleUnit(
     @patch("request_status_for_granule.create_http_error_dict")
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("request_status_for_granule.task")
-    @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
         os.environ,
         {"DB_CONNECT_INFO_SECRET_ARN": "test"},
@@ -247,7 +239,6 @@ class TestRequestStatusForGranuleUnit(
     )
     def test_handler_invalid_output_raises_error(
         self,
-        mock_setMetadata: MagicMock,
         mock_task: MagicMock,
         mock_get_dbconnect_info: MagicMock,
         mock_create_http_error_dict: MagicMock,
@@ -282,7 +273,6 @@ class TestRequestStatusForGranuleUnit(
 
         result = request_status_for_granule.handler(event, context)
 
-        mock_setMetadata.assert_called_once_with(event, context)
         mock_task.assert_called_once_with(
             granule_id,
             mock_get_dbconnect_info.return_value,
@@ -587,7 +577,7 @@ class TestRequestStatusForGranuleUnit(
 
         self.assertEqual(expected_result, result)
 
-    @patch("cumulus_logger.CumulusLogger.error")
+    @patch("request_status_for_granule.LOGGER.error")
     def test_create_http_error_dict_happy_path(self, mock_error: MagicMock):
         error_type = uuid.uuid4().__str__()
         http_status_code = random.randint(0, 9999)  # nosec

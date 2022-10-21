@@ -15,10 +15,11 @@ from typing import Any, Callable, Dict, TypeVar
 # Third party libraries
 import boto3
 import fastjsonschema
-from cumulus_logger import CumulusLogger
+from aws_lambda_powertools import Logger
 
-# Set Cumulus LOGGER
-LOGGER = CumulusLogger(name="ORCA")
+# Set AWS powertools logger
+LOGGER = Logger()
+
 MAX_RETRIES = 3  # number of times to retry.
 BACKOFF_FACTOR = 2  # Value of the factor used to backoff
 INITIAL_BACKOFF_IN_SECONDS = 1  # Number of seconds to sleep the first time through.
@@ -71,8 +72,7 @@ def retry_error(
                     if total_retries == max_retries:
                         # Log it and re-raise if we maxed our retries + initial attempt
                         LOGGER.error(
-                            "Encountered Error {total_attempts} times. Reached max retry limit.",
-                            total_attempts=total_retries,
+                            f"Encountered Error {total_retries} times. Reached max retry limit.",
                         )
                         raise
                     else:
@@ -82,10 +82,8 @@ def retry_error(
                             + random.uniform(0, 1)  # nosec
                         )
                         LOGGER.error(
-                            "Encountered Error on attempt {total_attempts}. "
-                            "Sleeping {backoff_time} seconds.",
-                            total_attempts=total_retries,
-                            backoff_time=backoff_time,
+                            f"Encountered Error on attempt {total_retries}. "
+                            f"Sleeping {backoff_time} seconds.",
                         )
                         time.sleep(backoff_time)
                         total_retries += 1
@@ -132,8 +130,7 @@ def post_to_metadata_queue(
     _BODY_VALIDATE(sqs_body)
     body = json.dumps(sqs_body)
     LOGGER.debug(
-        "Creating SQS resource for {metadata_queue_url}",
-        metadata_queue_url=metadata_queue_url,
+        f"Creating SQS resource for {metadata_queue_url}",
     )
     mysqs_resource = boto3.resource("sqs", region_name=get_aws_region())
     mysqs = mysqs_resource.Queue(metadata_queue_url)
@@ -141,14 +138,14 @@ def post_to_metadata_queue(
 
     md5_body = hashlib.md5(body.encode("utf8")).hexdigest()  # nosec
 
-    LOGGER.debug("Sending the following data to metadata queue: {body}", body=body)
+    LOGGER.debug(f"Sending the following data to metadata queue: {body}")
     response = mysqs.send_message(
         QueueUrl=metadata_queue_url,
         MessageDeduplicationId=deduplication_id,
         MessageGroupId="metadata_message",
         MessageBody=body,
     )  # todo: Look at changes in post_to_queue_and_trigger_step_function ORCA-406
-    LOGGER.debug("SQS Message Response: {response}", response=json.dumps(response))
+    LOGGER.debug(f"SQS Message Response: {json.dumps(response)}")
     return_status = response["ResponseMetadata"]["HTTPStatusCode"]
     if return_status < 200 or return_status > 299:
         raise Exception(
