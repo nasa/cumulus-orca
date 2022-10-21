@@ -272,7 +272,7 @@ def handler(event: Dict[str, Union[str, int]],
         )
 
     # try:
-    #     _VALIDATE_CONFIG(event["config"])
+    #     _VALIDATE_CONFIG(event["meta"]["collection"]["files"])
     # except JsonSchemaException as json_schema_exception:
     #     return create_http_error_dict(
     #         "BadRequest",

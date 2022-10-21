@@ -68,7 +68,7 @@ class TestExtractFilePaths(unittest.TestCase):
 
         expected_task_input = {
             "input": handler_input_event["payload"],
-            "config": handler_input_event["task_config"],
+            # "config": handler_input_event["task_config"],
         }
         mock_task.return_value = {
             "granules": [
