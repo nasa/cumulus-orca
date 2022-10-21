@@ -143,7 +143,7 @@ required by this Lambda.
 #### task
 
 ```python
-task(config: Dict[str, str], orca_buckets: List[str]) -> None
+task(config: PostgresConnectionInfo, orca_buckets: List[str]) -> None
 ```
 
 Checks for the ORCA database and throws an error if it does not exist.
@@ -245,7 +245,7 @@ Description: Creates the current version on the ORCA database.
 #### create\_fresh\_orca\_install
 
 ```python
-create_fresh_orca_install(config: Dict[str, str], orca_buckets: List[str]) -> None
+create_fresh_orca_install(config: PostgresConnectionInfo, orca_buckets: List[str]) -> None
 ```
 
 This task will create the ORCA roles, users, schema, and tables needed
@@ -253,7 +253,7 @@ by the ORCA application as a fresh installation.
 
 **Arguments**:
 
-- `config` - Dictionary with database connection information
+- `config` - Database connection information
 - `orca_buckets` - List of ORCA buckets needed to create
   partitioned tables for reporting.
   
@@ -266,7 +266,7 @@ by the ORCA application as a fresh installation.
 #### create\_database
 
 ```python
-create_database(config: Dict[str, str]) -> None
+create_database(config: PostgresConnectionInfo) -> None
 ```
 
 Creates the orca database
@@ -792,7 +792,7 @@ Description: Migrates the current ORCA schema version to the latest version.
 #### perform\_migration
 
 ```python
-perform_migration(current_schema_version: int, config: Dict[str, str], orca_buckets: List[str]) -> None
+perform_migration(current_schema_version: int, config: PostgresConnectionInfo, orca_buckets: List[str]) -> None
 ```
 
 Performs a migration of the ORCA database. Determines the order and
@@ -801,7 +801,7 @@ migrations to run.
 **Arguments**:
 
 - `current_schema_version` - Current version of the ORCA schema
-- `config` - Dictionary containing database connection information
+- `config` - Database connection information
 - `orca_buckets` - List of ORCA bucket names used to create partition tables for v5.
   
 
@@ -820,7 +820,7 @@ Description: Migrates the ORCA schema from version 1 to version 2.
 #### migrate\_versions\_1\_to\_2
 
 ```python
-migrate_versions_1_to_2(config: Dict[str, str], is_latest_version: bool) -> None
+migrate_versions_1_to_2(config: PostgresConnectionInfo, is_latest_version: bool) -> None
 ```
 
 Performs the migration of the ORCA schema from version 1 to version 2 of
@@ -828,8 +828,8 @@ the ORCA schema.
 
 **Arguments**:
 
-- `config` _Dict_ - Connection information for the database.
-- `is_latest_version` _bool_ - Flag to determine if version 2 is the latest schema version.
+- `config` - Connection information for the database.
+- `is_latest_version` - Flag to determine if version 2 is the latest schema version.
   
 
 **Returns**:
@@ -1106,7 +1106,7 @@ Description: Migrates the ORCA schema from version 2 to version 3.
 #### migrate\_versions\_2\_to\_3
 
 ```python
-migrate_versions_2_to_3(config: Dict[str, str], is_latest_version: bool) -> None
+migrate_versions_2_to_3(config: PostgresConnectionInfo, is_latest_version: bool) -> None
 ```
 
 Performs the migration of the ORCA schema from version 2 to version 3 of
@@ -1114,8 +1114,8 @@ the ORCA schema.
 
 **Arguments**:
 
-- `config` _Dict_ - Connection information for the database.
-- `is_latest_version` _bool_ - Flag to determine if version 3 is the latest schema version.
+- `config` - Connection information for the database.
+- `is_latest_version` - Flag to determine if version 3 is the latest schema version.
 
 <a name="migrations/migrate_versions_2_to_3/migrate_sql"></a>
 # migrations/migrate\_versions\_2\_to\_3/migrate\_sql
@@ -1160,7 +1160,7 @@ Description: Migrates the ORCA schema from version 3 to version 4.
 #### migrate\_versions\_3\_to\_4
 
 ```python
-migrate_versions_3_to_4(config: Dict[str, str], is_latest_version: bool) -> None
+migrate_versions_3_to_4(config: PostgresConnectionInfo, is_latest_version: bool) -> None
 ```
 
 Performs the migration of the ORCA schema from version 3 to version 4 of
@@ -1168,7 +1168,7 @@ the ORCA schema.
 
 **Arguments**:
 
-- `config` _Dict_ - Connection information for the database.
+- `config` - Connection information for the database.
 - `is_latest_version` _bool_ - Flag to determine if version 4 is the latest schema version.
 
 **Returns**:
@@ -1259,7 +1259,7 @@ Description: Migrates the ORCA schema from version 4 to version 5.
 #### migrate\_versions\_4\_to\_5
 
 ```python
-migrate_versions_4_to_5(config: Dict[str, str], is_latest_version: bool, orca_buckets: List[str]) -> None
+migrate_versions_4_to_5(config: PostgresConnectionInfo, is_latest_version: bool, orca_buckets: List[str]) -> None
 ```
 
 Performs the migration of the ORCA schema from version 4 to version 5 of
@@ -1274,11 +1274,9 @@ following tables:
 
 **Arguments**:
 
-- `config` _Dict_ - Connection information for the database.
-- `is_latest_version` _bool_ - Flag to determine if version 5 is the latest
-  schema version.
-- `orca_buckets` - List[str]): List of ORCA buckets names needed to create
-  partition tables for v5.
+- `config` - Connection information for the database.
+- `is_latest_version` - Flag to determine if version 5 is the latest schema version.
+- `orca_buckets` - List of ORCA buckets names needed to create partition tables for v5.
 
 **Returns**:
 
@@ -1428,7 +1426,7 @@ Description: Migrates the ORCA schema from version 5 to version 6.
 #### migrate\_versions\_5\_to\_6
 
 ```python
-migrate_versions_5_to_6(config: Dict[str, str], is_latest_version: bool) -> None
+migrate_versions_5_to_6(config: PostgresConnectionInfo, is_latest_version: bool) -> None
 ```
 
 Performs the migration of the ORCA schema from version 5 to version 6 of

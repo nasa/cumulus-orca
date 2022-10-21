@@ -4,7 +4,6 @@
 * [orca\_shared.reconciliation.test.unit\_tests.test\_shared\_reconciliation](#orca_shared.reconciliation.test.unit_tests.test_shared_reconciliation)
   * [TestSharedReconciliationLibraries](#orca_shared.reconciliation.test.unit_tests.test_shared_reconciliation.TestSharedReconciliationLibraries)
     * [test\_get\_partition\_name\_from\_bucket\_name\_happy\_path](#orca_shared.reconciliation.test.unit_tests.test_shared_reconciliation.TestSharedReconciliationLibraries.test_get_partition_name_from_bucket_name_happy_path)
-    * [test\_get\_partition\_name\_from\_bucket\_name\_rejects\_non\_alphanumeric](#orca_shared.reconciliation.test.unit_tests.test_shared_reconciliation.TestSharedReconciliationLibraries.test_get_partition_name_from_bucket_name_rejects_non_alphanumeric)
     * [test\_update\_job\_happy\_path](#orca_shared.reconciliation.test.unit_tests.test_shared_reconciliation.TestSharedReconciliationLibraries.test_update_job_happy_path)
     * [test\_update\_job\_error\_message\_required\_on\_error\_status](#orca_shared.reconciliation.test.unit_tests.test_shared_reconciliation.TestSharedReconciliationLibraries.test_update_job_error_message_required_on_error_status)
     * [test\_update\_job\_error\_message\_only\_valid\_on\_error\_status](#orca_shared.reconciliation.test.unit_tests.test_shared_reconciliation.TestSharedReconciliationLibraries.test_update_job_error_message_only_valid_on_error_status)
@@ -23,6 +22,15 @@
     * [test\_get\_configuration\_no\_aws\_region](#orca_shared.database.test.unit_tests.adapters.api.test_aws.TestAWS.test_get_configuration_no_aws_region)
     * [test\_get\_configuration\_bad\_secret](#orca_shared.database.test.unit_tests.adapters.api.test_aws.TestAWS.test_get_configuration_bad_secret)
 * [orca\_shared.database.test.unit\_tests.adapters.api](#orca_shared.database.test.unit_tests.adapters.api)
+* [orca\_shared.database.test.unit\_tests.use\_cases.test\_validation](#orca_shared.database.test.unit_tests.use_cases.test_validation)
+  * [TestCreatePostgresConnectionUri](#orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri)
+    * [test\_validate\_config\_happy\_path](#orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_config_happy_path)
+    * [test\_validate\_password\_happy\_path](#orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_password_happy_path)
+    * [test\_validate\_password\_short\_raises\_error](#orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_password_short_raises_error)
+    * [test\_validate\_postgres\_name\_happy\_path](#orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_postgres_name_happy_path)
+    * [test\_validate\_postgres\_name\_short\_raises\_error](#orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_postgres_name_short_raises_error)
+    * [test\_validate\_postgres\_name\_long\_raises\_error](#orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_postgres_name_long_raises_error)
+    * [test\_validate\_postgres\_name\_invalid\_raises\_error](#orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_postgres_name_invalid_raises_error)
 * [orca\_shared.database.test.unit\_tests.use\_cases](#orca_shared.database.test.unit_tests.use_cases)
 * [orca\_shared.database.test.unit\_tests.use\_cases.test\_create\_postgres\_connection\_uri](#orca_shared.database.test.unit_tests.use_cases.test_create_postgres_connection_uri)
   * [TestCreatePostgresConnectionUri](#orca_shared.database.test.unit_tests.use_cases.test_create_postgres_connection_uri.TestCreatePostgresConnectionUri)
@@ -56,6 +64,8 @@
   * [create\_user\_uri](#orca_shared.database.use_cases.create_postgres_connection_uri.create_user_uri)
   * [create\_admin\_uri](#orca_shared.database.use_cases.create_postgres_connection_uri.create_admin_uri)
 * [orca\_shared.database.use\_cases](#orca_shared.database.use_cases)
+* [orca\_shared.database.use\_cases.validation](#orca_shared.database.use_cases.validation)
+  * [validate\_postgres\_name](#orca_shared.database.use_cases.validation.validate_postgres_name)
 * [orca\_shared.database.entities.postgres\_connection\_info](#orca_shared.database.entities.postgres_connection_info)
 * [orca\_shared.database.entities](#orca_shared.database.entities)
 * [orca\_shared.recovery.test.unit\_tests.test\_shared\_recovery](#orca_shared.recovery.test.unit_tests.test_shared_recovery)
@@ -103,21 +113,14 @@ Unit tests for the shared_reconciliation library used by ORCA Reconciliation Lam
 #### test\_get\_partition\_name\_from\_bucket\_name\_happy\_path
 
 ```python
-def test_get_partition_name_from_bucket_name_happy_path()
+@patch(
+    "orca_shared.reconciliation.shared_reconciliation.validate_postgres_name")
+def test_get_partition_name_from_bucket_name_happy_path(
+        mock_validate_name: MagicMock)
 ```
 
 Should replace dashes with underscores.
 Leave this test hardcoded to avoid unintentional deviations from DB.
-
-<a id="orca_shared.reconciliation.test.unit_tests.test_shared_reconciliation.TestSharedReconciliationLibraries.test_get_partition_name_from_bucket_name_rejects_non_alphanumeric"></a>
-
-#### test\_get\_partition\_name\_from\_bucket\_name\_rejects\_non\_alphanumeric
-
-```python
-def test_get_partition_name_from_bucket_name_rejects_non_alphanumeric()
-```
-
-Should replace dashes with underscores.
 
 <a id="orca_shared.reconciliation.test.unit_tests.test_shared_reconciliation.TestSharedReconciliationLibraries.test_update_job_happy_path"></a>
 
@@ -283,7 +286,8 @@ Perform initial setup for test.
     },
     clear=True,
 )
-def test_get_configuration_happy_path()
+@patch("orca_shared.database.adapters.api.aws.validate_config")
+def test_get_configuration_happy_path(mock_validate_config: MagicMock)
 ```
 
 Get secret value and return data class.
@@ -323,6 +327,91 @@ Validates a secret is thrown if a secretsmanager ID is invalid.
 <a id="orca_shared.database.test.unit_tests.adapters.api"></a>
 
 # orca\_shared.database.test.unit\_tests.adapters.api
+
+<a id="orca_shared.database.test.unit_tests.use_cases.test_validation"></a>
+
+# orca\_shared.database.test.unit\_tests.use\_cases.test\_validation
+
+<a id="orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri"></a>
+
+## TestCreatePostgresConnectionUri Objects
+
+```python
+class TestCreatePostgresConnectionUri(unittest.TestCase)
+```
+
+<a id="orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_config_happy_path"></a>
+
+#### test\_validate\_config\_happy\_path
+
+```python
+@patch("orca_shared.database.use_cases.validation._validate_password")
+@patch("orca_shared.database.use_cases.validation.validate_postgres_name")
+def test_validate_config_happy_path(mock_validate_postgres_name: MagicMock,
+                                    mock_validate_password: MagicMock)
+```
+
+Should call proper validation functions for various properties.
+
+<a id="orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_password_happy_path"></a>
+
+#### test\_validate\_password\_happy\_path
+
+```python
+def test_validate_password_happy_path()
+```
+
+A password of length 12 should be sufficient.
+
+<a id="orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_password_short_raises_error"></a>
+
+#### test\_validate\_password\_short\_raises\_error
+
+```python
+def test_validate_password_short_raises_error()
+```
+
+A password of `None` or length < 12 should be rejected.
+
+<a id="orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_postgres_name_happy_path"></a>
+
+#### test\_validate\_postgres\_name\_happy\_path
+
+```python
+def test_validate_postgres_name_happy_path()
+```
+
+A name of any length starting with a letter should be accepted.
+
+<a id="orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_postgres_name_short_raises_error"></a>
+
+#### test\_validate\_postgres\_name\_short\_raises\_error
+
+```python
+def test_validate_postgres_name_short_raises_error()
+```
+
+A name of `None` or length < 1 should be rejected.
+
+<a id="orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_postgres_name_long_raises_error"></a>
+
+#### test\_validate\_postgres\_name\_long\_raises\_error
+
+```python
+def test_validate_postgres_name_long_raises_error()
+```
+
+A name of length > 63 should be rejected.
+
+<a id="orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_postgres_name_invalid_raises_error"></a>
+
+#### test\_validate\_postgres\_name\_invalid\_raises\_error
+
+```python
+def test_validate_postgres_name_invalid_raises_error()
+```
+
+A name starting with a non-letter or containing illegal characters should be rejected.
 
 <a id="orca_shared.database.test.unit_tests.use_cases"></a>
 
@@ -700,7 +789,8 @@ Environment Variables:
 
 **Raises**:
 
-- `Exception` _Exception_ - When variables or secrets are not available.
+- `Exception` - When variables or secrets are not available,
+  or if configured values are illegal.
 
 <a id="orca_shared.database.use_cases.create_postgres_connection_uri"></a>
 
@@ -754,6 +844,26 @@ Creates a connection URI for a database as a superuser.
 <a id="orca_shared.database.use_cases"></a>
 
 # orca\_shared.database.use\_cases
+
+<a id="orca_shared.database.use_cases.validation"></a>
+
+# orca\_shared.database.use\_cases.validation
+
+<a id="orca_shared.database.use_cases.validation.validate_postgres_name"></a>
+
+#### validate\_postgres\_name
+
+```python
+def validate_postgres_name(name: str, context: str,
+                           logger: logging.Logger) -> None
+```
+
+Validates the given name against documented Postgres restrictions.
+https://www.postgresql.org/docs/7.0/syntax525.htm
+
+**Raises**:
+
+- `Exception` - If value is empty, is more than 63 characters, or contains illegal characters.
 
 <a id="orca_shared.database.entities.postgres_connection_info"></a>
 

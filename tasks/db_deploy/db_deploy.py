@@ -9,13 +9,11 @@ import os
 from typing import Any, Dict, List
 
 from aws_lambda_powertools.utilities.typing import LambdaContext
-from orca_shared.database.shared_db import (
-    LOGGER,
-    get_admin_connection,
-    get_configuration,
-    retry_operational_error,
-)
-from sqlalchemy import text
+from orca_shared.database.adapters.api import get_configuration
+from orca_shared.database.entities import PostgresConnectionInfo
+from orca_shared.database.shared_db import LOGGER, retry_operational_error
+from orca_shared.database.use_cases import create_admin_uri
+from sqlalchemy import create_engine, text
 from sqlalchemy.future import Connection
 
 from install.create_db import create_database, create_fresh_orca_install
@@ -59,7 +57,7 @@ def handler(
         raise
 
     # Get the secrets needed for database connections
-    config = get_configuration(db_connect_info_secret_arn)
+    config = get_configuration(db_connect_info_secret_arn, LOGGER)
 
     # Get the ORCA bucket list
     orca_buckets = event.get("orcaBuckets", None)
@@ -69,7 +67,7 @@ def handler(
     return task(config, orca_buckets)
 
 
-def task(config: Dict[str, str], orca_buckets: List[str]) -> None:
+def task(config: PostgresConnectionInfo, orca_buckets: List[str]) -> None:
     """
     Checks for the ORCA database and throws an error if it does not exist.
     Determines if a fresh install or a migration is needed for the ORCA
@@ -82,22 +80,25 @@ def task(config: Dict[str, str], orca_buckets: List[str]) -> None:
     Raises:
         Exception: If database does not exist.
     """
-    # Create the engines
-    postgres_admin_engine = get_admin_connection(config)
-    user_admin_engine = get_admin_connection(config, config["user_database"])
+    # Create the engine
+    postgres_admin_engine = create_engine(create_admin_uri(config, LOGGER), future=True)
 
     # Connect as admin user to the postgres database
     with postgres_admin_engine.connect() as connection:
         # Check if database exists. If not, start from scratch.
-        if not app_db_exists(connection, config["user_database"]):
+        if not app_db_exists(connection, config.user_database_name):
             LOGGER.info(
-                f"The ORCA database {config['user_database']} does not exist, "
+                f"The ORCA database {config.user_database_name} does not exist, "
                 "or the server could not be connected to."
             )
             create_database(config)
             create_fresh_orca_install(config, orca_buckets)
 
             return
+
+    # Create the engine
+    user_admin_engine = \
+        create_engine(create_admin_uri(config, LOGGER, config.user_database_name), future=True)
 
     # Connect as admin user to config["user_database"] database.
     with user_admin_engine.connect() as connection:

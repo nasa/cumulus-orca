@@ -8,6 +8,8 @@ import unittest
 import uuid
 from unittest.mock import MagicMock, Mock, patch
 
+from orca_shared.database.entities import PostgresConnectionInfo
+
 import db_deploy
 
 
@@ -35,22 +37,19 @@ class TestDbDeployFunctions(unittest.TestCase):
         # todo: Switch to randomized values generated per-test.
         event = {"orcaBuckets": ["orca_worm", "orca_versioned", "orca_special"]}
         context = Mock()
-        config = {
-            "admin_database": "admin_db",
-            "admin_password": "admin123",
-            "admin_username": "admin",
-            "host": "aws.postgresrds.host",
-            "port": 5432,
-            "user_database": "user_db",
-            "user_password": "user123",
-            "user_username": "user",
-        }
+        config = PostgresConnectionInfo(  # nosec
+            admin_database_name="admin_db",
+            admin_username="admin", admin_password="admin123",
+            user_username="user56789012", user_password="pass56789012",
+            user_database_name="user_db", host="aws.postgresrds.host", port="5432"
+        )
         mock_get_configuration.return_value = config
 
         # Run the function
         db_deploy.handler(event, context)
 
         # Check tests
+        mock_get_configuration.assert_called_once_with("test", db_deploy.LOGGER)
         mock_task.assert_called_with(config, event["orcaBuckets"])
 
     @patch("db_deploy.get_configuration")
@@ -70,23 +69,19 @@ class TestDbDeployFunctions(unittest.TestCase):
         events = [
             {"orcaBuckets": []},
             {"orcaBuckets": 1234},
-            {"orcaBuckets": "abcds"},
+            {"orcaBuckets": "abcd"},
             {},
         ]
-        context = Mock()
-        config = {
-            "admin_database": "admin_db",
-            "admin_password": "admin123",
-            "admin_username": "admin",
-            "host": "aws.postgresrds.host",
-            "port": 5432,
-            "user_database": "user_db",
-            "user_password": "user123",
-            "user_username": "user",
-        }
+        config = PostgresConnectionInfo(  # nosec
+            admin_database_name="admin_db",
+            admin_username="admin", admin_password="admin123",
+            user_username="user56789012", user_password="pass56789012",
+            user_database_name="user_db", host="aws.postgresrds.host", port="5432"
+        )
         mock_get_configuration.return_value = config
+        context = Mock()
 
-        # Run the function and see if it fails wit a value error
+        # Run the function and see if it fails with a value error
         for event in events:
             with self.subTest(event=event):
                 with self.assertRaises(ValueError) as ve:
@@ -97,15 +92,18 @@ class TestDbDeployFunctions(unittest.TestCase):
                     value_error_message,
                     "orcaBuckets must be a valid list of ORCA S3 bucket names.",
                 )
+                mock_task.assert_not_called()
 
     @patch("db_deploy.create_fresh_orca_install")
     @patch("db_deploy.create_database")
-    @patch("db_deploy.get_admin_connection")
+    @patch("db_deploy.create_engine")
+    @patch("db_deploy.create_admin_uri")
     @patch("db_deploy.app_db_exists")
     def test_task_no_database(
         self,
         mock_app_db_exists: MagicMock,
-        mock_connection: MagicMock,
+        mock_create_admin_uri: MagicMock,
+        mock_create_engine: MagicMock,
         mock_create_database: MagicMock,
         mock_create_fresh_orca_install: MagicMock,
     ):
@@ -114,29 +112,32 @@ class TestDbDeployFunctions(unittest.TestCase):
         """
         # Setup
         mock_app_db_exists.return_value = False
-        config = {
-            "admin_database": "admin_db",
-            "admin_password": "admin123",
-            "admin_username": "admin",
-            "host": "aws.postgresrds.host",
-            "port": 5432,
-            "user_database": "user_db",
-            "user_password": "user123",
-            "user_username": "user",
-        }
+        config = PostgresConnectionInfo(  # nosec
+            admin_database_name="admin_db",
+            admin_username="admin", admin_password="admin123",
+            user_username="user56789012", user_password="pass56789012",
+            user_database_name="user_db", host="aws.postgresrds.host", port="5432"
+        )
         orca_buckets = ["orca_worm", "orca_versioned", "orca_special"]
 
         # Call the task
         db_deploy.task(config, orca_buckets)
 
         # Check function calls
+        mock_create_admin_uri.assert_called_once_with(
+            config, db_deploy.LOGGER
+        )
+        mock_create_engine.assert_called_once_with(
+            mock_create_admin_uri.return_value, future=True
+        )
         mock_app_db_exists.assert_called_with(
-            mock_connection().connect().__enter__(), config["user_database"]
+            mock_create_engine().connect().__enter__(), config.user_database_name
         )
         mock_create_database.assert_called_once_with(config)
         mock_create_fresh_orca_install.assert_called_once_with(config, orca_buckets)
 
-    @patch("db_deploy.get_admin_connection")
+    @patch("db_deploy.create_engine")
+    @patch("db_deploy.create_admin_uri")
     @patch("db_deploy.create_fresh_orca_install")
     @patch("db_deploy.app_schema_exists")
     @patch("db_deploy.app_db_exists")
@@ -145,7 +146,8 @@ class TestDbDeployFunctions(unittest.TestCase):
         mock_db_exists: MagicMock,
         mock_schema_exists: MagicMock,
         mock_fresh_install: MagicMock,
-        mock_connection: MagicMock,
+        mock_create_admin_uri: MagicMock,
+        mock_create_engine: MagicMock,
     ):
         """
         Validates that `create_fresh_orca_install` is called if no ORCA schema
@@ -153,33 +155,31 @@ class TestDbDeployFunctions(unittest.TestCase):
         """
         mock_db_exists.return_value = True
         mock_schema_exists.return_value = False
-        config = {
-            "admin_database": "admin_db",
-            "admin_password": "admin123",
-            "admin_username": "admin",
-            "host": "aws.postgresrds.host",
-            "port": 5432,
-            "user_database": "user_db",
-            "user_password": "user123",
-            "user_username": "user",
-        }
+        config = PostgresConnectionInfo(  # nosec
+            admin_database_name="admin_db",
+            admin_username="admin", admin_password="admin123",
+            user_username="user56789012", user_password="pass56789012",
+            user_database_name="user_db", host="aws.postgresrds.host", port="5432"
+        )
         orca_buckets = ["orca_worm", "orca_versioned", "orca_special"]
 
         db_deploy.task(config, orca_buckets)
         mock_fresh_install.assert_called_with(config, orca_buckets)
 
-    @patch("db_deploy.get_admin_connection")
+    @patch("db_deploy.create_engine")
+    @patch("db_deploy.create_admin_uri")
     @patch("db_deploy.perform_migration")
     @patch("db_deploy.get_migration_version")
     @patch("db_deploy.app_schema_exists")
     @patch("db_deploy.app_db_exists")
-    def test_task_schmea_old_version(
+    def test_task_schema_old_version(
         self,
         mock_db_exists: MagicMock,
         mock_schema_exists: MagicMock,
         mock_migration_version: MagicMock,
         mock_perform_migration: MagicMock,
-        mock_connection: MagicMock,
+        mock_create_admin_uri: MagicMock,
+        mock_create_engine: MagicMock,
     ):
         """
         Validates that `perform_migration` is called if the current schema
@@ -188,22 +188,19 @@ class TestDbDeployFunctions(unittest.TestCase):
         mock_db_exists.return_value = True
         mock_schema_exists.return_value = True
         mock_migration_version.return_value = 1
-        config = {
-            "admin_database": "admin_db",
-            "admin_password": "admin123",
-            "admin_username": "admin",
-            "host": "aws.postgresrds.host",
-            "port": 5432,
-            "user_database": "user_db",
-            "user_password": "user123",
-            "user_username": "user",
-        }
+        config = PostgresConnectionInfo(  # nosec
+            admin_database_name="admin_db",
+            admin_username="admin", admin_password="admin123",
+            user_username="user56789012", user_password="pass56789012",
+            user_database_name="user_db", host="aws.postgresrds.host", port="5432"
+        )
         orca_buckets = ["orca_worm", "orca_versioned", "orca_special"]
 
         db_deploy.task(config, orca_buckets)
         mock_perform_migration.assert_called_with(1, config, orca_buckets)
 
-    @patch("db_deploy.get_admin_connection")
+    @patch("db_deploy.create_engine")
+    @patch("db_deploy.create_admin_uri")
     @patch("db_deploy.LOGGER.info")
     @patch("db_deploy.get_migration_version")
     @patch("db_deploy.app_schema_exists")
@@ -214,7 +211,8 @@ class TestDbDeployFunctions(unittest.TestCase):
         mock_schema_exists: MagicMock,
         mock_migration_version: MagicMock,
         mock_logger_info: MagicMock,
-        mock_connection: MagicMock,
+        mock_create_admin_uri: MagicMock,
+        mock_create_engine: MagicMock,
     ):
         """
         validates that no action is taken if the current and latest versions
@@ -224,16 +222,12 @@ class TestDbDeployFunctions(unittest.TestCase):
         mock_schema_exists.return_value = True
         mock_migration_version.return_value = db_deploy.LATEST_ORCA_SCHEMA_VERSION
         message = "Current ORCA schema version detected. No migration needed!"
-        config = {
-            "admin_database": "admin_db",
-            "admin_password": "admin123",
-            "admin_username": "admin",
-            "host": "aws.postgresrds.host",
-            "port": 5432,
-            "user_database": "user_db",
-            "user_password": "user123",
-            "user_username": "user",
-        }
+        config = PostgresConnectionInfo(  # nosec
+            admin_database_name="admin_db",
+            admin_username="admin", admin_password="admin123",
+            user_username="user56789012", user_password="pass56789012",
+            user_database_name="user_db", host="aws.postgresrds.host", port="5432"
+        )
         orca_buckets = ["orca_worm", "orca_versioned", "orca_special"]
 
         db_deploy.task(config, orca_buckets)

@@ -1041,7 +1041,5 @@ def reconcile_phantom_report_table_sql() -> text:  # pragma: no cover
               IS 'Last update of the object as reported in the ORCA catalog.';
             COMMENT ON COLUMN reconcile_phantom_report.orca_size
               IS 'Size in bytes of the object as reported in the ORCA catalog.';
-            COMMENT ON COLUMN reconcile_phantom_report.s3_storage_class_id
-              IS 'Storage class of the file as reported in the ORCA catalog.';
         """
     )
