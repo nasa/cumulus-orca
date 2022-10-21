@@ -15,6 +15,8 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 ### Changed
+- *ORCA-521*
+  - Replaced CumulusLogger with AWS powertools logger in all of the lambdas currently present in ORCA.
 - *ORCA-537*
   - Renamed step-function `OrcaCopyToGlacierWorkflow` to `OrcaCopyToArchiveWorkflow`.
   - Renamed lambda `PREFIX_copy_to_glacier` to `PREFIX_copy_to_orca`. Renamed ORCA repository internal task from `copy_to_glacier` to `copy_to_archive`.

@@ -41,7 +41,7 @@ def get_configuration() -> PostgresConnectionInfo:
 
 if __name__ == "__main__":
     set_search_path()
-    from orca_shared.database.shared_db import logger
+    from orca_shared.database.shared_db import LOGGER
 
     from db_deploy import task
 
@@ -52,9 +52,9 @@ if __name__ == "__main__":
         "orca_special_backup",
     ]
 
-    logger.info("Beginning manual test.")
+    LOGGER.info("Beginning manual test.")
     # We skip handle since we do not want to create the secretsmanager objects
     # and logging setup so we do not have to pass an event and context. This is
     # for pure functionality testing of the SQL and the call order.
     task(get_configuration(), orca_buckets)
-    logger.info("Manual test complete.")
+    LOGGER.info("Manual test complete.")

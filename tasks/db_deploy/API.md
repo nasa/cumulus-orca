@@ -113,7 +113,8 @@ Description: Performs database installation and migration for the ORCA schema.
 #### handler
 
 ```python
-handler(event: Dict[str, Any], context: object) -> None
+@LOGGER.inject_lambda_context
+handler(event: Dict[str, Any], context: LambdaContext) -> None
 ```
 
 Lambda handler for db_deploy. The handler generates the database connection
@@ -125,7 +126,8 @@ required by this Lambda.
 **Arguments**:
 
 - `event` _Dict_ - Event dictionary passed by AWS.
-- `context` _object_ - An object required by AWS Lambda.
+- `context` - This object provides information about the lambda invocation, function,
+  and execution env.
   Environment Vars:
   DB_CONNECT_INFO_SECRET_ARN (string):
   Secret ARN of the AWS secretsmanager secret

@@ -64,8 +64,10 @@ Exponential delay function. This function is used for retries during failure.
 
 **Arguments**:
 
-- `base_delay` - Number of seconds to wait between recovery failure retries.
-- `exponential_backoff` - The multiplier by which the retry interval increases during each attempt.
+  base_delay:
+  Number of seconds to wait between recovery failure retries.
+  exponential_backoff:
+  The multiplier by which the retry interval increases during each attempt.
 
 **Returns**:
 
@@ -85,18 +87,22 @@ def query_db(key_path: str, bucket_name: str,
              db_connect_info_secret_arn: str) -> List[Dict[str, str]]
 ```
 
-Connect and query the recover_file status table return needed metadata for posting to the recovery status SQS Queue.
+Connect and query the recover_file status table return needed
+metadata for posting to the recovery status SQS Queue.
 
 **Arguments**:
 
   key_path:
   Full AWS key path including file name of the file where the file resides.
-- `bucket_name` - Name of the source S3 bucket.
-- `db_connect_info_secret_arn` - Secret ARN of the secretsmanager secret to connect to the DB.
+  bucket_name:
+  Name of the source S3 bucket.
+  db_connect_info_secret_arn:
+  Secret ARN of the secretsmanager secret to connect to the DB.
 
 **Returns**:
 
-  A list of dict containing the following keys, matching the input format from copy_from_archive:
+  A list of dict containing the following keys, matching the input
+  format from copy_from_archive:
   "jobId" (str):
   "granuleId"(str):
   "filename" (str):
@@ -133,25 +139,33 @@ Query for finding metadata based on key_path and PENDING status.
 #### handler
 
 ```python
-def handler(event: Dict[str, Any], context) -> None
+@LOGGER.inject_lambda_context
+def handler(event: Dict[str, Any], context: LambdaContext) -> None
 ```
 
 Lambda handler. This lambda calls the task function to perform db queries
 and send message to SQS.
 
 Environment Vars:
-RECOVERY_QUEUE_URL (string): the SQS URL for staged_recovery_queue
-DB_QUEUE_URL (string): the SQS URL for status-update-queue
-MAX_RETRIES (string): Number of times the code will retry in case of failure.
-RETRY_SLEEP_SECS (string): Number of seconds to wait between recovery failure retries.
-RETRY_BACKOFF (string): The multiplier by which the retry interval increases during each attempt.
-DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
+RECOVERY_QUEUE_URL (string):
+the SQS URL for staged_recovery_queue
+DB_QUEUE_URL (string):
+the SQS URL for status-update-queue
+MAX_RETRIES (string):
+Number of times the code will retry in case of failure.
+RETRY_SLEEP_SECS (string):
+Number of seconds to wait between recovery failure retries.
+RETRY_BACKOFF (string):
+The multiplier by which the retry interval increases during each attempt.
+DB_CONNECT_INFO_SECRET_ARN (string):
+Secret ARN of the AWS secretsmanager secret for connecting to the database.
 
 **Arguments**:
 
   event:
   A dictionary from the S3 bucket. See schemas/input.json for more information.
-- `context` - An object required by AWS Lambda. Unused.
+- `context` - This object provides information about the lambda invocation, function,
+  and execution env.
 
 **Returns**:
 
@@ -159,5 +173,6 @@ DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret
 
 **Raises**:
 
-- `Exception` - If unable to retrieve the SQS URLs or exponential retry fields from env variables.
+- `Exception` - If unable to retrieve the SQS URLs or
+  exponential retry fields from env variables.
 

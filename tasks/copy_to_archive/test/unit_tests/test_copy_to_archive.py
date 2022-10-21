@@ -4,7 +4,6 @@ import os
 import random
 import unittest
 import uuid
-from test.helpers import LambdaContextMock
 from test.unit_tests.ConfigCheck import ConfigCheck
 from unittest import TestCase
 from unittest.mock import ANY, MagicMock, Mock, call, patch
@@ -147,7 +146,7 @@ class TestCopyToArchive(TestCase):
                 "collectionVersion": uuid.uuid4().__str__(),
             },
         }
-        handler_input_context = LambdaContextMock()
+        handler_input_context = Mock()
 
         expected_task_input = {
             "input": handler_input_event["payload"],

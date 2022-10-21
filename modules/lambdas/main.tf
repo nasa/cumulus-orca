@@ -28,7 +28,7 @@ module "lambda_security_group" {
 # copy_to_archive - Copies files to the archive bucket
 resource "aws_lambda_function" "copy_to_archive" {
   ## REQUIRED
-  function_name = "${var.prefix}_copy_to_orca"  # Since this is currently public-facing, emphasize that this is an ORCA resource.
+  function_name = "${var.prefix}_copy_to_orca" # Since this is currently public-facing, emphasize that this is an ORCA resource.
   role          = var.restore_object_role_arn
 
   ## OPTIONAL
@@ -51,7 +51,8 @@ resource "aws_lambda_function" "copy_to_archive" {
       ORCA_DEFAULT_BUCKET            = var.orca_default_bucket
       DEFAULT_MULTIPART_CHUNKSIZE_MB = var.default_multipart_chunksize_mb
       DEFAULT_STORAGE_CLASS          = var.orca_default_storage_class
-      METADATA_DB_QUEUE_URL          = var.orca_sqs_metadata_queue_id
+      POWERTOOLS_SERVICE_NAME        = "orca.ingest"
+      LOG_LEVEL                      = var.log_level
     }
   }
 }
@@ -86,6 +87,8 @@ resource "aws_lambda_function" "delete_old_reconcile_jobs" {
     variables = {
       DB_CONNECT_INFO_SECRET_ARN              = var.db_connect_info_secret_arn
       INTERNAL_RECONCILIATION_EXPIRATION_DAYS = var.orca_internal_reconciliation_expiration_days
+      POWERTOOLS_SERVICE_NAME                 = "orca.internal_reconciliation"
+      LOG_LEVEL                               = var.log_level
     }
   }
 }
@@ -102,7 +105,7 @@ resource "aws_cloudwatch_event_rule" "delete_old_reconcile_jobs_event_rule" {
 }
 
 resource "aws_cloudwatch_event_target" "delete_old_reconcile_jobs_event_link" {
-  arn = aws_lambda_function.delete_old_reconcile_jobs.arn
+  arn  = aws_lambda_function.delete_old_reconcile_jobs.arn
   rule = aws_cloudwatch_event_rule.delete_old_reconcile_jobs_event_rule.id
 }
 
@@ -143,8 +146,10 @@ resource "aws_lambda_function" "get_current_archive_list" {
   environment {
     variables = {
       DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
-      INTERNAL_REPORT_QUEUE_URL = var.orca_sqs_internal_report_queue_id,
-      S3_CREDENTIALS_SECRET_ARN = var.orca_secretsmanager_s3_access_credentials_secret_arn
+      INTERNAL_REPORT_QUEUE_URL  = var.orca_sqs_internal_report_queue_id,
+      S3_CREDENTIALS_SECRET_ARN  = var.orca_secretsmanager_s3_access_credentials_secret_arn
+      POWERTOOLS_SERVICE_NAME    = "orca.internal_reconciliation"
+      LOG_LEVEL                  = var.log_level
     }
   }
 }
@@ -172,7 +177,9 @@ resource "aws_lambda_function" "perform_orca_reconcile" {
   environment {
     variables = {
       DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
-      INTERNAL_REPORT_QUEUE_URL = var.orca_sqs_internal_report_queue_id
+      INTERNAL_REPORT_QUEUE_URL  = var.orca_sqs_internal_report_queue_id
+      POWERTOOLS_SERVICE_NAME    = "orca.internal_reconciliation"
+      LOG_LEVEL                  = var.log_level
     }
   }
 }
@@ -202,6 +209,8 @@ resource "aws_lambda_function" "internal_reconcile_report_job" {
   environment {
     variables = {
       DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
+      POWERTOOLS_SERVICE_NAME    = "orca.internal_reconciliation"
+      LOG_LEVEL                  = var.log_level
     }
   }
 }
@@ -231,6 +240,8 @@ resource "aws_lambda_function" "internal_reconcile_report_mismatch" {
   environment {
     variables = {
       DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
+      POWERTOOLS_SERVICE_NAME    = "orca.internal_reconciliation"
+      LOG_LEVEL                  = var.log_level
     }
   }
 }
@@ -260,6 +271,8 @@ resource "aws_lambda_function" "internal_reconcile_report_orphan" {
   environment {
     variables = {
       DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
+      POWERTOOLS_SERVICE_NAME    = "orca.internal_reconciliation"
+      LOG_LEVEL                  = var.log_level
     }
   }
 }
@@ -289,6 +302,8 @@ resource "aws_lambda_function" "internal_reconcile_report_phantom" {
   environment {
     variables = {
       DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
+      POWERTOOLS_SERVICE_NAME    = "orca.internal_reconciliation"
+      LOG_LEVEL                  = var.log_level
     }
   }
 }
@@ -302,7 +317,7 @@ resource "aws_lambda_function" "internal_reconcile_report_phantom" {
 resource "aws_lambda_function" "extract_filepaths_for_granule" {
   ## REQUIRED
   function_name = "${var.prefix}_extract_filepaths_for_granule"
-  role		= aws_iam_role.extract_filepaths_for_granule_iam_role.arn
+  role          = aws_iam_role.extract_filepaths_for_granule_iam_role.arn
 
   ## OPTIONAL
   description      = "Extracts bucket info and granules filepath from the CMA for ORCA request_from_archive lambda."
@@ -317,6 +332,12 @@ resource "aws_lambda_function" "extract_filepaths_for_granule" {
   vpc_config {
     subnet_ids         = var.lambda_subnet_ids
     security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+  }
+  environment {
+    variables = {
+      POWERTOOLS_SERVICE_NAME = "orca.recovery"
+      LOG_LEVEL               = var.log_level
+    }
   }
 }
 
@@ -361,7 +382,7 @@ data "aws_iam_policy_document" "extract_filepaths_for_granule_policy_document" {
       "ec2:UnassignPrivateIpAddresses"
     ]
     resources = ["*"]
-    effect = "Allow"
+    effect    = "Allow"
   }
 }
 
@@ -404,12 +425,14 @@ resource "aws_lambda_function" "request_from_archive" {
 
   environment {
     variables = {
-      RESTORE_EXPIRE_DAYS             = var.orca_recovery_expiration_days
-      RESTORE_REQUEST_RETRIES         = var.orca_recovery_retry_limit
-      RESTORE_RETRY_SLEEP_SECS        = var.orca_recovery_retry_interval
-      DEFAULT_RECOVERY_TYPE           = var.orca_default_recovery_type
-      STATUS_UPDATE_QUEUE_URL         = var.orca_sqs_status_update_queue_id
-      ORCA_DEFAULT_BUCKET             = var.orca_default_bucket
+      RESTORE_EXPIRE_DAYS      = var.orca_recovery_expiration_days
+      RESTORE_REQUEST_RETRIES  = var.orca_recovery_retry_limit
+      RESTORE_RETRY_SLEEP_SECS = var.orca_recovery_retry_interval
+      DEFAULT_RECOVERY_TYPE    = var.orca_default_recovery_type
+      STATUS_UPDATE_QUEUE_URL  = var.orca_sqs_status_update_queue_id
+      ORCA_DEFAULT_BUCKET      = var.orca_default_bucket
+      POWERTOOLS_SERVICE_NAME  = "orca.recovery"
+      LOG_LEVEL                = var.log_level
     }
   }
 }
@@ -444,6 +467,8 @@ resource "aws_lambda_function" "copy_from_archive" {
       STATUS_UPDATE_QUEUE_URL        = var.orca_sqs_status_update_queue_id
       DEFAULT_MULTIPART_CHUNKSIZE_MB = var.default_multipart_chunksize_mb
       RECOVERY_QUEUE_URL             = var.orca_sqs_staged_recovery_queue_id
+      POWERTOOLS_SERVICE_NAME        = "orca.recovery"
+      LOG_LEVEL                      = var.log_level
     }
   }
 }
@@ -492,6 +517,8 @@ resource "aws_lambda_function" "post_to_database" {
   environment {
     variables = {
       DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
+      POWERTOOLS_SERVICE_NAME    = "orca.ingest"
+      LOG_LEVEL                  = var.log_level
     }
   }
 }
@@ -540,6 +567,8 @@ resource "aws_lambda_function" "request_status_for_granule" {
   environment {
     variables = {
       DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
+      POWERTOOLS_SERVICE_NAME    = "orca.recovery"
+      LOG_LEVEL                  = var.log_level
     }
   }
 }
@@ -570,6 +599,8 @@ resource "aws_lambda_function" "request_status_for_job" {
   environment {
     variables = {
       DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
+      POWERTOOLS_SERVICE_NAME    = "orca.recovery"
+      LOG_LEVEL                  = var.log_level
     }
   }
 }
@@ -595,12 +626,14 @@ resource "aws_lambda_function" "post_copy_request_to_queue" {
   }
   environment {
     variables = {
-      DB_CONNECT_INFO_SECRET_ARN   = var.db_connect_info_secret_arn
-      STATUS_UPDATE_QUEUE_URL      = var.orca_sqs_status_update_queue_id
-      RECOVERY_QUEUE_URL           = var.orca_sqs_staged_recovery_queue_id
-      MAX_RETRIES                  = var.orca_recovery_retry_limit
-      RETRY_SLEEP_SECS             = var.orca_recovery_retry_interval
-      RETRY_BACKOFF                = var.orca_recovery_retry_backoff
+      DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
+      STATUS_UPDATE_QUEUE_URL    = var.orca_sqs_status_update_queue_id
+      RECOVERY_QUEUE_URL         = var.orca_sqs_staged_recovery_queue_id
+      MAX_RETRIES                = var.orca_recovery_retry_limit
+      RETRY_SLEEP_SECS           = var.orca_recovery_retry_interval
+      RETRY_BACKOFF              = var.orca_recovery_retry_backoff
+      POWERTOOLS_SERVICE_NAME    = "orca.recovery"
+      LOG_LEVEL                  = var.log_level
     }
   }
 }
@@ -660,6 +693,8 @@ resource "aws_lambda_function" "orca_catalog_reporting" {
   environment {
     variables = {
       DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
+      POWERTOOLS_SERVICE_NAME    = "orca.reconciliation"
+      LOG_LEVEL                  = var.log_level
     }
   }
 }
@@ -690,6 +725,8 @@ resource "aws_lambda_function" "post_to_catalog" {
   environment {
     variables = {
       DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
+      POWERTOOLS_SERVICE_NAME    = "orca.reconciliation"
+      LOG_LEVEL                  = var.log_level
     }
   }
 }
@@ -748,6 +785,8 @@ resource "aws_lambda_function" "db_deploy" {
   environment {
     variables = {
       DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
+      POWERTOOLS_SERVICE_NAME    = "orca.recovery"
+      LOG_LEVEL                  = var.log_level
     }
   }
 }

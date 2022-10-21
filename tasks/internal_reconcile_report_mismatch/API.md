@@ -107,8 +107,10 @@ Checks for the lambda environment variable.
 #### handler
 
 ```python
-def handler(event: Dict[str, Union[str, int]],
-            context: Any) -> Union[List[Dict[str, Any]], Dict[str, Any]]
+@LOGGER.inject_lambda_context
+def handler(
+        event: Dict[str, Union[str, int]],
+        context: LambdaContext) -> Union[List[Dict[str, Any]], Dict[str, Any]]
 ```
 
 Entry point for the internal_reconcile_report_mismatch Lambda.
@@ -116,10 +118,11 @@ Entry point for the internal_reconcile_report_mismatch Lambda.
 **Arguments**:
 
 - `event` - See schemas/input.json
-- `context` - An object provided by AWS Lambda. Used for context tracking.
-  
+- `context` - This object provides information about the lambda invocation, function,
+  and execution env.
   Environment Vars:
-- `DB_CONNECT_INFO_SECRET_ARN` _string_ - Secret ARN of the AWS secretsmanager secret for connecting to the database.
+  DB_CONNECT_INFO_SECRET_ARN (string):
+  Secret ARN of the AWS secretsmanager secret for connecting to the database.
   See shared_db.py's get_configuration for further details.
   
 
@@ -127,5 +130,6 @@ Entry point for the internal_reconcile_report_mismatch Lambda.
 
   See schemas/output.json
   Or, if an error occurs, see create_http_error_dict
-  400 if input does not match schemas/input.json. 500 if an error occurs when querying the database.
+  400 if input does not match schemas/input.json.
+  500 if an error occurs when querying the database.
 

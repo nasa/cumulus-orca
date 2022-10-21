@@ -8,16 +8,16 @@ import os
 import time
 from typing import Any, Dict, List, Optional, Union
 
-# noinspection PyPackageRequirements
 import boto3
 import fastjsonschema
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext
+from orca_shared.recovery import shared_recovery
+
+# noinspection PyPackageRequirements
 from boto3.s3.transfer import MB, TransferConfig
 from botocore.client import BaseClient
 from botocore.exceptions import ClientError
-from cumulus_logger import CumulusLogger
-
-# noinspection PyPackageRequirements
-from orca_shared.recovery import shared_recovery
 
 OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY = "STATUS_UPDATE_QUEUE_URL"
 
@@ -36,7 +36,9 @@ INPUT_TARGET_BUCKET_KEY = "restoreDestination"
 INPUT_SOURCE_BUCKET_KEY = "sourceBucket"
 INPUT_MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
 
-LOGGER = CumulusLogger()
+# Set AWS powertools logger
+LOGGER = Logger()
+
 # Generating schema validators can take time, so do it once and reuse.
 try:
     with open("schemas/input.json", "r") as raw_schema:
@@ -222,14 +224,14 @@ def copy_object(
         )
         LOGGER.debug(f"Object {src_object_name} copied.")
     except ClientError as ex:
-        LOGGER.error("Client error: {ex}", ex=ex)
+        LOGGER.error("Client error: {ex}")
         return ex.__str__()
     return None
 
 
-# noinspection PyUnusedLocal
+@LOGGER.inject_lambda_context
 def handler(
-    event: Dict[str, Any], context: object
+    event: Dict[str, Any], context: LambdaContext
 ) -> None:  # pylint: disable-msg=unused-argument
     """Lambda handler. Copies a file from its temporary s3 bucket to the s3 archive.
     If the copy for a file in the request fails, the lambda
@@ -250,13 +252,13 @@ def handler(
     Args:
         event:
             A dict from the SQS queue. See schemas/input.json for more information.
-        context: An object required by AWS Lambda. Unused.
+        context: This object provides information about the lambda invocation, function,
+            and execution env.
     Raises:
         CopyRequestError: An error occurred calling copy for one or more files.
         The same dict that is returned for a successful copy will be included in the
         message, with 'success' = False for the files for which the copy failed.
     """
-    LOGGER.setMetadata(event, context)
     _INPUT_VALIDATE(event)
 
     try:
@@ -297,7 +299,7 @@ def handler(
         LOGGER.error("RECOVERY_QUEUE_URL environment value not found.")
         raise key_error
 
-    LOGGER.debug("event: {event}", event=event)
+    LOGGER.debug(f"event: {event}")
     records = event["Records"]
 
     task(

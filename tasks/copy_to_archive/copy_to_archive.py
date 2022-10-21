@@ -11,8 +11,9 @@ from typing import Any, Dict, List, Union
 # Third party libraries
 import boto3
 from boto3.s3.transfer import MB, TransferConfig
-from cumulus_logger import CumulusLogger
 from run_cumulus_task import run_cumulus_task
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext
 
 import sqs_library
 
@@ -23,8 +24,9 @@ CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
 CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY = "excludedFileExtensions"
 CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY = "defaultBucketOverride"
 CONFIG_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY = "defaultStorageClassOverride"
-# Set Cumulus LOGGER
-LOGGER = CumulusLogger()
+
+# Set AWS powertools logger
+LOGGER = Logger()
 
 FILE_BUCKET_KEY = "bucket"
 FILE_FILEPATH_KEY = "key"
@@ -349,8 +351,8 @@ def get_storage_class(config: Dict[str, Any]) -> str:
     return storage_class
 
 
-# handler that is provided to aws lambda
-def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
+@LOGGER.inject_lambda_context
+def handler(event: Dict[str, Union[List[str], Dict]], context: LambdaContext) -> Any:
     """Lambda handler. Runs a cumulus task that
     Copies the files in {event}['input']
     to the default ORCA bucket. Environment variables must be set to
@@ -374,7 +376,8 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
             See schemas/input.json and schemas/config.json for more information.
 
 
-        context: An object required by AWS Lambda. Unused.
+        context: This object provides information about the lambda invocation, function,
+            and execution env.
 
     Returns:
         The result of the cumulus task. See schemas/output.json for more information.

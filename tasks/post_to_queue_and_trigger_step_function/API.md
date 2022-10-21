@@ -15,8 +15,9 @@
 
 Name: post_to_queue_and_trigger_step_function.py
 
-Description: Receives an events from an SQS queue, translates to get_current_archive_list's input format,
-sends it to another queue, then triggers the internal report step function.
+Description: Receives an events from an SQS queue,translates to
+get_current_archive_list's input format, sends it to another queue,
+then triggers the internal report step function.
 
 <a id="post_to_queue_and_trigger_step_function.process_record"></a>
 
@@ -74,7 +75,8 @@ Triggers state machine with retries.
 #### handler
 
 ```python
-def handler(event: Dict[str, Any], context) -> None
+@LOGGER.inject_lambda_context
+def handler(event: Dict[str, Any], context: LambdaContext) -> None
 ```
 
 Lambda handler.
@@ -84,7 +86,8 @@ sends it to another queue, then triggers the internal report step function.
 **Arguments**:
 
 - `event` - See input.json for details.
-- `context` - An object passed through by AWS. Used for tracking.
+- `context` - This object provides information about the lambda invocation, function,
+  and execution env.
   Environment Vars:
 - `TARGET_QUEUE_URL` _string_ - The URL of the SQS queue the job came from.
 - `Returns` - See output.json for details.
@@ -94,8 +97,8 @@ sends it to another queue, then triggers the internal report step function.
 # sqs\_library
 
 Name: sqs_library.py
-Description: library for post_to_queue_and_trigger_step_function lambda function for posting to fifo SQS queue.
-Largely copied from copy_to_archive
+Description: library for post_to_queue_and_trigger_step_function lambda
+function for posting to fifo SQS queue. Largely copied from copy_to_archive
 
 <a id="sqs_library.retry_error"></a>
 

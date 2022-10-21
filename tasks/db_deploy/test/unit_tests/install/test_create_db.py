@@ -67,7 +67,7 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
 
         # Check
         mock_create_admin_uri.assert_called_once_with(
-            self.config, create_db.logger, self.config.user_database_name
+            self.config, create_db.LOGGER, self.config.user_database_name
         )
         mock_create_engine.assert_called_once_with(
             mock_create_admin_uri.return_value, future=True
@@ -115,7 +115,7 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         create_db.create_database(self.config)
 
         mock_create_admin_uri.assert_called_once_with(
-            self.config, create_db.logger
+            self.config, create_db.LOGGER
         )
         mock_create_engine.assert_called_once_with(
             mock_create_admin_uri.return_value, future=True

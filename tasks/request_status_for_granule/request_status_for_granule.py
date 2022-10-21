@@ -4,7 +4,8 @@ from http import HTTPStatus
 from typing import Any, Dict, List, Union
 
 import fastjsonschema
-from cumulus_logger import CumulusLogger
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext
 from fastjsonschema import JsonSchemaException
 from orca_shared.database import shared_db
 from sqlalchemy import text
@@ -41,7 +42,8 @@ with open("schemas/input.json", "r") as raw_schema:
 with open("schemas/output.json", "r") as raw_schema:
     _VALIDATE_OUTPUT = fastjsonschema.compile(json.loads(raw_schema.read()))
 
-LOGGER = CumulusLogger()
+# Set AWS powertools logger
+LOGGER = Logger()
 
 
 def task(
@@ -295,7 +297,8 @@ def create_http_error_dict(
     }
 
 
-def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
+@LOGGER.inject_lambda_context
+def handler(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:
     # noinspection SpellCheckingInspection
     """
     Entry point for the request_status_for_granule Lambda.
@@ -304,8 +307,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             granule_id: The unique ID of the granule to retrieve status for.
             asyncOperationId (Optional): The unique ID of the asyncOperation.
                 May apply to a request that covers multiple granules.
-        context: An object provided by AWS Lambda. Used for context tracking.
-
+        context: This object provides information about the lambda invocation, function,
+            and execution env.
     Environment Vars:
         DB_CONNECT_INFO_SECRET_ARN (string):
             Secret ARN of the AWS secretsmanager secret for connecting to the database.
@@ -345,7 +348,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)
 
     try:
-        LOGGER.setMetadata(event, context)
 
         try:
             _VALIDATE_INPUT(event)

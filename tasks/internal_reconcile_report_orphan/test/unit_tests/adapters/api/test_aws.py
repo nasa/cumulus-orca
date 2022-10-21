@@ -53,7 +53,7 @@ class TestAWS(unittest.TestCase):
             "MISSING_ENV_VAR environment value not found."
         )
 
-    @patch("cumulus_logger.CumulusLogger.error")
+    @patch("src.adapters.api.aws.LOGGER.error")
     def test_create_http_error_dict_happy_path(
         self,
         mock_error: MagicMock
@@ -80,10 +80,8 @@ class TestAWS(unittest.TestCase):
     @patch("src.adapters.api.aws.create_user_uri")
     @patch("src.adapters.api.aws.get_configuration")
     @patch("src.adapters.api.aws.check_env_variable")
-    @patch("cumulus_logger.CumulusLogger.setMetadata")
     def test_handler_happy_path(
         self,
-        mock_setMetadata: MagicMock,
         mock_check_env_variable: MagicMock,
         mock_get_configuration: MagicMock,
         mock_create_user_uri: MagicMock,
@@ -136,7 +134,6 @@ class TestAWS(unittest.TestCase):
 
         result = aws.handler(event, context)
 
-        mock_setMetadata.assert_called_once_with(event, context)
         mock_check_env_variable.assert_called_once_with(
             aws.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY
         )
@@ -178,10 +175,8 @@ class TestAWS(unittest.TestCase):
     @patch("src.adapters.api.aws.create_http_error_dict")
     @patch("src.adapters.api.aws.StorageAdapterPostgres")
     @patch("src.adapters.api.aws.get_orphans_page.task")
-    @patch("cumulus_logger.CumulusLogger.setMetadata")
     def test_handler_missing_page_index_returns_error(
         self,
-        mock_setMetadata: MagicMock,
         mock_task: MagicMock,
         mock_storage_adapter_postgres: MagicMock,
         mock_create_http_error_dict: MagicMock,
@@ -196,7 +191,6 @@ class TestAWS(unittest.TestCase):
 
         result = aws.handler(event, context)
 
-        mock_setMetadata.assert_called_once_with(event, context)
         mock_task.assert_not_called()
 
         mock_create_http_error_dict.assert_called_once_with(
@@ -215,10 +209,8 @@ class TestAWS(unittest.TestCase):
     @patch("src.adapters.api.aws.create_user_uri")
     @patch("src.adapters.api.aws.get_configuration")
     @patch("src.adapters.api.aws.check_env_variable")
-    @patch("cumulus_logger.CumulusLogger.setMetadata")
     def test_handler_bad_output_raises_error(
         self,
-        mock_setMetadata: MagicMock,
         mock_check_env_variable: MagicMock,
         mock_get_configuration: MagicMock,
         mock_create_user_uri: MagicMock,
@@ -259,7 +251,6 @@ class TestAWS(unittest.TestCase):
 
         result = aws.handler(event, context)
 
-        mock_setMetadata.assert_called_once_with(event, context)
         mock_check_env_variable.assert_called_once_with(
             aws.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY
         )

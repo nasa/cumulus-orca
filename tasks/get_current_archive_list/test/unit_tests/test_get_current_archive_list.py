@@ -1013,7 +1013,6 @@ class TestGetCurrentArchiveList(
         ):
             result = get_current_archive_list.handler(event, mock_context)
 
-        mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
         mock_get_s3_credentials_from_secrets_manager.assert_called_once_with(
             mock_check_env_variable(
                 get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY))
@@ -1096,7 +1095,6 @@ class TestGetCurrentArchiveList(
             ):
                 get_current_archive_list.handler(event, mock_context)
 
-        mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
         mock_get_message_from_queue.assert_called_once_with(
             mock_check_env_variable(
                 get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY))

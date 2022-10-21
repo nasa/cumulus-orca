@@ -10,14 +10,15 @@ from typing import Any, Dict, List, Optional
 
 # noinspection SpellCheckingInspection
 import fastjsonschema as fastjsonschema
-from cumulus_logger import CumulusLogger
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext
 from orca_shared.database import shared_db
 from orca_shared.recovery import shared_recovery
 from orca_shared.recovery.shared_recovery import OrcaStatus, RequestMethod
 from sqlalchemy import text
 from sqlalchemy.future import Engine
 
-LOGGER = CumulusLogger()
+LOGGER = Logger()
 # Generating schema validators can take time, so do it once and reuse.
 try:
     with open("schemas/new_job_input.json", "r") as raw_schema:
@@ -311,7 +312,8 @@ def update_job_sql() -> text:  # pragma: no cover
     )
 
 
-def handler(event: Dict[str, List], context) -> None:
+@LOGGER.inject_lambda_context
+def handler(event: Dict[str, List], context: LambdaContext) -> None:
     """
     Lambda handler. Receives a list of queue entries from an SQS queue,
     and posts them to a database.
@@ -327,14 +329,13 @@ def handler(event: Dict[str, List], context) -> None:
                 'messageAttributes' (Dict): A dict with the following keys
                     defined in the functions that write to queue.
                     'RequestMethod' (str): Matches to a shared_recovery.RequestMethod.
-        context: An object passed through by AWS. Used for tracking.
+        context: This object provides information about the lambda invocation, function,
+            and execution env.
     Environment Vars:
         DB_CONNECT_INFO_SECRET_ARN (string):
             Secret ARN of the AWS secretsmanager secret for connecting to the database.
         See shared_db.py's get_configuration for further details.
     """
-    LOGGER.setMetadata(event, context)
-
     # get the secret ARN from the env variable
     try:
         db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]

@@ -6,7 +6,7 @@ Description:  Unit tests for db_deploy.py.
 import os
 import unittest
 import uuid
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 from orca_shared.database.entities import PostgresConnectionInfo
 
@@ -36,6 +36,7 @@ class TestDbDeployFunctions(unittest.TestCase):
         # Set values for the test
         # todo: Switch to randomized values generated per-test.
         event = {"orcaBuckets": ["orca_worm", "orca_versioned", "orca_special"]}
+        context = Mock()
         config = PostgresConnectionInfo(  # nosec
             admin_database_name="admin_db",
             admin_username="admin", admin_password="admin123",
@@ -45,10 +46,10 @@ class TestDbDeployFunctions(unittest.TestCase):
         mock_get_configuration.return_value = config
 
         # Run the function
-        db_deploy.handler(event, {})
+        db_deploy.handler(event, context)
 
         # Check tests
-        mock_get_configuration.assert_called_once_with("test", db_deploy.logger)
+        mock_get_configuration.assert_called_once_with("test", db_deploy.LOGGER)
         mock_task.assert_called_with(config, event["orcaBuckets"])
 
     @patch("db_deploy.get_configuration")
@@ -78,12 +79,13 @@ class TestDbDeployFunctions(unittest.TestCase):
             user_database_name="user_db", host="aws.postgresrds.host", port="5432"
         )
         mock_get_configuration.return_value = config
+        context = Mock()
 
         # Run the function and see if it fails with a value error
         for event in events:
             with self.subTest(event=event):
                 with self.assertRaises(ValueError) as ve:
-                    db_deploy.handler(event, {})
+                    db_deploy.handler(event, context)
 
                 value_error_message = str(ve.exception)
                 self.assertEqual(
@@ -123,7 +125,7 @@ class TestDbDeployFunctions(unittest.TestCase):
 
         # Check function calls
         mock_create_admin_uri.assert_called_once_with(
-            config, db_deploy.logger
+            config, db_deploy.LOGGER
         )
         mock_create_engine.assert_called_once_with(
             mock_create_admin_uri.return_value, future=True
@@ -199,7 +201,7 @@ class TestDbDeployFunctions(unittest.TestCase):
 
     @patch("db_deploy.create_engine")
     @patch("db_deploy.create_admin_uri")
-    @patch("db_deploy.logger.info")
+    @patch("db_deploy.LOGGER.info")
     @patch("db_deploy.get_migration_version")
     @patch("db_deploy.app_schema_exists")
     @patch("db_deploy.app_db_exists")
