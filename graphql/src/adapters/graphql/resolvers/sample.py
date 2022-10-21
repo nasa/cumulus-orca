@@ -1,17 +1,23 @@
 from src.adapters.graphql.dataTypes.common import InternalServerErrorStrawberryType
-from src.adapters.graphql.dataTypes.echo import GetEchoStrawberryResponse, \
-    BoringWordExceptionStrawberryType
+from src.adapters.graphql.dataTypes.sample import BoringWordExceptionStrawberryType, \
+    GetEchoStrawberryResponse
 from src.adapters.graphql.initialized_adapters.adapters import word_generation
 from src.entities.echo import BoringWordException
 from src.use_cases.sample import Test
 
 
 def get_echo(word: str) -> GetEchoStrawberryResponse:
-    # Acts as a translation layer to make Strawberry accept non-strawberry data classes.
     # noinspection PyTypeChecker
+    echo = None
+    error = None
     try:
-        return Test(word_generation).get_echo(word)
+        echo = Test(word_generation).get_echo(word)
     except BoringWordException as ex:
-        return BoringWordExceptionStrawberryType(ex)
+        error = BoringWordExceptionStrawberryType(ex)
     except Exception as ex:
-        return InternalServerErrorStrawberryType(ex)
+        error = InternalServerErrorStrawberryType(ex)
+
+    errors = []
+    if error is not None:
+        errors.append(error)
+    return GetEchoStrawberryResponse(response=echo, error=error)

@@ -4,7 +4,7 @@ from typing import Annotated
 # noinspection PyPackageRequirements
 from strawberry import type, field, argument
 
-from src.adapters.graphql.dataTypes.echo import GetEchoStrawberryResponse
+from src.adapters.graphql.dataTypes.sample import GetEchoStrawberryResponse
 from src.adapters.graphql.resolvers.sample import get_echo
 
 
