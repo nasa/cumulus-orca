@@ -8,7 +8,7 @@ from src.use_cases.adapter_interfaces.word_generation import WordGenerationInter
 from src.use_cases.edge_cursor import EdgeCursor
 
 
-class Echo:
+class Test:
     def __init__(self, word_generation: WordGenerationInterface):
         self.word_generator = word_generation
 

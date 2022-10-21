@@ -4,10 +4,8 @@ from typing import Annotated
 # noinspection PyPackageRequirements
 from strawberry import type, field, argument
 
-from src.adapters import graphql
-from src.adapters.graphql import resolvers
 from src.adapters.graphql.dataTypes.echo import GetEchoStrawberryResponse
-from src.adapters.graphql.resolvers.echo import get_echo
+from src.adapters.graphql.resolvers.sample import get_echo
 
 
 @type
@@ -23,4 +21,4 @@ class Queries:
                         )
                         ] = None,  # Default value actually MAKES it optional
     ) -> GetEchoStrawberryResponse:
-        return graphql.resolvers.echo.get_echo(word)
+        return get_echo(word)
