@@ -10,11 +10,9 @@ from http import HTTPStatus
 from typing import Any, Dict, List, Union
 
 import fastjsonschema as fastjsonschema
-from fastjsonschema import JsonSchemaException
-from typing import Dict, List, Union
-
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
+from fastjsonschema import JsonSchemaException
 
 # Set AWS powertools logger
 LOGGER = Logger()
@@ -48,7 +46,7 @@ def task(event, context):  # pylint: disable-msg=unused-argument
     """
     LOGGER.debug(f"event: {event}")
     try:
-        config = event["config"]
+        config = event["task_config"]
         exclude_file_types = config.get(CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY, None)
         if exclude_file_types is None:
             exclude_file_types = []
@@ -124,13 +122,13 @@ def get_regex_buckets(event) -> Dict[str, str]:
             ExtractFilePathsError: An error occurred parsing the input.
     """
     try:
-        file_buckets = event["config"][CONFIG_FILE_BUCKETS_KEY]
+        file_buckets = event["task_config"][CONFIG_FILE_BUCKETS_KEY]
         # file_buckets example:
         # [{'regex': '.*.h5$', 'sampleFileName': 'L0A_0420.h5', 'bucket': 'protected'},
         # {'regex': '.*.iso.xml$', 'sampleFileName': 'L0A_0420.iso.xml', 'bucket': 'protected'},
         # {'regex': '.*.h5.mp$', 'sampleFileName': 'L0A_0420.h5.mp', 'bucket': 'public'},
         # {'regex': '.*.cmr.json$', 'sampleFileName': 'L0A_0420.cmr.json', 'bucket': 'public'}]
-        buckets = event["config"]["buckets"]
+        buckets = event["task_config"]["buckets"]
         # buckets example:
         # {"protected": {"name": "sndbx-cumulus-protected", "type": "protected"},
         # "internal": {"name": "sndbx-cumulus-internal", "type": "internal"},
@@ -145,7 +143,7 @@ def get_regex_buckets(event) -> Dict[str, str]:
         #  '.*.h5.mp$': 'podaac-sndbx-cumulus-public',
         #  '.*.cmr.json$': 'podaac-sndbx-cumulus-public'}
     except KeyError as err:
-        level = "event['config']"
+        level = "event['task_config']"
         message = f'KeyError: "{level}[{str(err)}]" is required'
         LOGGER.error(message)
         raise ExtractFilePathsError(message)
@@ -256,9 +254,9 @@ def handler(event: Dict[str, Union[str, int]],
         with open("schemas/input.json", "r") as raw_schema:
             input_schema = json.loads(raw_schema.read())
             _VALIDATE_INPUT = fastjsonschema.compile(input_schema)
-        # with open("schemas/config.json", "r") as raw_schema:
-        #     config_schema = json.loads(raw_schema.read())
-        #     _VALIDATE_CONFIG = fastjsonschema.compile(config_schema)
+        with open("schemas/config.json", "r") as raw_schema:
+            config_schema = json.loads(raw_schema.read())
+            _VALIDATE_CONFIG = fastjsonschema.compile(config_schema)
     except Exception as ex:
         LOGGER.error(f"Could not build schema validator: {ex}")
         raise
@@ -273,15 +271,14 @@ def handler(event: Dict[str, Union[str, int]],
             json_schema_exception.__str__(),
         )
 
-    # try:
-    #     _VALIDATE_CONFIG(event["meta"]["collection"]["files"])
-    # except JsonSchemaException as json_schema_exception:
-    #     return create_http_error_dict(
-    #         "BadRequest",
-    #         HTTPStatus.BAD_REQUEST,
-    #         context.aws_request_id,
-    #         json_schema_exception.__str__(),
-    #     )
-
+    try:
+        _VALIDATE_CONFIG(event["task_config"])
+    except JsonSchemaException as json_schema_exception:
+        return create_http_error_dict(
+            "BadRequest",
+            HTTPStatus.BAD_REQUEST,
+            context.aws_request_id,
+            json_schema_exception.__str__(),
+        )
     result = task(event, context)
     return result

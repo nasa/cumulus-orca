@@ -32,7 +32,7 @@ class TestExtractFilePaths(unittest.TestCase):
     @patch("extract_filepaths_for_granule.task")
     def test_handler_happy_path(self, mock_task: MagicMock):
         """
-        Tests that between the lambda handler and CMA, input is translated into what task expects.
+        Tests happy path for lambda handler.
         """
         handler_input_event = create_handler_event()
         handler_input_event["task_config"] = {
@@ -66,10 +66,6 @@ class TestExtractFilePaths(unittest.TestCase):
             },
         }
 
-        expected_task_input = {
-            "input": handler_input_event["payload"],
-            # "config": handler_input_event["task_config"],
-        }
         mock_task.return_value = {
             "granules": [
                 {
@@ -83,9 +79,7 @@ class TestExtractFilePaths(unittest.TestCase):
         }
         context = Mock()
         result = extract_filepaths_for_granule.handler(handler_input_event, context)
-        mock_task.assert_called_once_with(expected_task_input, context)
-
-        self.assertEqual(mock_task.return_value, result["payload"])
+        self.assertEqual(result, mock_task.return_value)
 
     @patch("extract_filepaths_for_granule.LOGGER.debug")
     def test_task(self, mock_debug: MagicMock):
@@ -219,11 +213,11 @@ class TestExtractFilePaths(unittest.TestCase):
         Test no key in input event.
         """
         self.task_input_event["input"].pop("granules", None)
-        self.task_input_event["config"]["protected-bucket"] = "my_protected_bucket"
-        self.task_input_event["config"]["internal-bucket"] = "my_internal_bucket"
-        self.task_input_event["config"]["private-bucket"] = "my_private_bucket"
-        self.task_input_event["config"]["public-bucket"] = "my_public_bucket"
-        self.task_input_event["config"][
+        self.task_input_event["task_config"]["protected-bucket"] = "my_protected_bucket"
+        self.task_input_event["task_config"]["internal-bucket"] = "my_internal_bucket"
+        self.task_input_event["task_config"]["private-bucket"] = "my_private_bucket"
+        self.task_input_event["task_config"]["public-bucket"] = "my_public_bucket"
+        self.task_input_event["task_config"][
             extract_filepaths_for_granule.CONFIG_FILE_BUCKETS_KEY
         ] = [
             {"regex": ".*.h5$", "sampleFileName": "L_10-420.h5", "bucket": "protected"},
