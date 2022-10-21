@@ -7,17 +7,9 @@ from src.use_cases.sample import Test
 
 
 def get_echo(word: str) -> GetEchoStrawberryResponse:
-    # noinspection PyTypeChecker
-    echo = None
-    error = None
     try:
-        echo = Test(word_generation).get_echo(word)
+        return Test(word_generation).get_echo(word)
     except BoringWordException as ex:
-        error = BoringWordExceptionStrawberryType(ex)
+        return BoringWordExceptionStrawberryType(ex)
     except Exception as ex:
-        error = InternalServerErrorStrawberryType(ex)
-
-    errors = []
-    if error is not None:
-        errors.append(error)
-    return GetEchoStrawberryResponse(response=echo, error=error)
+        return InternalServerErrorStrawberryType(ex)

@@ -16,14 +16,7 @@ class BoringWordExceptionStrawberryType(ErrorStrawberryTypeInterface):
         self.message = f"{ex.word} is far too boring. Please try again."
 
 
-GetEchoStrawberryErrors = strawberry.union(
-    "GetEchoErrors",
-    [InternalServerErrorStrawberryType, BoringWordExceptionStrawberryType]
+GetEchoStrawberryResponse = strawberry.union(
+    "GetEchoStrawberryResponse",
+    [Edge[Echo], InternalServerErrorStrawberryType, BoringWordExceptionStrawberryType]
 )
-
-
-@strawberry.type
-@dataclasses.dataclass
-class GetEchoStrawberryResponse:
-    response: Optional[Edge[Echo]]
-    error: Optional[GetEchoStrawberryErrors]  # todo: add recommendation to docs to ALWAYS request ErrorStrawberryTypeInterface with __typename and message properties

@@ -1,14 +1,16 @@
 import traceback
 
-# noinspection PyPackageRequirements
 from dataclasses import dataclass
 from typing import Generic
 
+# noinspection PyPackageRequirements
 import strawberry
 
 from src.entities.common import GenericType
 
 
+# alternate error logic approaches:
+# https://productionreadygraphql.com/2020-08-01-guide-to-graphql-errors
 @strawberry.interface
 class ErrorStrawberryTypeInterface:
     message: str
@@ -24,13 +26,3 @@ class InternalServerErrorStrawberryType(ErrorStrawberryTypeInterface):
                        "Please review the logs and contact support if needed."
         self.exception_message = str(ex)
         self.stack_trace = traceback.format_exc()
-
-
-@strawberry.type
-@dataclass
-class ResponseStrawberryType(Generic[GenericType]):
-    """
-    A generic structure to standardize returning either a response or an error.
-    """
-    response: GenericType
-    error: ErrorStrawberryTypeInterface

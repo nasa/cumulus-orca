@@ -42,6 +42,7 @@ todo
 ### Customer-Accessible Schemas
 See [ORCA API Reference](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api) 
 for customer-centric API documentation.
+# todo: add recommendation to docs to ALWAYS request ErrorStrawberryTypeInterface with __typename and message properties
 
 ### Orca-Internal Schemas
 todo
