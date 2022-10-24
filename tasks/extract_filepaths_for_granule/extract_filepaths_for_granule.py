@@ -6,8 +6,7 @@ Description:  Extracts the keys (filepaths) for a granule's files from a Cumulus
 
 import json
 import re
-from http import HTTPStatus
-from typing import Any, Dict, List, Union
+from typing import Dict, List, Union
 
 import fastjsonschema as fastjsonschema
 from aws_lambda_powertools import Logger
@@ -22,6 +21,18 @@ CONFIG_FILE_BUCKETS_KEY = "fileBucketMaps"
 
 OUTPUT_DESTINATION_BUCKET_KEY = "destBucket"
 OUTPUT_KEY_KEY = "key"
+
+# Generating schema validators can take time, so do it once and reuse.
+try:
+    with open("schemas/input.json", "r") as raw_schema:
+        input_schema = json.loads(raw_schema.read())
+        _VALIDATE_INPUT = fastjsonschema.compile(input_schema)
+    with open("schemas/config.json", "r") as raw_schema:
+        config_schema = json.loads(raw_schema.read())
+        _VALIDATE_CONFIG = fastjsonschema.compile(config_schema)
+except Exception as ex:
+    LOGGER.error(f"Could not build schema validator: {ex}")
+    raise
 
 
 class ExtractFilePathsError(Exception):
@@ -170,32 +181,6 @@ def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> b
     return False
 
 
-def create_http_error_dict(
-        error_type: str, http_status_code: int, request_id: str, message: str
-) -> Dict[str, Any]:
-    """
-    Creates a standardized dictionary for error reporting.
-    Args:
-        error_type: The string representation of http_status_code.
-        http_status_code: The integer representation of the http error.
-        request_id: The incoming request's id.
-        message: The message to display to the user and to record for debugging.
-    Returns:
-        A dict with the following keys:
-            'errorType' (str)
-            'httpStatus' (int)
-            'requestId' (str)
-            'message' (str)
-    """
-    LOGGER.error(message)
-    return {
-        "errorType": error_type,
-        "httpStatus": http_status_code,
-        "requestId": request_id,
-        "message": message,
-    }
-
-
 @LOGGER.inject_lambda_context
 def handler(event: Dict[str, Union[str, int]],
             context: LambdaContext):  # pylint: disable-msg=unused-argument
@@ -249,36 +234,17 @@ def handler(event: Dict[str, Union[str, int]],
         ExtractFilePathsError: An error occurred parsing the input.
     """
 
-    # Generating schema validators can take time, so do it once and reuse.
-    try:
-        with open("schemas/input.json", "r") as raw_schema:
-            input_schema = json.loads(raw_schema.read())
-            _VALIDATE_INPUT = fastjsonschema.compile(input_schema)
-        with open("schemas/config.json", "r") as raw_schema:
-            config_schema = json.loads(raw_schema.read())
-            _VALIDATE_CONFIG = fastjsonschema.compile(config_schema)
-    except Exception as ex:
-        LOGGER.error(f"Could not build schema validator: {ex}")
-        raise
-
     try:
         _VALIDATE_INPUT(event["payload"])
     except JsonSchemaException as json_schema_exception:
-        return create_http_error_dict(
-            "BadRequest",
-            HTTPStatus.BAD_REQUEST,
-            context.aws_request_id,
-            json_schema_exception.__str__(),
-        )
+        LOGGER.error(json_schema_exception)
+        raise
 
     try:
         _VALIDATE_CONFIG(event["task_config"])
     except JsonSchemaException as json_schema_exception:
-        return create_http_error_dict(
-            "BadRequest",
-            HTTPStatus.BAD_REQUEST,
-            context.aws_request_id,
-            json_schema_exception.__str__(),
-        )
+        LOGGER.error(json_schema_exception)
+        raise
+
     result = task(event, context)
     return result
