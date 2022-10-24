@@ -30,6 +30,9 @@ try:
     with open("schemas/config.json", "r") as raw_schema:
         config_schema = json.loads(raw_schema.read())
         _VALIDATE_CONFIG = fastjsonschema.compile(config_schema)
+    with open("schemas/output.json", "r") as raw_schema:
+        output_schema = json.loads(raw_schema.read())
+        _VALIDATE_OUTPUT = fastjsonschema.compile(output_schema)
 except Exception as ex:
     LOGGER.error(f"Could not build schema validator: {ex}")
     raise
@@ -247,4 +250,11 @@ def handler(event: Dict[str, Union[str, int]],
         raise
 
     result = task(event, context)
+
+    try:
+        _VALIDATE_OUTPUT(result)
+    except JsonSchemaException as json_schema_exception:
+        LOGGER.error(json_schema_exception)
+        raise
+
     return result
