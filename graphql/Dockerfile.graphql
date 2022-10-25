@@ -56,5 +56,5 @@ HEALTHCHECK --interval=60s --timeout=5s --start-period=30s --retries=3 \
 
 ENV PYTHONPATH="/app:$PYTHONPATH"
 # Set the entry point for the container
-# CMD ["python", "src/adapters/webserver/main.py"]
-ENTRYPOINT ["python", "src/adapters/webserver/main.py"]
+CMD ["python", "src/adapters/webserver/main.py"]
+# ENTRYPOINT ["python", "src/adapters/webserver/main.py"]
