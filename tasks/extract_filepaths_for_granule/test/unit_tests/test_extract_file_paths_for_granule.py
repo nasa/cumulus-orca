@@ -189,20 +189,20 @@ class TestExtractFilePaths(unittest.TestCase):
 
         exp_key1 = {
             extract_filepaths_for_granule.OUTPUT_KEY_KEY: self.task_input_event[
-                "input"
-            ]["granules"][0]["files"][0]["key"],
+                "event"
+            ]["payload"]["granules"][0]["files"][0]["key"],
             extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: "sndbx-cumulus-protected",
         }
         exp_key2 = {
             extract_filepaths_for_granule.OUTPUT_KEY_KEY: self.task_input_event[
-                "input"
-            ]["granules"][0]["files"][1]["key"],
+                "event"
+            ]["payload"]["granules"][0]["files"][1]["key"],
             extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: "sndbx-cumulus-public",
         }
         exp_key3 = {
             extract_filepaths_for_granule.OUTPUT_KEY_KEY: self.task_input_event[
-                "input"
-            ]["granules"][0]["files"][2]["key"],
+                "event"
+            ]["payload"]["granules"][0]["files"][2]["key"],
             extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: "sndbx-cumulus-public",
         }
         exp_gran = {
@@ -246,7 +246,7 @@ class TestExtractFilePaths(unittest.TestCase):
                     "0, 3)}",
                 },
             ],
-            "granuleId": self.task_input_event["input"]["granules"][0]["granuleId"],
+            "granuleId": self.task_input_event["event"]["payload"]["granules"][0]["granuleId"],
             "keys": [exp_key1, exp_key2, exp_key3],
             "version": "006",
         }
@@ -261,8 +261,8 @@ class TestExtractFilePaths(unittest.TestCase):
         """
         Test no 'granules' key in input event.
         """
-        self.task_input_event["input"].pop("granules", None)
-        exp_err = "KeyError: \"event['input']['granules']\" is required"
+        self.task_input_event["event"]["payload"].pop("granules", None)
+        exp_err = "KeyError: \"event['event']['payload']['granules']\" is required"
         extract_filepaths_for_granule.LOGGER.error = Mock()
         context = Mock()
         try:
@@ -276,9 +276,9 @@ class TestExtractFilePaths(unittest.TestCase):
         """
         Test no granuleId in input event.
         """
-        self.task_input_event["input"]["granules"][0] = {"files": []}
+        self.task_input_event["event"]["payload"]["granules"][0] = {"files": []}
 
-        exp_err = "KeyError: \"event['input']['granules'][]['granuleId']\" is required"
+        exp_err = "KeyError: \"event['event']['payload']['granules'][]['granuleId']\" is required"
         extract_filepaths_for_granule.LOGGER.error = Mock()
         context = Mock()
         try:
@@ -292,12 +292,12 @@ class TestExtractFilePaths(unittest.TestCase):
         """
         Test no files in input event.
         """
-        self.task_input_event["input"]["granules"][0].pop("files", None)
+        self.task_input_event["event"]["payload"]["granules"][0].pop("files", None)
         self.task_input_event["granules"] = [
             {"granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321"}
         ]
 
-        exp_err = "KeyError: \"event['input']['granules'][]['files']\" is required"
+        exp_err = "KeyError: \"event['event']['payload']['granules'][]['files']\" is required"
         context = Mock()
         try:
             extract_filepaths_for_granule.task(self.task_input_event, context)
@@ -310,7 +310,7 @@ class TestExtractFilePaths(unittest.TestCase):
         """
         Test no key in input event.
         """
-        self.task_input_event["input"].pop("granules", None)
+        self.task_input_event["event"]["payload"].pop("granules", None)
         self.task_input_event["task_config"]["protected-bucket"] = "my_protected_bucket"
         self.task_input_event["task_config"]["internal-bucket"] = "my_internal_bucket"
         self.task_input_event["task_config"]["private-bucket"] = "my_private_bucket"
@@ -335,7 +335,7 @@ class TestExtractFilePaths(unittest.TestCase):
                 "bucket": "public",
             },
         ]
-        self.task_input_event["input"]["granules"] = [
+        self.task_input_event["event"]["payload"]["granules"] = [
             {
                 "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
                 "files": [
@@ -347,7 +347,7 @@ class TestExtractFilePaths(unittest.TestCase):
             }
         ]
         exp_err = (
-            "KeyError: \"event['input']['granules'][]['files']['key']\" is required"
+            "KeyError: \"event['event']['payload']['granules'][]['files']['key']\" is required"
         )
         context = Mock()
         try:
@@ -361,7 +361,7 @@ class TestExtractFilePaths(unittest.TestCase):
         """
         Test with one valid file in input.
         """
-        self.task_input_event["input"]["granules"] = [
+        self.task_input_event["event"]["payload"]["granules"] = [
             {
                 "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
                 "files": [
@@ -407,7 +407,7 @@ class TestExtractFilePaths(unittest.TestCase):
         """
         If no destination bucket can be determined, raise a descriptive error.
         """
-        self.task_input_event["input"]["granules"] = [
+        self.task_input_event["event"]["payload"]["granules"] = [
             {
                 "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
                 "files": [
@@ -434,7 +434,7 @@ class TestExtractFilePaths(unittest.TestCase):
         "extract_filepaths_for_granule/test/unit_tests/testevents/task_event.json" includes
         "excludedFileExtensions": [".cmr"]
         """
-        self.task_input_event["input"]["granules"] = [
+        self.task_input_event["event"]["payload"]["granules"] = [
             {
                 "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
                 "files": [
@@ -474,7 +474,7 @@ class TestExtractFilePaths(unittest.TestCase):
         Test with two granules, one key each.
         """
 
-        self.task_input_event["input"]["granules"] = [
+        self.task_input_event["event"]["payload"]["granules"] = [
             {
                 "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
                 "files": [

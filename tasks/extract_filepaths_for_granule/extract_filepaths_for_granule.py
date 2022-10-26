@@ -58,7 +58,7 @@ def task(event, context):  # pylint: disable-msg=unused-argument
         Raises:
             ExtractFilePathsError: An error occurred parsing the input.
     """
-    LOGGER.debug(f"event: {event}")
+    LOGGER.error(f"event: {event}")
     try:
         config = event["task_config"]
         exclude_file_types = config.get(CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY, None)
@@ -80,15 +80,15 @@ def task(event, context):  # pylint: disable-msg=unused-argument
     result = {}
     try:
         regex_buckets = get_regex_buckets(event)
-        level = "event['input']"
+        level = "event['event']['payload']"
         grans = []
-        for ev_granule in event["input"]["granules"]:
+        for ev_granule in event["event"]["payload"]["granules"]:
             gran = ev_granule.copy()
             files = []
-            level = "event['input']['granules'][]"
+            level = "event['event']['payload']['granules'][]"
             gran["granuleId"] = ev_granule["granuleId"]
             for afile in ev_granule["files"]:
-                level = "event['input']['granules'][]['files']"
+                level = "event['event']['payload']['granules'][]['files']"
                 file_name = afile["fileName"]
                 LOGGER.debug(f"Validating file {file_name}")
                 # filtering excludedFileExtensions
@@ -236,9 +236,7 @@ def handler(event: Dict[str, Union[str, int]],
     Raises:
         ExtractFilePathsError: An error occurred parsing the input.
     """
-
-    LOGGER.debug(event)
-
+    LOGGER.error(event)
     try:
         _VALIDATE_INPUT(event["event"]["payload"])
     except JsonSchemaException as json_schema_exception:
