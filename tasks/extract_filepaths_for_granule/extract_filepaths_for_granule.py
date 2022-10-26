@@ -237,8 +237,10 @@ def handler(event: Dict[str, Union[str, int]],
         ExtractFilePathsError: An error occurred parsing the input.
     """
 
+    LOGGER.debug(event)
+
     try:
-        _VALIDATE_INPUT(event["payload"])
+        _VALIDATE_INPUT(event["event"]["payload"])
     except JsonSchemaException as json_schema_exception:
         LOGGER.error(json_schema_exception)
         raise

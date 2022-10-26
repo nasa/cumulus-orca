@@ -127,25 +127,28 @@ class TestExtractFilePaths(unittest.TestCase):
         Tests that expected error is raised on bad input such as missing granuleId.
         """
         bad_handler_input_event = {
-            "payload": {
-                "granules": [
-                    {
-                        "status": "completed",
-                        "files": [
+            "event":
+                {
+                    "payload": {
+                        "granules": [
                             {
-                                "checksumType": "md5",
-                                "bucket": "podaac-ngap-dev-cumulus-test-input",
-                                "type": "data",
-                                "fileName": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
-                                "key": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
-                                "size": 2154070040
+                                "status": "completed",
+                                "files": [
+                                    {
+                                        "checksumType": "md5",
+                                        "bucket": "podaac-ngap-dev-cumulus-test-input",
+                                        "type": "data",
+                                        "fileName": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
+                                        "key": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
+                                        "size": 2154070040
+                                    }
+                                ],
+                                "endingDateTime": "2015-09-25T23:29:57.000Z",
                             }
-                        ],
-                        "endingDateTime": "2015-09-25T23:29:57.000Z",
+                        ]
                     }
-                ]
-            }
-        }
+                 }
+             }
         bad_handler_input_event["task_config"] = Mock()
         context = Mock()
         with self.assertRaises(Exception) as ex:

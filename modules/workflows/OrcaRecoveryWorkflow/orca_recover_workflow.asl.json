@@ -7,9 +7,9 @@
       "Parameters": {
         "event.$": "$",
         "task_config": {
-          "buckets": "{$.meta.buckets}",
-          "fileBucketMaps": "{$.meta.collection.files}",
-          "excludedFileExtensions": "{$.meta.collection.meta.orca.excludedFileExtensions}"
+          "buckets.$": "$.event.meta.buckets",
+          "fileBucketMaps.$": "$.meta.collection.files",
+          "excludedFileExtensions.$": "$.meta.collection.meta.orca.excludedFileExtensions"
         }
       },
       "Type": "Task",

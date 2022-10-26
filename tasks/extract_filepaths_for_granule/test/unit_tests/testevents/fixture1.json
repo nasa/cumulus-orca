@@ -1,242 +1,245 @@
 {
-  "cumulus_meta": {
-    "task": "extract_filepaths_for_granule",
-    "message_source": "local",
-    "workflow_start_time": 1569004208554,
-    "execution_name": "20191023_1148",
-    "system_bucket": "podaac-sndbx-cumulus-internal"
-  },
-  "meta": {
-    "templates": {
-      "IngestKinesisECS": "s3://podaac-sndbx-cumulus-internal/podaac-sndbx-cumulus/workflows/IngestKinesisECS.json",
-      "IngestKinesisECSL0A": "s3://podaac-sndbx-cumulus-internal/podaac-sndbx-cumulus/workflows/IngestKinesisECSL0A.json",
-      "DrRecoveryWorkflow": "s3://podaac-sndbx-cumulus-internal/podaac-sndbx-cumulus/workflows/DrRecoveryWorkflow.json",
-      "IngestKinesisTar": "s3://podaac-sndbx-cumulus-internal/podaac-sndbx-cumulus/workflows/IngestKinesisTar.json",
-      "IngestKinesisL0A": "s3://podaac-sndbx-cumulus-internal/podaac-sndbx-cumulus/workflows/IngestKinesisL0A.json",
-      "IngestKinesisTarLegacy": "s3://podaac-sndbx-cumulus-internal/podaac-sndbx-cumulus/workflows/IngestKinesisTarLegacy.json",
-      "IngestKinesis": "s3://podaac-sndbx-cumulus-internal/podaac-sndbx-cumulus/workflows/IngestKinesis.json"
+  "event":
+    {
+    "cumulus_meta": {
+      "task": "extract_filepaths_for_granule",
+      "message_source": "local",
+      "workflow_start_time": 1569004208554,
+      "execution_name": "20191023_1148",
+      "system_bucket": "podaac-sndbx-cumulus-internal"
     },
-    "workflow_name": "DrRecoveryWorkflow",
-    "queues": {
-      "dbIndexerDeadLetterQueue": "https://sqs.us-west-2.amazonaws.com/065089468788/podaac-sndbx-cumulus-dbIndexerDeadLetterQueue",
-      "jobsDeadLetterQueue": "https://sqs.us-west-2.amazonaws.com/065089468788/podaac-sndbx-cumulus-jobsDeadLetterQueue",
-      "log2elasticsearchDeadLetterQueue": "https://sqs.us-west-2.amazonaws.com/065089468788/podaac-sndbx-cumulus-log2elasticsearchDeadLetterQueue",
-      "triggerLambdaFailure": "https://sqs.us-west-2.amazonaws.com/065089468788/podaac-sndbx-cumulus-triggerLambdaFailure",
-      "EmsReportDeadLetterQueue": "https://sqs.us-west-2.amazonaws.com/065089468788/podaac-sndbx-cumulus-EmsReportDeadLetterQueue",
-      "startSF": "https://sqs.us-west-2.amazonaws.com/065089468788/podaac-sndbx-cumulus-startSF",
-      "cleanExecutionsDeadLetterQueue": "https://sqs.us-west-2.amazonaws.com/065089468788/podaac-sndbx-cumulus-cleanExecutionsDeadLetterQueue",
-      "ScheduleSFDeadLetterQueue": "https://sqs.us-west-2.amazonaws.com/065089468788/podaac-sndbx-cumulus-ScheduleSFDeadLetterQueue",
-      "sns2elasticsearchDeadLetterQueue": "https://sqs.us-west-2.amazonaws.com/065089468788/podaac-sndbx-cumulus-sns2elasticsearchDeadLetterQueue",
-      "kinesisFailure": "https://sqs.us-west-2.amazonaws.com/065089468788/podaac-sndbx-cumulus-kinesisFailure"
-    },
-    "collection": {
-      "files": [
-        {
-          "regex": ".*.h5$",
-          "sampleFileName": "L0A_HR_RAW_product_0003-of-0420.h5",
-          "bucket": "protected"
+    "meta": {
+      "templates": {
+        "IngestKinesisECS": "s3://podaac-sndbx-cumulus-internal/podaac-sndbx-cumulus/workflows/IngestKinesisECS.json",
+        "IngestKinesisECSL0A": "s3://podaac-sndbx-cumulus-internal/podaac-sndbx-cumulus/workflows/IngestKinesisECSL0A.json",
+        "DrRecoveryWorkflow": "s3://podaac-sndbx-cumulus-internal/podaac-sndbx-cumulus/workflows/DrRecoveryWorkflow.json",
+        "IngestKinesisTar": "s3://podaac-sndbx-cumulus-internal/podaac-sndbx-cumulus/workflows/IngestKinesisTar.json",
+        "IngestKinesisL0A": "s3://podaac-sndbx-cumulus-internal/podaac-sndbx-cumulus/workflows/IngestKinesisL0A.json",
+        "IngestKinesisTarLegacy": "s3://podaac-sndbx-cumulus-internal/podaac-sndbx-cumulus/workflows/IngestKinesisTarLegacy.json",
+        "IngestKinesis": "s3://podaac-sndbx-cumulus-internal/podaac-sndbx-cumulus/workflows/IngestKinesis.json"
+      },
+      "workflow_name": "DrRecoveryWorkflow",
+      "queues": {
+        "dbIndexerDeadLetterQueue": "https://sqs.us-west-2.amazonaws.com/065089468788/podaac-sndbx-cumulus-dbIndexerDeadLetterQueue",
+        "jobsDeadLetterQueue": "https://sqs.us-west-2.amazonaws.com/065089468788/podaac-sndbx-cumulus-jobsDeadLetterQueue",
+        "log2elasticsearchDeadLetterQueue": "https://sqs.us-west-2.amazonaws.com/065089468788/podaac-sndbx-cumulus-log2elasticsearchDeadLetterQueue",
+        "triggerLambdaFailure": "https://sqs.us-west-2.amazonaws.com/065089468788/podaac-sndbx-cumulus-triggerLambdaFailure",
+        "EmsReportDeadLetterQueue": "https://sqs.us-west-2.amazonaws.com/065089468788/podaac-sndbx-cumulus-EmsReportDeadLetterQueue",
+        "startSF": "https://sqs.us-west-2.amazonaws.com/065089468788/podaac-sndbx-cumulus-startSF",
+        "cleanExecutionsDeadLetterQueue": "https://sqs.us-west-2.amazonaws.com/065089468788/podaac-sndbx-cumulus-cleanExecutionsDeadLetterQueue",
+        "ScheduleSFDeadLetterQueue": "https://sqs.us-west-2.amazonaws.com/065089468788/podaac-sndbx-cumulus-ScheduleSFDeadLetterQueue",
+        "sns2elasticsearchDeadLetterQueue": "https://sqs.us-west-2.amazonaws.com/065089468788/podaac-sndbx-cumulus-sns2elasticsearchDeadLetterQueue",
+        "kinesisFailure": "https://sqs.us-west-2.amazonaws.com/065089468788/podaac-sndbx-cumulus-kinesisFailure"
+      },
+      "collection": {
+        "files": [
+          {
+            "regex": ".*.h5$",
+            "sampleFileName": "L0A_HR_RAW_product_0003-of-0420.h5",
+            "bucket": "protected"
+          },
+          {
+            "regex": ".*.iso.xml$",
+            "sampleFileName": "L0A_HR_RAW_product_0003-of-0420.iso.xml",
+            "bucket": "protected"
+          },
+          {
+            "regex": ".*.h5.mp$",
+            "sampleFileName": "L0A_HR_RAW_product_0003-of-0420.h5.mp",
+            "bucket": "public"
+          },
+          {
+            "regex": ".*.cmr.json$",
+            "sampleFileName": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
+            "bucket": "public"
+          }
+        ],
+        "name": "L0A_HR_RAW",
+        "granuleIdExtraction": "^(.*)((\\.cmr\\.json)|(\\.iso\\.xml)|(\\.tar\\.gz)|(\\.h5)|(\\.h5\\.mp))$",
+        "granuleId": "^.*$",
+        "dataType": "L0A_HR_RAW",
+        "provider_path": "L0A_HR_RAW/",
+        "version": "1",
+        "meta": {
+          "response-endpoint": "arn:aws:sns:us-west-2:065089468788:providerResponseSNS",
+          "archiveBucket": "podaac-sndbx-cumulus-archive",
+          "granuleRecoveryWorkflow": "DrRecoveryWorkflow",
+          "archive-bucket": "podaac-sndbx-cumulus-archive"
         },
-        {
-          "regex": ".*.iso.xml$",
-          "sampleFileName": "L0A_HR_RAW_product_0003-of-0420.iso.xml",
-          "bucket": "protected"
+        "updatedAt": 1561752645046,
+        "duplicateHandling": "replace",
+        "sampleFileName": "L0A_HR_RAW_product_0003-of-0420.h5",
+        "createdAt": 1561749178492
+      },
+      "stack": "podaac-sndbx-cumulus",
+      "topic_arn": "arn:aws:sns:us-west-2:065089468788:podaac-sndbx-cumulus-sftrackerSns-1BLTYGT1APQP2",
+      "provider": {
+        "protocol": "s3",
+        "globalConnectionLimit": 1000,
+        "host": "podaac-sndbx-cumulus-test-input",
+        "updatedAt": 1563992226210,
+        "id": "podaac-test-s3",
+        "createdAt": 1561749167968
+      },
+      "buckets": {
+        "archive": {
+          "type": "private",
+          "name": "podaac-sndbx-cumulus-archive"
         },
-        {
-          "regex": ".*.h5.mp$",
-          "sampleFileName": "L0A_HR_RAW_product_0003-of-0420.h5.mp",
-          "bucket": "public"
+        "private": {
+          "type": "private",
+          "name": "podaac-sndbx-cumulus-private"
         },
+        "internal": {
+          "type": "internal",
+          "name": "podaac-sndbx-cumulus-internal"
+        },
+        "dashboard": {
+          "type": "public",
+          "name": "podaac-sndbx-cumulus-dashboard"
+        },
+        "protected": {
+          "type": "protected",
+          "name": "podaac-sndbx-cumulus-protected"
+        },
+        "public": {
+          "type": "public",
+          "name": "podaac-sndbx-cumulus-public"
+        }
+      },
+      "distribution_endpoint": "https://7skzc9ilfh.execute-api.us-west-2.amazonaws.com:7000/dev/",
+      "input_granules": [
         {
-          "regex": ".*.cmr.json$",
-          "sampleFileName": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
-          "bucket": "public"
+          "status": "completed",
+          "files": [
+            {
+              "checksumType": "md5",
+              "bucket": "podaac-ngap-dev-cumulus-test-input",
+              "fileName": "L0A_HR_RAW_product_0010L0A_HR_RAW_product_0003of-0420.h5",
+              "source": "s3://podaac-ngap-dev-cumulus-test-input/L0A_HR_RAW/L0A_HR_RAW_product_0003-of-0420.h5",
+              "key": "L0A_HR_RAW_product_0003-of-0420.h5",
+              "type": "data",
+              "size": 2154070040
+            },
+            {
+              "source": "s3://podaac-ngap-dev-cumulus-test-input/L0A_HR_RAW_product_0003-of-0420.cmr.json/L0A_HR_RAW_product_0003-of-0420.cmr.json",
+              "fileName": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
+              "bucket": "podaac-sndbx-cumulus-public",
+              "key": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
+              "size": 1357
+            }
+          ],
+          "endingDateTime": "2015-09-25T23:29:57.000Z",
+          "lastUpdateDateTime": "2019-06-28T19:25:45.204Z",
+          "cmrLink": "https://cmr.uat.earthdata.nasa.gov/search/granules.json?concept_id=G1224390942-PO_NGP_UAT",
+          "granuleId": "L0A_HR_RAW_product_0003-of-0420",
+          "timestamp": 1567713560913,
+          "provider": "podaac-test-s3",
+          "beginningDateTime": "2015-09-25T23:29:32.000Z",
+          "published": true,
+          "createdAt": 1565730008884,
+          "collectionId": "L0A_HR_RAW___1",
+          "error": {
+            "Cause": "\"None\"",
+            "Error": "Unknown Error"
+          },
+          "duration": 1983552.029,
+          "updatedAt": 1567713562601,
+          "execution": "https://console.aws.amazon.com/states/home?region=us-west-2#/executions/details/arn:aws:states:us-west-2:065089468788:execution:podaacSndbxCumulusDrRecoveryWorkflowStateMachine-bI9KMdQJ1ftd:DR_lisa9",
+          "timeToPreprocess": 0,
+          "productVolume": 2154071397,
+          "timeToArchive": 0
         }
       ],
-      "name": "L0A_HR_RAW",
-      "granuleIdExtraction": "^(.*)((\\.cmr\\.json)|(\\.iso\\.xml)|(\\.tar\\.gz)|(\\.h5)|(\\.h5\\.mp))$",
-      "granuleId": "^.*$",
-      "dataType": "L0A_HR_RAW",
-      "provider_path": "L0A_HR_RAW/",
-      "version": "1",
-      "meta": {
-        "response-endpoint": "arn:aws:sns:us-west-2:065089468788:providerResponseSNS",
-        "archiveBucket": "podaac-sndbx-cumulus-archive",
-        "granuleRecoveryWorkflow": "DrRecoveryWorkflow",
-        "archive-bucket": "podaac-sndbx-cumulus-archive"
-      },
-      "updatedAt": 1561752645046,
-      "duplicateHandling": "replace",
-      "sampleFileName": "L0A_HR_RAW_product_0003-of-0420.h5",
-      "createdAt": 1561749178492
-    },
-    "stack": "podaac-sndbx-cumulus",
-    "topic_arn": "arn:aws:sns:us-west-2:065089468788:podaac-sndbx-cumulus-sftrackerSns-1BLTYGT1APQP2",
-    "provider": {
-      "protocol": "s3",
-      "globalConnectionLimit": 1000,
-      "host": "podaac-sndbx-cumulus-test-input",
-      "updatedAt": 1563992226210,
-      "id": "podaac-test-s3",
-      "createdAt": 1561749167968
-    },
-    "buckets": {
-      "archive": {
-        "type": "private",
-        "name": "podaac-sndbx-cumulus-archive"
-      },
-      "private": {
-        "type": "private",
-        "name": "podaac-sndbx-cumulus-private"
-      },
-      "internal": {
-        "type": "internal",
-        "name": "podaac-sndbx-cumulus-internal"
-      },
-      "dashboard": {
-        "type": "public",
-        "name": "podaac-sndbx-cumulus-dashboard"
-      },
-      "protected": {
-        "type": "protected",
-        "name": "podaac-sndbx-cumulus-protected"
-      },
-      "public": {
-        "type": "public",
-        "name": "podaac-sndbx-cumulus-public"
+      "cmr": {
+        "username": "podaaccumulus",
+        "cmrLimit": 100,
+        "clientId": "POCUMULUS",
+        "cmrEnvironment": "UAT",
+        "provider": "POCUMULUS",
+        "password": "Ig2pEq/19psJTB7Mp9+ZTW5S6pe06PDNuXfUbDwpSPz6BRurSW/Tdu1XFne3WpBGb7XKWPeTZyHwMihPnk7CynVsYpAZOMceVTbgYTuveSa1MjtAYDoaoMP2Nl9itHcWnn6wmFz9vcx9rYLRMz+clKniLcJFXO0iXmQCHGAuawQfnf2xVz9MqyQDf1sr5lqgBt1wX3PJxPLg386v4/vt731dwdWEkFhc/Yy9H9eX5gEQtC5Thy//1TTm4bLfpUgX32gSbE9lJqQz7oXrf64CJ1gwr4TriZ6FBU+3uAh0LjkGFnp1DeUt6Z82U+FNsKq/Hgw3OrNTBmlGp0HIFKz22Q==",
+        "cmrPageSize": 50
       }
     },
-    "distribution_endpoint": "https://7skzc9ilfh.execute-api.us-west-2.amazonaws.com:7000/dev/",
-    "input_granules": [
-      {
-        "status": "completed",
-        "files": [
-          {
-            "checksumType": "md5",
-            "bucket": "podaac-ngap-dev-cumulus-test-input",
-            "fileName": "L0A_HR_RAW_product_0010L0A_HR_RAW_product_0003of-0420.h5",
-            "source": "s3://podaac-ngap-dev-cumulus-test-input/L0A_HR_RAW/L0A_HR_RAW_product_0003-of-0420.h5",
-            "key": "L0A_HR_RAW_product_0003-of-0420.h5",
-            "type": "data",
-            "size": 2154070040
+    "payload": {
+      "granules": [
+        {
+          "status": "completed",
+          "files": [
+            {
+              "checksumType": "md5",
+              "bucket": "podaac-ngap-dev-cumulus-test-input",
+              "fileName": "L0A_HR_RAW_product_0010L0A_HR_RAW_product_0003of-0420.h5",
+              "source": "s3://podaac-ngap-dev-cumulus-test-input/L0A_HR_RAW/L0A_HR_RAW_product_0003-of-0420.h5",
+              "key": "L0A_HR_RAW_product_0003-of-0420.h5",
+              "type": "data",
+              "size": 2154070040
+            },
+            {
+              "source": "s3://podaac-ngap-dev-cumulus-test-input/L0A_HR_RAW_product_0003-of-0420.cmr.json",
+              "fileName": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
+              "bucket": "podaac-sndbx-cumulus-public",
+              "key": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
+              "size": 1357
+            }
+          ],
+          "endingDateTime": "2015-09-25T23:29:57.000Z",
+          "lastUpdateDateTime": "2019-06-28T19:25:45.204Z",
+          "cmrLink": "https://cmr.uat.earthdata.nasa.gov/search/granules.json?concept_id=G1224390942-PO_NGP_UAT",
+          "granuleId": "L0A_HR_RAW_product_0003-of-0420",
+          "timestamp": 1567713560913,
+          "provider": "podaac-test-s3",
+          "beginningDateTime": "2015-09-25T23:29:32.000Z",
+          "published": true,
+          "createdAt": 1565730008884,
+          "collectionId": "L0A_HR_RAW___1",
+          "error": {
+            "Cause": "\"None\"",
+            "Error": "Unknown Error"
           },
-          {
-            "source": "s3://podaac-ngap-dev-cumulus-test-input/L0A_HR_RAW_product_0003-of-0420.cmr.json/L0A_HR_RAW_product_0003-of-0420.cmr.json",
-            "fileName": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
-            "bucket": "podaac-sndbx-cumulus-public",
-            "key": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
-            "size": 1357
-          }
-        ],
-        "endingDateTime": "2015-09-25T23:29:57.000Z",
-        "lastUpdateDateTime": "2019-06-28T19:25:45.204Z",
-        "cmrLink": "https://cmr.uat.earthdata.nasa.gov/search/granules.json?concept_id=G1224390942-PO_NGP_UAT",
-        "granuleId": "L0A_HR_RAW_product_0003-of-0420",
-        "timestamp": 1567713560913,
-        "provider": "podaac-test-s3",
-        "beginningDateTime": "2015-09-25T23:29:32.000Z",
-        "published": true,
-        "createdAt": 1565730008884,
-        "collectionId": "L0A_HR_RAW___1",
-        "error": {
-          "Cause": "\"None\"",
-          "Error": "Unknown Error"
+          "duration": 1983552.029,
+          "updatedAt": 1567713562601,
+          "execution": "https://console.aws.amazon.com/states/home?region=us-west-2#/executions/details/arn:aws:states:us-west-2:065089468788:execution:podaacSndbxCumulusDrRecoveryWorkflowStateMachine-bI9KMdQJ1ftd:DR_lisa9",
+          "timeToPreprocess": 0,
+          "productVolume": 2154071397,
+          "timeToArchive": 0
+        }
+      ]
+    },
+    "exception": "None",
+    "workflow_config": {
+      "Report": {
+        "cumulus_message": {
+          "input": "{{$}}",
+          "outputs": [
+            {
+              "source": "{{$}}",
+              "destination": "{{$.payload}}"
+            },
+            {
+              "source": "{{$.granules}}",
+              "destination": "{{$.meta.input_granules}}"
+            }
+          ]
+        }
+      },
+      "RequestFromArchive": {
+        "archive-bucket": "{{$.meta.collection.meta.archive-bucket}}"
+      },
+      "WorkflowFailed": {},
+      "ExtractFilepaths": {
+        "fileBucketMaps": "{{$.meta.collection.files}}"
+      },
+      "StopStatus": {
+        "stateMachine": "{{$.cumulus_meta.state_machine}}",
+        "sfnEnd": true,
+        "executionName": "{{$.cumulus_meta.execution_name}}",
+        "bucket": "{{$.meta.buckets.internal.name}}",
+        "cumulus_message": {
+          "input": "{{$}}"
         },
-        "duration": 1983552.029,
-        "updatedAt": 1567713562601,
-        "execution": "https://console.aws.amazon.com/states/home?region=us-west-2#/executions/details/arn:aws:states:us-west-2:065089468788:execution:podaacSndbxCumulusDrRecoveryWorkflowStateMachine-bI9KMdQJ1ftd:DR_lisa9",
-        "timeToPreprocess": 0,
-        "productVolume": 2154071397,
-        "timeToArchive": 0
+        "stack": "{{$.meta.stack}}"
       }
-    ],
-    "cmr": {
-      "username": "podaaccumulus",
-      "cmrLimit": 100,
-      "clientId": "POCUMULUS",
-      "cmrEnvironment": "UAT",
-      "provider": "POCUMULUS",
-      "password": "Ig2pEq/19psJTB7Mp9+ZTW5S6pe06PDNuXfUbDwpSPz6BRurSW/Tdu1XFne3WpBGb7XKWPeTZyHwMihPnk7CynVsYpAZOMceVTbgYTuveSa1MjtAYDoaoMP2Nl9itHcWnn6wmFz9vcx9rYLRMz+clKniLcJFXO0iXmQCHGAuawQfnf2xVz9MqyQDf1sr5lqgBt1wX3PJxPLg386v4/vt731dwdWEkFhc/Yy9H9eX5gEQtC5Thy//1TTm4bLfpUgX32gSbE9lJqQz7oXrf64CJ1gwr4TriZ6FBU+3uAh0LjkGFnp1DeUt6Z82U+FNsKq/Hgw3OrNTBmlGp0HIFKz22Q==",
-      "cmrPageSize": 50
-    }
-  },
-  "payload": {
-    "granules": [
-      {
-        "status": "completed",
-        "files": [
-          {
-            "checksumType": "md5",
-            "bucket": "podaac-ngap-dev-cumulus-test-input",
-            "fileName": "L0A_HR_RAW_product_0010L0A_HR_RAW_product_0003of-0420.h5",
-            "source": "s3://podaac-ngap-dev-cumulus-test-input/L0A_HR_RAW/L0A_HR_RAW_product_0003-of-0420.h5",
-            "key": "L0A_HR_RAW_product_0003-of-0420.h5",
-            "type": "data",
-            "size": 2154070040
-          },
-          {
-            "source": "s3://podaac-ngap-dev-cumulus-test-input/L0A_HR_RAW_product_0003-of-0420.cmr.json",
-            "fileName": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
-            "bucket": "podaac-sndbx-cumulus-public",
-            "key": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
-            "size": 1357
-          }
-        ],
-        "endingDateTime": "2015-09-25T23:29:57.000Z",
-        "lastUpdateDateTime": "2019-06-28T19:25:45.204Z",
-        "cmrLink": "https://cmr.uat.earthdata.nasa.gov/search/granules.json?concept_id=G1224390942-PO_NGP_UAT",
-        "granuleId": "L0A_HR_RAW_product_0003-of-0420",
-        "timestamp": 1567713560913,
-        "provider": "podaac-test-s3",
-        "beginningDateTime": "2015-09-25T23:29:32.000Z",
-        "published": true,
-        "createdAt": 1565730008884,
-        "collectionId": "L0A_HR_RAW___1",
-        "error": {
-          "Cause": "\"None\"",
-          "Error": "Unknown Error"
-        },
-        "duration": 1983552.029,
-        "updatedAt": 1567713562601,
-        "execution": "https://console.aws.amazon.com/states/home?region=us-west-2#/executions/details/arn:aws:states:us-west-2:065089468788:execution:podaacSndbxCumulusDrRecoveryWorkflowStateMachine-bI9KMdQJ1ftd:DR_lisa9",
-        "timeToPreprocess": 0,
-        "productVolume": 2154071397,
-        "timeToArchive": 0
-      }
-    ]
-  },
-  "exception": "None",
-  "workflow_config": {
-    "Report": {
-      "cumulus_message": {
-        "input": "{{$}}",
-        "outputs": [
-          {
-            "source": "{{$}}",
-            "destination": "{{$.payload}}"
-          },
-          {
-            "source": "{{$.granules}}",
-            "destination": "{{$.meta.input_granules}}"
-          }
-        ]
-      }
-    },
-    "RequestFromArchive": {
-      "archive-bucket": "{{$.meta.collection.meta.archive-bucket}}"
-    },
-    "WorkflowFailed": {},
-    "ExtractFilepaths": {
-      "fileBucketMaps": "{{$.meta.collection.files}}"
-    },
-    "StopStatus": {
-      "stateMachine": "{{$.cumulus_meta.state_machine}}",
-      "sfnEnd": true,
-      "executionName": "{{$.cumulus_meta.execution_name}}",
-      "bucket": "{{$.meta.buckets.internal.name}}",
-      "cumulus_message": {
-        "input": "{{$}}"
-      },
-      "stack": "{{$.meta.stack}}"
     }
   }
 }
