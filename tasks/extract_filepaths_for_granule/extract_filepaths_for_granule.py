@@ -58,7 +58,7 @@ def task(event, context):  # pylint: disable-msg=unused-argument
         Raises:
             ExtractFilePathsError: An error occurred parsing the input.
     """
-    LOGGER.error(f"event: {event}")
+    LOGGER.debug(f"event: {event}")
     try:
         config = event["config"]
         exclude_file_types = config.get(CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY, None)
@@ -236,7 +236,6 @@ def handler(event: Dict[str, Union[str, int]],
     Raises:
         ExtractFilePathsError: An error occurred parsing the input.
     """
-    LOGGER.error(event)
     try:
         _VALIDATE_INPUT(event["input"])
     except JsonSchemaException as json_schema_exception:
