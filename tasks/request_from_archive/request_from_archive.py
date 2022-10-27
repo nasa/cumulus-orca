@@ -11,6 +11,7 @@ from typing import Any, Dict, List, Optional, Union
 
 # noinspection PyPackageRequirements
 import boto3
+import fastjsonschema as fastjsonschema
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
@@ -19,8 +20,8 @@ from botocore.client import BaseClient
 
 # noinspection PyPackageRequirements
 from botocore.exceptions import ClientError
+from fastjsonschema import JsonSchemaException
 from orca_shared.recovery import shared_recovery
-from run_cumulus_task import run_cumulus_task
 
 DEFAULT_RESTORE_EXPIRE_DAYS = 5
 DEFAULT_MAX_REQUEST_RETRIES = 2
@@ -36,7 +37,6 @@ OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY = "STATUS_UPDATE_QUEUE_URL"
 OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY = "ORCA_DEFAULT_BUCKET"
 
 EVENT_CONFIG_KEY = "config"
-EVENT_INPUT_KEY = "input"
 
 CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY = "defaultBucketOverride"
 CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY = "defaultRecoveryTypeOverride"
@@ -68,6 +68,21 @@ FILE_MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
 # Set AWS powertools logger
 LOGGER = Logger()
 
+# Generating schema validators can take time, so do it once and reuse.
+try:
+    with open("schemas/input.json", "r") as raw_schema:
+        input_schema = json.loads(raw_schema.read())
+        _VALIDATE_INPUT = fastjsonschema.compile(input_schema)
+    with open("schemas/config.json", "r") as raw_schema:
+        config_schema = json.loads(raw_schema.read())
+        _VALIDATE_CONFIG = fastjsonschema.compile(config_schema)
+    with open("schemas/output.json", "r") as raw_schema:
+        output_schema = json.loads(raw_schema.read())
+        _VALIDATE_OUTPUT = fastjsonschema.compile(output_schema)
+except Exception as ex:
+    LOGGER.error(f"Could not build schema validator: {ex}")
+    raise
+
 
 class RestoreRequestError(Exception):
     """
@@ -77,8 +92,8 @@ class RestoreRequestError(Exception):
 
 # noinspection PyUnusedLocal
 def task(
-    event: Dict, context: object
-) -> Dict[str, Any]:  # pylint: disable-msg=unused-argument
+    event: Dict,
+) -> Dict[str, Any]:
     """
     Pulls information from os.environ, utilizing defaults if needed,
     then calls inner_task.
@@ -88,7 +103,6 @@ def task(
             event: A dict with the following keys:
                 'config' (dict): See schemas/config.json for details.
                 'input' (dict): See schemas/input.json for details.
-            context: Passed through from AWS and CMA. Unused.
         Environment Vars:
             See docs in handler for details.
         Returns:
@@ -269,7 +283,7 @@ def inner_task(
         collection_multipart_chunksize_mb = int(collection_multipart_chunksize_mb_str)
 
     # Get the granule array from the event
-    granules = event[EVENT_INPUT_KEY][INPUT_GRANULES_KEY]
+    granules = event[INPUT_GRANULES_KEY]
 
     # Create the S3 client
     s3 = boto3.client("s3")  # pylint: disable-msg=invalid-name
@@ -623,12 +637,31 @@ def handler(event: Dict[str, Any], context: LambdaContext):  # pylint: disable-m
             context: This object provides information about the lambda invocation, function,
                 and execution env.
         Returns:
-            A dict with the value at 'payload' matching schemas/output.json
-                Combine with knowledge of CumulusMessageAdapter for other properties.
+            A dict matching schemas/output.json
         Raises:
             RestoreRequestError: An error occurred calling restore_object for one or more files.
             The same dict that is returned for a successful granule restore,
             will be included in the message, with 'success' = False for
             the files for which the restore request failed to submit.
     """
-    return run_cumulus_task(task, event, context)
+    try:
+        _VALIDATE_INPUT(event)
+    except JsonSchemaException as json_schema_exception:
+        LOGGER.error(json_schema_exception)
+        raise
+
+    try:
+        _VALIDATE_CONFIG(event["config"])
+    except JsonSchemaException as json_schema_exception:
+        LOGGER.error(json_schema_exception)
+        raise
+
+    result = task(event)
+
+    try:
+        _VALIDATE_OUTPUT(result)
+    except JsonSchemaException as json_schema_exception:
+        LOGGER.error(json_schema_exception)
+        raise
+
+    return result

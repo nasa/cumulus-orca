@@ -1,5 +1,5 @@
 {
-  "task_config": {
+  "config": {
     "asyncOperationId": "{$.cumulus_meta.asyncOperationId}",
     "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
     "defaultBucketOverride": "{$.meta.collection.meta.defaultBucketOverride}",
@@ -20,18 +20,15 @@
       }
     }
   },
-  "payload": {
-    "granules": [
-      {
-        "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-        "keys": [
-          {
-            "key": "L0A_LR_RAW_product_0010-of-0092.h5",
-            "destBucket": "some_bucket_name"
-          }
-        ]
-      }
-    ],
-    "cumulus_meta": {"job_id": "ad6ed089-f020-4374-9174-0fb5a4a1ebc1"}
-  }
+  "granules": [
+    {
+      "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
+      "keys": [
+        {
+          "key": "L0A_LR_RAW_product_0010-of-0092.h5",
+          "destBucket": "some_bucket_name"
+        }
+      ]
+    }
+  ]
 }
