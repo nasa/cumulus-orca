@@ -247,7 +247,7 @@ def handler(event: Dict[str, Union[str, int]],
         LOGGER.error(json_schema_exception)
         raise
 
-    result = task(event, context)
+    result = task(event)
 
     try:
         _VALIDATE_OUTPUT(result)
