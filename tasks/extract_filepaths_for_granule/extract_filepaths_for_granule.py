@@ -58,9 +58,9 @@ def task(event, context):  # pylint: disable-msg=unused-argument
         Raises:
             ExtractFilePathsError: An error occurred parsing the input.
     """
-    LOGGER.debug(f"event: {event}")
+    LOGGER.error(f"event: {event}")
     try:
-        config = event["task_config"]
+        config = event["config"]
         exclude_file_types = config.get(CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY, None)
         if exclude_file_types is None:
             exclude_file_types = []
@@ -80,15 +80,15 @@ def task(event, context):  # pylint: disable-msg=unused-argument
     result = {}
     try:
         regex_buckets = get_regex_buckets(event)
-        level = "event['event']['payload']"
+        level = "event['input']"
         grans = []
-        for ev_granule in event["event"]["payload"]["granules"]:
+        for ev_granule in event['input']["granules"]:
             gran = ev_granule.copy()
             files = []
-            level = "event['event']['payload']['granules'][]"
+            level = "event['input']['granules'][]"
             gran["granuleId"] = ev_granule["granuleId"]
             for afile in ev_granule["files"]:
-                level = "event['event']['payload']['granules'][]['files']"
+                level = "event['input']['granules'][]['files']"
                 file_name = afile["fileName"]
                 LOGGER.debug(f"Validating file {file_name}")
                 # filtering excludedFileExtensions
@@ -117,7 +117,7 @@ def task(event, context):  # pylint: disable-msg=unused-argument
             grans.append(gran)
         result["granules"] = grans
     except KeyError as err:
-        raise ExtractFilePathsError(f'KeyError: "{level}[{str(err)}]" is required')
+        raise ExtractFilePathsError(f'KeyError: "[{level}{str(err)}]" is required')
     return result
 
 
@@ -136,13 +136,13 @@ def get_regex_buckets(event) -> Dict[str, str]:
             ExtractFilePathsError: An error occurred parsing the input.
     """
     try:
-        file_buckets = event["task_config"][CONFIG_FILE_BUCKETS_KEY]
+        file_buckets = event["config"][CONFIG_FILE_BUCKETS_KEY]
         # file_buckets example:
         # [{'regex': '.*.h5$', 'sampleFileName': 'L0A_0420.h5', 'bucket': 'protected'},
         # {'regex': '.*.iso.xml$', 'sampleFileName': 'L0A_0420.iso.xml', 'bucket': 'protected'},
         # {'regex': '.*.h5.mp$', 'sampleFileName': 'L0A_0420.h5.mp', 'bucket': 'public'},
         # {'regex': '.*.cmr.json$', 'sampleFileName': 'L0A_0420.cmr.json', 'bucket': 'public'}]
-        buckets = event["task_config"]["buckets"]
+        buckets = event["config"]["buckets"]
         # buckets example:
         # {"protected": {"name": "sndbx-cumulus-protected", "type": "protected"},
         # "internal": {"name": "sndbx-cumulus-internal", "type": "internal"},
@@ -157,7 +157,7 @@ def get_regex_buckets(event) -> Dict[str, str]:
         #  '.*.h5.mp$': 'podaac-sndbx-cumulus-public',
         #  '.*.cmr.json$': 'podaac-sndbx-cumulus-public'}
     except KeyError as err:
-        level = "event['task_config']"
+        level = "event['config']"
         message = f'KeyError: "{level}[{str(err)}]" is required'
         LOGGER.error(message)
         raise ExtractFilePathsError(message)
@@ -236,15 +236,15 @@ def handler(event: Dict[str, Union[str, int]],
     Raises:
         ExtractFilePathsError: An error occurred parsing the input.
     """
-
+    LOGGER.error(event)
     try:
-        _VALIDATE_INPUT(event["event"]["payload"])
+        _VALIDATE_INPUT(event["input"])
     except JsonSchemaException as json_schema_exception:
         LOGGER.error(json_schema_exception)
         raise
 
     try:
-        _VALIDATE_CONFIG(event["task_config"])
+        _VALIDATE_CONFIG(event["config"])
     except JsonSchemaException as json_schema_exception:
         LOGGER.error(json_schema_exception)
         raise
