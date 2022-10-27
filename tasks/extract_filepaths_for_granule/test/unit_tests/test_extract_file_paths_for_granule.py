@@ -35,7 +35,7 @@ class TestExtractFilePaths(unittest.TestCase):
         Tests happy path for lambda handler.
         """
         handler_input_event = create_handler_event()
-        handler_input_event["task_config"] = {
+        handler_input_event["config"] = {
             extract_filepaths_for_granule.CONFIG_FILE_BUCKETS_KEY: [
                 {
                     "regex": ".*.h5$",
@@ -87,7 +87,7 @@ class TestExtractFilePaths(unittest.TestCase):
         Tests that expected error is raised on bad config such as missing regex key.
         """
         handler_input_event = create_handler_event()
-        handler_input_event["task_config"] = {
+        handler_input_event["config"] = {
             extract_filepaths_for_granule.CONFIG_FILE_BUCKETS_KEY: [
                 {
                     "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.h5",
@@ -127,29 +127,27 @@ class TestExtractFilePaths(unittest.TestCase):
         Tests that expected error is raised on bad input such as missing granuleId.
         """
         bad_handler_input_event = {
-            "event":
+            "input":
                 {
-                    "payload": {
-                        "granules": [
-                            {
-                                "status": "completed",
-                                "files": [
-                                    {
-                                        "checksumType": "md5",
-                                        "bucket": "podaac-ngap-dev-cumulus-test-input",
-                                        "type": "data",
-                                        "fileName": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
-                                        "key": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
-                                        "size": 2154070040
-                                    }
-                                ],
-                                "endingDateTime": "2015-09-25T23:29:57.000Z",
-                            }
-                        ]
-                    }
+                    "granules": [
+                        {
+                            "status": "completed",
+                            "files": [
+                                {
+                                    "checksumType": "md5",
+                                    "bucket": "podaac-ngap-dev-cumulus-test-input",
+                                    "type": "data",
+                                    "fileName": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
+                                    "key": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
+                                    "size": 2154070040
+                                }
+                            ],
+                            "endingDateTime": "2015-09-25T23:29:57.000Z",
+                        }
+                    ]
                  }
              }
-        bad_handler_input_event["task_config"] = Mock()
+        bad_handler_input_event["config"] = Mock()
         context = Mock()
         with self.assertRaises(Exception) as ex:
             extract_filepaths_for_granule.handler(bad_handler_input_event, context)
@@ -163,7 +161,40 @@ class TestExtractFilePaths(unittest.TestCase):
         """
         Tests that expected error is raised on bad output such as missing granuleId.
         """
-        bad_output = {
+
+        handler_input_event = create_handler_event()
+        handler_input_event["config"] = {
+            extract_filepaths_for_granule.CONFIG_FILE_BUCKETS_KEY: [
+                {
+                    "regex": ".*.h5$",
+                    "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.h5",
+                    "bucket": "protected",
+                },
+                {
+                    "regex": ".*.cmr.xml$",
+                    "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.iso.xml",
+                    "bucket": "protected",
+                },
+                {
+                    "regex": ".*.h5.mp$",
+                    "sampleFileName": "L0A_HR_RAW_product_0001-of-0019.h5.mp",
+                    "bucket": "public",
+                },
+                {
+                    "regex": ".*.cmr.json$",
+                    "sampleFileName": "L0A_HR_RAW_product_0001-of-0019.cmr.json",
+                    "bucket": "public",
+                },
+            ],
+            "buckets": {
+                "protected": {"name": "sndbx-cumulus-protected", "type": "protected"},
+                "internal": {"name": "sndbx-cumulus-internal", "type": "internal"},
+                "private": {"name": "sndbx-cumulus-private", "type": "private"},
+                "public": {"name": "sndbx-cumulus-public", "type": "public"},
+            },
+        }
+
+        mock_task.return_value = {
                     "granules": [
                         {
                             "keys": [
@@ -173,8 +204,9 @@ class TestExtractFilePaths(unittest.TestCase):
                         }
                     ]
                 }
+        context = Mock()
         with self.assertRaises(Exception) as ex:
-            extract_filepaths_for_granule._VALIDATE_OUTPUT(bad_output)
+            extract_filepaths_for_granule.handler(handler_input_event, context)
         self.assertEqual(
             str(ex.exception), "data.granules[0] must contain "
                                "['granuleId', 'keys'] properties")
@@ -189,20 +221,20 @@ class TestExtractFilePaths(unittest.TestCase):
 
         exp_key1 = {
             extract_filepaths_for_granule.OUTPUT_KEY_KEY: self.task_input_event[
-                "event"
-            ]["payload"]["granules"][0]["files"][0]["key"],
+                "input"
+            ]["granules"][0]["files"][0]["key"],
             extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: "sndbx-cumulus-protected",
         }
         exp_key2 = {
             extract_filepaths_for_granule.OUTPUT_KEY_KEY: self.task_input_event[
-                "event"
-            ]["payload"]["granules"][0]["files"][1]["key"],
+                "input"
+            ]["granules"][0]["files"][1]["key"],
             extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: "sndbx-cumulus-public",
         }
         exp_key3 = {
             extract_filepaths_for_granule.OUTPUT_KEY_KEY: self.task_input_event[
-                "event"
-            ]["payload"]["granules"][0]["files"][2]["key"],
+                "input"
+            ]["granules"][0]["files"][2]["key"],
             extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: "sndbx-cumulus-public",
         }
         exp_gran = {
@@ -246,7 +278,7 @@ class TestExtractFilePaths(unittest.TestCase):
                     "0, 3)}",
                 },
             ],
-            "granuleId": self.task_input_event["event"]["payload"]["granules"][0]["granuleId"],
+            "granuleId": self.task_input_event["input"]["granules"][0]["granuleId"],
             "keys": [exp_key1, exp_key2, exp_key3],
             "version": "006",
         }
@@ -261,8 +293,8 @@ class TestExtractFilePaths(unittest.TestCase):
         """
         Test no 'granules' key in input event.
         """
-        self.task_input_event["event"]["payload"].pop("granules", None)
-        exp_err = "KeyError: \"event['event']['payload']['granules']\" is required"
+        self.task_input_event["input"].pop("granules", None)
+        exp_err = "KeyError: \"event['input']['granules']\" is required"
         extract_filepaths_for_granule.LOGGER.error = Mock()
         context = Mock()
         try:
@@ -276,9 +308,9 @@ class TestExtractFilePaths(unittest.TestCase):
         """
         Test no granuleId in input event.
         """
-        self.task_input_event["event"]["payload"]["granules"][0] = {"files": []}
+        self.task_input_event["input"]["granules"][0] = {"files": []}
 
-        exp_err = "KeyError: \"event['event']['payload']['granules'][]['granuleId']\" is required"
+        exp_err = "KeyError: \"event['input']['granules'][]['granuleId']\" is required"
         extract_filepaths_for_granule.LOGGER.error = Mock()
         context = Mock()
         try:
@@ -292,12 +324,12 @@ class TestExtractFilePaths(unittest.TestCase):
         """
         Test no files in input event.
         """
-        self.task_input_event["event"]["payload"]["granules"][0].pop("files", None)
+        self.task_input_event["input"]["granules"][0].pop("files", None)
         self.task_input_event["granules"] = [
             {"granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321"}
         ]
 
-        exp_err = "KeyError: \"event['event']['payload']['granules'][]['files']\" is required"
+        exp_err = "KeyError: \"event['input']['granules'][]['files']\" is required"
         context = Mock()
         try:
             extract_filepaths_for_granule.task(self.task_input_event, context)
@@ -310,12 +342,12 @@ class TestExtractFilePaths(unittest.TestCase):
         """
         Test no key in input event.
         """
-        self.task_input_event["event"]["payload"].pop("granules", None)
-        self.task_input_event["task_config"]["protected-bucket"] = "my_protected_bucket"
-        self.task_input_event["task_config"]["internal-bucket"] = "my_internal_bucket"
-        self.task_input_event["task_config"]["private-bucket"] = "my_private_bucket"
-        self.task_input_event["task_config"]["public-bucket"] = "my_public_bucket"
-        self.task_input_event["task_config"][
+        self.task_input_event["input"].pop("granules", None)
+        self.task_input_event["config"]["protected-bucket"] = "my_protected_bucket"
+        self.task_input_event["config"]["internal-bucket"] = "my_internal_bucket"
+        self.task_input_event["config"]["private-bucket"] = "my_private_bucket"
+        self.task_input_event["config"]["public-bucket"] = "my_public_bucket"
+        self.task_input_event["config"][
             extract_filepaths_for_granule.CONFIG_FILE_BUCKETS_KEY
         ] = [
             {"regex": ".*.h5$", "sampleFileName": "L_10-420.h5", "bucket": "protected"},
@@ -335,7 +367,7 @@ class TestExtractFilePaths(unittest.TestCase):
                 "bucket": "public",
             },
         ]
-        self.task_input_event["event"]["payload"]["granules"] = [
+        self.task_input_event["input"]["granules"] = [
             {
                 "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
                 "files": [
@@ -347,7 +379,7 @@ class TestExtractFilePaths(unittest.TestCase):
             }
         ]
         exp_err = (
-            "KeyError: \"event['event']['payload']['granules'][]['files']['key']\" is required"
+            "KeyError: \"event['input']['granules'][]['files']['key']\" is required"
         )
         context = Mock()
         try:
@@ -361,7 +393,7 @@ class TestExtractFilePaths(unittest.TestCase):
         """
         Test with one valid file in input.
         """
-        self.task_input_event["event"]["payload"]["granules"] = [
+        self.task_input_event["input"]["granules"] = [
             {
                 "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
                 "files": [
@@ -407,7 +439,7 @@ class TestExtractFilePaths(unittest.TestCase):
         """
         If no destination bucket can be determined, raise a descriptive error.
         """
-        self.task_input_event["event"]["payload"]["granules"] = [
+        self.task_input_event["input"]["granules"] = [
             {
                 "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
                 "files": [
@@ -434,7 +466,7 @@ class TestExtractFilePaths(unittest.TestCase):
         "extract_filepaths_for_granule/test/unit_tests/testevents/task_event.json" includes
         "excludedFileExtensions": [".cmr"]
         """
-        self.task_input_event["event"]["payload"]["granules"] = [
+        self.task_input_event["input"]["granules"] = [
             {
                 "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
                 "files": [
@@ -474,7 +506,7 @@ class TestExtractFilePaths(unittest.TestCase):
         Test with two granules, one key each.
         """
 
-        self.task_input_event["event"]["payload"]["granules"] = [
+        self.task_input_event["input"]["granules"] = [
             {
                 "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
                 "files": [

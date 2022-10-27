@@ -1,5 +1,5 @@
 {
-  "event":
+  "input":
     {
     "cumulus_meta": {
       "task": "extract_filepaths_for_granule",
@@ -161,51 +161,49 @@
         "cmrPageSize": 50
       }
     },
-    "payload": {
-      "granules": [
-        {
-          "status": "completed",
-          "files": [
-            {
-              "checksumType": "md5",
-              "bucket": "podaac-ngap-dev-cumulus-test-input",
-              "fileName": "L0A_HR_RAW_product_0010L0A_HR_RAW_product_0003of-0420.h5",
-              "source": "s3://podaac-ngap-dev-cumulus-test-input/L0A_HR_RAW/L0A_HR_RAW_product_0003-of-0420.h5",
-              "key": "L0A_HR_RAW_product_0003-of-0420.h5",
-              "type": "data",
-              "size": 2154070040
-            },
-            {
-              "source": "s3://podaac-ngap-dev-cumulus-test-input/L0A_HR_RAW_product_0003-of-0420.cmr.json",
-              "fileName": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
-              "bucket": "podaac-sndbx-cumulus-public",
-              "key": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
-              "size": 1357
-            }
-          ],
-          "endingDateTime": "2015-09-25T23:29:57.000Z",
-          "lastUpdateDateTime": "2019-06-28T19:25:45.204Z",
-          "cmrLink": "https://cmr.uat.earthdata.nasa.gov/search/granules.json?concept_id=G1224390942-PO_NGP_UAT",
-          "granuleId": "L0A_HR_RAW_product_0003-of-0420",
-          "timestamp": 1567713560913,
-          "provider": "podaac-test-s3",
-          "beginningDateTime": "2015-09-25T23:29:32.000Z",
-          "published": true,
-          "createdAt": 1565730008884,
-          "collectionId": "L0A_HR_RAW___1",
-          "error": {
-            "Cause": "\"None\"",
-            "Error": "Unknown Error"
+    "granules": [
+      {
+        "status": "completed",
+        "files": [
+          {
+            "checksumType": "md5",
+            "bucket": "podaac-ngap-dev-cumulus-test-input",
+            "fileName": "L0A_HR_RAW_product_0010L0A_HR_RAW_product_0003of-0420.h5",
+            "source": "s3://podaac-ngap-dev-cumulus-test-input/L0A_HR_RAW/L0A_HR_RAW_product_0003-of-0420.h5",
+            "key": "L0A_HR_RAW_product_0003-of-0420.h5",
+            "type": "data",
+            "size": 2154070040
           },
-          "duration": 1983552.029,
-          "updatedAt": 1567713562601,
-          "execution": "https://console.aws.amazon.com/states/home?region=us-west-2#/executions/details/arn:aws:states:us-west-2:065089468788:execution:podaacSndbxCumulusDrRecoveryWorkflowStateMachine-bI9KMdQJ1ftd:DR_lisa9",
-          "timeToPreprocess": 0,
-          "productVolume": 2154071397,
-          "timeToArchive": 0
-        }
-      ]
-    },
+          {
+            "source": "s3://podaac-ngap-dev-cumulus-test-input/L0A_HR_RAW_product_0003-of-0420.cmr.json",
+            "fileName": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
+            "bucket": "podaac-sndbx-cumulus-public",
+            "key": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
+            "size": 1357
+          }
+        ],
+        "endingDateTime": "2015-09-25T23:29:57.000Z",
+        "lastUpdateDateTime": "2019-06-28T19:25:45.204Z",
+        "cmrLink": "https://cmr.uat.earthdata.nasa.gov/search/granules.json?concept_id=G1224390942-PO_NGP_UAT",
+        "granuleId": "L0A_HR_RAW_product_0003-of-0420",
+        "timestamp": 1567713560913,
+        "provider": "podaac-test-s3",
+        "beginningDateTime": "2015-09-25T23:29:32.000Z",
+        "published": true,
+        "createdAt": 1565730008884,
+        "collectionId": "L0A_HR_RAW___1",
+        "error": {
+          "Cause": "\"None\"",
+          "Error": "Unknown Error"
+        },
+        "duration": 1983552.029,
+        "updatedAt": 1567713562601,
+        "execution": "https://console.aws.amazon.com/states/home?region=us-west-2#/executions/details/arn:aws:states:us-west-2:065089468788:execution:podaacSndbxCumulusDrRecoveryWorkflowStateMachine-bI9KMdQJ1ftd:DR_lisa9",
+        "timeToPreprocess": 0,
+        "productVolume": 2154071397,
+        "timeToArchive": 0
+      }
+    ],
     "exception": "None",
     "workflow_config": {
       "Report": {

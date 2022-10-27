@@ -82,7 +82,7 @@ def task(event, context):  # pylint: disable-msg=unused-argument
         regex_buckets = get_regex_buckets(event)
         level = "event['input']"
         grans = []
-        for ev_granule in event['input']["granules"]:
+        for ev_granule in event["input"]["granules"]:
             gran = ev_granule.copy()
             files = []
             level = "event['input']['granules'][]"
@@ -117,7 +117,7 @@ def task(event, context):  # pylint: disable-msg=unused-argument
             grans.append(gran)
         result["granules"] = grans
     except KeyError as err:
-        raise ExtractFilePathsError(f'KeyError: "[{level}{str(err)}]" is required')
+        raise ExtractFilePathsError(f'KeyError: "{level}[{str(err)}]" is required')
     return result
 
 
