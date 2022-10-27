@@ -202,12 +202,27 @@ module "orca_sqs" {
   status_update_queue_message_retention_time_seconds   = var.status_update_queue_message_retention_time_seconds
 }
 
+## orca_graph_ql - graphql module that sets up centralized db code
+## =============================
+module "orca_graph_ql" {
+  source     = "../graph_ql"
+  depends_on = [module.orca_secretsmanager] ## secretsmanager sets up db connection secrets.
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  permissions_boundary_arn = var.permissions_boundary_arn
+  prefix = var.prefix
+
+  ## OPTIONAL
+  tags = var.tags
+}
 
 ## orca_api_gateway - api gateway module
 ## =============================================================================
 module "orca_api_gateway" {
   depends_on = [
-    module.orca_lambdas
+    module.orca_lambdas, module.orca_graph_ql
   ]
   source = "../api-gateway"
   ## --------------------------

@@ -20,7 +20,7 @@ FROM python:3.9-slim
 LABEL application.name="ORCA-GraphQL" \
     application.description="GraphQL server for ORCA application." \
     application.team="ORCA" \
-    application.version="v0.0.6"
+    application.version="v0.0.8"
 
 # CREATE Non-Privileged User
 RUN mkdir -p /app \
