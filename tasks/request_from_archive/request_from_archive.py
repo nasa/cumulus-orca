@@ -37,6 +37,7 @@ OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY = "STATUS_UPDATE_QUEUE_URL"
 OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY = "ORCA_DEFAULT_BUCKET"
 
 EVENT_CONFIG_KEY = "config"
+EVENT_INPUT_KEY = "input"
 
 CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY = "defaultBucketOverride"
 CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY = "defaultRecoveryTypeOverride"
@@ -283,7 +284,7 @@ def inner_task(
         collection_multipart_chunksize_mb = int(collection_multipart_chunksize_mb_str)
 
     # Get the granule array from the event
-    granules = event[INPUT_GRANULES_KEY]
+    granules = event[EVENT_INPUT_KEY][INPUT_GRANULES_KEY]
 
     # Create the S3 client
     s3 = boto3.client("s3")  # pylint: disable-msg=invalid-name
@@ -645,7 +646,7 @@ def handler(event: Dict[str, Any], context: LambdaContext):  # pylint: disable-m
             the files for which the restore request failed to submit.
     """
     try:
-        _VALIDATE_INPUT(event)
+        _VALIDATE_INPUT(event["input"])
     except JsonSchemaException as json_schema_exception:
         LOGGER.error(json_schema_exception)
         raise
