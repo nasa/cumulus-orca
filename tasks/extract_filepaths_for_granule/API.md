@@ -30,7 +30,7 @@ Exception to be raised if any errors occur
 #### task
 
 ```python
-def task(event, context)
+def task(event)
 ```
 
 Task called by the handler to perform the work.
@@ -40,7 +40,6 @@ This task will parse the input, removing the granuleId and file keys for a granu
 **Arguments**:
 
 - `event` _dict_ - passed through from the handler
-- `context` _Object_ - passed through from the handler
   
 
 **Returns**:

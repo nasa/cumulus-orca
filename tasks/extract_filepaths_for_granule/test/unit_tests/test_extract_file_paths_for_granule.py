@@ -216,8 +216,7 @@ class TestExtractFilePaths(unittest.TestCase):
         """
         Test successful with four keys returned.
         """
-        context = Mock()
-        result = extract_filepaths_for_granule.task(self.task_input_event, context)
+        result = extract_filepaths_for_granule.task(self.task_input_event)
 
         exp_key1 = {
             extract_filepaths_for_granule.OUTPUT_KEY_KEY: self.task_input_event[
@@ -296,9 +295,8 @@ class TestExtractFilePaths(unittest.TestCase):
         self.task_input_event["input"].pop("granules", None)
         exp_err = "KeyError: \"event['input']['granules']\" is required"
         extract_filepaths_for_granule.LOGGER.error = Mock()
-        context = Mock()
         try:
-            extract_filepaths_for_granule.task(self.task_input_event, context)
+            extract_filepaths_for_granule.task(self.task_input_event)
             self.fail("ExtractFilePathsError expected")
         except extract_filepaths_for_granule.ExtractFilePathsError as ex:
             self.assertEqual(exp_err, str(ex))
@@ -312,9 +310,8 @@ class TestExtractFilePaths(unittest.TestCase):
 
         exp_err = "KeyError: \"event['input']['granules'][]['granuleId']\" is required"
         extract_filepaths_for_granule.LOGGER.error = Mock()
-        context = Mock()
         try:
-            extract_filepaths_for_granule.task(self.task_input_event, context)
+            extract_filepaths_for_granule.task(self.task_input_event)
             self.fail("ExtractFilePathsError expected")
         except extract_filepaths_for_granule.ExtractFilePathsError as ex:
             self.assertEqual(exp_err, str(ex))
@@ -330,9 +327,8 @@ class TestExtractFilePaths(unittest.TestCase):
         ]
 
         exp_err = "KeyError: \"event['input']['granules'][]['files']\" is required"
-        context = Mock()
         try:
-            extract_filepaths_for_granule.task(self.task_input_event, context)
+            extract_filepaths_for_granule.task(self.task_input_event)
             self.fail("ExtractFilePathsError expected")
         except extract_filepaths_for_granule.ExtractFilePathsError as ex:
             self.assertEqual(exp_err, str(ex))
@@ -381,9 +377,8 @@ class TestExtractFilePaths(unittest.TestCase):
         exp_err = (
             "KeyError: \"event['input']['granules'][]['files']['key']\" is required"
         )
-        context = Mock()
         try:
-            extract_filepaths_for_granule.task(self.task_input_event, context)
+            extract_filepaths_for_granule.task(self.task_input_event)
             self.fail("ExtractFilePathsError expected")
         except extract_filepaths_for_granule.ExtractFilePathsError as ex:
             self.assertEqual(exp_err, str(ex))
@@ -430,8 +425,7 @@ class TestExtractFilePaths(unittest.TestCase):
                 }
             ]
         }
-        context = Mock()
-        result = extract_filepaths_for_granule.task(self.task_input_event, context)
+        result = extract_filepaths_for_granule.task(self.task_input_event)
         self.assertEqual(exp_result, result)
 
     @patch("extract_filepaths_for_granule.LOGGER.debug")
@@ -452,9 +446,8 @@ class TestExtractFilePaths(unittest.TestCase):
                 ],
             }
         ]
-        context = Mock()
         with self.assertRaises(extract_filepaths_for_granule.ExtractFilePathsError) as cm:
-            extract_filepaths_for_granule.task(self.task_input_event, context)
+            extract_filepaths_for_granule.task(self.task_input_event)
         self.assertEqual("No matching regex for "
                          "'MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.blah'",
                          str(cm.exception))
@@ -496,8 +489,7 @@ class TestExtractFilePaths(unittest.TestCase):
                 }
             ]
         }
-        context = Mock()
-        result = extract_filepaths_for_granule.task(self.task_input_event, context)
+        result = extract_filepaths_for_granule.task(self.task_input_event)
         self.assertEqual(exp_result, result)
 
     @patch("extract_filepaths_for_granule.LOGGER.debug")
@@ -574,8 +566,7 @@ class TestExtractFilePaths(unittest.TestCase):
             ]
         }
 
-        context = Mock()
-        result = extract_filepaths_for_granule.task(self.task_input_event, context)
+        result = extract_filepaths_for_granule.task(self.task_input_event)
         self.assertEqual(exp_result, result)
 
         # Validate the output is correct by matching with the output schema

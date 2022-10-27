@@ -42,7 +42,7 @@ class ExtractFilePathsError(Exception):
     """Exception to be raised if any errors occur"""
 
 
-def task(event, context):  # pylint: disable-msg=unused-argument
+def task(event):
     """
     Task called by the handler to perform the work.
 
@@ -50,7 +50,6 @@ def task(event, context):  # pylint: disable-msg=unused-argument
 
         Args:
             event (dict): passed through from the handler
-            context (Object): passed through from the handler
 
         Returns:
             dict: dict containing granuleId and keys. See handler for detail.
