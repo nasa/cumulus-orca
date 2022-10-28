@@ -4,14 +4,14 @@
 
 source bin/common/check_returncode.sh
 
-github_token=$1
-version_number=$2
+version_number=$1
+# github_token=$2
 
 base=$(pwd)
-echo $"pwd" `base`"
+echo "pwd $base"
 trap 'cd $base' EXIT
 
-run_and_check_returncode "echo $github_token | docker login ghcr.io -u nasa --password-stdin"
+# run_and_check_returncode "echo $github_token | docker login ghcr.io -u nasa --password-stdin"
 
 cd graphql
 image_name=orca-graphql
