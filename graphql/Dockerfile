@@ -17,10 +17,11 @@ RUN pip wheel --no-cache-dir --wheel-dir /app/wheels -r requirements.txt
 FROM python:3.9-slim
 
 # Set metadata information
+ARG VERSION_NUMBER="test"
 LABEL application.name="ORCA-GraphQL" \
     application.description="GraphQL server for ORCA application." \
     application.team="ORCA" \
-    application.version="v0.0.18"
+    application.version=${VERSION_NUMBER}
 
 # CREATE Non-Privileged User
 RUN groupadd -r appuser \

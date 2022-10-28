@@ -32,7 +32,7 @@ Entry point is `src/adapters/webserver/main.py`, which will start the applicatio
 ## Deployment
 Compiled packages are stored at the [NASA Github packages page](https://github.com/orgs/nasa/packages/container/package/cumulus-orca%2Fgraphql).
 Once a new version is ready for deployment, perform the following steps:
-1. Choose a new version number following [semantic versioning practices](https://semver.org/) and replace the existing value in the `graphql/Dockerfile`.
+1. Choose a new version number following [semantic versioning practices](https://semver.org/).
 1. From the root `graphql` folder, run
    ```bash
    bin/create_and_push_docker_image.sh $version_number $github_access_token
