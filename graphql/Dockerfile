@@ -20,13 +20,11 @@ FROM python:3.9-slim
 LABEL application.name="ORCA-GraphQL" \
     application.description="GraphQL server for ORCA application." \
     application.team="ORCA" \
-    application.version="v0.0.16"
+    application.version="v0.0.18"
 
 # CREATE Non-Privileged User
-RUN mkdir -p /app \
-    && groupadd -r appuser \
-    && useradd -r -s /bin/false -g appuser appuser \
-    && chown -R appuser:appuser /app
+RUN groupadd -r appuser \
+    && useradd -r -s /bin/false -m -d /app -g appuser appuser
 
 # Install curl for healthcheck
 RUN apt-get update && \
@@ -54,7 +52,8 @@ EXPOSE 5000
 HEALTHCHECK --interval=60s --timeout=5s --start-period=30s --retries=3 \
     CMD curl --fail http://localhost:5000/healthz || exit 1
 
+# Set PYTHONPATH to set the working directory to the root folder instead of the location of main.py
 ENV PYTHONPATH="/app:$PYTHONPATH"
 # Set the entry point for the container
-CMD ["python", "src/adapters/webserver/main.py"]
-# ENTRYPOINT ["python", "src/adapters/webserver/main.py"]
+# CMD ["python", "src/adapters/webserver/main.py"]
+ENTRYPOINT ["python", "src/adapters/webserver/main.py"]

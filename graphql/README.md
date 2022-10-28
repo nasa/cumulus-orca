@@ -27,9 +27,10 @@ Entry point is `src/adapters/webserver/main.py`, which will start the applicatio
 - `resolvers` are called by `queries` or `mutations`.
 - `queries` and `mutations` are standard GraphQL components, mapped to in the `graphql` package.
 - `graphql` is run via the `webserver` package.
+- If running via Docker, use the command `docker run -d -p 5000:5000 imageName` replacing `imageName` with the name of your built image.
 
 ## Deployment
-Compiled packages are stored at the [NASA Github packages page](https://github.com/orgs/nasa/packages/container/package/orca-graphql).
+Compiled packages are stored at the [NASA Github packages page](https://github.com/orgs/nasa/packages/container/package/cumulus-orca%2Fgraphql).
 Once a new version is ready for deployment, perform the following steps:
 1. Choose a new version number following [semantic versioning practices](https://semver.org/) and replace the existing value in the `graphql/Dockerfile`.
 1. From the root `graphql` folder, run

@@ -50,7 +50,7 @@ resource "aws_ecs_task_definition" "task" {
 [
   {
     "name": "orca-graphql",
-    "image": "ghcr.io/nasa/orca-graphql:0.0.16",
+    "image": "ghcr.io/nasa/cumulus-orca/graphql:0.0.16",
     "cpu": 1024,
     "memory": 2048,
     "networkMode": "awsvpc",

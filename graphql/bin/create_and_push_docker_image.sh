@@ -37,7 +37,7 @@ github_token=$2
 echo $github_token | docker login ghcr.io -u nasa --password-stdin
 check_returncode $? "Error logging into Github."
 
-image_name=orca-graphql
+image_name=graphql
 run_and_check_returncode "docker build -t $image_name ."
-run_and_check_returncode "docker tag $image_name ghcr.io/nasa/$image_name:$version_number"
-run_and_check_returncode "docker push ghcr.io/nasa/$image_name:$version_number"
+run_and_check_returncode "docker tag $image_name ghcr.io/nasa/cumulus-orca/$image_name:$version_number"
+run_and_check_returncode "docker push ghcr.io/nasa/cumulus-orca/$image_name:$version_number"
