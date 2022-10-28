@@ -2,7 +2,7 @@
 data "aws_iam_policy_document" "graphql_task_policy_document" {
   statement {
     actions   = ["sts:AssumeRole"]
-    resources = ["*"]
+    resources = [aws_iam_role.orca_ecs_tasks_role.arn]
   }
 }
 
