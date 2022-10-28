@@ -30,7 +30,6 @@ resource "aws_iam_role_policy" "graphql_task_role_policy" {
   policy = data.aws_iam_policy_document.graphql_task_policy_document.json
 }
 
-# This role is required by tasks to pull container images and publish container logs to Amazon CloudWatch on your behalf.
 resource "aws_iam_role" "orca_ecs_task_execution_role" {
   name                 = "${var.prefix}_orca_ecs_task_execution_role"
   assume_role_policy   = data.aws_iam_policy_document.assume_ecs_tasks_role_policy_document.json
@@ -38,7 +37,7 @@ resource "aws_iam_role" "orca_ecs_task_execution_role" {
   tags                 = var.tags
 }
 
-# Defines how the image will be run. container_definitions can be replaced by data element.
+# Defines how the image will be run.
 resource "aws_ecs_task_definition" "task" {
   family                   = "${var.prefix}_orca_graphql_task"
   network_mode             = "awsvpc"
