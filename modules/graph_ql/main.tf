@@ -38,7 +38,7 @@ resource "aws_iam_role" "orca_ecs_task_execution_role" {
 }
 
 # Defines how the image will be run.
-resource "aws_ecs_task_definition" "task" {
+resource "aws_ecs_task_definition" "graphql_task" {
   family                   = "${var.prefix}_orca_graphql_task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
@@ -50,7 +50,7 @@ resource "aws_ecs_task_definition" "task" {
 [
   {
     "name": "orca-graphql",
-    "image": "ghcr.io/nasa/cumulus-orca/graphql:0.0.16",
+    "image": "ghcr.io/nasa/cumulus-orca/graphql:0.0.18",
     "cpu": 1024,
     "memory": 2048,
     "networkMode": "awsvpc",
