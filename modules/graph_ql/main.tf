@@ -43,8 +43,8 @@ resource "aws_ecs_task_definition" "task" {
   family                   = "${var.prefix}_orca_graphql_task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = "4096"
-  memory                   = "8192"
+  cpu                      = "1024"
+  memory                   = "2048"
   task_role_arn            = aws_iam_role.orca_ecs_tasks_role.arn
   execution_role_arn       = aws_iam_role.orca_ecs_task_execution_role.arn
   container_definitions    = <<DEFINITION
@@ -52,8 +52,8 @@ resource "aws_ecs_task_definition" "task" {
   {
     "name": "orca-graphql",
     "image": "ghcr.io/nasa/orca-graphql:0.0.16",
-    "cpu": 4096,
-    "memory": 256,
+    "cpu": 1024,
+    "memory": 2048,
     "networkMode": "awsvpc",
     "environment": [
     ],

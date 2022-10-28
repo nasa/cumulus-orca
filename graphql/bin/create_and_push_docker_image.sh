@@ -1,6 +1,6 @@
 #!/bin/bash
 ## =============================================================================
-## NAME: build.sh
+## NAME: create_and_push_docker_image.sh
 ##
 ##
 ## DESCRIPTION
