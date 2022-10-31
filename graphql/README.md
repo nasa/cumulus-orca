@@ -27,9 +27,20 @@ Entry point is `src/adapters/webserver/main.py`, which will start the applicatio
 - `resolvers` are called by `queries` or `mutations`.
 - `queries` and `mutations` are standard GraphQL components, mapped to in the `graphql` package.
 - `graphql` is run via the `webserver` package.
+- If running via Docker, use the command `docker run -d -p 5000:5000 imageName` replacing `imageName` with the name of your built image.
 
 ## Deployment
-todo
+Compiled packages are stored at the [NASA Github packages page](https://github.com/orgs/nasa/packages/container/package/cumulus-orca%2Fgraphql).
+Once a new version is ready for deployment, perform the following steps:
+1. Choose a new version number following [semantic versioning practices](https://semver.org/).
+1. From the root `graphql` folder, run
+   ```bash
+   bin/create_and_push_docker_image.sh $version_number $github_access_token
+   ```
+   - `$version_number` is the version number from the previous step.
+   - `$github_access_token` is an [access token](https://github.com/settings/tokens) with the `write:packages` permission, created for a user with access to the NASA account.
+1. Update the `image` property in the [GraphQL Terraform module](https://github.com/nasa/cumulus-orca/blob/master/modules/graph_ql/main.tf) with your new version number.
+1. Your new GraphQL version will now be deployed on `terraform apply`.
 
 ### Environment Variables
 - HOST

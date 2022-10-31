@@ -309,6 +309,8 @@ resource "aws_ecs_task_definition" "task" {
 ]
 DEFINITION
 }
+```
+
 :::note
 The above example was developed for deploying a simple task that posts to an sqs queue. Names and values should be changed to match new use cases.
 Values such as `cpu` and `memory` should similarly be reevaluated.
