@@ -40,12 +40,7 @@
     "RequestFromArchive": {
       "Parameters": {
         "input.$": "$",
-        "config": {
-          "asyncOperationId": "{$.cumulus_meta.asyncOperationId}",
-          "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
-          "defaultBucketOverride": "{$.meta.collection.meta.orca.defaultBucketOverride}",
-          "defaultRecoveryTypeOverride": "{$.meta.collection.meta.orca.defaultRecoveryTypeOverride}"
-        }
+        "config.$": "$"
       },
       "Type": "Task",
       "Resource": "${orca_lambda_request_from_archive_arn}",
