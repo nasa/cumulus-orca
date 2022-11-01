@@ -1,8 +1,16 @@
-
 data "aws_iam_policy_document" "graphql_task_policy_document" {
   statement {
     actions   = ["sts:AssumeRole"]
     resources = [aws_iam_role.orca_ecs_tasks_role.arn]
+  }
+  statement {
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:DescribeLogStreams",
+      "logs:PutLogEvents"
+    ]
+    resources = ["*"]
   }
 }
 
@@ -46,13 +54,14 @@ resource "aws_ecs_task_definition" "graphql_task" {
   memory                   = "2048"
   task_role_arn            = aws_iam_role.orca_ecs_tasks_role.arn
   execution_role_arn       = aws_iam_role.orca_ecs_task_execution_role.arn
+  tags                     = var.tags
   container_definitions    = <<DEFINITION
 [
   {
     "name": "orca-graphql",
     "image": "ghcr.io/nasa/cumulus-orca/graphql:0.0.18",
-    "cpu": 1024,
-    "memory": 2048,
+    "cpu": 512,
+    "memory": 256,
     "networkMode": "awsvpc",
     "environment": [
     ],
@@ -68,4 +77,17 @@ resource "aws_ecs_task_definition" "graphql_task" {
   }
 ]
 DEFINITION
+}
+
+resource "aws_ecs_service" "graphql_service" {
+  name            = "${var.prefix}_graphql_service"
+  cluster         = var.ecs_cluster_id
+  task_definition = aws_ecs_task_definition.graphql_task.arn
+  desired_count   = 3
+  launch_type     = "FARGATE"
+  propagate_tags  = "TASK_DEFINITION"
+  network_configuration {
+    subnets         = var.lambda_subnet_ids
+    security_groups = [var.vpc_postgres_ingress_all_egress_id]
+  }
 }
