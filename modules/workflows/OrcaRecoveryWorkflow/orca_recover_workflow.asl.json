@@ -1,7 +1,6 @@
 {
   "Comment": "Recover files belonging to a granule",
-  "StartAt": "ExtractFilepaths",
-  "TimeoutSeconds": 18000,
+  "StartAt": "ExtractFilepaths",  "TimeoutSeconds": 18000,
   "States": {
     "ExtractFilepaths": {
       "Parameters": {
@@ -14,6 +13,7 @@
       },
       "Type": "Task",
       "Resource": "${orca_lambda_extract_filepaths_for_granule_arn}",
+      "ResultPath": "$.output_extract_filepath_from_granules",
       "Retry": [
         {
           "ErrorEquals": [
@@ -39,8 +39,14 @@
     },
     "RequestFromArchive": {
       "Parameters": {
-        "input.$": "$",
-        "config.$": "$"
+        "event.$": "$",
+        "input.$": "$.output_extract_filepath_from_granules",
+        "config": {
+          "asyncOperationId": ".cumulus_meta.asyncOperationId",
+          "defaultBucketOverride": ".meta.collection.meta.orca.defaultBucketOverride",
+          "defaultRecoveryTypeOverride": ".meta.collection.meta.orca.defaultRecoveryTypeOverride",
+          "s3MultipartChunksizeMb": ".meta.collection.meta.s3MultipartChunksizeMb"
+          }
       },
       "Type": "Task",
       "Resource": "${orca_lambda_request_from_archive_arn}",

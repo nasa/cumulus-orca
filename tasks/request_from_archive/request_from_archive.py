@@ -159,7 +159,7 @@ def task(
             f" {event[EVENT_CONFIG_KEY][CONFIG_JOB_ID_KEY]} for job_id."
         )
     # get the archive recovery type
-    recovery_type = get_archive_recovery_type(event["config"])
+    recovery_type = get_archive_recovery_type(event[EVENT_CONFIG_KEY])
 
     # Call the inner task to perform the work of restoring
     return inner_task(  # todo: Split 'event' into relevant properties.
@@ -645,6 +645,24 @@ def handler(event: Dict[str, Any], context: LambdaContext):  # pylint: disable-m
             will be included in the message, with 'success' = False for
             the files for which the restore request failed to submit.
     """
+
+    # set the optional variables to None if not configured
+    try:
+        event["config"]["defaultRecoveryTypeOverride"] = event[
+            "event"]["meta"]["collection"]["meta"]["orca"].get("defaultRecoveryTypeOverride", None)
+
+        event["config"]["defaultBucketOverride"] = event[
+            "event"]["meta"]["collection"]["meta"]["orca"].get("defaultBucketOverride", None)
+
+        event["config"]["s3MultipartChunksizeMb"] = event[
+            "event"]["meta"]["collection"]["meta"].get("s3MultipartChunksizeMb", None)
+
+        event["config"]["asyncOperationId"] = event[
+            "event"]["cumulus_meta"].get("asyncOperationId", None)
+    except Exception as ex:
+        LOGGER.error(ex)
+        raise ex
+
     try:
         _VALIDATE_INPUT(event["input"])
     except JsonSchemaException as json_schema_exception:
