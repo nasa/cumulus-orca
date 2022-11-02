@@ -15,6 +15,7 @@ variable "prefix" {
   type        = string
   description = "Prefix used to prepend to all object names and tags."
 }
+
 ## OPTIONAL
 variable "tags" {
   type        = map(string)
