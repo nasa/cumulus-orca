@@ -1,4 +1,4 @@
-data "aws_iam_policy_document" "graphql_task_policy_document" {
+data "aws_iam_policy_document" "graphql_task_execution_policy_document" {
   statement {
     actions   = ["sts:AssumeRole"]
     resources = [aws_iam_role.orca_ecs_tasks_role.arn]
@@ -34,8 +34,8 @@ resource "aws_iam_role" "orca_ecs_tasks_role" {
 
 resource "aws_iam_role_policy" "graphql_task_role_policy" {
   name   = "${var.prefix}_orca_graphql_task_role_policy"
-  role   = aws_iam_role.orca_ecs_tasks_role.id
-  policy = data.aws_iam_policy_document.graphql_task_policy_document.json
+  role   = aws_iam_role.orca_ecs_task_execution_role.id
+  policy = data.aws_iam_policy_document.graphql_task_execution_policy_document.json
 }
 
 resource "aws_iam_role" "orca_ecs_task_execution_role" {

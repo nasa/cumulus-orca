@@ -37,6 +37,9 @@ and includes an additional section for migration notes.
   - Postgres table/user names can now begin with an '_' and contain '$' if your Postgres DB version supports this.
 - *ORCA-554* GraphQL image will now be deployed by TF.
 
+### Added
+- *ORCA-561* Initial GraphQL implementation added.
+
 ### Migration Notes
 - If utilizing the `copied_to_glacier` [output property](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/tasks/copy_to_glacier/schemas/output.json#L47) of `copy_to_glacier`, 
   rename to new key `copied_to_orca`.
