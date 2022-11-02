@@ -38,6 +38,7 @@ OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY = "ORCA_DEFAULT_BUCKET"
 
 EVENT_CONFIG_KEY = "config"
 EVENT_INPUT_KEY = "input"
+EVENT_OPTIONAL_VALUES_KEY = "optionalValues"
 
 CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY = "defaultBucketOverride"
 CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY = "defaultRecoveryTypeOverride"
@@ -608,6 +609,26 @@ def restore_object(
     )
 
 
+def set_optional_event_property(event: Dict[str, Any], source_path: str, target_path: str) -> None:
+    source_path_segments = source_path.split(".")
+    target_path_segments = target_path.split(".")
+
+    # ensure that the path up to the target_path exists
+    target_path_cursor = event
+    for target_path_segment in target_path_segments[:-1]:
+        target_path_cursor[target_path_segment] = target_path_cursor.get(target_path_segment, {})
+        target_path_cursor = target_path_cursor[target_path_segment]
+    target_path_cursor[target_path_segments[-1]] = None
+
+    # get the value for the optional element
+    source_path_cursor = event
+    for source_path_segment in source_path_segments:
+        source_path_cursor = source_path_cursor.get(source_path_segment, None)
+        if source_path_cursor is None:
+            return
+    target_path_cursor[target_path_segments[-1]] = source_path_cursor
+
+
 @LOGGER.inject_lambda_context
 def handler(event: Dict[str, Any], context: LambdaContext):  # pylint: disable-msg=unused-argument
     """Lambda handler. Initiates a restore_object request from archive for each file of a granule.
@@ -648,17 +669,12 @@ def handler(event: Dict[str, Any], context: LambdaContext):  # pylint: disable-m
 
     # set the optional variables to None if not configured
     try:
-        event["config"]["defaultRecoveryTypeOverride"] = event[
-            "event"]["meta"]["collection"]["meta"]["orca"].get("defaultRecoveryTypeOverride", None)
-
-        event["config"]["defaultBucketOverride"] = event[
-            "event"]["meta"]["collection"]["meta"]["orca"].get("defaultBucketOverride", None)
-
-        event["config"]["s3MultipartChunksizeMb"] = event[
-            "event"]["meta"]["collection"]["meta"].get("s3MultipartChunksizeMb", None)
-
-        event["config"]["asyncOperationId"] = event[
-            "event"]["cumulus_meta"].get("asyncOperationId", None)
+        for optionalValueTargetPath in event[EVENT_OPTIONAL_VALUES_KEY]:
+            set_optional_event_property(
+                event,
+                event[EVENT_OPTIONAL_VALUES_KEY][optionalValueTargetPath],
+                optionalValueTargetPath
+            )
     except Exception as ex:
         LOGGER.error(ex)
         raise ex
