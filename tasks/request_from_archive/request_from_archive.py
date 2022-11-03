@@ -3,6 +3,7 @@ Name: request_from_archive.py
 Description:  Lambda function that makes a restore request from archive bucket for each input file.
 """
 import json
+import logging
 import os
 import time
 import uuid
@@ -609,7 +610,8 @@ def restore_object(
     )
 
 
-def set_optional_event_property(event: Dict[str, Any], source_path: str, target_path: str) -> None:
+def set_optional_event_property(event: Dict[str, Any], source_path: str, target_path: str,
+                                logger: logging.Logger) -> None:
     source_path_segments = source_path.split(".")
     target_path_segments = target_path.split(".")
 
@@ -625,6 +627,9 @@ def set_optional_event_property(event: Dict[str, Any], source_path: str, target_
     for source_path_segment in source_path_segments:
         source_path_cursor = source_path_cursor.get(source_path_segment, None)
         if source_path_cursor is None:
+            logger.info(f"When retrieving '{target_path}', "
+                        f"no value found in '{source_path}' at key {source_path_segment}. "
+                        f"Defaulting to null.")
             return
     target_path_cursor[target_path_segments[-1]] = source_path_cursor
 
@@ -673,7 +678,8 @@ def handler(event: Dict[str, Any], context: LambdaContext):  # pylint: disable-m
             set_optional_event_property(
                 event,
                 event[EVENT_OPTIONAL_VALUES_KEY][optionalValueTargetPath],
-                optionalValueTargetPath
+                optionalValueTargetPath,
+                LOGGER
             )
     except Exception as ex:
         LOGGER.error(ex)
