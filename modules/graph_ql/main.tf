@@ -63,6 +63,12 @@ resource "aws_ecs_task_definition" "graphql_task" {
     "cpu": 512,
     "memory": 256,
     "networkMode": "awsvpc",
+    "portMappings": [
+      {
+        "containerPort": 5000,
+        "hostPort": 5000
+      }
+    ],
     "environment": [
     ],
     "logConfiguration": {
@@ -90,4 +96,10 @@ resource "aws_ecs_service" "graphql_service" {
     subnets         = var.lambda_subnet_ids
     security_groups = [var.vpc_postgres_ingress_all_egress_id]
   }
+
+  # load_balancer {
+  #   elb_name = "${var.prefix}_graphql_load_balancer"
+  #   container_name   = "orca-graphql"
+  #   container_port   = 5000
+  # }
 }
