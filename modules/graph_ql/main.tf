@@ -1,3 +1,15 @@
+# load balancer
+resource "aws_lb" "graphql_load_balancer" {
+  name               = "${var.prefix}-graphql-load-balancer"
+  internal           = true
+  load_balancer_type = "application"
+  security_groups    = [var.vpc_postgres_ingress_all_egress_id]
+  subnets            = var.lambda_subnet_ids
+  idle_timeout       = 30 # API Gateway locks us to 30 seconds.
+  tags               = var.tags
+}
+
+# ecs service and task
 data "aws_iam_policy_document" "graphql_task_execution_policy_document" {
   statement {
     actions   = ["sts:AssumeRole"]
