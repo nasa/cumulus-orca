@@ -669,7 +669,7 @@ def handler(event: Dict[str, Any], context: LambdaContext):  # pylint: disable-m
 
     # set the optional variables to None if not configured
     try:
-        for optionalValueTargetPath in event[EVENT_OPTIONAL_VALUES_KEY]:
+        for optionalValueTargetPath in event.get(EVENT_OPTIONAL_VALUES_KEY, {}):
             set_optional_event_property(
                 event,
                 event[EVENT_OPTIONAL_VALUES_KEY][optionalValueTargetPath],
