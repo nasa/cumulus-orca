@@ -9,6 +9,19 @@ resource "aws_lb" "graphql_load_balancer" {
   tags               = var.tags
 }
 
+resource "aws_lb_target_group" "graphql_load_balancer_target_group" {
+  name = "${var.prefix}-graphql-target-group"
+  port = 5000
+  protocol = "HTTP"
+  vpc_id = var.vpc_postgres_ingress_all_egress_id
+}
+
+# resource "aws_lb_target_group_attachment" "test" {
+#   target_group_arn = aws_lb_target_group.graphql_load_balancer_target_group.arn
+#   target_id        = aws_instance.test.id
+#   port             = 5000
+# }
+
 # ecs service and task
 data "aws_iam_policy_document" "graphql_task_execution_policy_document" {
   statement {
@@ -104,14 +117,15 @@ resource "aws_ecs_service" "graphql_service" {
   desired_count   = 3
   launch_type     = "FARGATE"
   propagate_tags  = "TASK_DEFINITION"
+
   network_configuration {
     subnets         = var.lambda_subnet_ids
     security_groups = [var.vpc_postgres_ingress_all_egress_id]
   }
 
-  # load_balancer {
-  #   elb_name = "${var.prefix}_graphql_load_balancer"
-  #   container_name   = "orca-graphql"
-  #   container_port   = 5000
-  # }
+  load_balancer {
+    target_group_arn = aws_lb_target_group.graphql_load_balancer_target_group.arn
+    container_name   = "orca-graphql"
+    container_port   = 5000
+  }
 }
