@@ -612,6 +612,15 @@ def restore_object(
 
 def set_optional_event_property(event: Dict[str, Any], source_path: str, target_path: str,
                                 logger: logging.Logger) -> None:
+
+    """Sets the optional variable value from event if present, otherwise sets to None.
+    Args:
+        event: See schemas/input.json.
+        source_path: The source path containing the optional variable.
+        target_path: The target path to get the desired key.
+    Returns:
+        None
+    """
     source_path_segments = source_path.split(".")
     target_path_segments = target_path.split(".")
 
@@ -660,7 +669,7 @@ def handler(event: Dict[str, Any], context: LambdaContext):  # pylint: disable-m
             ORCA_DEFAULT_BUCKET
                 The bucket to use if destBucket is not set.
         Args:
-            event: See schemas/input.json and combine with knowledge of CumulusMessageAdapter.
+            event: See schemas/input.json.
             context: This object provides information about the lambda invocation, function,
                 and execution env.
         Returns:
