@@ -1943,7 +1943,7 @@ class TestRequestFromArchive(unittest.TestCase):
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
         files = [key0, key1, key2, key3]
         input_event = {
-            "payload": {
+            "input": {
                 request_from_archive.INPUT_GRANULES_KEY: [
                     {
                         request_from_archive.GRANULE_GRANULE_ID_KEY: granule_id,
@@ -1951,7 +1951,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     }
                 ]
             },
-            "task_config": {
+            "config": {
                 request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY:
                     "my-dr-fake-archive-bucket",
                 request_from_archive.CONFIG_JOB_ID_KEY: job_id,
@@ -1969,8 +1969,6 @@ class TestRequestFromArchive(unittest.TestCase):
         context = Mock()
 
         result = request_from_archive.handler(input_event, context)
-
-        result_value = result["payload"]
 
         mock_boto3_client.assert_has_calls([call("s3")])
         mock_s3_cli.head_object.assert_any_call(
@@ -2069,16 +2067,16 @@ class TestRequestFromArchive(unittest.TestCase):
         }
 
         # Validate the output is correct
-        _OUTPUT_VALIDATE(result_value)
+        _OUTPUT_VALIDATE(result)
 
         # Check the values of the result less the times since those will never match
-        for granule in result_value["granules"]:
+        for granule in result["granules"]:
             for file in granule[request_from_archive.GRANULE_RECOVER_FILES_KEY]:
                 file.pop(request_from_archive.FILE_REQUEST_TIME_KEY, None)
                 file.pop(request_from_archive.FILE_LAST_UPDATE_KEY, None)
                 file.pop(request_from_archive.FILE_COMPLETION_TIME_KEY, None)
 
-        self.assertEqual(expected_result, result_value)
+        self.assertEqual(expected_result, result)
 
 
 if __name__ == "__main__":

@@ -612,12 +612,12 @@ def restore_object(
 
 def set_optional_event_property(event: Dict[str, Any], source_path: str, target_path: str,
                                 logger: logging.Logger) -> None:
-
     """Sets the optional variable value from event if present, otherwise sets to None.
     Args:
         event: See schemas/input.json.
         source_path: The source path containing the optional variable.
         target_path: The target path to get the desired key.
+        logger: The logger to use.
     Returns:
         None
     """
