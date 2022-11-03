@@ -41,9 +41,6 @@
       "Parameters": {
         "event.$": "$",
         "input.$": "$.output_extract_filepath_from_granules",
-        "config": {
-
-        },
         "optionalValues": {
           "config.defaultRecoveryTypeOverride": "event.meta.collection.meta.orca.defaultRecoveryTypeOverride",
           "config.defaultBucketOverride": "event.meta.collection.meta.orca.defaultBucketOverride",
