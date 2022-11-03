@@ -16,6 +16,11 @@ variable "prefix" {
   description = "Prefix used to prepend to all object names and tags."
 }
 
+variable "vpc_id" {
+  type        = string
+  description = "Virtual Private Cloud AWS ID"
+}
+
 ## OPTIONAL
 variable "tags" {
   type        = map(string)
