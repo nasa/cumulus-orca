@@ -83,7 +83,7 @@ class TestRequestFromArchive(unittest.TestCase):
             request_from_archive.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
         ] = exp_days.__str__()
 
-        request_from_archive.task(mock_event, None)
+        request_from_archive.task(mock_event)
 
         mock_get_default_archive_bucket_name.assert_called_once_with(config)
         mock_get_archive_recovery_type.assert_called_once_with(config)
@@ -136,7 +136,7 @@ class TestRequestFromArchive(unittest.TestCase):
             request_from_archive.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
         ] = exp_days.__str__()
 
-        request_from_archive.task(mock_event, None)
+        request_from_archive.task(mock_event)
 
         mock_get_default_archive_bucket_name.assert_called_once_with(config)
         mock_get_archive_recovery_type.assert_called_once_with(config)
@@ -189,7 +189,7 @@ class TestRequestFromArchive(unittest.TestCase):
             request_from_archive.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
         ] = exp_days.__str__()
 
-        request_from_archive.task(mock_event, None)
+        request_from_archive.task(mock_event)
 
         mock_get_default_archive_bucket_name.assert_called_once_with(config)
         mock_get_archive_recovery_type.assert_called_once_with(config)
@@ -242,7 +242,7 @@ class TestRequestFromArchive(unittest.TestCase):
         ] = retry_sleep_secs.__str__()
         os.environ[request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY] = recovery_type
 
-        request_from_archive.task(mock_event, None)
+        request_from_archive.task(mock_event)
 
         mock_get_default_archive_bucket_name.assert_called_once_with(config)
         mock_get_archive_recovery_type.assert_called_once_with(config)
@@ -300,7 +300,7 @@ class TestRequestFromArchive(unittest.TestCase):
         ] = exp_days.__str__()
 
         with patch.object(uuid, "uuid4", return_value=job_id):
-            request_from_archive.task(mock_event, None)
+            request_from_archive.task(mock_event)
 
         mock_get_default_archive_bucket_name.assert_called_once_with(config)
         mock_get_archive_recovery_type.assert_called_once_with(config)
@@ -1857,7 +1857,7 @@ class TestRequestFromArchive(unittest.TestCase):
     @patch("request_from_archive.task")
     def test_handler_happy_path(self, mock_task: MagicMock):
         """
-        Tests that between the handler and CMA, input is translated into what task expects.
+        Happy path for handler.
         """
         # todo: Remove these hardcoded keys
         file0 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5"
@@ -1865,7 +1865,7 @@ class TestRequestFromArchive(unittest.TestCase):
 
         input_event = create_handler_event()
         expected_task_input = {
-            request_from_archive.EVENT_INPUT_KEY: input_event["payload"],
+            request_from_archive.EVENT_INPUT_KEY: input_event["input"],
             # Values here are based on the event task_config values that are mapped
             request_from_archive.EVENT_CONFIG_KEY: {
                 request_from_archive.CONFIG_JOB_ID_KEY: None,
@@ -1897,11 +1897,10 @@ class TestRequestFromArchive(unittest.TestCase):
         }
         context = Mock()
         result = request_from_archive.handler(input_event, context)
-        mock_task.assert_called_once_with(expected_task_input, context)
+        mock_task.assert_called_once_with(expected_task_input)
 
         self.assertEqual(mock_task.return_value, result["payload"])
 
-    # noinspection PyUnusedLocal
     @patch("request_from_archive.shared_recovery.create_status_for_job")
     @patch("boto3.client")
     def test_handler_output_json_schema(
@@ -1967,8 +1966,8 @@ class TestRequestFromArchive(unittest.TestCase):
             {"ResponseMetadata": {"HTTPStatusCode": 202}},
             {"ResponseMetadata": {"HTTPStatusCode": 202}},
         ]
-
         context = Mock()
+
         result = request_from_archive.handler(input_event, context)
 
         result_value = result["payload"]
