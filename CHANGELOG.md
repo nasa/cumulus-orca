@@ -35,7 +35,9 @@ and includes an additional section for migration notes.
 - *ORCA-461*
   - Invalid database connection parameters will now be detected earlier and more consistently.
   - Postgres table/user names can now begin with an '_' and contain '$' if your Postgres DB version supports this.
-- *ORCA-554* GraphQL image will now be deployed by TF.
+
+### Added
+- *ORCA-554*, *ORCA-561* GraphQL image and service will now be deployed by TF.
 
 ### Migration Notes
 - If utilizing the `copied_to_glacier` [output property](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/tasks/copy_to_glacier/schemas/output.json#L47) of `copy_to_glacier`, 
