@@ -10,19 +10,21 @@ resource "aws_lb" "graphql_load_balancer" {
 }
 
 resource "aws_lb_target_group" "graphql_load_balancer_target_group" {
-  name = "${var.prefix}-graphql-target-group"
-  port = 5000
-  protocol = "HTTP"
-  vpc_id = var.vpc_id
+  name        = "${var.prefix}-graphql-target-group"
+  vpc_id      = var.vpc_id
+  protocol    = "HTTP"
+  port        = 5000
   target_type = "ip"
-}
 
-# resource "aws_lb_target_group_attachment" "test" {
-#   target_group_arn = aws_lb_target_group.graphql_load_balancer_target_group.arn
-#   # target_id        = aws_ecs_service.graphql_service.id  # todo: Might need the ips of individual tasks.
-#   target_id        = aws_lb.graphql_load_balancer.arn
-#   port             = 5000  # The port on which targets receive traffic.
-# }
+  # NOTE: TF is unable to destroy a target group while a listener is attached,
+  # therefore we have to create a new one before destroying the old. This also means
+  # we have to let it have a random name, and then tag it with the desired name.
+  # lifecycle {
+  #   create_before_destroy = true
+  # }
+
+  tags = var.tags
+}
 
 # ecs service and task
 data "aws_iam_policy_document" "graphql_task_execution_policy_document" {
@@ -129,8 +131,8 @@ resource "aws_ecs_service" "graphql_service" {
   }
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.graphql_load_balancer_target_group.arn
     container_name   = "orca-graphql"
     container_port   = 5000
+    target_group_arn = aws_lb_target_group.graphql_load_balancer_target_group.arn
   }
 }
