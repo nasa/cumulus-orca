@@ -94,27 +94,6 @@
     },
     "cumulus_meta": {
       "system_bucket": "rhrh-internal"
-    },
-    "previous_step_output": {
-      "granules": [
-        {
-          "granuleId": "integrationGranuleId",
-          "version": "integrationGranuleVersion",
-          "files": [
-            {
-              "fileName": "MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
-              "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
-              "bucket": "rhrh-orca-primary"
-            }
-          ],
-          "keys": [
-            {
-              "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
-              "destBucket": "rhrh-public"
-            }
-          ]
-        }
-      ]
     }
   }
 }

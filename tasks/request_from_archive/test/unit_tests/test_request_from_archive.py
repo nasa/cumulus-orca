@@ -1862,18 +1862,7 @@ class TestRequestFromArchive(unittest.TestCase):
         # todo: Remove these hardcoded keys
         file0 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5"
         bucket_name = uuid.uuid4().__str__()
-
         input_event = create_handler_event()
-        expected_task_input = {
-            request_from_archive.EVENT_INPUT_KEY: input_event["input"],
-            # Values here are based on the event task_config values that are mapped
-            request_from_archive.EVENT_CONFIG_KEY: {
-                request_from_archive.CONFIG_JOB_ID_KEY: None,
-                request_from_archive.CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: 750,
-                request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: "lp-sndbx-cumulus-orca",
-                request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: None,
-            },
-        }
         mock_task.return_value = {
             "granules": [
                 {
@@ -1897,9 +1886,89 @@ class TestRequestFromArchive(unittest.TestCase):
         }
         context = Mock()
         result = request_from_archive.handler(input_event, context)
-        mock_task.assert_called_once_with(expected_task_input)
+        self.assertEqual(mock_task.return_value, result)
 
-        self.assertEqual(mock_task.return_value, result["payload"])
+    @patch("request_from_archive.task")
+    def test_handler_raises_error_bad_input(self, mock_task: MagicMock):
+        """
+        Tests that expected error is raised on bad input such as missing granuleId.
+        """
+        bad_handler_input_event = {
+            "input": {
+                 "granules": [
+                    {
+                        "version": "integrationGranuleVersion",
+                        "files": [
+                            {
+                                "fileName": "MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
+                                "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
+                                "bucket": "rhrh-orca-primary"
+                            }
+                        ],
+                        "keys": [
+                            {
+                                "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
+                                "destBucket": "rhrh-public"
+                            }
+                        ]
+                    }
+                    ]
+                }
+            }
+        bad_handler_input_event["config"] = Mock()
+        context = Mock()
+        with self.assertRaises(Exception) as ex:
+            request_from_archive.handler(bad_handler_input_event, context)
+        self.assertEqual(
+            str(ex.exception), "data.granules[0] must contain ['granuleId', 'keys'] properties")
+        mock_task.assert_not_called()
+
+    @patch("request_from_archive.task")
+    def test_handler_raises_error_bad_output(self, mock_task: MagicMock):
+        """
+        Tests that expected error is raised on bad output such as missing asyncOperationId.
+        """
+        handler_input_event = create_handler_event()
+        context = Mock()
+        mock_task.return_value = {
+            "granules": [
+                {
+                    "granuleId": "integrationGranuleId",
+                    "version": "integrationGranuleVersion",
+                    "files": [
+                        {
+                            "fileName": "test.hdf",
+                            "key": "MOD09GQ/006/test.hdf",
+                            "bucket": "rhrh-orca-primary"
+                        }
+                    ],
+                    "keys": [
+                        {
+                            "key": "MOD09GQ/006/test.hdf",
+                            "destBucket": "rhrh-public"
+                        }
+                    ],
+                    "recoverFiles": [
+                        {
+                            "success": True,
+                            "filename": "test.hdf",
+                            "keyPath": "MOD09GQ/006/test.hdf",
+                            "restoreDestination": "rhrh-public",
+                            "s3MultipartChunksizeMb": None,
+                            "statusId": 3,
+                            "requestTime": "2022-11-03T18:59:52.807957+00:00",
+                            "lastUpdate": "2022-11-03T18:59:52.807957+00:00",
+                            "errorMessage": "MOD.hdf' does not exist in 'orca-primary' bucket",
+                            "completionTime": "2022-11-03T18:59:52.807957+00:00"
+                        }
+                    ]
+                }
+            ]
+            }
+        with self.assertRaises(Exception) as ex:
+            request_from_archive.handler(handler_input_event, context)
+        self.assertEqual(
+            str(ex.exception), "data must contain ['granules', 'asyncOperationId'] properties")
 
     @patch("request_from_archive.shared_recovery.create_status_for_job")
     @patch("boto3.client")
