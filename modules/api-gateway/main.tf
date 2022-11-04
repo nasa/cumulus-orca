@@ -55,7 +55,6 @@ EOF
 }
 
 # API details for graphql service
-#API details for orca_catalog_reporting lambda
 resource "aws_api_gateway_resource" "api_graphql_resource" {
   path_part   = "graphql"
   parent_id   = aws_api_gateway_rest_api.orca_api.root_resource_id

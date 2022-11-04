@@ -1,6 +1,6 @@
-# load balancer
-resource "aws_lb" "graphql_load_balancer" {
-  name               = "${var.prefix}-graphql-load-balancer"
+# Application load balancer
+resource "aws_lb" "gql_app_lb" {
+  name               = "${var.prefix}-gql-app-lb"
   internal           = true
   load_balancer_type = "application"
   security_groups    = [var.vpc_postgres_ingress_all_egress_id]
@@ -9,8 +9,8 @@ resource "aws_lb" "graphql_load_balancer" {
   tags               = var.tags
 }
 
-resource "aws_lb_target_group" "graphql_load_balancer_target_group" {
-  name        = "${var.prefix}-graphql-target-group"
+resource "aws_lb_target_group" "gql_app_lb_target_group" {
+  name        = "${var.prefix}-gql-app-lb-t"
   vpc_id      = var.vpc_id
   protocol    = "HTTP"
   port        = 5000
@@ -26,8 +26,19 @@ resource "aws_lb_target_group" "graphql_load_balancer_target_group" {
   tags = var.tags
 }
 
+resource "aws_lb_listener" "gql_app_lb_listener" {
+  load_balancer_arn = aws_lb.gql_app_lb.arn
+  port              = "5000"
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.gql_app_lb_target_group.arn
+  }
+}
+
 # ecs service and task
-data "aws_iam_policy_document" "graphql_task_execution_policy_document" {
+data "aws_iam_policy_document" "gql_task_execution_policy_document" {
   statement {
     actions   = ["sts:AssumeRole"]
     resources = [aws_iam_role.orca_ecs_tasks_role.arn]
@@ -61,10 +72,10 @@ resource "aws_iam_role" "orca_ecs_tasks_role" {
   tags                 = var.tags
 }
 
-resource "aws_iam_role_policy" "graphql_task_role_policy" {
-  name   = "${var.prefix}_orca_graphql_task_role_policy"
+resource "aws_iam_role_policy" "gql_task_role_policy" {
+  name   = "${var.prefix}_orca_gql_task_role_policy"
   role   = aws_iam_role.orca_ecs_task_execution_role.id
-  policy = data.aws_iam_policy_document.graphql_task_execution_policy_document.json
+  policy = data.aws_iam_policy_document.gql_task_execution_policy_document.json
 }
 
 resource "aws_iam_role" "orca_ecs_task_execution_role" {
@@ -75,8 +86,8 @@ resource "aws_iam_role" "orca_ecs_task_execution_role" {
 }
 
 # Defines how the image will be run.
-resource "aws_ecs_task_definition" "graphql_task" {
-  family                   = "${var.prefix}_orca_graphql_task"
+resource "aws_ecs_task_definition" "gql_task" {
+  family                   = "${var.prefix}_orca_gql_task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = "1024"
@@ -87,7 +98,7 @@ resource "aws_ecs_task_definition" "graphql_task" {
   container_definitions    = <<DEFINITION
 [
   {
-    "name": "orca-graphql",
+    "name": "orca-gql",
     "image": "ghcr.io/nasa/cumulus-orca/graphql:0.0.18",
     "cpu": 512,
     "memory": 256,
@@ -114,13 +125,13 @@ resource "aws_ecs_task_definition" "graphql_task" {
 DEFINITION
 }
 
-resource "aws_ecs_service" "graphql_service" {
+resource "aws_ecs_service" "gql_service" {
   depends_on = [
-    # aws_lb_target_group_attachment.test
+    aws_lb_listener.gql_app_lb_listener  # Wait for listener to associate aws_lb_target_group with aws_lb
   ]
-  name            = "${var.prefix}_graphql_service"
+  name            = "${var.prefix}_gql_service"
   cluster         = var.ecs_cluster_id
-  task_definition = aws_ecs_task_definition.graphql_task.arn
+  task_definition = aws_ecs_task_definition.gql_task.arn
   desired_count   = 3
   launch_type     = "FARGATE"
   propagate_tags  = "TASK_DEFINITION"
@@ -131,8 +142,8 @@ resource "aws_ecs_service" "graphql_service" {
   }
 
   load_balancer {
-    container_name   = "orca-graphql"
+    container_name   = "orca-gql"
     container_port   = 5000
-    target_group_arn = aws_lb_target_group.graphql_load_balancer_target_group.arn
+    target_group_arn = aws_lb_target_group.gql_app_lb_target_group.arn
   }
 }
