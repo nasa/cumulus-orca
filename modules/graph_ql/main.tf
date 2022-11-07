@@ -37,6 +37,61 @@ resource "aws_lb_listener" "gql_app_lb_listener" {
   }
 }
 
+# Network load balancer
+resource "aws_lb" "gql_nw_lb" {
+  name               = "${var.prefix}-gql-nw-lb"
+  internal           = true
+  load_balancer_type = "network"
+  subnets            = var.lambda_subnet_ids
+
+  enable_deletion_protection = true
+
+  tags               = var.tags
+}
+
+resource "aws_lb_target_group" "gql_nw_lb_target_group" {
+  name        = "${var.prefix}-gql-nw-lb-t"
+  vpc_id      = var.vpc_id
+  protocol    = "TCP"
+  port        = 5000
+  target_type = "alb"
+
+  # NOTE: TF is unable to destroy a target group while a listener is attached,
+  # therefore we have to create a new one before destroying the old. This also means
+  # we have to let it have a random name, and then tag it with the desired name.
+  # lifecycle {
+  #   create_before_destroy = true
+  # }
+
+  tags = var.tags
+}
+
+resource "aws_lb_listener" "gql_nw_lb_listener" {
+  load_balancer_arn = aws_lb.gql_nw_lb.arn
+  port              = "5000"
+  protocol          = "TCP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.gql_nw_lb_target_group.arn
+  }
+}
+
+resource "aws_lb_target_group_attachment" "gql_nw_app_lb_attachment" {
+    target_group_arn = aws_lb_target_group.gql_nw_lb_target_group.arn
+    # attach the ALB to this target group
+    target_id        = aws_lb.gql_app_lb.arn
+    port             = 5000
+}
+
+resource "aws_api_gateway_vpc_link" "gql_vpc_link" {
+  name        = "${var.prefix}-gql-vpc-link"
+  description = "Allow the API Gateway to contact the Network Load Balancer."
+  target_arns = [aws_lb.gql_nw_lb.arn]
+
+  tags = var.tags
+}
+
 # ecs service and task
 data "aws_iam_policy_document" "gql_task_execution_policy_document" {
   statement {
