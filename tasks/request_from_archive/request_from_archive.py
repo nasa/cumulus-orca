@@ -609,7 +609,7 @@ def restore_object(
     )
 
 
-def set_optional_event_property(event: Dict[str, Any], source_path: str, target_path: str
+def set_optional_event_property(event: Dict[str, Any], target_path_cursor, target_path_segments
                                 ) -> None:
     """Sets the optional variable value from event if present, otherwise sets to None.
     Args:
@@ -619,26 +619,40 @@ def set_optional_event_property(event: Dict[str, Any], source_path: str, target_
     Returns:
         None
     """
-    source_path_segments = source_path.split(".")
-    target_path_segments = target_path.split(".")
+    for optionalValueTargetPath in target_path_cursor:
+        temp_target_path_segments = target_path_segments.copy()
+        temp_target_path_segments.append(optionalValueTargetPath)
+        if isinstance(target_path_cursor[optionalValueTargetPath], dict):
+            set_optional_event_property(
+                event,
+                target_path_cursor[optionalValueTargetPath],
+                temp_target_path_segments
+            )
+        elif isinstance(target_path_cursor[optionalValueTargetPath], str):
+            source_path = target_path_cursor[optionalValueTargetPath]
+            source_path_segments = source_path.split(".")
 
-    # ensure that the path up to the target_path exists
-    target_path_cursor = event
-    for target_path_segment in target_path_segments[:-1]:
-        target_path_cursor[target_path_segment] = target_path_cursor.get(target_path_segment, {})
-        target_path_cursor = target_path_cursor[target_path_segment]
-    target_path_cursor[target_path_segments[-1]] = None
+            # ensure that the path up to the target_path exists
+            event_cursor = event
+            for target_path_segment in temp_target_path_segments[:-1]:
+                event_cursor[target_path_segment] =\
+                    event_cursor.get(target_path_segment, {})
+                event_cursor = event_cursor[target_path_segment]
+            event_cursor[temp_target_path_segments[-1]] = None
 
-    # get the value for the optional element
-    source_path_cursor = event
-    for source_path_segment in source_path_segments:
-        source_path_cursor = source_path_cursor.get(source_path_segment, None)
-        if source_path_cursor is None:
-            LOGGER.info(f"When retrieving '{target_path}', "
-                        f"no value found in '{source_path}' at key {source_path_segment}. "
-                        f"Defaulting to null.")
-            return
-    target_path_cursor[target_path_segments[-1]] = source_path_cursor
+            # get the value for the optional element
+            source_path_cursor = event
+            for source_path_segment in source_path_segments:
+                source_path_cursor = source_path_cursor.get(source_path_segment, None)
+                if source_path_cursor is None:
+                    LOGGER.info(f"When retrieving '{'.'.join(temp_target_path_segments)}', "
+                                f"no value found in '{source_path}' at key {source_path_segment}. "
+                                f"Defaulting to null.")
+                    break
+            event_cursor[temp_target_path_segments[-1]] = source_path_cursor
+        else:
+            raise Exception(f"Illegal type {type(target_path_cursor[optionalValueTargetPath])} "
+                            f"found at {'.'.join(temp_target_path_segments)}")
 
 
 @LOGGER.inject_lambda_context
@@ -681,13 +695,7 @@ def handler(event: Dict[str, Any], context: LambdaContext):  # pylint: disable-m
 
     # set the optional variables to None if not configured
     try:
-        for optionalValueTargetPath in event.get(EVENT_OPTIONAL_VALUES_KEY, {}):
-            set_optional_event_property(
-                event,
-                event[EVENT_OPTIONAL_VALUES_KEY][optionalValueTargetPath],
-                optionalValueTargetPath,
-                LOGGER
-            )
+        set_optional_event_property(event, event.get(EVENT_OPTIONAL_VALUES_KEY, {}), [])
     except Exception as ex:
         LOGGER.error(ex)
         raise ex
