@@ -1,9 +1,11 @@
 {
   "optionalValues": {
-    "config.defaultRecoveryTypeOverride": "event.meta.collection.meta.orca.defaultRecoveryTypeOverride",
-    "config.defaultBucketOverride": "event.meta.collection.meta.orca.defaultBucketOverride",
-    "config.s3MultipartChunksizeMb": "event.meta.collection.meta.s3MultipartChunksizeMb",
-    "config.asyncOperationId": "event.cumulus_meta.asyncOperationId"
+    "config": {
+      "defaultRecoveryTypeOverride": "event.meta.collection.meta.orca.defaultRecoveryTypeOverride",
+      "defaultBucketOverride": "event.meta.collection.meta.orca.defaultBucketOverride",
+      "s3MultipartChunksizeMb": "event.meta.collection.meta.s3MultipartChunksizeMb",
+      "asyncOperationId": "event.cumulus_meta.asyncOperationId"
+    }
   },
   "input": {
     "granules": [

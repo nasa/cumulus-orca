@@ -609,8 +609,8 @@ def restore_object(
     )
 
 
-def set_optional_event_property(event: Dict[str, Any], target_path_cursor, target_path_segments
-                                ) -> None:
+def set_optional_event_property(event: Dict[str, Any], target_path_cursor: Dict,
+                                target_path_segments: List) -> None:
     """Sets the optional variable value from event if present, otherwise sets to None.
     Args:
         event: See schemas/input.json.
@@ -674,8 +674,6 @@ def handler(event: Dict[str, Any], context: LambdaContext):  # pylint: disable-m
                 to sleep between retry attempts.
             RESTORE_RECOVERY_TYPE (str, optional, default = 'Standard'): the Tier
                 for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
-            CUMULUS_MESSAGE_ADAPTER_DISABLED (str): If set to 'true',
-                CumulusMessageAdapter does not modify input.
             STATUS_UPDATE_QUEUE_URL
                 The URL of the SQS queue to post status to.
             ORCA_DEFAULT_BUCKET
