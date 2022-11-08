@@ -4,12 +4,14 @@ Name: extract_filepaths_for_granule.py
 Description:  Extracts the keys (filepaths) for a granule's files from a Cumulus Message.
 """
 
+import json
 import re
 from typing import Dict, List, Union
 
+import fastjsonschema as fastjsonschema
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
-from run_cumulus_task import run_cumulus_task
+from fastjsonschema import JsonSchemaException
 
 # Set AWS powertools logger
 LOGGER = Logger()
@@ -20,12 +22,27 @@ CONFIG_FILE_BUCKETS_KEY = "fileBucketMaps"
 OUTPUT_DESTINATION_BUCKET_KEY = "destBucket"
 OUTPUT_KEY_KEY = "key"
 
+# Generating schema validators can take time, so do it once and reuse.
+try:
+    with open("schemas/input.json", "r") as raw_schema:
+        input_schema = json.loads(raw_schema.read())
+        _VALIDATE_INPUT = fastjsonschema.compile(input_schema)
+    with open("schemas/config.json", "r") as raw_schema:
+        config_schema = json.loads(raw_schema.read())
+        _VALIDATE_CONFIG = fastjsonschema.compile(config_schema)
+    with open("schemas/output.json", "r") as raw_schema:
+        output_schema = json.loads(raw_schema.read())
+        _VALIDATE_OUTPUT = fastjsonschema.compile(output_schema)
+except Exception as ex:
+    LOGGER.error(f"Could not build schema validator: {ex}")
+    raise
+
 
 class ExtractFilePathsError(Exception):
     """Exception to be raised if any errors occur"""
 
 
-def task(event, context):  # pylint: disable-msg=unused-argument
+def task(event):
     """
     Task called by the handler to perform the work.
 
@@ -33,7 +50,6 @@ def task(event, context):  # pylint: disable-msg=unused-argument
 
         Args:
             event (dict): passed through from the handler
-            context (Object): passed through from the handler
 
         Returns:
             dict: dict containing granuleId and keys. See handler for detail.
@@ -219,5 +235,24 @@ def handler(event: Dict[str, Union[str, int]],
     Raises:
         ExtractFilePathsError: An error occurred parsing the input.
     """
-    result = run_cumulus_task(task, event, context)
+    try:
+        _VALIDATE_INPUT(event["input"])
+    except JsonSchemaException as json_schema_exception:
+        LOGGER.error(json_schema_exception)
+        raise
+
+    try:
+        _VALIDATE_CONFIG(event["config"])
+    except JsonSchemaException as json_schema_exception:
+        LOGGER.error(json_schema_exception)
+        raise
+
+    result = task(event)
+
+    try:
+        _VALIDATE_OUTPUT(result)
+    except JsonSchemaException as json_schema_exception:
+        LOGGER.error(json_schema_exception)
+        raise
+
     return result

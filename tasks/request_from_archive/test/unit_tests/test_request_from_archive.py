@@ -83,7 +83,7 @@ class TestRequestFromArchive(unittest.TestCase):
             request_from_archive.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
         ] = exp_days.__str__()
 
-        request_from_archive.task(mock_event, None)
+        request_from_archive.task(mock_event)
 
         mock_get_default_archive_bucket_name.assert_called_once_with(config)
         mock_get_archive_recovery_type.assert_called_once_with(config)
@@ -136,7 +136,7 @@ class TestRequestFromArchive(unittest.TestCase):
             request_from_archive.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
         ] = exp_days.__str__()
 
-        request_from_archive.task(mock_event, None)
+        request_from_archive.task(mock_event)
 
         mock_get_default_archive_bucket_name.assert_called_once_with(config)
         mock_get_archive_recovery_type.assert_called_once_with(config)
@@ -189,7 +189,7 @@ class TestRequestFromArchive(unittest.TestCase):
             request_from_archive.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
         ] = exp_days.__str__()
 
-        request_from_archive.task(mock_event, None)
+        request_from_archive.task(mock_event)
 
         mock_get_default_archive_bucket_name.assert_called_once_with(config)
         mock_get_archive_recovery_type.assert_called_once_with(config)
@@ -242,7 +242,7 @@ class TestRequestFromArchive(unittest.TestCase):
         ] = retry_sleep_secs.__str__()
         os.environ[request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY] = recovery_type
 
-        request_from_archive.task(mock_event, None)
+        request_from_archive.task(mock_event)
 
         mock_get_default_archive_bucket_name.assert_called_once_with(config)
         mock_get_archive_recovery_type.assert_called_once_with(config)
@@ -300,7 +300,7 @@ class TestRequestFromArchive(unittest.TestCase):
         ] = exp_days.__str__()
 
         with patch.object(uuid, "uuid4", return_value=job_id):
-            request_from_archive.task(mock_event, None)
+            request_from_archive.task(mock_event)
 
         mock_get_default_archive_bucket_name.assert_called_once_with(config)
         mock_get_archive_recovery_type.assert_called_once_with(config)
@@ -1855,25 +1855,21 @@ class TestRequestFromArchive(unittest.TestCase):
         )
 
     @patch("request_from_archive.task")
-    def test_handler_happy_path(self, mock_task: MagicMock):
+    @patch("request_from_archive.set_optional_event_property")
+    def test_handler_happy_path(self, mock_optional_property: MagicMock, mock_task: MagicMock):
         """
-        Tests that between the handler and CMA, input is translated into what task expects.
+        Happy path for handler.
         """
         # todo: Remove these hardcoded keys
         file0 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5"
         bucket_name = uuid.uuid4().__str__()
-
         input_event = create_handler_event()
-        expected_task_input = {
-            request_from_archive.EVENT_INPUT_KEY: input_event["payload"],
-            # Values here are based on the event task_config values that are mapped
-            request_from_archive.EVENT_CONFIG_KEY: {
-                request_from_archive.CONFIG_JOB_ID_KEY: None,
-                request_from_archive.CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: 750,
-                request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: "lp-sndbx-cumulus-orca",
-                request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: None,
-            },
-        }
+        input_event["config"] = {
+            "defaultRecoveryTypeOverride": "Standard",
+            "defaultBucketOverride": "test-bucket",
+            "s3MultipartChunksizeMb": 123,
+            "asyncOperationId": "123"
+            }
         mock_task.return_value = {
             "granules": [
                 {
@@ -1897,17 +1893,107 @@ class TestRequestFromArchive(unittest.TestCase):
         }
         context = Mock()
         result = request_from_archive.handler(input_event, context)
-        mock_task.assert_called_once_with(expected_task_input, context)
+        self.assertEqual(mock_task.return_value, result)
 
-        self.assertEqual(mock_task.return_value, result["payload"])
+    @patch("request_from_archive.task")
+    @patch("request_from_archive.set_optional_event_property")
+    def test_handler_raises_error_bad_input(self,
+                                            mock_optional_property: MagicMock,
+                                            mock_task: MagicMock
+                                            ):
+        """
+        Tests that expected error is raised on bad input such as missing granuleId.
+        """
+        bad_handler_input_event = {"input": {
+            "granules": [
+                {
+                    "version": "integrationGranuleVersion",
+                    "files": [
+                        {
+                            "fileName": "MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
+                            "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
+                            "bucket": "rhrh-orca-primary"
+                        }
+                    ],
+                    "keys": [
+                        {
+                            "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
+                            "destBucket": "rhrh-public"
+                        }
+                    ]
+                }
+            ]
+        }, "config": Mock()}
+        context = Mock()
+        with self.assertRaises(Exception) as ex:
+            request_from_archive.handler(bad_handler_input_event, context)
+        self.assertEqual(
+            str(ex.exception), "data.granules[0] must contain ['granuleId', 'keys'] properties")
+        mock_task.assert_not_called()
 
-    # noinspection PyUnusedLocal
+    @patch("request_from_archive.task")
+    @patch("request_from_archive.set_optional_event_property")
+    def test_handler_raises_error_bad_output(self, mock_optional_property: MagicMock,
+                                             mock_task: MagicMock):
+        """
+        Tests that expected error is raised on bad output such as missing asyncOperationId.
+        """
+        handler_input_event = create_handler_event()
+        handler_input_event["config"] = {
+            "defaultRecoveryTypeOverride": "Standard",
+            "defaultBucketOverride": "test-bucket",
+            "s3MultipartChunksizeMb": 123,
+            "asyncOperationId": "123"
+            }
+        context = Mock()
+        mock_task.return_value = {
+            "granules": [
+                {
+                    "granuleId": "integrationGranuleId",
+                    "version": "integrationGranuleVersion",
+                    "files": [
+                        {
+                            "fileName": "test.hdf",
+                            "key": "MOD09GQ/006/test.hdf",
+                            "bucket": "rhrh-orca-primary"
+                        }
+                    ],
+                    "keys": [
+                        {
+                            "key": "MOD09GQ/006/test.hdf",
+                            "destBucket": "rhrh-public"
+                        }
+                    ],
+                    "recoverFiles": [
+                        {
+                            "success": True,
+                            "filename": "test.hdf",
+                            "keyPath": "MOD09GQ/006/test.hdf",
+                            "restoreDestination": "rhrh-public",
+                            "s3MultipartChunksizeMb": None,
+                            "statusId": 3,
+                            "requestTime": "2022-11-03T18:59:52.807957+00:00",
+                            "lastUpdate": "2022-11-03T18:59:52.807957+00:00",
+                            "errorMessage": "MOD.hdf' does not exist in 'orca-primary' bucket",
+                            "completionTime": "2022-11-03T18:59:52.807957+00:00"
+                        }
+                    ]
+                }
+            ],
+            }
+        with self.assertRaises(Exception) as ex:
+            request_from_archive.handler(handler_input_event, context)
+        self.assertEqual(
+            str(ex.exception), "data must contain ['granules', 'asyncOperationId'] properties")
+
+    @patch("request_from_archive.set_optional_event_property")
     @patch("request_from_archive.shared_recovery.create_status_for_job")
     @patch("boto3.client")
     def test_handler_output_json_schema(
         self,
         mock_boto3_client: MagicMock,
         mock_create_status_for_job: MagicMock,
+        mock_optional_property: MagicMock
     ):
         """
         A full run through with multiple files to verify output schema.
@@ -1944,7 +2030,7 @@ class TestRequestFromArchive(unittest.TestCase):
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
         files = [key0, key1, key2, key3]
         input_event = {
-            "payload": {
+            "input": {
                 request_from_archive.INPUT_GRANULES_KEY: [
                     {
                         request_from_archive.GRANULE_GRANULE_ID_KEY: granule_id,
@@ -1952,7 +2038,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     }
                 ]
             },
-            "task_config": {
+            "config": {
                 request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY:
                     "my-dr-fake-archive-bucket",
                 request_from_archive.CONFIG_JOB_ID_KEY: job_id,
@@ -1967,11 +2053,9 @@ class TestRequestFromArchive(unittest.TestCase):
             {"ResponseMetadata": {"HTTPStatusCode": 202}},
             {"ResponseMetadata": {"HTTPStatusCode": 202}},
         ]
-
         context = Mock()
-        result = request_from_archive.handler(input_event, context)
 
-        result_value = result["payload"]
+        result = request_from_archive.handler(input_event, context)
 
         mock_boto3_client.assert_has_calls([call("s3")])
         mock_s3_cli.head_object.assert_any_call(
@@ -2070,16 +2154,67 @@ class TestRequestFromArchive(unittest.TestCase):
         }
 
         # Validate the output is correct
-        _OUTPUT_VALIDATE(result_value)
+        _OUTPUT_VALIDATE(result)
 
         # Check the values of the result less the times since those will never match
-        for granule in result_value["granules"]:
+        for granule in result["granules"]:
             for file in granule[request_from_archive.GRANULE_RECOVER_FILES_KEY]:
                 file.pop(request_from_archive.FILE_REQUEST_TIME_KEY, None)
                 file.pop(request_from_archive.FILE_LAST_UPDATE_KEY, None)
                 file.pop(request_from_archive.FILE_COMPLETION_TIME_KEY, None)
 
-        self.assertEqual(expected_result, result_value)
+        self.assertEqual(expected_result, result)
+
+    @patch("request_from_archive.LOGGER.info")
+    def test_set_optional_event_property(
+        self, mock_logger: MagicMock,
+    ):
+        """
+        Tests that set_optional_event_property sets asyncOperationId as the value
+        present in event and sets null value for other keys that are not present in event.
+        """
+        key0 = uuid.uuid4().__str__()  # no value, default to None
+        key1 = uuid.uuid4().__str__()  # value present, set value in event
+        key1_value = uuid.uuid4().__str__()
+        key2 = uuid.uuid4().__str__()  # value present, override value in event
+        key2_value = uuid.uuid4().__str__()
+        mock_event = {
+            "event": {
+                "cumulus_meta": {
+                    "asyncOperationId": key2_value
+                },
+                "meta": {
+                    "collection": {
+                        "meta": {
+                            "orca": {
+                                "defaultBucketOverride": key1_value
+                            }
+                        }
+                    }
+                }
+            },
+            "config1": {
+                key2: uuid.uuid4().__str__()
+            }
+        }
+        mock_target_path_cursor = {
+            "config0": {
+                key0:
+                    "event.meta.collection.meta.orca.defaultRecoveryTypeOverride",
+                key1:
+                    "event.meta.collection.meta.orca.defaultBucketOverride"
+            },
+            "config1": {
+                key2:
+                    "event.cumulus_meta.asyncOperationId"
+            }
+        }
+        request_from_archive.set_optional_event_property(mock_event, mock_target_path_cursor, [])
+
+        # set asyncOperationId to non-null value
+        self.assertEqual(None, mock_event["config0"][key0])
+        self.assertEqual(key1_value, mock_event["config0"][key1])
+        self.assertEqual(key2_value, mock_event["config1"][key2])
 
 
 if __name__ == "__main__":
