@@ -8,6 +8,7 @@
   * [process\_granule](#request_from_archive.process_granule)
   * [get\_s3\_object\_information](#request_from_archive.get_s3_object_information)
   * [restore\_object](#request_from_archive.restore_object)
+  * [set\_optional\_event\_property](#request_from_archive.set_optional_event_property)
   * [handler](#request_from_archive.handler)
 
 <a id="request_from_archive"></a>
@@ -32,7 +33,7 @@ Exception to be raised if the restore request fails submission for any of the fi
 #### task
 
 ```python
-def task(event: Dict, context: object) -> Dict[str, Any]
+def task(event: Dict) -> Dict[str, Any]
 ```
 
 Pulls information from os.environ, utilizing defaults if needed,
@@ -45,7 +46,6 @@ then calls inner_task.
 - `event` - A dict with the following keys:
 - `'config'` _dict_ - See schemas/config.json for details.
 - `'input'` _dict_ - See schemas/input.json for details.
-- `context` - Passed through from AWS and CMA. Unused.
   Environment Vars:
   See docs in handler for details.
 
@@ -216,6 +216,28 @@ Restore an archived S3 object in an Amazon S3 bucket.
 
 - `ClientError` - Raises ClientErrors from restore_object, or if the file is already restored.
 
+<a id="request_from_archive.set_optional_event_property"></a>
+
+#### set\_optional\_event\_property
+
+```python
+def set_optional_event_property(event: Dict[str,
+                                            Any], target_path_cursor: Dict,
+                                target_path_segments: List) -> None
+```
+
+Sets the optional variable value from event if present, otherwise sets to None.
+
+**Arguments**:
+
+- `event` - See schemas/input.json.
+- `target_path_cursor` - Cursor of the current section to check.
+- `target_path_segments` - The path to the current cursor.
+
+**Returns**:
+
+  None
+
 <a id="request_from_archive.handler"></a>
 
 #### handler
@@ -242,8 +264,6 @@ RESTORE_RETRY_SLEEP_SECS (int, optional, default = 0): The number of seconds
 to sleep between retry attempts.
 RESTORE_RECOVERY_TYPE (str, optional, default = 'Standard'): the Tier
 for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
-CUMULUS_MESSAGE_ADAPTER_DISABLED (str): If set to 'true',
-CumulusMessageAdapter does not modify input.
 STATUS_UPDATE_QUEUE_URL
 The URL of the SQS queue to post status to.
 ORCA_DEFAULT_BUCKET
@@ -251,14 +271,13 @@ The bucket to use if destBucket is not set.
 
 **Arguments**:
 
-- `event` - See schemas/input.json and combine with knowledge of CumulusMessageAdapter.
+- `event` - See schemas/input.json.
 - `context` - This object provides information about the lambda invocation, function,
   and execution env.
 
 **Returns**:
 
-  A dict with the value at 'payload' matching schemas/output.json
-  Combine with knowledge of CumulusMessageAdapter for other properties.
+  A dict matching schemas/output.json
 
 **Raises**:
 

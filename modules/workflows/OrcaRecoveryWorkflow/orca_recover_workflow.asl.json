@@ -14,6 +14,7 @@
       },
       "Type": "Task",
       "Resource": "${orca_lambda_extract_filepaths_for_granule_arn}",
+      "ResultPath": "$.previous_step_output",
       "Retry": [
         {
           "ErrorEquals": [
@@ -39,16 +40,14 @@
     },
     "RequestFromArchive": {
       "Parameters": {
-        "cma": {
-          "event.$": "$",
-          "ReplaceConfig": {
-            "FullMessage": true
-          },
-          "task_config": {
-            "asyncOperationId": "{$.cumulus_meta.asyncOperationId}",
-            "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
-            "defaultBucketOverride": "{$.meta.collection.meta.orca.defaultBucketOverride}",
-            "defaultRecoveryTypeOverride": "{$.meta.collection.meta.orca.defaultRecoveryTypeOverride}"
+        "event.$": "$",
+        "input.$": "$.previous_step_output",
+        "optionalValues": {
+          "config": {
+            "defaultRecoveryTypeOverride": "event.meta.collection.meta.orca.defaultRecoveryTypeOverride",
+            "defaultBucketOverride": "event.meta.collection.meta.orca.defaultBucketOverride",
+            "s3MultipartChunksizeMb": "event.meta.collection.meta.s3MultipartChunksizeMb",
+            "asyncOperationId": "event.cumulus_meta.asyncOperationId"
           }
         }
       },
