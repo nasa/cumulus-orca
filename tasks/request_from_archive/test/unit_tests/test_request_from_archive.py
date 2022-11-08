@@ -1895,10 +1895,12 @@ class TestRequestFromArchive(unittest.TestCase):
         result = request_from_archive.handler(input_event, context)
         self.assertEqual(mock_task.return_value, result)
 
-    @patch("request_from_archive.set_optional_event_property")
     @patch("request_from_archive.task")
-    def test_handler_raises_error_bad_input(self, mock_optional_property: MagicMock,
-                                            mock_task: MagicMock):
+    @patch("request_from_archive.set_optional_event_property")
+    def test_handler_raises_error_bad_input(self,
+                                            mock_optional_property: MagicMock,
+                                            mock_task: MagicMock
+                                            ):
         """
         Tests that expected error is raised on bad input such as missing granuleId.
         """
@@ -2165,6 +2167,48 @@ class TestRequestFromArchive(unittest.TestCase):
                 file.pop(request_from_archive.FILE_COMPLETION_TIME_KEY, None)
 
         self.assertEqual(expected_result, result)
+
+    @patch("request_from_archive.LOGGER.info")
+    def test_set_optional_event_property(
+        self, mock_logger: MagicMock,
+    ):
+        """
+        Unit test for set_optional_event_property function.
+        """
+        mock_event = create_handler_event()
+        mock_target_path_cursor = {
+            "optionalValues": {
+                "config": {
+                    "defaultRecoveryTypeOverride":
+                        "event.meta.collection.meta.orca.defaultRecoveryTypeOverride",
+                    "defaultBucketOverride":
+                        "event.meta.collection.meta.orca.defaultBucketOverride",
+                    "s3MultipartChunksizeMb":
+                        "event.meta.collection.meta.s3MultipartChunksizeMb",
+                    "asyncOperationId":
+                        "event.cumulus_meta.asyncOperationId"
+                }
+            }
+        }
+        mock_target_path_segments = []
+        request_from_archive.set_optional_event_property(
+            mock_event, mock_target_path_cursor, mock_target_path_segments
+            )
+        self.assertEqual(mock_logger.call_count, 4)
+
+        # reset mock_logger for next test
+        mock_logger.reset_mock()
+        event_key = mock_event["event"]["meta"]["collection"]["meta"]
+        mock_event["event"]["cumulus_meta"]["asyncOperationId"] = "123"
+        event_key["orca"]["defaultRecoveryTypeOverride"] = "Standard"
+        event_key["orca"]["defaultBucketOverride"] = "test-bucket"
+        event_key["s3MultipartChunksizeMb"] = 100
+
+        request_from_archive.set_optional_event_property(
+            mock_event, mock_target_path_cursor, mock_target_path_segments
+            )
+        # test that logger is not called since all keys are present in input
+        self.assertEqual(mock_logger.call_count, 0)
 
 
 if __name__ == "__main__":
