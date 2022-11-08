@@ -33,8 +33,3 @@ variable "ecs_cluster_id" {
   type        = string
   description = "ID of the ECS cluster in AWS."
 }
-
-variable "vpc_postgres_ingress_all_egress_id" {
-  type        = string
-  description = "PostgreSQL security group id"
-}

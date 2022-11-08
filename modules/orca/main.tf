@@ -238,7 +238,6 @@ module "orca_graph_ql" {
   ## --------------------------
   ## REQUIRED
   ecs_cluster_id                     = module.orca_ecs.ecs_cluster_id
-  vpc_postgres_ingress_all_egress_id = module.orca_lambdas.vpc_postgres_ingress_all_egress_id
 }
 
 ## orca_api_gateway - api gateway module
