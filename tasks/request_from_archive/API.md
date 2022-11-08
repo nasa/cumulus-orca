@@ -221,9 +221,9 @@ Restore an archived S3 object in an Amazon S3 bucket.
 #### set\_optional\_event\_property
 
 ```python
-def set_optional_event_property(event: Dict[str, Any], source_path: str,
-                                target_path: str,
-                                logger: logging.Logger) -> None
+def set_optional_event_property(event: Dict[str,
+                                            Any], target_path_cursor: Dict,
+                                target_path_segments: List) -> None
 ```
 
 Sets the optional variable value from event if present, otherwise sets to None.
@@ -231,8 +231,8 @@ Sets the optional variable value from event if present, otherwise sets to None.
 **Arguments**:
 
 - `event` - See schemas/input.json.
-- `source_path` - The source path containing the optional variable.
-- `target_path` - The target path to get the desired key.
+- `target_path_cursor` - Cursor of the current section to check.
+- `target_path_segments` - The path to the current cursor.
 
 **Returns**:
 
@@ -264,8 +264,6 @@ RESTORE_RETRY_SLEEP_SECS (int, optional, default = 0): The number of seconds
 to sleep between retry attempts.
 RESTORE_RECOVERY_TYPE (str, optional, default = 'Standard'): the Tier
 for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'.
-CUMULUS_MESSAGE_ADAPTER_DISABLED (str): If set to 'true',
-CumulusMessageAdapter does not modify input.
 STATUS_UPDATE_QUEUE_URL
 The URL of the SQS queue to post status to.
 ORCA_DEFAULT_BUCKET

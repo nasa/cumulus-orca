@@ -1904,29 +1904,26 @@ class TestRequestFromArchive(unittest.TestCase):
         """
         Tests that expected error is raised on bad input such as missing granuleId.
         """
-        bad_handler_input_event = {
-            "input": {
-                 "granules": [
-                    {
-                        "version": "integrationGranuleVersion",
-                        "files": [
-                            {
-                                "fileName": "MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
-                                "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
-                                "bucket": "rhrh-orca-primary"
-                            }
-                        ],
-                        "keys": [
-                            {
-                                "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
-                                "destBucket": "rhrh-public"
-                            }
-                        ]
-                    }
+        bad_handler_input_event = {"input": {
+            "granules": [
+                {
+                    "version": "integrationGranuleVersion",
+                    "files": [
+                        {
+                            "fileName": "MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
+                            "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
+                            "bucket": "rhrh-orca-primary"
+                        }
+                    ],
+                    "keys": [
+                        {
+                            "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
+                            "destBucket": "rhrh-public"
+                        }
                     ]
                 }
-            }
-        bad_handler_input_event["config"] = Mock()
+            ]
+        }, "config": Mock()}
         context = Mock()
         with self.assertRaises(Exception) as ex:
             request_from_archive.handler(bad_handler_input_event, context)
@@ -2176,38 +2173,48 @@ class TestRequestFromArchive(unittest.TestCase):
         Tests that set_optional_event_property sets asyncOperationId as the value
         present in event and sets null value for other keys that are not present in event.
         """
-        mock_event = create_handler_event()
-        mock_target_path_cursor = {
-            "optionalValues": {
-                "config": {
-                    "defaultRecoveryTypeOverride":
-                        "event.meta.collection.meta.orca.defaultRecoveryTypeOverride",
-                    "defaultBucketOverride":
-                        "event.meta.collection.meta.orca.defaultBucketOverride",
-                    "s3MultipartChunksizeMb":
-                        "event.meta.collection.meta.s3MultipartChunksizeMb",
-                    "asyncOperationId":
-                        "event.cumulus_meta.asyncOperationId"
+        key0 = uuid.uuid4().__str__()  # no value, default to None
+        key1 = uuid.uuid4().__str__()  # value present, set value in event
+        key1_value = uuid.uuid4().__str__()
+        key2 = uuid.uuid4().__str__()  # value present, override value in event
+        key2_value = uuid.uuid4().__str__()
+        mock_event = {
+            "event": {
+                "cumulus_meta": {
+                    "asyncOperationId": key2_value
+                },
+                "meta": {
+                    "collection": {
+                        "meta": {
+                            "orca": {
+                                "defaultBucketOverride": key1_value
+                            }
+                        }
+                    }
                 }
+            },
+            "config1": {
+                key2: uuid.uuid4().__str__()
             }
         }
-        mock_target_path_segments = []
+        mock_target_path_cursor = {
+            "config0": {
+                key0:
+                    "event.meta.collection.meta.orca.defaultRecoveryTypeOverride",
+                key1:
+                    "event.meta.collection.meta.orca.defaultBucketOverride"
+            },
+            "config1": {
+                key2:
+                    "event.cumulus_meta.asyncOperationId"
+            }
+        }
+        request_from_archive.set_optional_event_property(mock_event, mock_target_path_cursor, [])
 
         # set asyncOperationId to non-null value
-        mock_event["event"]["cumulus_meta"]["asyncOperationId"] = "123"
-
-        request_from_archive.set_optional_event_property(
-            mock_event, mock_target_path_cursor, mock_target_path_segments
-            )
-        self.assertEqual(mock_logger.call_count, 3)
-        self.assertEqual(mock_event["optionalValues"]["config"]["asyncOperationId"],
-                         mock_event["event"]["cumulus_meta"]["asyncOperationId"])
-        self.assertEqual(mock_event["optionalValues"]["config"]["defaultRecoveryTypeOverride"],
-                         None)
-        self.assertEqual(mock_event["optionalValues"]["config"]["defaultBucketOverride"],
-                         None)
-        self.assertEqual(mock_event["optionalValues"]["config"]["s3MultipartChunksizeMb"],
-                         None)
+        self.assertEqual(None, mock_event["config0"][key0])
+        self.assertEqual(key1_value, mock_event["config0"][key1])
+        self.assertEqual(key2_value, mock_event["config1"][key2])
 
 
 if __name__ == "__main__":

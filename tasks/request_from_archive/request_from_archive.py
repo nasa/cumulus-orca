@@ -614,8 +614,8 @@ def set_optional_event_property(event: Dict[str, Any], target_path_cursor: Dict,
     """Sets the optional variable value from event if present, otherwise sets to None.
     Args:
         event: See schemas/input.json.
-        source_path: The source path containing the optional variable.
-        target_path: The target path to get the desired key.
+        target_path_cursor: Cursor of the current section to check.
+        target_path_segments: The path to the current cursor.
     Returns:
         None
     """
