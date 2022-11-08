@@ -1855,7 +1855,8 @@ class TestRequestFromArchive(unittest.TestCase):
         )
 
     @patch("request_from_archive.task")
-    def test_handler_happy_path(self, mock_task: MagicMock):
+    @patch("request_from_archive.set_optional_event_property")
+    def test_handler_happy_path(self, mock_optional_property: MagicMock, mock_task: MagicMock):
         """
         Happy path for handler.
         """
@@ -1863,6 +1864,12 @@ class TestRequestFromArchive(unittest.TestCase):
         file0 = "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5"
         bucket_name = uuid.uuid4().__str__()
         input_event = create_handler_event()
+        input_event["config"] = {
+            "defaultRecoveryTypeOverride": "Standard",
+            "defaultBucketOverride": "test-bucket",
+            "s3MultipartChunksizeMb": 123,
+            "asyncOperationId": "123"
+            }
         mock_task.return_value = {
             "granules": [
                 {
@@ -1888,8 +1895,10 @@ class TestRequestFromArchive(unittest.TestCase):
         result = request_from_archive.handler(input_event, context)
         self.assertEqual(mock_task.return_value, result)
 
+    @patch("request_from_archive.set_optional_event_property")
     @patch("request_from_archive.task")
-    def test_handler_raises_error_bad_input(self, mock_task: MagicMock):
+    def test_handler_raises_error_bad_input(self, mock_optional_property: MagicMock,
+                                            mock_task: MagicMock):
         """
         Tests that expected error is raised on bad input such as missing granuleId.
         """
@@ -1924,11 +1933,19 @@ class TestRequestFromArchive(unittest.TestCase):
         mock_task.assert_not_called()
 
     @patch("request_from_archive.task")
-    def test_handler_raises_error_bad_output(self, mock_task: MagicMock):
+    @patch("request_from_archive.set_optional_event_property")
+    def test_handler_raises_error_bad_output(self, mock_optional_property: MagicMock,
+                                             mock_task: MagicMock):
         """
         Tests that expected error is raised on bad output such as missing asyncOperationId.
         """
         handler_input_event = create_handler_event()
+        handler_input_event["config"] = {
+            "defaultRecoveryTypeOverride": "Standard",
+            "defaultBucketOverride": "test-bucket",
+            "s3MultipartChunksizeMb": 123,
+            "asyncOperationId": "123"
+            }
         context = Mock()
         mock_task.return_value = {
             "granules": [
@@ -1963,19 +1980,21 @@ class TestRequestFromArchive(unittest.TestCase):
                         }
                     ]
                 }
-            ]
+            ],
             }
         with self.assertRaises(Exception) as ex:
             request_from_archive.handler(handler_input_event, context)
         self.assertEqual(
             str(ex.exception), "data must contain ['granules', 'asyncOperationId'] properties")
 
+    @patch("request_from_archive.set_optional_event_property")
     @patch("request_from_archive.shared_recovery.create_status_for_job")
     @patch("boto3.client")
     def test_handler_output_json_schema(
         self,
         mock_boto3_client: MagicMock,
         mock_create_status_for_job: MagicMock,
+        mock_optional_property: MagicMock
     ):
         """
         A full run through with multiple files to verify output schema.
