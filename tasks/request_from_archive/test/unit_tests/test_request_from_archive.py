@@ -2173,9 +2173,8 @@ class TestRequestFromArchive(unittest.TestCase):
         self, mock_logger: MagicMock,
     ):
         """
-        Tests that set_optional_event_property sets asyncOperationId as None
-        if not present in event and uses the non-null value of
-        given defaultRecoveryTypeOverride.
+        Tests that set_optional_event_property sets asyncOperationId as the value
+        present in event and sets null value for other keys that are not present in event.
         """
         mock_event = create_handler_event()
         mock_target_path_cursor = {
