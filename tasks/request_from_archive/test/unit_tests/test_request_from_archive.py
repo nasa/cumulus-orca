@@ -2173,7 +2173,9 @@ class TestRequestFromArchive(unittest.TestCase):
         self, mock_logger: MagicMock,
     ):
         """
-        Unit test for set_optional_event_property function.
+        Tests that set_optional_event_property sets asyncOperationId as None
+        if not present in event and uses the non-null value of
+        given defaultRecoveryTypeOverride.
         """
         mock_event = create_handler_event()
         mock_target_path_cursor = {
@@ -2191,24 +2193,22 @@ class TestRequestFromArchive(unittest.TestCase):
             }
         }
         mock_target_path_segments = []
-        request_from_archive.set_optional_event_property(
-            mock_event, mock_target_path_cursor, mock_target_path_segments
-            )
-        self.assertEqual(mock_logger.call_count, 4)
 
-        # reset mock_logger for next test
-        mock_logger.reset_mock()
-        event_key = mock_event["event"]["meta"]["collection"]["meta"]
+        # set asyncOperationId to non-null value
         mock_event["event"]["cumulus_meta"]["asyncOperationId"] = "123"
-        event_key["orca"]["defaultRecoveryTypeOverride"] = "Standard"
-        event_key["orca"]["defaultBucketOverride"] = "test-bucket"
-        event_key["s3MultipartChunksizeMb"] = 100
 
         request_from_archive.set_optional_event_property(
             mock_event, mock_target_path_cursor, mock_target_path_segments
             )
-        # test that logger is not called since all keys are present in input
-        self.assertEqual(mock_logger.call_count, 0)
+        self.assertEqual(mock_logger.call_count, 3)
+        self.assertEqual(mock_event["optionalValues"]["config"]["asyncOperationId"],
+                         mock_event["event"]["cumulus_meta"]["asyncOperationId"])
+        self.assertEqual(mock_event["optionalValues"]["config"]["defaultRecoveryTypeOverride"],
+                         None)
+        self.assertEqual(mock_event["optionalValues"]["config"]["defaultBucketOverride"],
+                         None)
+        self.assertEqual(mock_event["optionalValues"]["config"]["s3MultipartChunksizeMb"],
+                         None)
 
 
 if __name__ == "__main__":
