@@ -48,6 +48,10 @@ resource "aws_lb_target_group" "gql_app_lb_target_group" {
     create_before_destroy = true
   }
 
+  health_check {
+    path = "/healthz"
+  }
+
   tags = var.tags
 }
 
@@ -60,6 +64,8 @@ resource "aws_lb_listener" "gql_app_lb_listener" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.gql_app_lb_target_group.arn
   }
+
+  tags               = var.tags
 }
 
 # Network load balancer
@@ -197,7 +203,7 @@ DEFINITION
 
 resource "aws_ecs_service" "gql_service" {
   depends_on = [
-    # aws_lb_listener.gql_app_lb_listener  # Wait for listener to associate aws_lb_target_group with aws_lb
+    aws_lb_listener.gql_app_lb_listener  # Wait for listener to associate aws_lb_target_group with aws_lb
   ]
   name            = "${var.prefix}_gql_service"
   cluster         = var.ecs_cluster_id
