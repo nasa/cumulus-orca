@@ -1,3 +1,7 @@
+# Local Variables
+locals {
+  graphql_port = 5000
+}
 resource "aws_security_group" "gql_security_group" {
   name        = "${var.prefix}-gql"
   description = "Allow inbound communication on container port."
@@ -5,8 +9,8 @@ resource "aws_security_group" "gql_security_group" {
 
   ingress {
     description      = "Container port communication."
-    from_port        = 5000
-    to_port          = 5000
+    from_port        = local.graphql_port
+    to_port          = local.graphql_port
     protocol         = "tcp"
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
@@ -38,7 +42,7 @@ resource "aws_lb_target_group" "gql_app_lb_target_group" {
   name        = "${var.prefix}-gql-app-lb-t"
   vpc_id      = var.vpc_id
   protocol    = "HTTP"
-  port        = 5000
+  port        = local.graphql_port
   target_type = "ip"
 
   # NOTE: TF is unable to destroy a target group while a listener is attached,
@@ -57,7 +61,7 @@ resource "aws_lb_target_group" "gql_app_lb_target_group" {
 
 resource "aws_lb_listener" "gql_app_lb_listener" {
   load_balancer_arn = aws_lb.gql_app_lb.arn
-  port              = "5000"
+  port              = local.graphql_port
   protocol          = "HTTP"
 
   default_action {
@@ -68,7 +72,7 @@ resource "aws_lb_listener" "gql_app_lb_listener" {
   tags               = var.tags
 }
 
-# Network load balancer
+# # Network load balancer
 # resource "aws_lb" "gql_nw_lb" {
 #   name               = "${var.prefix}-gql-nw-lb"
 #   internal           = true
@@ -181,11 +185,15 @@ resource "aws_ecs_task_definition" "gql_task" {
     "networkMode": "awsvpc",
     "portMappings": [
       {
-        "containerPort": 5000,
-        "hostPort": 5000
+        "containerPort": ${local.graphql_port},
+        "hostPort": ${local.graphql_port}
       }
     ],
     "environment": [
+      {
+        "name": "PORT",
+        "value": "${local.graphql_port}"
+      }
     ],
     "logConfiguration": {
       "logDriver": "awslogs",
@@ -219,7 +227,7 @@ resource "aws_ecs_service" "gql_service" {
 
   load_balancer {
     container_name   = "orca-gql"
-    container_port   = 5000
+    container_port   = local.graphql_port
     target_group_arn = aws_lb_target_group.gql_app_lb_target_group.arn
   }
 }
