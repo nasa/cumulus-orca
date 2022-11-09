@@ -27,11 +27,11 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 - `resolvers` are called by `queries` or `mutations`.
 - `queries` and `mutations` are standard GraphQL components, mapped to in the `graphql` package.
 - `graphql` is run via the `webserver` package.
-- If running via Docker, use the command `docker run -d -p 5000:5000 imageName` replacing `imageName` with the name of your built image.
 
 ## Local Testing
 - Entry point is `src/adapters/webserver/main.py`, 
   which will start the developer UI at http://127.0.0.1:5000/graphql by default
+- If running via Docker, use the command `docker run -d -p 5000:5000 imageName` replacing `imageName` with the name of your built image.
 - If using the developer UI, queries can be converted to code-friendly representations using the following code:
   ```python
   query = """query {
