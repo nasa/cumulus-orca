@@ -5,9 +5,9 @@
 Handles database queries for ORCA applications and users.
 
 Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/development-guide/code/contrib-code-intro) for information on environment setup and testing.
-Entry point is `src/adapters/webserver/main.py`, which will start the application at http://127.0.0.1:5000/graphql by default
 
 - [Development](#development)
+- [Local Testing](#local-testing)
 - [Deployment](#deployment)
 - [Schemas](#schemas)
 
@@ -28,6 +28,40 @@ Entry point is `src/adapters/webserver/main.py`, which will start the applicatio
 - `queries` and `mutations` are standard GraphQL components, mapped to in the `graphql` package.
 - `graphql` is run via the `webserver` package.
 - If running via Docker, use the command `docker run -d -p 5000:5000 imageName` replacing `imageName` with the name of your built image.
+
+## Local Testing
+- Entry point is `src/adapters/webserver/main.py`, 
+  which will start the developer UI at http://127.0.0.1:5000/graphql by default
+- If using the developer UI, queries can be converted to code-friendly representations using the following code:
+  ```python
+  query = """query {
+    getEcho {
+      ... on EchoEdge {
+        node {
+          echo
+        }
+      }
+    }
+  }"""
+  json_body = {"query": query}
+  
+  print(json_body)
+  ```
+  
+- These queries can be run against an available instance with the following Python code:
+  ```python
+  import json
+  import requests
+  
+  endpoint = "http://0.0.0.0:5000/graphql/"
+  headers = {}
+  
+  r = requests.post(endpoint, json=json_body, headers=headers)
+  if r.status_code == 200:
+      print(json.dumps(r.json(), indent=2))
+  else:
+      raise Exception(f"Query failed to run with a {r.status_code}.")
+  ```
 
 ## Deployment
 Compiled packages are stored at the [NASA Github packages page](https://github.com/orgs/nasa/packages/container/package/cumulus-orca%2Fgraphql).
