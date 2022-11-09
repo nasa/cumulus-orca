@@ -202,7 +202,7 @@ def query_db(
         with engine.begin() as connection:
             # Query for all rows that contain that key and have a status of
             # PENDING
-            for row in connection.execute(get_metadata_sql(key_path)):
+            for row in connection.execute(get_metadata_sql(), {"key_path": key_path}):
                 # Create dictionary for with the info needed for the
                 # copy_from_archive lambda
                 row_dict = {
@@ -240,26 +240,26 @@ def query_db(
     return rows
 
 
-def get_metadata_sql(key_path: str) -> text:
+def get_metadata_sql() -> text:
     """
     Query for finding metadata based on key_path and PENDING status.
 
     Args:
-        key_path (str): s3 key for the file less the bucket name
+        None
     Returns:
         (sqlalchemy.text): SQL statement
     """
-    return text(  # nosec
-        f"""
+    return text(
+        """
             SELECT
                 job_id, granule_id, filename, restore_destination, multipart_chunksize_mb
             FROM
                 recovery_file
             WHERE
-                key_path = '{key_path}'
+                key_path = :key_path
             AND
-                status_id = {shared_recovery.OrcaStatus.PENDING.value}
-        """  # nosec
+                status_id = shared_recovery.OrcaStatus.PENDING.value
+        """
     )
 
 
