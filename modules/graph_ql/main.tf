@@ -43,6 +43,10 @@ resource "aws_lb" "gql_app_lb" {
   tags               = var.tags
 }
 
+data "aws_lb" "gql_app_lb_data" {
+  arn = aws_lb.gql_app_lb.arn
+}
+
 resource "aws_lb_target_group" "gql_app_lb_target_group" {
   name        = "${random_id.lb_name.hex}-gql-a" # name must be randomized. Max 32 characters. Some prefixes are 25 characters long.
   vpc_id      = var.vpc_id
@@ -77,50 +81,50 @@ resource "aws_lb_listener" "gql_app_lb_listener" {
   tags               = var.tags
 }
 
-# Network load balancer
-resource "aws_lb" "gql_nw_lb" {
-  name               = "${var.prefix}-gql-nw" # Max 32 characters. Some prefixes are 25 characters long.
-  internal           = true
-  load_balancer_type = "network"
-  subnets            = var.lambda_subnet_ids
-
-  tags               = var.tags
-}
-
-resource "aws_lb_target_group" "gql_nw_lb_target_group" {
-  name        = "${random_id.lb_name.hex}-gql-nw" # name must be randomized. Max 32 characters. Some prefixes are 25 characters long.
-  vpc_id      = var.vpc_id
-  protocol    = "TCP"
-  port        = local.graphql_port
-  target_type = "alb"
-
-  # NOTE: TF is unable to destroy a target group while a listener is attached,
-  # therefore we have to create a new one before destroying the old. This also means
-  # we have to let it have a random name.
-  lifecycle {
-    create_before_destroy = true
-  }
-
-  tags = var.tags
-}
-
-resource "aws_lb_listener" "gql_nw_lb_listener" {
-  load_balancer_arn = aws_lb.gql_nw_lb.arn
-  port              = local.graphql_port
-  protocol          = "TCP"
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.gql_nw_lb_target_group.arn
-  }
-}
-
-resource "aws_lb_target_group_attachment" "gql_nw_app_lb_attachment" {
-    target_group_arn = aws_lb_target_group.gql_nw_lb_target_group.arn
-    # attach the ALB to this target group
-    target_id        = aws_lb.gql_app_lb.arn
-    port             = local.graphql_port
-}
+# # Network load balancer
+# resource "aws_lb" "gql_nw_lb" {
+#   name               = "${var.prefix}-gql-nw" # Max 32 characters. Some prefixes are 25 characters long.
+#   internal           = true
+#   load_balancer_type = "network"
+#   subnets            = var.lambda_subnet_ids
+# 
+#   tags               = var.tags
+# }
+# 
+# resource "aws_lb_target_group" "gql_nw_lb_target_group" {
+#   name        = "${random_id.lb_name.hex}-gql-nw" # name must be randomized. Max 32 characters. Some prefixes are 25 characters long.
+#   vpc_id      = var.vpc_id
+#   protocol    = "TCP"
+#   port        = local.graphql_port
+#   target_type = "alb"
+# 
+#   # NOTE: TF is unable to destroy a target group while a listener is attached,
+#   # therefore we have to create a new one before destroying the old. This also means
+#   # we have to let it have a random name.
+#   lifecycle {
+#     create_before_destroy = true
+#   }
+# 
+#   tags = var.tags
+# }
+# 
+# resource "aws_lb_listener" "gql_nw_lb_listener" {
+#   load_balancer_arn = aws_lb.gql_nw_lb.arn
+#   port              = local.graphql_port
+#   protocol          = "TCP"
+# 
+#   default_action {
+#     type             = "forward"
+#     target_group_arn = aws_lb_target_group.gql_nw_lb_target_group.arn
+#   }
+# }
+# 
+# resource "aws_lb_target_group_attachment" "gql_nw_app_lb_attachment" {
+#     target_group_arn = aws_lb_target_group.gql_nw_lb_target_group.arn
+#     # attach the ALB to this target group
+#     target_id        = aws_lb.gql_app_lb.arn
+#     port             = local.graphql_port
+# }
 
 # ecs service and task
 data "aws_iam_policy_document" "gql_task_execution_policy_document" {
