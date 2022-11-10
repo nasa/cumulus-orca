@@ -121,14 +121,14 @@ metadata for posting to the recovery status SQS Queue.
 #### get\_metadata\_sql
 
 ```python
-def get_metadata_sql(key_path: str) -> text
+def get_metadata_sql() -> text
 ```
 
-Query for finding metadata based on key_path and PENDING status.
+Query for finding metadata based on key_path and status_id.
 
 **Arguments**:
 
-- `key_path` _str_ - s3 key for the file less the bucket name
+  None
 
 **Returns**:
 
