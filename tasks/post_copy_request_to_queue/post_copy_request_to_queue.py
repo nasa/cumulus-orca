@@ -202,7 +202,13 @@ def query_db(
         with engine.begin() as connection:
             # Query for all rows that contain that key and have a status of
             # PENDING
-            for row in connection.execute(get_metadata_sql(), {"key_path": key_path}):
+            for row in connection.execute(
+                get_metadata_sql(),
+                {
+                    "key_path": key_path,
+                    "status_id": shared_recovery.OrcaStatus.PENDING.value
+                }
+            ):
                 # Create dictionary for with the info needed for the
                 # copy_from_archive lambda
                 row_dict = {
@@ -242,7 +248,7 @@ def query_db(
 
 def get_metadata_sql() -> text:
     """
-    Query for finding metadata based on key_path and PENDING status.
+    Query for finding metadata based on key_path and status_id.
 
     Args:
         None
@@ -258,7 +264,7 @@ def get_metadata_sql() -> text:
             WHERE
                 key_path = :key_path
             AND
-                status_id = shared_recovery.OrcaStatus.PENDING.value
+                status_id = :status_id
         """
     )
 

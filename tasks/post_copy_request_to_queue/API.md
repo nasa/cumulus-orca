@@ -124,7 +124,7 @@ metadata for posting to the recovery status SQS Queue.
 def get_metadata_sql() -> text
 ```
 
-Query for finding metadata based on key_path and PENDING status.
+Query for finding metadata based on key_path and status_id.
 
 **Arguments**:
 
