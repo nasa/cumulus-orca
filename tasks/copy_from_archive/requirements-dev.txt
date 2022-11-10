@@ -9,7 +9,7 @@ aws_lambda_powertools==1.31.0
 ## Additional validation libraries
 ## ---------------------------------------------------------------------------
 bandit==1.7.0
-safety==1.10.3
+safety==2.3.1
 flake8==4.0.1
 black==21.12b0
 isort==5.10.1

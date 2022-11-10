@@ -648,8 +648,14 @@ class TestPostCopyRequestToQueue(TestCase):
         mock_get_user_connection.assert_called_once_with(
             mock_get_configuration.return_value
         )
-        mock_get_metadata_sql.assert_called_once_with(key_path)
-        mock_execute.assert_called_once_with(mock_get_metadata_sql.return_value)
+        mock_get_metadata_sql.assert_called_once_with()
+        mock_execute.assert_called_once_with(
+            mock_get_metadata_sql.return_value,
+            {
+                "key_path": key_path,
+                "status_id": shared_recovery.OrcaStatus.PENDING.value
+            }
+        )
         self.assertEqual(
             [
                 {
@@ -721,8 +727,14 @@ class TestPostCopyRequestToQueue(TestCase):
         mock_get_user_connection.assert_called_once_with(
             mock_get_configuration.return_value
         )
-        mock_get_metadata_sql.assert_called_once_with(key_path)
-        mock_execute.assert_called_once_with(mock_get_metadata_sql.return_value)
+        mock_get_metadata_sql.assert_called_once_with()
+        mock_execute.assert_called_once_with(
+            mock_get_metadata_sql.return_value,
+            {
+                "key_path": key_path,
+                "status_id": shared_recovery.OrcaStatus.PENDING.value
+            }
+        )
 
     @patch("post_copy_request_to_queue.shared_db.get_user_connection")
     @patch("post_copy_request_to_queue.shared_db.get_configuration")
@@ -765,22 +777,27 @@ class TestPostCopyRequestToQueue(TestCase):
         mock_get_user_connection.assert_called_once_with(
             mock_get_configuration.return_value
         )
-        mock_get_metadata_sql.assert_called_once_with(key_path)
-        mock_execute.assert_called_once_with(mock_get_metadata_sql.return_value)
+        mock_get_metadata_sql.assert_called_once()
+        mock_execute.assert_called_once_with(
+            mock_get_metadata_sql.return_value,
+            {
+                "key_path": key_path,
+                "status_id": shared_recovery.OrcaStatus.PENDING.value
+            }
+        )
 
     def test_get_metadata_sql_happy_path(self):
-        key_path = uuid.uuid4().__str__()
-        result = post_copy_request_to_queue.get_metadata_sql(key_path)
-        self.assertEqual(  # nosec
-            f"""
+        result = post_copy_request_to_queue.get_metadata_sql()
+        self.assertEqual(
+            """
             SELECT
                 job_id, granule_id, filename, restore_destination, multipart_chunksize_mb
             FROM
                 recovery_file
             WHERE
-                key_path = '{key_path}'
+                key_path = :key_path
             AND
-                status_id = {shared_recovery.OrcaStatus.PENDING.value}
-        """,  # nosec
+                status_id = :status_id
+        """,
             result.text,
         )
