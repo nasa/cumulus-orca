@@ -87,6 +87,18 @@ output "orca_sqs_status_update_queue_id" {
   description = "The URL ID of the status-update-queue SQS"
   value       = module.orca_sqs.orca_sqs_status_update_queue_id
 }
+
+
+output "orca_sqs_archive_recovery_queue_id" {
+  description = "The URL of the archive-recovery-queue SQS"
+  value       = module.orca_sqs.orca_sqs_archive_recovery_queue_id
+}
+
+output "orca_sqs_archive_recovery_queue_arn" {
+  description = "The ARN of the archive-recovery-queue SQS"
+  value       = module.orca_sqs.orca_sqs_archive_recovery_queue_arn
+}
+
 ## Secretsmanager Module Outputs (orca_secretsmanager)
 ## =============================================================================
 output "orca_secretsmanager_arn" {

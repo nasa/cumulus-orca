@@ -42,3 +42,13 @@ output "orca_sqs_status_update_queue_id" {
   description = "The URL of the status-update-queue SQS"
   value       = aws_sqs_queue.status_update_queue.id
 }
+
+output "orca_sqs_archive_recovery_queue_id" {
+  description = "The URL of the archive-recovery-queue SQS"
+  value       = aws_sqs_queue.archive_recovery_queue.id
+}
+
+output "orca_sqs_archive_recovery_queue_arn" {
+  description = "The ARN of the archive-recovery-queue SQS"
+  value       = aws_sqs_queue.archive_recovery_queue.arn
+}
