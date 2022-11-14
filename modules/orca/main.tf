@@ -178,7 +178,8 @@ module "orca_sqs" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  prefix = var.prefix
+  buckets = var.buckets
+  prefix  = var.prefix
 
   ## OPTIONAL
   tags = var.tags
