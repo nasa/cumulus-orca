@@ -8,6 +8,10 @@ resource "random_id" "lb_name" {
   byte_length = 4
 }
 
+data "aws_vpc" "primary" {
+  id = var.vpc_id
+}
+
 resource "aws_security_group" "gql_security_group" {
   name        = "${var.prefix}-gql"
   description = "Allow inbound communication on container port."
@@ -18,16 +22,14 @@ resource "aws_security_group" "gql_security_group" {
     from_port        = local.graphql_port
     to_port          = local.graphql_port
     protocol         = "tcp"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
+    cidr_blocks      = [data.aws_vpc.primary.cidr_block]
   }
 
   egress {
     from_port        = 0
     to_port          = 0
     protocol         = "-1"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
+    cidr_blocks      = [data.aws_vpc.primary.cidr_block]
   }
 
   tags = var.tags
