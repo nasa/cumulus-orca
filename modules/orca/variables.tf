@@ -136,7 +136,7 @@ variable "orca_default_recovery_type" {
 
 
 variable "orca_default_storage_class" {
-  type           = string
+  type        = string
   description = "The class of storage to use when ingesting files. Can be overridden by collection config. Must match value in storage_class table."
 }
 
