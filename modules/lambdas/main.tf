@@ -638,36 +638,6 @@ resource "aws_lambda_function" "post_copy_request_to_queue" {
   }
 }
 
-# Additional resources needed by post_copy_request_to_queue
-# ------------------------------------------------------------------------------
-# Permissions to allow S3 trigger to invoke lambda
-resource "aws_lambda_permission" "allow_s3_trigger" {
-  ## REQUIRED
-  for_each      = toset(local.orca_buckets)
-  source_arn    = "arn:aws:s3:::${each.value}"
-  function_name = aws_lambda_function.post_copy_request_to_queue.function_name
-  ## OPTIONAL
-  principal = "s3.amazonaws.com"
-  action    = "lambda:InvokeFunction"
-}
-
-resource "aws_s3_bucket_notification" "post_copy_request_to_queue_trigger" {
-  depends_on = [aws_lambda_permission.allow_s3_trigger]
-  # Creating loop so we can handle multiple orca buckets
-  for_each = toset(local.orca_buckets)
-  ## REQUIRED
-  bucket = each.value
-  ## OPTIONAL
-  lambda_function {
-    ## REQUIRED
-    lambda_function_arn = aws_lambda_function.post_copy_request_to_queue.arn
-    events              = ["s3:ObjectRestore:Completed"]
-    ## OPTIONAL
-    filter_prefix = var.orca_recovery_complete_filter_prefix
-  }
-
-}
-
 # orca_catalog_reporting - Returns reconcilliation report data
 # ==============================================================================
 resource "aws_lambda_function" "orca_catalog_reporting" {

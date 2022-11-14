@@ -1,3 +1,8 @@
+# Local Variables
+locals {
+  orca_buckets = [for k, v in var.buckets : v.name if v.type == "orca"]
+}
+
 ## SQS IAM access policy for internal-report-queue.fifo SQS
 ## ====================================================================================================
 data "aws_iam_policy_document" "internal_report_queue_policy" {
@@ -149,6 +154,18 @@ resource "aws_sns_topic_subscription" "archive_recovery_dlq_alarm_email" {
   topic_arn  = aws_sns_topic.archive_recovery_dlq_alarm.arn
   protocol   = "email"
   endpoint   = var.dlq_subscription_email #todo: ORCA-365
+}
+
+resource "aws_s3_bucket_notification" "archive_bucket_notification" {
+  # Creating loop so we can handle multiple orca buckets
+  for_each = toset(local.orca_buckets)
+  ## REQUIRED
+  bucket = each.value
+  queue {
+    ## REQUIRED
+    queue_arn     = aws_sqs_queue.archive_recovery_queue.arn
+    events        = ["s3:ObjectRestore:Completed"]
+  }
 }
 
 ## internal-report-queue - get_current_archive_list lambda reads from this queue to get what it needs to pull in next

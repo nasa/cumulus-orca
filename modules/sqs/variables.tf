@@ -6,6 +6,12 @@ variable "prefix" {
   description = "Prefix used to prepend to all object names and tags."
 }
 
+## REQUIRED
+variable "buckets" {
+  type        = map(object({ name = string, type = string }))
+  description = "S3 bucket locations for the various storage types being used."
+}
+
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
 variable "tags" {
   type        = map(string)
