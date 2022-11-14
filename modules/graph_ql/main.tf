@@ -81,6 +81,7 @@ resource "aws_lb_listener" "gql_app_lb_listener" {
   tags               = var.tags
 }
 
+# Pending further research on VPC Link. VPC Link -> NW LB -> App LB -> Service is recommended path, but NGAP requires NGAP involvement for VPC creation. https://eosdis.slack.com/archives/C6KK42ZJP/p1668106098892689
 # # Network load balancer
 # resource "aws_lb" "gql_nw_lb" {
 #   name               = "${var.prefix}-gql-nw" # Max 32 characters. Some prefixes are 25 characters long.
