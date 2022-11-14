@@ -638,6 +638,25 @@ resource "aws_lambda_function" "post_copy_request_to_queue" {
   }
 }
 
+# Additional resources needed by post_copy_request_to_queue
+# ------------------------------------------------------------------------------
+resource "aws_lambda_event_source_mapping" "post_copy_request_to_queue_event_source_mapping" {
+  event_source_arn = var.orca_sqs_archive_recovery_queue_arn
+  function_name    = aws_lambda_function.post_copy_request_to_queue.arn
+}
+
+# Permissions to allow SQS trigger to invoke lambda
+resource "aws_lambda_permission" "post_copy_request_to_queue_allow_sqs_trigger" {
+  ## REQUIRED
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.post_copy_request_to_queue.function_name
+  principal     = "sqs.amazonaws.com"
+
+  ## OPTIONAL
+  statement_id = "AllowExecutionFromSQS"
+  source_arn   = var.orca_sqs_archive_recovery_queue_arn
+}
+
 # orca_catalog_reporting - Returns reconcilliation report data
 # ==============================================================================
 resource "aws_lambda_function" "orca_catalog_reporting" {
