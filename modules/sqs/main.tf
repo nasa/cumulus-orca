@@ -64,11 +64,21 @@ data "aws_iam_policy_document" "status_update_queue_policy" {
 
 ## SQS IAM access policy for archive-recovery-queue SQS
 ## ====================================================================================================
-data "aws_iam_policy_document" "archive_recovery_queue_policy" {
+
+data "aws_iam_policy_document" "archive-recovery_queue_policy" {
   statement {
-    actions   = ["sqs:*"] # todo: Lock down access to specific actions and resources. https://bugs.earthdata.nasa.gov/browse/ORCA-273
+    principals {
+      type        = "Service"
+      identifiers = ["s3.amazonaws.com"]
+    }
+    actions   = ["sqs:SendMessage"]
     resources = ["arn:aws:sqs:*"]
     effect    = "Allow"
+    condition {
+      test     = "ArnEquals"
+      variable = "aws:SourceArn"
+      values   = ["arn:aws:s3:::*"]
+    }
   }
 }
 
@@ -82,8 +92,8 @@ resource "aws_sqs_queue" "archive_recovery_queue" {
   delay_seconds              = var.sqs_delay_time_seconds
   max_message_size           = var.sqs_maximum_message_size
   message_retention_seconds  = var.archive_recovery_queue_message_retention_time_seconds
+  policy                     = data.aws_iam_policy_document.archive-recovery_queue_policy.json
   tags                       = var.tags
-  policy                     = data.aws_iam_policy_document.archive_recovery_queue_policy.json
   visibility_timeout_seconds = 1800 # Set to double lambda max time
   depends_on = [
     aws_sqs_queue.archive_recovery_dlq
@@ -157,6 +167,7 @@ resource "aws_sns_topic_subscription" "archive_recovery_dlq_alarm_email" {
 }
 
 resource "aws_s3_bucket_notification" "archive_bucket_notification" {
+  depends_on = [aws_sqs_queue.archive_recovery_queue]
   # Creating loop so we can handle multiple orca buckets
   for_each = toset(local.orca_buckets)
   ## REQUIRED
