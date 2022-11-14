@@ -1,5 +1,6 @@
 # Local Variables
 locals {
+  # Used for Load Balancer, EC2 Service, and Container ports. Specifies how GQL will be hosted.
   graphql_port = 5000
 }
 
