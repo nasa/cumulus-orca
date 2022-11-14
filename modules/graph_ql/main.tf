@@ -192,7 +192,7 @@ resource "aws_ecs_task_definition" "gql_task" {
 [
   {
     "name": "orca-gql",
-    "image": "ghcr.io/nasa/cumulus-orca/graphql:0.0.18",
+    "image": "ghcr.io/nasa/cumulus-orca/graphql:0.0.20",
     "cpu": 512,
     "memory": 256,
     "networkMode": "awsvpc",
@@ -222,6 +222,31 @@ resource "aws_ecs_task_definition" "gql_task" {
 DEFINITION
 }
 
+resource "aws_security_group" "gql_task_security_group" {
+  name        = "${var.prefix}-gql-task"
+  description = "Allow inbound communication on container port. Allow outbound communication to get image."
+  vpc_id      = var.vpc_id
+
+  ingress {
+    description      = "Container port communication."
+    from_port        = local.graphql_port
+    to_port          = local.graphql_port
+    protocol         = "tcp"
+    cidr_blocks      = [data.aws_vpc.primary.cidr_block]
+  }
+
+  egress {
+    description      = "Allow task to get the image from ghcr."
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    # ipv6_cidr_blocks = ["::/0"]
+  }
+
+  tags = var.tags
+}
+
 resource "aws_ecs_service" "gql_service" {
   depends_on = [
     aws_lb_listener.gql_app_lb_listener  # Wait for listener to associate aws_lb_target_group with aws_lb
@@ -235,7 +260,7 @@ resource "aws_ecs_service" "gql_service" {
 
   network_configuration {
     subnets         = var.lambda_subnet_ids
-    security_groups = [aws_security_group.gql_security_group.id]
+    security_groups = [aws_security_group.gql_task_security_group.id]
   }
 
   load_balancer {
@@ -243,4 +268,11 @@ resource "aws_ecs_service" "gql_service" {
     container_port   = local.graphql_port
     target_group_arn = aws_lb_target_group.gql_app_lb_target_group.arn
   }
+
+  deployment_circuit_breaker {
+    enable   = true
+    rollback = false # Rolling back to previous versions can prevent proper updating and hide errors.
+  }
+
+  tags = var.tags
 }

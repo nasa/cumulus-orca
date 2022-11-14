@@ -45,7 +45,7 @@ Once a new version is ready for deployment, perform the following steps:
 ### Environment Variables
 - HOST
 - PORT
-- ORCA_ENV: Set to `Development` to enable dev-only features such as query-builder GUI and allowing queries via `GET`.
+- ORCA_ENV: Set to `development` to enable dev-only features such as query-builder GUI and allowing queries via `GET`.
   
 
 <a name="input-output-schemas"></a>
