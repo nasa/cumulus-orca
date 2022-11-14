@@ -34,8 +34,6 @@ module "orca_lambdas" {
   orca_sqs_staged_recovery_queue_arn                   = module.orca_sqs.orca_sqs_staged_recovery_queue_arn
   orca_sqs_status_update_queue_id                      = module.orca_sqs.orca_sqs_status_update_queue_id
   orca_sqs_status_update_queue_arn                     = module.orca_sqs.orca_sqs_status_update_queue_arn
-  orca_sqs_archive_recovery_queue_id                   = module.orca_sqs.orca_sqs_archive_recovery_queue_id
-  orca_sqs_archive_recovery_queue_arn                  = module.orca_sqs.orca_sqs_archive_recovery_queue_arn
   restore_object_role_arn                              = module.orca_iam.restore_object_role_arn
 
   ## OPTIONAL
