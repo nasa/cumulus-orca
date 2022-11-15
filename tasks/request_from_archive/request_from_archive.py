@@ -135,7 +135,6 @@ def task(
 
     # Get QUEUE URLS
     status_update_queue_url = str(os.environ[OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY])
-    archive_recovery_queue_url = str(os.environ[OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY])
 
     # Use the default archive bucket if none is specified for the collection or otherwise given.
     event[EVENT_CONFIG_KEY][
@@ -585,7 +584,7 @@ def restore_object(
         recovery_type: Valid values are
             'Standard'|'Bulk'|'Expedited'.
     Raises:
-        ClientError: Raises ClientErrors from restore_object, or if the file is already restored.
+        None
     """
     request = {"Days": days, "GlacierJobParameters": {"Tier": recovery_type}}
     # Submit the request
@@ -593,17 +592,14 @@ def restore_object(
         Bucket=db_archive_bucket_key, Key=key, RestoreRequest=request
     )
     if restore_result["ResponseMetadata"]["HTTPStatusCode"] == 200:
-        # Will have a non-error path after https://bugs.earthdata.nasa.gov/browse/ORCA-336
-        # raise ClientError(
-        #     {
-        #         "Error": {
-        #             "Code": "HTTPStatus: 200",
-        #             "Message": f"File '{key}' in bucket "
-        #             f"'{db_archive_bucket_key}' has already been recovered.",
-        #         }
-        #     },
-        #     "restore_object",
-        # )
+        archive_recovery_queue_url = str(os.environ[OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY])
+        #send message to archive recovery SQS
+        sqs = boto3.client("sqs")
+        sqs.send_message(
+            QueueUrl=archive_recovery_queue_url,
+            MessageBody='message',   # todo
+        )
+        
         LOGGER.info(f"File '{key}' in bucket '{db_archive_bucket_key}' has already been recovered"
             "Sending to SQS")
         
