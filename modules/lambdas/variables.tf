@@ -104,6 +104,11 @@ variable "orca_sqs_status_update_queue_id" {
   description = "The URL of the SQS queue that recovery status updates are read from/posted to."
 }
 
+variable "orca_sqs_archive_recovery_queue_id" {
+  type        = string
+  description = "The SQS URL that triggers post_copy_request_to_queue upon successful object restore from archive bucket. Also receives input from request_from_archive for files already recovered."
+}
+
 variable "orca_sqs_status_update_queue_arn" {
   type        = string
   description = "The ARN of the SQS queue that recovery status updates are read from/posted to."

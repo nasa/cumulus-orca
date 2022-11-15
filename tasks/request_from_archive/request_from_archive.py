@@ -34,6 +34,7 @@ OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY = "RESTORE_REQUEST_RETRIES"
 OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY = "RESTORE_RETRY_SLEEP_SECS"
 OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY = "DEFAULT_RECOVERY_TYPE"
 OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY = "STATUS_UPDATE_QUEUE_URL"
+OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY = "ARCHIVE_RECOVERY_QUEUE_URL"
 OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY = "ORCA_DEFAULT_BUCKET"
 
 EVENT_CONFIG_KEY = "config"
@@ -132,8 +133,9 @@ def task(
         )
         retry_sleep_secs = DEFAULT_RESTORE_RETRY_SLEEP_SECS
 
-    # Get QUEUE URL
+    # Get QUEUE URLS
     status_update_queue_url = str(os.environ[OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY])
+    archive_recovery_queue_url = str(os.environ[OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY])
 
     # Use the default archive bucket if none is specified for the collection or otherwise given.
     event[EVENT_CONFIG_KEY][
@@ -589,19 +591,23 @@ def restore_object(
     # Submit the request
     restore_result = s3_cli.restore_object(
         Bucket=db_archive_bucket_key, Key=key, RestoreRequest=request
-    )  # Allow ClientErrors to bubble up.
+    )
     if restore_result["ResponseMetadata"]["HTTPStatusCode"] == 200:
         # Will have a non-error path after https://bugs.earthdata.nasa.gov/browse/ORCA-336
-        raise ClientError(
-            {
-                "Error": {
-                    "Code": "HTTPStatus: 200",
-                    "Message": f"File '{key}' in bucket "
-                    f"'{db_archive_bucket_key}' has already been recovered.",
-                }
-            },
-            "restore_object",
-        )
+        # raise ClientError(
+        #     {
+        #         "Error": {
+        #             "Code": "HTTPStatus: 200",
+        #             "Message": f"File '{key}' in bucket "
+        #             f"'{db_archive_bucket_key}' has already been recovered.",
+        #         }
+        #     },
+        #     "restore_object",
+        # )
+        LOGGER.info(f"File '{key}' in bucket '{db_archive_bucket_key}' has already been recovered"
+            "Sending to SQS")
+        
+        
 
     LOGGER.info(
         f"Restore {key} from {db_archive_bucket_key} "
