@@ -90,6 +90,7 @@ module "orca" {
   rds_security_group_id    = var.rds_security_group_id
 
   ## OPTIONAL
+  # archive_recovery_queue_message_retention_time_seconds = 777600
   # db_admin_username                                    = "postgres"
   # default_multipart_chunksize_mb                       = 250
   # log_level                                            = "INFO"
@@ -537,6 +538,7 @@ variables is shown in the table below.
 
 | Variable                                              | Type          | Definition                                                                                                                     | Default
 | ----------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------ | ---------- |
+| `archive_recovery_queue_message_retention_time_seconds`| string       | The number of seconds archive-recovery-queue SQS retains a message in seconds.                                                 | 777600     |
 | `db_admin_username`                                   | string        | Username for RDS database administrator authentication.                                                                        | "postgres" |
 | `default_multipart_chunksize_mb`                      | number        | The default maximum size of chunks to use when copying. Can be overridden by collection config.                                | 250 |
 | `internal_report_queue_message_retention_time_seconds`| number        | Number of seconds the internal-report-queue SQS retains a message.                                                             | 432000 |
@@ -586,6 +588,8 @@ accessed using terraform dot syntax in the format of `module.orca.variable_name`
 | `orca_lambda_post_copy_request_to_queue_arn`            | AWS ARN of the ORCA post_copy_request_to_queue lambda. |
 | `orca_lambda_orca_catalog_reporting_arn`                | AWS ARN of the ORCA orca_catalog_reporting lambda. |
 | `orca_secretsmanager_arn`                               | The Amazon Resource Name (ARN) of the AWS secretsmanager |
+| `orca_sqs_archive_recovery_queue_id`                    | The URL of the archive-recovery-queue SQS |
+| `orca_sqs_archive_recovery_queue_arn`                   | The ARN of the archive-recovery-queue SQS |
 | `orca_sqs_metadata_queue_arn`                           | The ARN of the metadata-queue SQS |
 | `orca_sqs_metadata_queue_id`                            | The URL ID of the metadata-queue SQS |
 | `orca_sqs_staged_recovery_queue_arn`                    | The ARN of the staged-recovery-queue SQS |
