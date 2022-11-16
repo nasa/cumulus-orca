@@ -8,6 +8,7 @@
   * [process\_granule](#request_from_archive.process_granule)
   * [get\_s3\_object\_information](#request_from_archive.get_s3_object_information)
   * [restore\_object](#request_from_archive.restore_object)
+  * [post\_to\_archive\_queue](#request_from_archive.post_to_archive_queue)
   * [set\_optional\_event\_property](#request_from_archive.set_optional_event_property)
   * [handler](#request_from_archive.handler)
 
@@ -214,6 +215,27 @@ Posts to archive recovery queue if object is already recovered from archive buck
   'Standard'|'Bulk'|'Expedited'.
 
 **Raises**:
+
+  None
+
+<a id="request_from_archive.post_to_archive_queue"></a>
+
+#### post\_to\_archive\_queue
+
+```python
+def post_to_archive_queue(archive_recovery_queue_url: str, key,
+                          bucket_name: str) -> None
+```
+
+Posts to archive SQS queue with the correct message format.
+
+**Arguments**:
+
+- `archive_recovery_queue_url` - URL of archive SQS.
+- `key` - file name to recover.
+- `bucket_name` - name of archvie bucket.
+
+**Returns**:
 
   None
 

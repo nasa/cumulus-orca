@@ -56,13 +56,11 @@ class TestPostCopyRequestToQueue(TestCase):
 
     @patch("post_copy_request_to_queue.task")
     def test_handler_happy_path(self, mock_task: MagicMock):
-        key_path = uuid.uuid4().__str__()
-        bucket_name = uuid.uuid4().__str__()
-        event = {
-            "Records": [
-                {"s3": {"object": {"key": key_path}, "bucket": {"name": bucket_name}}}
-            ]
-        }
+        key_path = "test.jpg"
+        bucket_name = "test-bucket"
+
+        event = {"Records": [{"body": "{\"Records\": [{\"s3\": {\"bucket\": {\"name\": \"test-bucket\"},\
+            \"object\": {\"key\": \"test.jpg\"}}}]}"}]}
         context = Mock()
 
         db_queue_url = uuid.uuid4().__str__()
@@ -271,32 +269,17 @@ class TestPostCopyRequestToQueue(TestCase):
 
     @patch("post_copy_request_to_queue.task")
     def test_handler_missing_record_properties_causes_error(self, mock_task: MagicMock):
+
         bad_events = [
             {
-                "event": {
-                    "Records": [
-                        {
-                            "s3": {
-                                "object": {},
-                                "bucket": {"name": uuid.uuid4().__str__()},
-                            }
-                        }
-                    ]
-                },
-                "key": "key",
+                "event": {"Records": [{"body": "{\"Records\": [{\"s3\": {\"bucket\": {\"name\": \"test-bucket\"},\
+                    \"object\": {}}}]}"}]},
+                "key": "key"
             },
             {
-                "event": {
-                    "Records": [
-                        {
-                            "s3": {
-                                "object": {"key": uuid.uuid4().__str__()},
-                                "bucket": {},
-                            }
-                        }
-                    ]
-                },
-                "key": "name",
+                "event": {"Records": [{"body": "{\"Records\": [{\"s3\": {\"bucket\": {},\
+                    \"object\": {\"key\": \"test.jpg\"}}}]}"}]},
+                "key": "name"
             },
         ]
         context = Mock()

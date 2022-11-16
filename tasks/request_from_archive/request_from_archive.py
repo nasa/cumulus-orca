@@ -596,48 +596,61 @@ def restore_object(
         LOGGER.info(f"File '{key}' in bucket '{db_archive_bucket_key}' has already been recovered"
                     "Sending to archive recovery SQS")
         archive_recovery_queue_url = str(os.environ[OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY])
-        # Send message to archive recovery SQS
-        message = json.dumps(
-            {
-                "Records": [
-                    {
-                        "s3": {
-                            "bucket": {
-                                "name": db_archive_bucket_key
-                                },
-                            "object": {
-                                "key": key
-                                }
-                            }
-                        }
-                    ]
-                }
-            )
 
-        sqs = boto3.client("sqs")
-        # send message to archive SQS
-        try:
-            response = sqs.send_message(
-                QueueUrl=archive_recovery_queue_url,
-                MessageBody=message
-            )
-        except Exception as ex:
-            LOGGER.error(ex)
-            raise ex
-
-        LOGGER.debug(f"SQS Message Response: {json.dumps(response)}")
-
-        # Make sure we didn't have an error sending message
-        return_status = response["ResponseMetadata"]["HTTPStatusCode"]
-        if return_status < 200 or return_status > 299:
-            raise Exception(
-                f"Failed to send message to Queue. HTTP Response was {return_status}"
-            )
+        post_to_archive_queue(archive_recovery_queue_url, key, db_archive_bucket_key)
 
     LOGGER.info(
         f"Restore {key} from {db_archive_bucket_key} "
         f"attempt {attempt} successful. Job ID: {job_id}"
     )
+
+
+def post_to_archive_queue(archive_recovery_queue_url: str, key, bucket_name: str) -> None:
+    """Posts to archive SQS queue with the correct message format.
+    Args:
+        archive_recovery_queue_url: URL of archive SQS.
+        key: file name to recover.
+        bucket_name: name of archvie bucket.
+    Returns:
+        None
+    """
+    # Send message to archive recovery SQS
+    message = json.dumps(
+        {
+            "Records": [
+                {
+                    "s3": {
+                        "bucket": {
+                            "name": bucket_name
+                            },
+                        "object": {
+                            "key": key
+                            }
+                        }
+                    }
+                ]
+            }
+        )
+
+    sqs = boto3.client("sqs")
+    # send message to archive SQS
+    try:
+        response = sqs.send_message(
+            QueueUrl=archive_recovery_queue_url,
+            MessageBody=message
+        )
+    except Exception as ex:
+        LOGGER.error(ex)
+        raise ex
+
+    LOGGER.debug(f"SQS Message Response: {json.dumps(response)}")
+
+    # Make sure we didn't have an error sending message
+    return_status = response["ResponseMetadata"]["HTTPStatusCode"]
+    if return_status < 200 or return_status > 299:
+        raise Exception(
+            f"Failed to send message to Queue. HTTP Response was {return_status}"
+        )
 
 
 def set_optional_event_property(event: Dict[str, Any], target_path_cursor: Dict,

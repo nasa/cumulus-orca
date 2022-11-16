@@ -1788,47 +1788,17 @@ class TestRequestFromArchive(unittest.TestCase):
             },
         )
 
-    # noinspection PyUnusedLocal
+    @patch("request_from_archive.post_to_archive_queue")
     @patch("request_from_archive.LOGGER.info")
-    def test_restore_object_client_error_raises(self, mock_logger_info: MagicMock):
-        job_id = uuid.uuid4().__str__()
-        archive_bucket_name = uuid.uuid4().__str__()
-        key = uuid.uuid4().__str__()
-        restore_expire_days = randint(0, 99)  # nosec
-        recovery_type = uuid.uuid4().__str__()
-        expected_error = ClientError({}, "")
-        mock_s3_cli = Mock()
-        mock_s3_cli.restore_object.side_effect = expected_error
-
-        try:
-            request_from_archive.restore_object(
-                mock_s3_cli,
-                key,
-                restore_expire_days,
-                archive_bucket_name,
-                1,
-                job_id,
-                recovery_type,
-            )
-            self.fail("Error not Raised.")
-        except ClientError as error:
-            self.assertEqual(expected_error, error)
-            mock_s3_cli.restore_object.assert_called_once_with(
-                Bucket=archive_bucket_name,
-                Key=key,
-                RestoreRequest={
-                    "Days": restore_expire_days,
-                    "GlacierJobParameters": {"Tier": recovery_type},
-                },
-            )
-
-    # noinspection PyUnusedLocal
-    @patch("request_from_archive.LOGGER.info")
-    def test_restore_object_200_returned_raises(self, mock_logger_info: MagicMock):
+    def test_restore_object_200_returned_posts_to_queue(
+            self, mock_logger_info: MagicMock, mock_post_to_archive_queue: MagicMock):
         """
         A 200 indicates that the file is already restored,  and thus cannot
-        presently be restored again. Should be raised.
+        presently be restored again. Will post to archive recovery queue.
         """
+        os.environ[
+            request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
+        ] = "test.queue"
         archive_bucket_name = uuid.uuid4().__str__()
         key = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99)  # nosec
@@ -1838,8 +1808,7 @@ class TestRequestFromArchive(unittest.TestCase):
             "ResponseMetadata": {"HTTPStatusCode": 200}
         }
 
-        with self.assertRaises(ClientError) as context:
-            request_from_archive.restore_object(
+        request_from_archive.restore_object(
                 mock_s3_cli,
                 key,
                 restore_expire_days,
@@ -1848,11 +1817,9 @@ class TestRequestFromArchive(unittest.TestCase):
                 uuid.uuid4().__str__(),
                 recovery_type,
             )
-        self.assertEqual(
-            f"An error occurred (HTTPStatus: 200) when calling the restore_object operation: "
-            f"File '{key}' in bucket '{archive_bucket_name}' has already been recovered.",
-            str(context.exception),
-        )
+        mock_post_to_archive_queue.assert_called_once_with(os.environ[
+            request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY],
+            key, archive_bucket_name)
 
     @patch("request_from_archive.task")
     @patch("request_from_archive.set_optional_event_property")
