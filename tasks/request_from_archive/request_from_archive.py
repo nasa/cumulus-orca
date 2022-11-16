@@ -573,6 +573,7 @@ def restore_object(
 ) -> None:
     # noinspection SpellCheckingInspection
     """Restore an archived S3 object in an Amazon S3 bucket.
+       Posts to archive recovery queue if object is already recovered from archive bucket.
     Args:
         s3_cli: An instance of boto3 s3 client.
         key: The key of the archived object being restored.
@@ -592,18 +593,46 @@ def restore_object(
         Bucket=db_archive_bucket_key, Key=key, RestoreRequest=request
     )
     if restore_result["ResponseMetadata"]["HTTPStatusCode"] == 200:
-        archive_recovery_queue_url = str(os.environ[OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY])
-        #send message to archive recovery SQS
-        sqs = boto3.client("sqs")
-        sqs.send_message(
-            QueueUrl=archive_recovery_queue_url,
-            MessageBody='message',   # todo
-        )
-        
         LOGGER.info(f"File '{key}' in bucket '{db_archive_bucket_key}' has already been recovered"
-            "Sending to SQS")
-        
-        
+                    "Sending to archive recovery SQS")
+        archive_recovery_queue_url = str(os.environ[OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY])
+        # Send message to archive recovery SQS
+        message = json.dumps(
+            {
+                "Records": [
+                    {
+                        "s3": {
+                            "bucket": {
+                                "name": db_archive_bucket_key
+                                },
+                            "object": {
+                                "key": key
+                                }
+                            }
+                        }
+                    ]
+                }
+            )
+
+        sqs = boto3.client("sqs")
+        # send message to archive SQS
+        try:
+            response = sqs.send_message(
+                QueueUrl=archive_recovery_queue_url,
+                MessageBody=message
+            )
+        except Exception as ex:
+            LOGGER.error(ex)
+            raise ex
+
+        LOGGER.debug(f"SQS Message Response: {json.dumps(response)}")
+
+        # Make sure we didn't have an error sending message
+        return_status = response["ResponseMetadata"]["HTTPStatusCode"]
+        if return_status < 200 or return_status > 299:
+            raise Exception(
+                f"Failed to send message to Queue. HTTP Response was {return_status}"
+            )
 
     LOGGER.info(
         f"Restore {key} from {db_archive_bucket_key} "

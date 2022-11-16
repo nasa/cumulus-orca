@@ -199,6 +199,7 @@ def restore_object(s3_cli: BaseClient, key: str, days: int,
 ```
 
 Restore an archived S3 object in an Amazon S3 bucket.
+Posts to archive recovery queue if object is already recovered from archive bucket.
 
 **Arguments**:
 
@@ -214,7 +215,7 @@ Restore an archived S3 object in an Amazon S3 bucket.
 
 **Raises**:
 
-- `ClientError` - Raises ClientErrors from restore_object, or if the file is already restored.
+  None
 
 <a id="request_from_archive.set_optional_event_property"></a>
 
