@@ -5,7 +5,7 @@ from src import entities
 from src.entities.common import Edge
 from src.entities.echo import BoringWordException
 from src.use_cases.adapter_interfaces.word_generation import WordGenerationInterface
-from src.use_cases.edge_cursor import EdgeCursor
+from src.use_cases.helpers.edge_cursor import EdgeCursor
 
 
 class Test:

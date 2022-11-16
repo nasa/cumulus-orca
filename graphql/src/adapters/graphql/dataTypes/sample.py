@@ -1,7 +1,4 @@
 # noinspection PyPackageRequirements
-import dataclasses
-from typing import Optional, List
-
 import strawberry
 
 from src.adapters.graphql.dataTypes.common import InternalServerErrorStrawberryType, \
