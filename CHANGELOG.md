@@ -16,8 +16,8 @@ and includes an additional section for migration notes.
 ## [Unreleased]
 ### Changed
 - *ORCA-336*
-  - Added a new standard SQS between archive ORCA bucket and `post_copy_request_to_queue` lambda so that the bucket now triggers the SQS upon successful object retrieval from glacier.
   - `request_from_archive` lambda now posts to the new SQS for files that have already been recovered from glacier instead of throwing an error.
+  - `post_copy_request_to_queue` lambda now receives event messages of files recovered from archive from the new archive recovery SQS instead of archive bucket.
 - *ORCA-522*
   - Removed `run_cumulus_task` function from extract_filepath_for_granule lambda to decouple ORCA from Cumulus.
 - *ORCA-575*
@@ -44,6 +44,8 @@ and includes an additional section for migration notes.
   - Postgres table/user names can now begin with an '_' and contain '$' if your Postgres DB version supports this.
 
 ### Added
+- *ORCA-336*
+  - Added a new standard SQS between archive ORCA bucket and `post_copy_request_to_queue` lambda so that the bucket now triggers the SQS upon successful object retrieval from glacier.
 - *ORCA-554*, *ORCA-561* GraphQL image and service will now be deployed by TF.
 
 ### Migration Notes
