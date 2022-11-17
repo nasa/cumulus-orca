@@ -3,6 +3,7 @@ Name: test_post_copy_request_to_queue.py
 Description: unit tests for post_copy_request_to_queue.py
 """
 import copy
+import json
 import os
 import random
 import time
@@ -56,11 +57,24 @@ class TestPostCopyRequestToQueue(TestCase):
 
     @patch("post_copy_request_to_queue.task")
     def test_handler_happy_path(self, mock_task: MagicMock):
-        key_path = "test.jpg"
-        bucket_name = "test-bucket"
+        key_path = f"{uuid.uuid4()}.ext"
+        bucket_name = f"{uuid.uuid4()}-bucket"
 
-        event = {"Records": [{"body": "{\"Records\": [{\"s3\": {\"bucket\": {\"name\": \"test-bucket\"},\
-            \"object\": {\"key\": \"test.jpg\"}}}]}"}]}
+        body_json = json.dumps({
+            "Records": [
+                {
+                    "s3": {
+                        "bucket": {
+                            "name": bucket_name
+                        },
+                        "object": {
+                            "key": key_path
+                        }
+                    }
+                }
+            ]
+        })
+        event = {"Records": [{"body": body_json}]}
         context = Mock()
 
         db_queue_url = uuid.uuid4().__str__()

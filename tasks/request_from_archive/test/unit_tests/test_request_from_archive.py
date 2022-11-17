@@ -70,8 +70,13 @@ class TestRequestFromArchive(unittest.TestCase):
         recovery_type = "Bulk"
         exp_days = randint(0, 99)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+        archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
-        os.environ[request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
+        os.environ[
+            request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
+        os.environ[
+            request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
+            ] = archive_recovery_queue_url
         os.environ[
             request_from_archive.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
         ] = max_retries.__str__()
@@ -101,6 +106,7 @@ class TestRequestFromArchive(unittest.TestCase):
             mock_get_archive_recovery_type(config),
             exp_days,
             db_queue_url,
+            archive_recovery_queue_url
         )
 
     @patch("request_from_archive.get_default_archive_bucket_name")
@@ -126,8 +132,12 @@ class TestRequestFromArchive(unittest.TestCase):
         recovery_type = "Bulk"
         exp_days = randint(0, 99)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+        archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
         os.environ[request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
+        os.environ[
+            request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
+            ] = archive_recovery_queue_url
         os.environ[
             request_from_archive.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
         ] = retry_sleep_secs.__str__()
@@ -154,6 +164,7 @@ class TestRequestFromArchive(unittest.TestCase):
             mock_get_archive_recovery_type(config),
             exp_days,
             db_queue_url,
+            archive_recovery_queue_url
         )
 
     @patch("request_from_archive.get_default_archive_bucket_name")
@@ -179,6 +190,11 @@ class TestRequestFromArchive(unittest.TestCase):
         recovery_type = "Bulk"
         exp_days = randint(0, 99)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+        archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+
+        os.environ[
+            request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
+            ] = archive_recovery_queue_url
         os.environ[request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
 
         os.environ[
@@ -207,6 +223,7 @@ class TestRequestFromArchive(unittest.TestCase):
             mock_get_archive_recovery_type(config),
             exp_days,
             db_queue_url,
+            archive_recovery_queue_url
         )
 
     @patch("request_from_archive.get_default_archive_bucket_name")
@@ -232,6 +249,11 @@ class TestRequestFromArchive(unittest.TestCase):
         retry_sleep_secs = uniform(0, 99)  # nosec
         recovery_type = "Bulk"
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+        archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+
+        os.environ[
+            request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
+            ] = archive_recovery_queue_url
 
         os.environ[request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
         os.environ[
@@ -260,6 +282,7 @@ class TestRequestFromArchive(unittest.TestCase):
             mock_get_archive_recovery_type(config),
             request_from_archive.DEFAULT_RESTORE_EXPIRE_DAYS,
             db_queue_url,
+            archive_recovery_queue_url
         )
 
     @patch("request_from_archive.get_default_archive_bucket_name")
@@ -285,9 +308,14 @@ class TestRequestFromArchive(unittest.TestCase):
         recovery_type = "Bulk"
         exp_days = randint(0, 99)  # nosec
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+        archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
         job_id = uuid.uuid4()
 
-        os.environ[request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
+        os.environ[
+            request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
+        os.environ[
+            request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
+            ] = archive_recovery_queue_url
         os.environ[
             request_from_archive.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
         ] = max_retries.__str__()
@@ -318,6 +346,7 @@ class TestRequestFromArchive(unittest.TestCase):
             mock_get_archive_recovery_type(config),
             exp_days,
             db_queue_url,
+            archive_recovery_queue_url
         )
 
     # noinspection PyUnusedLocal
@@ -347,6 +376,7 @@ class TestRequestFromArchive(unittest.TestCase):
         granule_id0 = uuid.uuid4().__str__()
         granule_id1 = uuid.uuid4().__str__()
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+        archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
         file_0 = {
             request_from_archive.FILE_KEY_KEY: file_key_0,
             request_from_archive.FILE_DEST_BUCKET_KEY: file_dest_bucket_0,
@@ -432,6 +462,7 @@ class TestRequestFromArchive(unittest.TestCase):
             recovery_type,
             restore_expire_days,
             db_queue_url,
+            archive_recovery_queue_url
         )
 
         # Compare to orca_shared to verify schema.
@@ -504,6 +535,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     recovery_type,
                     job_id,
                     db_queue_url,
+                    archive_recovery_queue_url
                 ),
                 call(
                     mock_s3_cli,
@@ -515,6 +547,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     recovery_type,
                     job_id,
                     db_queue_url,
+                    archive_recovery_queue_url
                 ),
             ]
         )
@@ -555,6 +588,8 @@ class TestRequestFromArchive(unittest.TestCase):
         granule_id0 = uuid.uuid4().__str__()
         granule_id1 = uuid.uuid4().__str__()
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+        archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+
         file_0 = {
             request_from_archive.FILE_KEY_KEY: file_key_0,
             request_from_archive.FILE_DEST_BUCKET_KEY: file_dest_bucket_0,
@@ -648,6 +683,7 @@ class TestRequestFromArchive(unittest.TestCase):
             recovery_type,
             restore_expire_days,
             db_queue_url,
+            archive_recovery_queue_url
         )
 
         # Compare to orca_shared to verify schema.
@@ -724,6 +760,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     recovery_type,
                     job_id,
                     db_queue_url,
+                    archive_recovery_queue_url
                 ),
                 call(
                     mock_s3_cli,
@@ -735,6 +772,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     recovery_type,
                     job_id,
                     db_queue_url,
+                    archive_recovery_queue_url
                 ),
             ]
         )
@@ -774,6 +812,7 @@ class TestRequestFromArchive(unittest.TestCase):
         granule_id0 = uuid.uuid4().__str__()
         granule_id1 = uuid.uuid4().__str__()
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+        archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
         file_0 = {
             request_from_archive.FILE_KEY_KEY: file_key_0,
             request_from_archive.FILE_DEST_BUCKET_KEY: file_dest_bucket_0,
@@ -860,6 +899,7 @@ class TestRequestFromArchive(unittest.TestCase):
                 recovery_type,
                 restore_expire_days,
                 db_queue_url,
+                archive_recovery_queue_url
             )
         self.assertEqual(
             f"Unable to send message to QUEUE '{db_queue_url}'", str(cm.exception)
@@ -909,6 +949,7 @@ class TestRequestFromArchive(unittest.TestCase):
                 uuid.uuid4().__str__(),
                 randint(0, 99),  # nosec
                 "https://db.queue.url",
+                "https://archive.queue.url",
             )
             self.fail("Error not raised.")
         except request_from_archive.RestoreRequestError:
@@ -942,6 +983,11 @@ class TestRequestFromArchive(unittest.TestCase):
         job_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+        archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+
+        os.environ[
+            request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
+            ] = archive_recovery_queue_url
         file_0 = {
             request_from_archive.FILE_KEY_KEY: file_key_0,
             request_from_archive.FILE_DEST_BUCKET_KEY: file_dest_bucket_0,
@@ -1056,6 +1102,7 @@ class TestRequestFromArchive(unittest.TestCase):
             recovery_type,
             restore_expire_days,
             db_queue_url,
+            archive_recovery_queue_url
         )
 
         mock_create_status_for_job.assert_called_once_with(
@@ -1135,6 +1182,7 @@ class TestRequestFromArchive(unittest.TestCase):
             recovery_type,
             job_id,
             db_queue_url,
+            archive_recovery_queue_url
         )
         self.assertEqual(
             {
@@ -1322,6 +1370,11 @@ class TestRequestFromArchive(unittest.TestCase):
         dest_bucket_1 = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+        archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+
+        os.environ[
+            request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
+            ] = archive_recovery_queue_url
 
         granule = {
             request_from_archive.GRANULE_GRANULE_ID_KEY: granule_id,
@@ -1353,6 +1406,7 @@ class TestRequestFromArchive(unittest.TestCase):
             recovery_type,
             job_id,
             db_queue_url,
+            archive_recovery_queue_url
         )
 
         self.assertTrue(
@@ -1376,6 +1430,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     1,
                     job_id,
                     recovery_type,
+                    archive_recovery_queue_url
                 ),
                 call(
                     mock_s3,
@@ -1385,6 +1440,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     1,
                     job_id,
                     recovery_type,
+                    archive_recovery_queue_url
                 ),
             ]
         )
@@ -1407,6 +1463,11 @@ class TestRequestFromArchive(unittest.TestCase):
         dest_bucket_0 = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+        archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+
+        os.environ[
+            request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
+            ] = archive_recovery_queue_url
 
         granule = {
             request_from_archive.GRANULE_GRANULE_ID_KEY: granule_id,
@@ -1433,6 +1494,7 @@ class TestRequestFromArchive(unittest.TestCase):
             recovery_type,
             job_id,
             db_queue_url,
+            archive_recovery_queue_url
         )
 
         self.assertTrue(
@@ -1450,6 +1512,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     1,
                     job_id,
                     recovery_type,
+                    archive_recovery_queue_url
                 ),
                 call(
                     mock_s3,
@@ -1459,6 +1522,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     2,
                     job_id,
                     recovery_type,
+                    archive_recovery_queue_url
                 ),
             ]
         )
@@ -1488,6 +1552,14 @@ class TestRequestFromArchive(unittest.TestCase):
         dest_bucket_0 = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+        archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+
+        os.environ[
+            request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
+            ] = archive_recovery_queue_url
+        os.environ[
+            request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY
+            ] = db_queue_url
 
         granule = {
             request_from_archive.GRANULE_GRANULE_ID_KEY: granule_id,
@@ -1516,6 +1588,7 @@ class TestRequestFromArchive(unittest.TestCase):
                 recovery_type,
                 job_id,
                 db_queue_url,
+                archive_recovery_queue_url
             )
             self.fail("Error not Raised.")
         # except request_from_archive.RestoreRequestError:
@@ -1540,6 +1613,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     1,
                     job_id,
                     recovery_type,
+                    archive_recovery_queue_url
                 ),
                 call(
                     mock_s3,
@@ -1549,6 +1623,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     2,
                     job_id,
                     recovery_type,
+                    archive_recovery_queue_url
                 ),
                 call(
                     mock_s3,
@@ -1558,6 +1633,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     3,
                     job_id,
                     recovery_type,
+                    archive_recovery_queue_url
                 ),
             ]
         )
@@ -1569,7 +1645,7 @@ class TestRequestFromArchive(unittest.TestCase):
             file_name_0,
             OrcaStatus.FAILED,
             str(expected_error),
-            db_queue_url,
+            db_queue_url
         )
         mock_logger_error.assert_has_calls(
             [
@@ -1610,6 +1686,11 @@ class TestRequestFromArchive(unittest.TestCase):
         dest_bucket_0 = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+        archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
+
+        os.environ[
+            request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
+            ] = archive_recovery_queue_url
 
         granule = {
             request_from_archive.GRANULE_GRANULE_ID_KEY: granule_id,
@@ -1641,6 +1722,7 @@ class TestRequestFromArchive(unittest.TestCase):
                 recovery_type,
                 job_id,
                 db_queue_url,
+                archive_recovery_queue_url
             )
             self.fail("Error not Raised.")
         # except request_from_archive.RestoreRequestError:
@@ -1665,6 +1747,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     1,
                     job_id,
                     recovery_type,
+                    archive_recovery_queue_url
                 ),
                 call(
                     mock_s3,
@@ -1674,6 +1757,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     2,
                     job_id,
                     recovery_type,
+                    archive_recovery_queue_url
                 ),
                 call(
                     mock_s3,
@@ -1683,6 +1767,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     3,
                     job_id,
                     recovery_type,
+                    archive_recovery_queue_url
                 ),
             ]
         )
@@ -1694,7 +1779,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     file_name_0,
                     OrcaStatus.FAILED,
                     str(expected_error),
-                    db_queue_url,
+                    db_queue_url
                 )
             ]
             * (max_retries + 1)
@@ -1764,6 +1849,7 @@ class TestRequestFromArchive(unittest.TestCase):
         key = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99)  # nosec
         recovery_type = uuid.uuid4().__str__()
+        archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
         mock_s3_cli = Mock()
         mock_s3_cli.restore_object.return_value = {
             "ResponseMetadata": {"HTTPStatusCode": 202}
@@ -1777,6 +1863,7 @@ class TestRequestFromArchive(unittest.TestCase):
             randint(0, 99),  # nosec
             uuid.uuid4().__str__(),
             recovery_type,
+            archive_recovery_queue_url
         )
 
         mock_s3_cli.restore_object.assert_called_once_with(
@@ -1788,17 +1875,18 @@ class TestRequestFromArchive(unittest.TestCase):
             },
         )
 
-    @patch("request_from_archive.post_to_archive_queue")
+    @patch("request_from_archive.post_to_archive_recovery_queue")
     @patch("request_from_archive.LOGGER.info")
     def test_restore_object_200_returned_posts_to_queue(
-            self, mock_logger_info: MagicMock, mock_post_to_archive_queue: MagicMock):
+            self, mock_logger_info: MagicMock, mock_post_to_archive_recovery_queue: MagicMock):
         """
         A 200 indicates that the file is already restored,  and thus cannot
         presently be restored again. Will post to archive recovery queue.
         """
+        archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
         os.environ[
             request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
-        ] = "test.queue"
+        ] = archive_recovery_queue_url
         archive_bucket_name = uuid.uuid4().__str__()
         key = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99)  # nosec
@@ -1816,8 +1904,9 @@ class TestRequestFromArchive(unittest.TestCase):
                 2,
                 uuid.uuid4().__str__(),
                 recovery_type,
+                archive_recovery_queue_url
             )
-        mock_post_to_archive_queue.assert_called_once_with(os.environ[
+        mock_post_to_archive_recovery_queue.assert_called_once_with(os.environ[
             request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY],
             key, archive_bucket_name)
 
@@ -1993,6 +2082,9 @@ class TestRequestFromArchive(unittest.TestCase):
         os.environ[
             request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY
         ] = "https://db.queue.url"
+        os.environ[
+            request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
+        ] = "https://archive.queue.url"
         job_id = uuid.uuid4().__str__()
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
         files = [key0, key1, key2, key3]

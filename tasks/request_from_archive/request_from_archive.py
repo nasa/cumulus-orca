@@ -135,6 +135,7 @@ def task(
 
     # Get QUEUE URLS
     status_update_queue_url = str(os.environ[OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY])
+    archive_recovery_queue_url = str(os.environ[OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY])
 
     # Use the default archive bucket if none is specified for the collection or otherwise given.
     event[EVENT_CONFIG_KEY][
@@ -171,6 +172,7 @@ def task(
         recovery_type,
         exp_days,
         status_update_queue_url,
+        archive_recovery_queue_url
     )
 
 
@@ -231,6 +233,7 @@ def inner_task(
     recovery_type: str,
     restore_expire_days: int,
     status_update_queue_url: str,
+    archive_recovery_queue_url: str,
 ) -> Dict[str, Any]:  # pylint: disable-msg=unused-argument
     """
     Task called by the handler to perform the work.
@@ -259,6 +262,8 @@ def inner_task(
             restore_expire_days: The number of days the restored file will be accessible
                 in the S3 bucket before it expires.
             status_update_queue_url: The URL of the SQS queue to post status to.
+            archive_recovery_queue_url: The URL of the SQS queue that request_from_archive posts to
+                in case of files already recovered from archive.
         Returns:
             See schemas/output.json
         Raises:
@@ -378,6 +383,7 @@ def inner_task(
             recovery_type,
             job_id,
             status_update_queue_url,
+            archive_recovery_queue_url
         )
 
     # Cumulus expects response (payload.granules) to be a list of granule objects.
@@ -399,6 +405,7 @@ def process_granule(
     recovery_type: str,
     job_id: str,
     status_update_queue_url: str,
+    archive_recovery_queue_url: str
 ) -> None:  # pylint: disable-msg=unused-argument
     """Call restore_object for the files in the granule_list. Modifies granule for output.
     Args:
@@ -422,6 +429,8 @@ def process_granule(
             'Standard'|'Bulk'|'Expedited'.
         job_id: The unique identifier used for tracking requests.
         status_update_queue_url: The URL of the SQS queue to post status to.
+        archive_recovery_queue_url: The URL of the SQS queue that request_from_archive posts to
+            in case of files already recovered from archive.
 
     Raises: RestoreRequestError if any file restore could not be initiated.
     """
@@ -444,6 +453,7 @@ def process_granule(
                         attempt,
                         job_id,
                         recovery_type,
+                        archive_recovery_queue_url
                     )
 
                     # Successful restore
@@ -570,6 +580,7 @@ def restore_object(
     attempt: int,
     job_id: str,
     recovery_type: str,
+    archive_recovery_queue_url: str,
 ) -> None:
     # noinspection SpellCheckingInspection
     """Restore an archived S3 object in an Amazon S3 bucket.
@@ -584,6 +595,8 @@ def restore_object(
         job_id: The unique id of the job. Used for logging.
         recovery_type: Valid values are
             'Standard'|'Bulk'|'Expedited'.
+        archive_recovery_queue_url: The URL of the SQS queue that request_from_archive posts to
+            in case of files already recovered from archive.
     Raises:
         None
     """
@@ -595,9 +608,8 @@ def restore_object(
     if restore_result["ResponseMetadata"]["HTTPStatusCode"] == 200:
         LOGGER.info(f"File '{key}' in bucket '{db_archive_bucket_key}' has already been recovered"
                     "Sending to archive recovery SQS")
-        archive_recovery_queue_url = str(os.environ[OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY])
 
-        post_to_archive_queue(archive_recovery_queue_url, key, db_archive_bucket_key)
+        post_to_archive_recovery_queue(archive_recovery_queue_url, key, db_archive_bucket_key)
 
     LOGGER.info(
         f"Restore {key} from {db_archive_bucket_key} "
@@ -605,8 +617,8 @@ def restore_object(
     )
 
 
-def post_to_archive_queue(archive_recovery_queue_url: str, key, bucket_name: str) -> None:
-    """Posts to archive SQS queue with the correct message format.
+def post_to_archive_recovery_queue(archive_recovery_queue_url: str, key, bucket_name: str) -> None:
+    """Posts to archive-recovery-queue SQS queue with the correct message format.
     Args:
         archive_recovery_queue_url: URL of archive SQS.
         key: file name to recover.

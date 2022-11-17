@@ -8,7 +8,7 @@
   * [process\_granule](#request_from_archive.process_granule)
   * [get\_s3\_object\_information](#request_from_archive.get_s3_object_information)
   * [restore\_object](#request_from_archive.restore_object)
-  * [post\_to\_archive\_queue](#request_from_archive.post_to_archive_queue)
+  * [post\_to\_archive\_recovery\_queue](#request_from_archive.post_to_archive_recovery_queue)
   * [set\_optional\_event\_property](#request_from_archive.set_optional_event_property)
   * [handler](#request_from_archive.handler)
 
@@ -86,7 +86,8 @@ Must be either 'Bulk', 'Expedited', or 'Standard'.
 ```python
 def inner_task(event: Dict, max_retries: int, retry_sleep_secs: float,
                recovery_type: str, restore_expire_days: int,
-               status_update_queue_url: str) -> Dict[str, Any]
+               status_update_queue_url: str,
+               archive_recovery_queue_url: str) -> Dict[str, Any]
 ```
 
 Task called by the handler to perform the work.
@@ -117,6 +118,8 @@ if it fails, waiting {retry_sleep_secs} between each attempt.
 - `restore_expire_days` - The number of days the restored file will be accessible
   in the S3 bucket before it expires.
 - `status_update_queue_url` - The URL of the SQS queue to post status to.
+- `archive_recovery_queue_url` - The URL of the SQS queue that request_from_archive posts to
+  in case of files already recovered from archive.
 
 **Returns**:
 
@@ -135,7 +138,8 @@ def process_granule(s3: BaseClient, granule: Dict[str, Union[str, List[Dict]]],
                     archive_bucket_name: str, restore_expire_days: int,
                     max_retries: int, retry_sleep_secs: float,
                     recovery_type: str, job_id: str,
-                    status_update_queue_url: str) -> None
+                    status_update_queue_url: str,
+                    archive_recovery_queue_url: str) -> None
 ```
 
 Call restore_object for the files in the granule_list. Modifies granule for output.
@@ -162,6 +166,8 @@ Call restore_object for the files in the granule_list. Modifies granule for outp
   'Standard'|'Bulk'|'Expedited'.
 - `job_id` - The unique identifier used for tracking requests.
 - `status_update_queue_url` - The URL of the SQS queue to post status to.
+- `archive_recovery_queue_url` - The URL of the SQS queue that request_from_archive posts to
+  in case of files already recovered from archive.
   
 - `Raises` - RestoreRequestError if any file restore could not be initiated.
 
@@ -196,7 +202,8 @@ Perform a head request to get information about a file in S3.
 ```python
 def restore_object(s3_cli: BaseClient, key: str, days: int,
                    db_archive_bucket_key: str, attempt: int, job_id: str,
-                   recovery_type: str) -> None
+                   recovery_type: str,
+                   archive_recovery_queue_url: str) -> None
 ```
 
 Restore an archived S3 object in an Amazon S3 bucket.
@@ -213,21 +220,23 @@ Posts to archive recovery queue if object is already recovered from archive buck
 - `job_id` - The unique id of the job. Used for logging.
 - `recovery_type` - Valid values are
   'Standard'|'Bulk'|'Expedited'.
+- `archive_recovery_queue_url` - The URL of the SQS queue that request_from_archive posts to
+  in case of files already recovered from archive.
 
 **Raises**:
 
   None
 
-<a id="request_from_archive.post_to_archive_queue"></a>
+<a id="request_from_archive.post_to_archive_recovery_queue"></a>
 
-#### post\_to\_archive\_queue
+#### post\_to\_archive\_recovery\_queue
 
 ```python
-def post_to_archive_queue(archive_recovery_queue_url: str, key,
-                          bucket_name: str) -> None
+def post_to_archive_recovery_queue(archive_recovery_queue_url: str, key,
+                                   bucket_name: str) -> None
 ```
 
-Posts to archive SQS queue with the correct message format.
+Posts to archive-recovery-queue SQS queue with the correct message format.
 
 **Arguments**:
 
