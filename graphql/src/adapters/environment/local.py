@@ -1,6 +1,7 @@
 from orca_shared.database.entities import PostgresConnectionInfo
 from pydantic import BaseSettings
 
+from src.adapters.logger_provider.basic import BasicLoggerProvider
 from src.adapters.webserver.run import run
 
 
@@ -31,4 +32,4 @@ if __name__ == "__main__":
         user_password=INSTANTIATED_LOCAL_SETTINGS.APPLICATION_PASSWORD,
         user_username=INSTANTIATED_LOCAL_SETTINGS.USER_USERNAME,
     )
-    run(db_connect_info)
+    run(db_connect_info, BasicLoggerProvider())

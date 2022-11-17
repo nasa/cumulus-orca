@@ -1,9 +1,8 @@
-import logging
-
 from orca_shared.database.entities import PostgresConnectionInfo
 from orca_shared.database.use_cases import create_postgres_connection_uri
 from sqlalchemy import text
 
+from src.adapters.graphql.initialized_adapters.logger_provider import logger_provider
 from src.adapters.storage.rdbms import StorageAdapterRDBMS
 
 
@@ -30,7 +29,7 @@ class StorageAdapterPostgres(StorageAdapterRDBMS):
             raise NotImplementedError(f"Access level '{database_level_override}' not supported.")
 
         return create_postgres_connection_uri.create_admin_uri(
-            self.db_connect_info, logging.Logger("temp"), database_name_override)
+            self.db_connect_info, logger_provider.get_logger(), database_name_override)
 
     def create_user_uri(self) -> str:
         """
@@ -38,7 +37,7 @@ class StorageAdapterPostgres(StorageAdapterRDBMS):
         :return:
         """
         return create_postgres_connection_uri.create_user_uri(
-            self.db_connect_info, logging.Logger("temp"))
+            self.db_connect_info, logger_provider.get_logger())
 
     @staticmethod
     def get_schema_version_sql() -> text:  # pragma: no cover

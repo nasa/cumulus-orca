@@ -6,15 +6,23 @@ Description: Main entrypoint script for the application.
 import uvicorn
 from orca_shared.database.entities import PostgresConnectionInfo
 
-from src.adapters.graphql.initialized_adapters import adapters
-from src.adapters.storage.postgres import StorageAdapterPostgres
+from src.adapters.graphql.initialized_adapters import logger_provider
 from src.adapters.webserver.uvicorn_settings import INSTANTIATED_WEBSERVER_SETTINGS
+from src.use_cases.adapter_interfaces.logger_provider import LoggerProviderInterface
 
 
-def run(db_connect_info: PostgresConnectionInfo):
+def run(db_connect_info: PostgresConnectionInfo,
+        initialized_logger_provider: LoggerProviderInterface):
+    logger_provider.logger_provider = initialized_logger_provider
+
+    # Don't start setting up adapters until the static logger adapter is ready to be referenced.
+    # todo: This feels substantially more gross to me than passing logger via parameters.
+    #  Need another solution.
+    from src.adapters.graphql.initialized_adapters import adapters
+    from src.adapters.storage.postgres import StorageAdapterPostgres
     adapters.storage = StorageAdapterPostgres(db_connect_info)
 
-    # Don't start setting up fastapi/graphql app until storage adapter is ready to be referenced.
+    # Don't start setting up fastapi/graphql app until adapters are ready to be referenced.
     from src.adapters.api.fastapi import create_fastapi_app
 
     uvicorn.run(

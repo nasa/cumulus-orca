@@ -7,10 +7,11 @@ from orca_shared.database import shared_db
 from sqlalchemy import text, create_engine
 from sqlalchemy.future import Connection
 
-from src.use_cases.adapter_interfaces.storage import InternalReconcileReportStorageInterface
+from src.adapters.graphql.initialized_adapters.logger_provider import logger_provider
+from src.use_cases.adapter_interfaces.storage import StorageMetadataInterface
 
 
-class StorageAdapterRDBMS(InternalReconcileReportStorageInterface):
+class StorageAdapterRDBMS(StorageMetadataInterface):
     class AccessLevel(Enum):
         # Whenever this class changes, update WordTypeEnumStrawberryType
         admin = 1
@@ -30,9 +31,7 @@ class StorageAdapterRDBMS(InternalReconcileReportStorageInterface):
     @shared_db.retry_operational_error()
     def get_schema_version(
         self,
-        connection: Connection,
-        # todo: @bhazuka has expressed a desire to not pass loggers via parameters
-        LOGGER: logging.Logger
+        connection: Connection
     ) -> int:
         # noinspection GrazieInspection
         """
@@ -40,7 +39,6 @@ class StorageAdapterRDBMS(InternalReconcileReportStorageInterface):
 
         Args:
             connection: Database connection object.
-            LOGGER: The logger to use.
 
         Returns:
             Version number of the currently installed ORCA schema.
@@ -48,8 +46,8 @@ class StorageAdapterRDBMS(InternalReconcileReportStorageInterface):
         schema_version = 1
 
         # If table exists get the latest version from the table
-        if self.app_version_table_exists(connection, LOGGER):
-            LOGGER.debug("Getting current schema version from table.")
+        if self.app_version_table_exists(connection):
+            logger_provider.get_logger().debug("Getting current schema version from table.")
             results = connection.execute(self.get_schema_version_sql())
             # todo: Remove this loop and raise error if more than one row is present.
             for row in results.fetchall():
@@ -57,24 +55,23 @@ class StorageAdapterRDBMS(InternalReconcileReportStorageInterface):
 
             return schema_version
 
-    def app_version_table_exists(self, connection, LOGGER: logging.Logger) -> bool:
+    def app_version_table_exists(self, connection) -> bool:
         """
         Checks to see if the orca.schema_version table exists.
 
         Args:
             connection: Database connection object.
-            LOGGER: The logger to use.
 
         Returns:
             True if ORCA schema_version table exists.
         """
-        LOGGER.debug("Checking for schema_versions table.")
+        logger_provider.get_logger().debug("Checking for schema_versions table.")
         results = connection.execute(self.app_version_table_exists_sql())
         # todo: Remove this loop and raise error if more than one row is present.
         for row in results.fetchall():
             table_exists = row[0]
 
-        LOGGER.debug(f"schema_versions table exists {table_exists}")
+        logger_provider.get_logger().debug(f"schema_versions table exists {table_exists}")
 
         return table_exists
 
