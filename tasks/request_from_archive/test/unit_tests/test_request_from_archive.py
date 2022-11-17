@@ -1875,10 +1875,10 @@ class TestRequestFromArchive(unittest.TestCase):
             },
         )
 
-    @patch("request_from_archive.post_to_archive_recovery_queue")
+    @patch("request_from_archive.shared_recovery.post_entry_to_standard_queue")
     @patch("request_from_archive.LOGGER.info")
     def test_restore_object_200_returned_posts_to_queue(
-            self, mock_logger_info: MagicMock, mock_post_to_archive_recovery_queue: MagicMock):
+            self, mock_logger_info: MagicMock, mock_post_to_queue: MagicMock):
         """
         A 200 indicates that the file is already restored,  and thus cannot
         presently be restored again. Will post to archive recovery queue.
@@ -1906,9 +1906,26 @@ class TestRequestFromArchive(unittest.TestCase):
                 recovery_type,
                 archive_recovery_queue_url
             )
-        mock_post_to_archive_recovery_queue.assert_called_once_with(os.environ[
-            request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY],
-            key, archive_bucket_name)
+        message = {
+            "Records": [
+                    {
+                        "s3": {
+                            "bucket": {
+                                "name": archive_bucket_name
+                                },
+                            "object": {
+                                "key": key
+                                }
+                            }
+                        }
+                    ]
+                }
+        mock_post_to_queue.assert_called_once_with(
+            message,
+            os.environ[
+                request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
+                ],
+            )
 
     @patch("request_from_archive.task")
     @patch("request_from_archive.set_optional_event_property")
