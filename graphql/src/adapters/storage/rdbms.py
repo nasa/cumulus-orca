@@ -3,7 +3,6 @@ import logging
 from abc import abstractmethod
 from enum import Enum
 
-import sqlalchemy
 from orca_shared.database import shared_db
 from sqlalchemy import text, create_engine
 from sqlalchemy.future import Connection
@@ -94,7 +93,8 @@ class StorageAdapterRDBMS(InternalReconcileReportStorageInterface):
             with connection:
                 {queries here}
         """
-        engine = create_engine(self.create_admin_uri(database_level_override))
+        uri = self.create_admin_uri(database_level_override)
+        engine = create_engine(uri, future=True)
         return engine.begin()
 
     def get_persistent_user_connection_object(
@@ -107,7 +107,8 @@ class StorageAdapterRDBMS(InternalReconcileReportStorageInterface):
             with connection:
                 {queries here}
         """
-        engine = create_engine(self.create_user_uri())
+        uri = self.create_user_uri()
+        engine = create_engine(uri)
         return engine.begin()
 
     @staticmethod

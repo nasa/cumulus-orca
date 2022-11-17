@@ -13,7 +13,7 @@ class StorageAdapterPostgres(StorageAdapterRDBMS):
         super(StorageAdapterPostgres, self).__init__()
 
     def create_admin_uri(self,
-                         database_level_override: StorageAdapterRDBMS.AccessLevel = None):
+                         database_level_override: StorageAdapterRDBMS.AccessLevel = None) -> str:
         """
         todo
         :param database_level_override:
@@ -29,16 +29,16 @@ class StorageAdapterPostgres(StorageAdapterRDBMS):
         else:
             raise NotImplementedError(f"Access level '{database_level_override}' not supported.")
 
-        create_postgres_connection_uri.create_admin_uri(
-            self.db_connect_info, logging.Logger(), database_name_override)
+        return create_postgres_connection_uri.create_admin_uri(
+            self.db_connect_info, logging.Logger("temp"), database_name_override)
 
-    def create_user_uri(self):
+    def create_user_uri(self) -> str:
         """
         todo
         :return:
         """
-        create_postgres_connection_uri.create_user_uri(
-            self.db_connect_info, logging.Logger())
+        return create_postgres_connection_uri.create_user_uri(
+            self.db_connect_info, logging.Logger("temp"))
 
     @staticmethod
     def get_schema_version_sql() -> text:  # pragma: no cover

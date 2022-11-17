@@ -17,5 +17,5 @@ INSTANTIATED_AWS_SETTINGS = AWSSettings()
 
 if __name__ == "__main__":
     db_connect_info = get_configuration(INSTANTIATED_AWS_SETTINGS.DB_CONNECT_INFO_SECRET_ARN,
-                                        logging.Logger())  # todo: pass in logger
+                                        logging.Logger("temp"))  # todo: pass in logger
     run(db_connect_info)

@@ -12,5 +12,5 @@ class StorageMetadata:
         self.storage = storage
 
     def get_schema_version(self, connection) -> StorageSchemaVersion:
-        result = self.storage.get_schema_version(connection, logging.Logger())  # todo: handle logger better
+        result = self.storage.get_schema_version(connection, logging.Logger("temp"))  # todo: handle logger better
         return StorageSchemaVersion(result)

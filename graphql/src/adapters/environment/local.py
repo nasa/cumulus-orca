@@ -1,7 +1,7 @@
 from orca_shared.database.entities import PostgresConnectionInfo
 from pydantic import BaseSettings
 
-from src.adapters.webserver.main import run
+from src.adapters.webserver.run import run
 
 
 class LocalSettings(BaseSettings):
