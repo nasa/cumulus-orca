@@ -644,6 +644,7 @@ resource "aws_lambda_function" "post_copy_request_to_queue" {
 resource "aws_lambda_event_source_mapping" "post_copy_request_to_queue_event_source_mapping" {
   event_source_arn = var.orca_sqs_archive_recovery_queue_arn
   function_name    = aws_lambda_function.post_copy_request_to_queue.arn
+  batch_size       = 1
 }
 
 # Permissions to allow SQS trigger to invoke lambda
