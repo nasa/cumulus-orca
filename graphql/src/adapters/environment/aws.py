@@ -1,8 +1,9 @@
 from orca_shared.database.adapters.api import get_configuration
+from orca_shared.database.entities import PostgresConnectionInfo
 from pydantic import BaseSettings
 
-from src.adapters.logger_provider.basic import BasicLoggerProvider
-from src.adapters.webserver.run import run
+from src.adapters.environment.interface import EnvironmentInterface
+from src.use_cases.adapter_interfaces.logger_provider import LoggerProviderInterface
 
 
 class AWSSettings(BaseSettings):
@@ -12,11 +13,14 @@ class AWSSettings(BaseSettings):
     DB_CONNECT_INFO_SECRET_ARN: str  # Will raise error when not found/empty.
 
 
-INSTANTIATED_AWS_SETTINGS = AWSSettings()
+class AWSEnvironment(EnvironmentInterface):
 
-if __name__ == "__main__":
-    logger_provider = BasicLoggerProvider()
+    def __init__(self):
+        self.INSTANTIATED_AWS_SETTINGS = AWSSettings()
 
-    db_connect_info = get_configuration(INSTANTIATED_AWS_SETTINGS.DB_CONNECT_INFO_SECRET_ARN,
-                                        logger_provider.get_logger())
-    run(db_connect_info, logger_provider)
+    def get_db_connect_info(self, logger_provider: LoggerProviderInterface) \
+            -> PostgresConnectionInfo:
+        db_connect_info = get_configuration(
+            self.INSTANTIATED_AWS_SETTINGS.DB_CONNECT_INFO_SECRET_ARN,
+            logger_provider.get_logger())
+        return db_connect_info

@@ -31,7 +31,20 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 ## Local Testing
 - Entry point is `src/adapters/webserver/main.py`, 
   which will start the developer UI at http://127.0.0.1:5000/graphql by default
-- If running via Docker, use the command `docker run -d -p 5000:5000 imageName` replacing `imageName` with the name of your built image.
+  - Make sure to set the following environment variables:
+    - `ADMIN_PASSWORD`
+    - `DATABASE_HOST`
+    - `DATABASE_PORT`
+    - `USER_DATABASE_NAME`
+    - `USER_USERNAME`
+    - `APPLICATION_PASSWORD`
+    - `RUNNING_LOCALLY=True`
+- If running via Docker
+  - Set all environment variables in an `env` file.
+    - Do NOT check this file into Github. Ideally, store this file outside the cloned repository.
+  - Use the command `docker run -d -p 5000:5000 --env-file path/to/env imageName` 
+    - Replace `imageName` with the name of your built image.
+    - Replace `path/to/env` with the path to the env file you created in the previous step.
 - If using the developer UI, queries can be converted to code-friendly representations using the following code:
   ```python
   query = """query {
