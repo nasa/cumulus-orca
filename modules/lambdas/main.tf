@@ -425,12 +425,12 @@ resource "aws_lambda_function" "request_from_archive" {
 
   environment {
     variables = {
+      ARCHIVE_RECOVERY_QUEUE_URL = var.orca_sqs_archive_recovery_queue_id
       RESTORE_EXPIRE_DAYS        = var.orca_recovery_expiration_days
       RESTORE_REQUEST_RETRIES    = var.orca_recovery_retry_limit
       RESTORE_RETRY_SLEEP_SECS   = var.orca_recovery_retry_interval
       DEFAULT_RECOVERY_TYPE      = var.orca_default_recovery_type
       STATUS_UPDATE_QUEUE_URL    = var.orca_sqs_status_update_queue_id
-      ARCHIVE_RECOVERY_QUEUE_URL = var.orca_sqs_archive_recovery_queue_id
       ORCA_DEFAULT_BUCKET        = var.orca_default_bucket
       POWERTOOLS_SERVICE_NAME    = "orca.recovery"
       LOG_LEVEL                  = var.log_level

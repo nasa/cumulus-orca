@@ -105,6 +105,12 @@ variable "dlq_subscription_email" {
 }
 
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
+variable "archive_recovery_queue_message_retention_time_seconds" {
+  type        = number
+  description = "The number of seconds archive-recovery-queue SQS retains a message in seconds. Maximum value is 14 days."
+}
+
+
 variable "db_admin_username" {
   description = "Username for RDS database administrator authentication"
   type        = string
@@ -276,12 +282,6 @@ variable "staged_recovery_queue_message_retention_time_seconds" {
 variable "status_update_queue_message_retention_time_seconds" {
   type        = number
   description = "The number of seconds status_update_queue SQS retains a message in seconds. Maximum value is 14 days."
-}
-
-
-variable "archive_recovery_queue_message_retention_time_seconds" {
-  type        = number
-  description = "The number of seconds archive-recovery-queue SQS retains a message in seconds. Maximum value is 14 days."
 }
 
 

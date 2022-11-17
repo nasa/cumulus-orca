@@ -40,6 +40,7 @@ module "orca" {
   s3_secret_key            = var.s3_secret_key
 
   ## OPTIONAL
+  archive_recovery_queue_message_retention_time_seconds = var.archive_recovery_queue_message_retention_time_seconds
   db_admin_username                                     = var.db_admin_username
   db_name                                               = local.db_name
   db_user_name                                          = local.db_user_name
@@ -68,7 +69,6 @@ module "orca" {
   sqs_maximum_message_size                              = var.sqs_maximum_message_size
   staged_recovery_queue_message_retention_time_seconds  = var.staged_recovery_queue_message_retention_time_seconds
   status_update_queue_message_retention_time_seconds    = var.status_update_queue_message_retention_time_seconds
-  archive_recovery_queue_message_retention_time_seconds = var.archive_recovery_queue_message_retention_time_seconds
   vpc_endpoint_id                                       = var.vpc_endpoint_id
   log_level                                             = var.log_level
 }

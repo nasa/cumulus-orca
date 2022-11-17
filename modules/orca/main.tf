@@ -26,6 +26,8 @@ module "orca_lambdas" {
   db_connect_info_secret_arn                           = module.orca_secretsmanager.secretsmanager_arn
   orca_default_bucket                                  = var.orca_default_bucket
   orca_secretsmanager_s3_access_credentials_secret_arn = module.orca_secretsmanager.s3_access_credentials_secret_arn
+  orca_sqs_archive_recovery_queue_arn                  = module.orca_sqs.orca_sqs_archive_recovery_queue_arn
+  orca_sqs_archive_recovery_queue_id                   = module.orca_sqs.orca_sqs_archive_recovery_queue_id
   orca_sqs_internal_report_queue_id                    = module.orca_sqs.orca_sqs_internal_report_queue_id
   orca_sqs_metadata_queue_arn                          = module.orca_sqs.orca_sqs_metadata_queue_arn
   orca_sqs_metadata_queue_id                           = module.orca_sqs.orca_sqs_metadata_queue_id
@@ -34,8 +36,6 @@ module "orca_lambdas" {
   orca_sqs_staged_recovery_queue_arn                   = module.orca_sqs.orca_sqs_staged_recovery_queue_arn
   orca_sqs_status_update_queue_id                      = module.orca_sqs.orca_sqs_status_update_queue_id
   orca_sqs_status_update_queue_arn                     = module.orca_sqs.orca_sqs_status_update_queue_arn
-  orca_sqs_archive_recovery_queue_arn                  = module.orca_sqs.orca_sqs_archive_recovery_queue_arn
-  orca_sqs_archive_recovery_queue_id                   = module.orca_sqs.orca_sqs_archive_recovery_queue_id
   restore_object_role_arn                              = module.orca_iam.restore_object_role_arn
 
   ## OPTIONAL
@@ -195,6 +195,7 @@ module "orca_sqs" {
   orca_reports_bucket_name = var.orca_reports_bucket_name
 
   ## OPTIONAL
+  archive_recovery_queue_message_retention_time_seconds = var.archive_recovery_queue_message_retention_time_seconds
   internal_report_queue_message_retention_time_seconds  = var.internal_report_queue_message_retention_time_seconds
   metadata_queue_message_retention_time_seconds         = var.metadata_queue_message_retention_time_seconds
   orca_reconciliation_lambda_timeout                    = var.orca_reconciliation_lambda_timeout
@@ -203,7 +204,6 @@ module "orca_sqs" {
   sqs_maximum_message_size                              = var.sqs_maximum_message_size
   staged_recovery_queue_message_retention_time_seconds  = var.staged_recovery_queue_message_retention_time_seconds
   status_update_queue_message_retention_time_seconds    = var.status_update_queue_message_retention_time_seconds
-  archive_recovery_queue_message_retention_time_seconds = var.archive_recovery_queue_message_retention_time_seconds
 }
 
 ## orca_ecs - ecs module that sets up ecs cluster
