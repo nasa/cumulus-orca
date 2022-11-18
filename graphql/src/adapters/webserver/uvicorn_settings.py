@@ -8,7 +8,7 @@ class UvicornSettings(BaseSettings):
     """
     HOST: str = "0.0.0.0"
     PORT: int = 5000
-    DEV: bool = True if os.environ.get("ORCA_ENV", "development") == "development" else False
+    DEV: bool = True if os.environ.get("ORCA_ENV", "production") == "development" else False
 
 
 INSTANTIATED_WEBSERVER_SETTINGS = UvicornSettings()

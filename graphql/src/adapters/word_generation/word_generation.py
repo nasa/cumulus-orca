@@ -5,4 +5,5 @@ from src.use_cases.adapter_interfaces.word_generation import WordGenerationInter
 
 class UUIDWordGeneration(WordGenerationInterface):
     def get_random_word(self) -> str:
-        return uuid.uuid4().__str__()
+        word = uuid.uuid4().__str__()
+        return word[:len(word)//2]
