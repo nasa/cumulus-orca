@@ -6,6 +6,12 @@ variable "prefix" {
   description = "Prefix used to prepend to all object names and tags."
 }
 
+## REQUIRED
+variable "buckets" {
+  type        = map(object({ name = string, type = string }))
+  description = "S3 bucket locations for the various storage types being used."
+}
+
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
 variable "tags" {
   type        = map(string)
@@ -14,6 +20,11 @@ variable "tags" {
 
 ## Variables unique to ORCA
 ## OPTIONAL
+variable "archive_recovery_queue_message_retention_time_seconds" {
+  type        = number
+  description = "The number of seconds archive-recovery-queue SQS retains a message in seconds. Maximum value is 14 days."
+}
+
 variable "internal_report_queue_message_retention_time_seconds" {
   type        = number
   description = "The number of seconds internal-report-queue SQS retains a message in seconds. Maximum value is 14 days."

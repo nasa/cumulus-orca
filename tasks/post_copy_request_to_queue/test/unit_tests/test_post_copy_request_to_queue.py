@@ -3,6 +3,7 @@ Name: test_post_copy_request_to_queue.py
 Description: unit tests for post_copy_request_to_queue.py
 """
 import copy
+import json
 import os
 import random
 import time
@@ -56,13 +57,24 @@ class TestPostCopyRequestToQueue(TestCase):
 
     @patch("post_copy_request_to_queue.task")
     def test_handler_happy_path(self, mock_task: MagicMock):
-        key_path = uuid.uuid4().__str__()
-        bucket_name = uuid.uuid4().__str__()
-        event = {
+        key_path = f"{uuid.uuid4()}.ext"
+        bucket_name = f"{uuid.uuid4()}-bucket"
+
+        body_json = json.dumps({
             "Records": [
-                {"s3": {"object": {"key": key_path}, "bucket": {"name": bucket_name}}}
+                {
+                    "s3": {
+                        "bucket": {
+                            "name": bucket_name
+                        },
+                        "object": {
+                            "key": key_path
+                        }
+                    }
+                }
             ]
-        }
+        })
+        event = {"Records": [{"body": body_json}]}
         context = Mock()
 
         db_queue_url = uuid.uuid4().__str__()
@@ -148,7 +160,7 @@ class TestPostCopyRequestToQueue(TestCase):
                 clear=True,
             ):
                 handler(event, context)
-        self.assertEqual("Must be passed a single record. Was 2", str(cm.exception))
+        self.assertEqual("Must be passed as a single record. Was 2", str(cm.exception))
         mock_task.assert_not_called()
 
     @patch.dict(
@@ -271,32 +283,17 @@ class TestPostCopyRequestToQueue(TestCase):
 
     @patch("post_copy_request_to_queue.task")
     def test_handler_missing_record_properties_causes_error(self, mock_task: MagicMock):
+
         bad_events = [
             {
-                "event": {
-                    "Records": [
-                        {
-                            "s3": {
-                                "object": {},
-                                "bucket": {"name": uuid.uuid4().__str__()},
-                            }
-                        }
-                    ]
-                },
-                "key": "key",
+                "event": {"Records": [{"body": "{\"Records\": [{\"s3\": {\"bucket\": {\"name\": \"test-bucket\"},\
+                    \"object\": {}}}]}"}]},
+                "key": "key"
             },
             {
-                "event": {
-                    "Records": [
-                        {
-                            "s3": {
-                                "object": {"key": uuid.uuid4().__str__()},
-                                "bucket": {},
-                            }
-                        }
-                    ]
-                },
-                "key": "name",
+                "event": {"Records": [{"body": "{\"Records\": [{\"s3\": {\"bucket\": {},\
+                    \"object\": {\"key\": \"test.jpg\"}}}]}"}]},
+                "key": "name"
             },
         ]
         context = Mock()

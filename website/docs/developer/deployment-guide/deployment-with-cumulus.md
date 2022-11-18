@@ -90,32 +90,33 @@ module "orca" {
   rds_security_group_id    = var.rds_security_group_id
 
   ## OPTIONAL
-  # db_admin_username                                    = "postgres"
-  # default_multipart_chunksize_mb                       = 250
-  # log_level                                            = "INFO"
-  # metadata_queue_message_retention_time                = 777600
-  # orca_default_recovery_type                           = "Standard"
-  # orca_default_storage_class                           = "GLACIER"
-  # orca_delete_old_reconcile_jobs_frequency_cron        = "cron(0 0 ? * SUN *)"
-  # orca_ingest_lambda_memory_size                       = 2240
-  # orca_ingest_lambda_timeout                           = 600
-  # orca_internal_reconciliation_expiration_days         = 30
-  # orca_reconciliation_lambda_memory_size               = 128
-  # orca_reconciliation_lambda_timeout                   = 720
-  # orca_recovery_buckets                                = []
-  # orca_recovery_complete_filter_prefix                 = ""
-  # orca_recovery_expiration_days                        = 5
-  # orca_recovery_lambda_memory_size                     = 128
-  # orca_recovery_lambda_timeout                         = 720
-  # orca_recovery_retry_limit                            = 3
-  # orca_recovery_retry_interval                         = 1
-  # orca_recovery_retry_backoff                          = 2
-  # s3_inventory_queue_message_retention_time_seconds    = 432000
-  # s3_report_frequency                                  = "Daily"
-  # sqs_delay_time_seconds                               = 0
-  # sqs_maximum_message_size                             = 262144
-  # staged_recovery_queue_message_retention_time_seconds = 432000
-  # status_update_queue_message_retention_time_seconds   = 777600
+  # archive_recovery_queue_message_retention_time_seconds = 777600
+  # db_admin_username                                     = "postgres"
+  # default_multipart_chunksize_mb                        = 250
+  # log_level                                             = "INFO"
+  # metadata_queue_message_retention_time                 = 777600
+  # orca_default_recovery_type                            = "Standard"
+  # orca_default_storage_class                            = "GLACIER"
+  # orca_delete_old_reconcile_jobs_frequency_cron         = "cron(0 0 ? * SUN *)"
+  # orca_ingest_lambda_memory_size                        = 2240
+  # orca_ingest_lambda_timeout                            = 600
+  # orca_internal_reconciliation_expiration_days          = 30
+  # orca_reconciliation_lambda_memory_size                = 128
+  # orca_reconciliation_lambda_timeout                    = 720
+  # orca_recovery_buckets                                 = []
+  # orca_recovery_complete_filter_prefix                  = ""
+  # orca_recovery_expiration_days                         = 5
+  # orca_recovery_lambda_memory_size                      = 128
+  # orca_recovery_lambda_timeout                          = 720
+  # orca_recovery_retry_limit                             = 3
+  # orca_recovery_retry_interval                          = 1
+  # orca_recovery_retry_backoff                           = 2
+  # s3_inventory_queue_message_retention_time_seconds     = 432000
+  # s3_report_frequency                                   = "Daily"
+  # sqs_delay_time_seconds                                = 0
+  # sqs_maximum_message_size                              = 262144
+  # staged_recovery_queue_message_retention_time_seconds  = 432000
+  # status_update_queue_message_retention_time_seconds    = 777600
 
 
 }
@@ -537,35 +538,36 @@ variables is shown in the table below.
 
 | Variable                                              | Type          | Definition                                                                                                                     | Default
 | ----------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------ | ---------- |
-| `db_admin_username`                                   | string        | Username for RDS database administrator authentication.                                                                        | "postgres" |
-| `default_multipart_chunksize_mb`                      | number        | The default maximum size of chunks to use when copying. Can be overridden by collection config.                                | 250 |
-| `internal_report_queue_message_retention_time_seconds`| number        | Number of seconds the internal-report-queue SQS retains a message.                                                             | 432000 |
-| `metadata_queue_message_retention_time_seconds`       | number        | Number of seconds the metadata-queue fifo SQS retains a message.                                                               | 777600 |
-| `db_name`                                             | string        | The name of the Orca database within the RDS cluster. Any `-` in `prefix` will be replaced with `_`.                           | PREFIX_orca |
-| `db_user_name`                                        | string        | The name of the application user for the Orca database. Any `-` in `prefix` will be replaced with `_`.                         | PREFIX_orcauser |
-| `log_level`                                           | string        | Sets the verbose of powertools logger. Must be one of 'INFO', 'DEBUG', 'WARN', 'ERROR'. Defaults to 'INFO'.                    | "INFO" |
-| `orca_default_recovery_type`                          | string        | The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'                                               | "Standard" |
-| `orca_default_storage_class`                          | string        | The [class of storage](../../operator/storage-classes.md) to use when ingesting files. Can be overridden by collection config. | "GLACIER" |
-| `orca_delete_old_reconcile_jobs_frequency_cron`       | string        | Frequency cron for running the delete_old_reconcile_jobs lambda.                                                               | "cron(0 0 ? * SUN *)" |
-| `orca_ingest_lambda_memory_size`                      | number        | Amount of memory in MB the ORCA copy_to_archive lambda can use at runtime.                                                     | 2240 |
-| `orca_ingest_lambda_timeout`                          | number        | Timeout in number of seconds for ORCA copy_to_archive lambda.                                                                  | 600 |
-| `orca_internal_reconciliation_expiration_days`        | number        | Only reports updated before this many days ago will be deleted.                                                                | 30 |
-| `orca_reconciliation_lambda_memory_size`              | number        | Amount of memory in MB the ORCA reconciliation lambda can use at runtime.                                                      | 128 |
-| `orca_reconciliation_lambda_timeout`                  | number        | Timeout in number of seconds for ORCA reconciliation lambdas.                                                                  | 720 |
-| `orca_recovery_buckets`                               | List (string) | List of bucket names that ORCA has permissions to restore data to. Default is all in the `buckets` map.                        | [] |
-| `orca_recovery_complete_filter_prefix`                | string        | Specifies object key name prefix by the archive Bucket trigger.                                                                | "" |
-| `orca_recovery_expiration_days`                       | number        | Number of days a recovered file will remain available for copy.                                                                | 5 |
-| `orca_recovery_lambda_memory_size`                    | number        | Amount of memory in MB the ORCA recovery lambda can use at runtime.                                                            | 128 |
-| `orca_recovery_lambda_timeout`                        | number        | Timeout in number of seconds for ORCA recovery lambdas.                                                                        | 720 |
-| `orca_recovery_retry_limit`                           | number        | Maximum number of retries of a recovery failure before giving up.                                                              | 3 |
-| `orca_recovery_retry_interval`                        | number        | Number of seconds to wait between recovery failure retries.                                                                    | 1 |
-| `orca_recovery_retry_backoff`                         | number        | The multiplier by which the retry interval increases during each attempt.                                                      | 2 |
-| `s3_inventory_queue_message_retention_time_seconds`   | number        | The number of seconds s3-inventory-queue fifo SQS retains a message in seconds. Maximum value is 14 days.                      | 432000 |
-| `s3_report_frequency`                                 | string        | How often to generate s3 reports for internal reconciliation. `Daily` or `Weekly`                                              | Daily |
-| `sqs_delay_time_seconds`                              | number        | Number of seconds that the delivery of all messages in the queue will be delayed.                                              | 0 |
-| `sqs_maximum_message_size`                            | number        | The limit of how many bytes a message can contain before Amazon SQS rejects it.                                                | 262144 |
-| `staged_recovery_queue_message_retention_time_seconds`| number        | Number of seconds the staged-recovery-queue fifo SQS retains a message.                                                        | 432000 |
-| `status_update_queue_message_retention_time_seconds`  | number        | Number of seconds the status_update_queue fifo SQS retains a message.                                                          | 777600 |
+| `archive_recovery_queue_message_retention_time_seconds`| string       | The number of seconds archive-recovery-queue SQS retains a message in seconds.                                                 | 777600     |
+| `db_admin_username`                                    | string       | Username for RDS database administrator authentication.                                                                        | "postgres" |
+| `default_multipart_chunksize_mb`                       | number       | The default maximum size of chunks to use when copying. Can be overridden by collection config.                                | 250 |
+| `internal_report_queue_message_retention_time_seconds` | number       | Number of seconds the internal-report-queue SQS retains a message.                                                             | 432000 |
+| `metadata_queue_message_retention_time_seconds`        | number       | Number of seconds the metadata-queue fifo SQS retains a message.                                                               | 777600 |
+| `db_name`                                              | string       | The name of the Orca database within the RDS cluster. Any `-` in `prefix` will be replaced with `_`.                           | PREFIX_orca |
+| `db_user_name`                                         | string       | The name of the application user for the Orca database. Any `-` in `prefix` will be replaced with `_`.                         | PREFIX_orcauser |
+| `log_level`                                            | string       | Sets the verbose of powertools logger. Must be one of 'INFO', 'DEBUG', 'WARN', 'ERROR'. Defaults to 'INFO'.                    | "INFO" |
+| `orca_default_recovery_type`                           | string       | The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'                                               | "Standard" |
+| `orca_default_storage_class`                           | string       | The [class of storage](../../operator/storage-classes.md) to use when ingesting files. Can be overridden by collection config. | "GLACIER" |
+| `orca_delete_old_reconcile_jobs_frequency_cron`        | string       | Frequency cron for running the delete_old_reconcile_jobs lambda.                                                               | "cron(0 0 ? * SUN *)" |
+| `orca_ingest_lambda_memory_size`                       | number       | Amount of memory in MB the ORCA copy_to_archive lambda can use at runtime.                                                     | 2240 |
+| `orca_ingest_lambda_timeout`                           | number       | Timeout in number of seconds for ORCA copy_to_archive lambda.                                                                  | 600 |
+| `orca_internal_reconciliation_expiration_days`         | number       | Only reports updated before this many days ago will be deleted.                                                                | 30 |
+| `orca_reconciliation_lambda_memory_size`               | number       | Amount of memory in MB the ORCA reconciliation lambda can use at runtime.                                                      | 128 |
+| `orca_reconciliation_lambda_timeout`                   | number       | Timeout in number of seconds for ORCA reconciliation lambdas.                                                                  | 720 |
+| `orca_recovery_buckets`                                | List (string)| List of bucket names that ORCA has permissions to restore data to. Default is all in the `buckets` map.                        | [] |
+| `orca_recovery_complete_filter_prefix`                 | string       | Specifies object key name prefix by the archive Bucket trigger.                                                                | "" |
+| `orca_recovery_expiration_days`                        | number       | Number of days a recovered file will remain available for copy.                                                                | 5 |
+| `orca_recovery_lambda_memory_size`                     | number       | Amount of memory in MB the ORCA recovery lambda can use at runtime.                                                            | 128 |
+| `orca_recovery_lambda_timeout`                         | number       | Timeout in number of seconds for ORCA recovery lambdas.                                                                        | 720 |
+| `orca_recovery_retry_limit`                            | number       | Maximum number of retries of a recovery failure before giving up.                                                              | 3 |
+| `orca_recovery_retry_interval`                         | number       | Number of seconds to wait between recovery failure retries.                                                                    | 1 |
+| `orca_recovery_retry_backoff`                          | number       | The multiplier by which the retry interval increases during each attempt.                                                      | 2 |
+| `s3_inventory_queue_message_retention_time_seconds`    | number       | The number of seconds s3-inventory-queue fifo SQS retains a message in seconds. Maximum value is 14 days.                      | 432000 |
+| `s3_report_frequency`                                  | string       | How often to generate s3 reports for internal reconciliation. `Daily` or `Weekly`                                              | Daily |
+| `sqs_delay_time_seconds`                               | number       | Number of seconds that the delivery of all messages in the queue will be delayed.                                              | 0 |
+| `sqs_maximum_message_size`                             | number       | The limit of how many bytes a message can contain before Amazon SQS rejects it.                                                | 262144 |
+| `staged_recovery_queue_message_retention_time_seconds` | number       | Number of seconds the staged-recovery-queue fifo SQS retains a message.                                                        | 432000 |
+| `status_update_queue_message_retention_time_seconds`   | number       | Number of seconds the status_update_queue fifo SQS retains a message.                                                          | 777600 |
 
 
 ## ORCA Module Outputs
@@ -586,6 +588,8 @@ accessed using terraform dot syntax in the format of `module.orca.variable_name`
 | `orca_lambda_post_copy_request_to_queue_arn`            | AWS ARN of the ORCA post_copy_request_to_queue lambda. |
 | `orca_lambda_orca_catalog_reporting_arn`                | AWS ARN of the ORCA orca_catalog_reporting lambda. |
 | `orca_secretsmanager_arn`                               | The Amazon Resource Name (ARN) of the AWS secretsmanager |
+| `orca_sqs_archive_recovery_queue_arn`                   | The ARN of the archive-recovery-queue SQS |
+| `orca_sqs_archive_recovery_queue_id`                    | The URL of the archive-recovery-queue SQS |
 | `orca_sqs_metadata_queue_arn`                           | The ARN of the metadata-queue SQS |
 | `orca_sqs_metadata_queue_id`                            | The URL ID of the metadata-queue SQS |
 | `orca_sqs_staged_recovery_queue_arn`                    | The ARN of the staged-recovery-queue SQS |

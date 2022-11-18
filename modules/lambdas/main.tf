@@ -425,14 +425,15 @@ resource "aws_lambda_function" "request_from_archive" {
 
   environment {
     variables = {
-      RESTORE_EXPIRE_DAYS      = var.orca_recovery_expiration_days
-      RESTORE_REQUEST_RETRIES  = var.orca_recovery_retry_limit
-      RESTORE_RETRY_SLEEP_SECS = var.orca_recovery_retry_interval
-      DEFAULT_RECOVERY_TYPE    = var.orca_default_recovery_type
-      STATUS_UPDATE_QUEUE_URL  = var.orca_sqs_status_update_queue_id
-      ORCA_DEFAULT_BUCKET      = var.orca_default_bucket
-      POWERTOOLS_SERVICE_NAME  = "orca.recovery"
-      LOG_LEVEL                = var.log_level
+      ARCHIVE_RECOVERY_QUEUE_URL = var.orca_sqs_archive_recovery_queue_id
+      RESTORE_EXPIRE_DAYS        = var.orca_recovery_expiration_days
+      RESTORE_REQUEST_RETRIES    = var.orca_recovery_retry_limit
+      RESTORE_RETRY_SLEEP_SECS   = var.orca_recovery_retry_interval
+      DEFAULT_RECOVERY_TYPE      = var.orca_default_recovery_type
+      STATUS_UPDATE_QUEUE_URL    = var.orca_sqs_status_update_queue_id
+      ORCA_DEFAULT_BUCKET        = var.orca_default_bucket
+      POWERTOOLS_SERVICE_NAME    = "orca.recovery"
+      LOG_LEVEL                  = var.log_level
     }
   }
 }
@@ -640,32 +641,22 @@ resource "aws_lambda_function" "post_copy_request_to_queue" {
 
 # Additional resources needed by post_copy_request_to_queue
 # ------------------------------------------------------------------------------
-# Permissions to allow S3 trigger to invoke lambda
-resource "aws_lambda_permission" "allow_s3_trigger" {
-  ## REQUIRED
-  for_each      = toset(local.orca_buckets)
-  source_arn    = "arn:aws:s3:::${each.value}"
-  function_name = aws_lambda_function.post_copy_request_to_queue.function_name
-  ## OPTIONAL
-  principal = "s3.amazonaws.com"
-  action    = "lambda:InvokeFunction"
+resource "aws_lambda_event_source_mapping" "post_copy_request_to_queue_event_source_mapping" {
+  event_source_arn = var.orca_sqs_archive_recovery_queue_arn
+  function_name    = aws_lambda_function.post_copy_request_to_queue.arn
+  batch_size       = 1
 }
 
-resource "aws_s3_bucket_notification" "post_copy_request_to_queue_trigger" {
-  depends_on = [aws_lambda_permission.allow_s3_trigger]
-  # Creating loop so we can handle multiple orca buckets
-  for_each = toset(local.orca_buckets)
+# Permissions to allow SQS trigger to invoke lambda
+resource "aws_lambda_permission" "post_copy_request_to_queue_allow_sqs_trigger" {
   ## REQUIRED
-  bucket = each.value
-  ## OPTIONAL
-  lambda_function {
-    ## REQUIRED
-    lambda_function_arn = aws_lambda_function.post_copy_request_to_queue.arn
-    events              = ["s3:ObjectRestore:Completed"]
-    ## OPTIONAL
-    filter_prefix = var.orca_recovery_complete_filter_prefix
-  }
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.post_copy_request_to_queue.function_name
+  principal     = "sqs.amazonaws.com"
 
+  ## OPTIONAL
+  statement_id = "AllowExecutionFromSQS"
+  source_arn   = var.orca_sqs_archive_recovery_queue_arn
 }
 
 # orca_catalog_reporting - Returns reconcilliation report data

@@ -4,6 +4,7 @@ Description:  lambda function that queries the db for file metadata, updates the
 of recovered file to staged,
 and sends the staged file info to staged_recovery queue for further processing.
 """
+import json
 import os
 import random
 import time
@@ -331,11 +332,17 @@ def handler(event: Dict[str, Any], context: LambdaContext) -> None:
 
     records = event["Records"]
     if len(records) != 1:
-        raise ValueError(f"Must be passed a single record. Was {len(records)}")
+        raise ValueError(f"Must be passed as a single record. Was {len(records)}")
     record = records[0]
     LOGGER.debug(f"Event passed = {event}")
-    # grab the key_path and bucket name from record
-    key_path = record["s3"]["object"]["key"]
-    bucket_name = record["s3"]["bucket"]["name"]
-    # calling the task function to perform the work
-    task(key_path, bucket_name, *environment_args)
+
+    # pull the body out & json load it
+    record_json = json.loads(record["body"])
+
+    # AWS definitions are loose, hence looping is used to capture more than 1 record if present
+    for s3_record in record_json["Records"]:
+        # grab the key_path and bucket name from record
+        key_path = s3_record["s3"]["object"]["key"]
+        bucket_name = s3_record["s3"]["bucket"]["name"]
+        # calling the task function to perform the work
+        task(key_path, bucket_name, *environment_args)
