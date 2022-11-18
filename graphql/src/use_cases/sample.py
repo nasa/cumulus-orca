@@ -27,7 +27,7 @@ class Test:
         return EdgeCursor.encode_cursor(**{"word": echo.word})
 
     def get_echo(self, word: str) -> Edge[entities.echo.Echo]:
-        if word is None or word is "":
+        if word is None or word == "":
             word = self.word_generator.get_random_word()
 
         if random.randint(0, 10) == 5:
