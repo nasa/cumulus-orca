@@ -46,7 +46,7 @@ and includes an additional section for migration notes.
 ### Added
 - *ORCA-336*
   - Added a new standard SQS between archive ORCA bucket and `post_copy_request_to_queue` lambda so that the bucket now triggers the SQS upon successful object retrieval from glacier.
-- *ORCA-554*, *ORCA-561* GraphQL image and service will now be deployed by TF.
+- *ORCA-554*, *ORCA-561*, *ORCA-579* GraphQL image, service, and Load Balancer will now be deployed by TF.
 
 ### Migration Notes
 - If utilizing the `copied_to_glacier` [output property](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/tasks/copy_to_glacier/schemas/output.json#L47) of `copy_to_glacier`, 

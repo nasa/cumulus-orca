@@ -16,6 +16,11 @@ variable "prefix" {
   description = "Prefix used to prepend to all object names and tags."
 }
 
+variable "vpc_id" {
+  type        = string
+  description = "Virtual Private Cloud AWS ID"
+}
+
 ## OPTIONAL
 variable "tags" {
   type        = map(string)
@@ -27,9 +32,4 @@ variable "tags" {
 variable "ecs_cluster_id" {
   type        = string
   description = "ID of the ECS cluster in AWS."
-}
-
-variable "vpc_postgres_ingress_all_egress_id" {
-  type        = string
-  description = "PostgreSQL security group id"
 }

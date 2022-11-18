@@ -232,6 +232,7 @@ module "orca_graph_ql" {
   lambda_subnet_ids        = var.lambda_subnet_ids
   permissions_boundary_arn = var.permissions_boundary_arn
   prefix                   = var.prefix
+  vpc_id                   = var.vpc_id
 
   ## OPTIONAL
   tags = var.tags
@@ -241,7 +242,6 @@ module "orca_graph_ql" {
   ## --------------------------
   ## REQUIRED
   ecs_cluster_id                     = module.orca_ecs.ecs_cluster_id
-  vpc_postgres_ingress_all_egress_id = module.orca_lambdas.vpc_postgres_ingress_all_egress_id
 }
 
 ## orca_api_gateway - api gateway module
