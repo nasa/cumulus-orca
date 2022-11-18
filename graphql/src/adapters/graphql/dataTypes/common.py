@@ -1,12 +1,7 @@
 import traceback
 
-from dataclasses import dataclass
-from typing import Generic
-
 # noinspection PyPackageRequirements
 import strawberry
-
-from src.entities.common import GenericType
 
 
 # alternate error logic approaches:
