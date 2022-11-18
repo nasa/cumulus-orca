@@ -338,14 +338,11 @@ def handler(event: Dict[str, Any], context: LambdaContext) -> None:
 
     # pull the body out & json load it
     record_json = json.loads(record["body"])
-    s3_record = record_json["Records"]
 
-    # https://docs.aws.amazon.com/AmazonS3/latest/userguide/NotificationHowTo.html
-    if len(s3_record) != 1:
-        raise ValueError(f"Must be passed as a single record. Was {len(s3_record)}")
-
-    # grab the key_path and bucket name from record
-    key_path = s3_record[0]["s3"]["object"]["key"]
-    bucket_name = s3_record[0]["s3"]["bucket"]["name"]
-    # calling the task function to perform the work
-    task(key_path, bucket_name, *environment_args)
+    # AWS definitions are loose, hence looping is used to capture more than 1 record if present
+    for s3_record in record_json["Records"]:
+        # grab the key_path and bucket name from record
+        key_path = s3_record["s3"]["object"]["key"]
+        bucket_name = s3_record["s3"]["bucket"]["name"]
+        # calling the task function to perform the work
+        task(key_path, bucket_name, *environment_args)
