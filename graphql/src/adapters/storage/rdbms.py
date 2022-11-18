@@ -7,7 +7,7 @@ from orca_shared.database import shared_db
 from sqlalchemy import text, create_engine
 from sqlalchemy.future import Connection
 
-from src.adapters.graphql.initialized_adapters.logger_provider import logger_provider
+from src.adapters.graphql.initialized_adapters.logger_provider import static_logger_provider
 from src.use_cases.adapter_interfaces.storage import StorageMetadataInterface
 
 
@@ -47,7 +47,7 @@ class StorageAdapterRDBMS(StorageMetadataInterface):
 
         # If table exists get the latest version from the table
         if self.app_version_table_exists(connection):
-            logger_provider.get_logger().debug("Getting current schema version from table.")
+            static_logger_provider.get_logger().debug("Getting current schema version from table.")
             results = connection.execute(self.get_schema_version_sql())
             # todo: Remove this loop and raise error if more than one row is present.
             for row in results.fetchall():
@@ -65,13 +65,13 @@ class StorageAdapterRDBMS(StorageMetadataInterface):
         Returns:
             True if ORCA schema_version table exists.
         """
-        logger_provider.get_logger().debug("Checking for schema_versions table.")
+        static_logger_provider.get_logger().debug("Checking for schema_versions table.")
         results = connection.execute(self.app_version_table_exists_sql())
         # todo: Remove this loop and raise error if more than one row is present.
         for row in results.fetchall():
             table_exists = row[0]
 
-        logger_provider.get_logger().debug(f"schema_versions table exists {table_exists}")
+        static_logger_provider.get_logger().debug(f"schema_versions table exists {table_exists}")
 
         return table_exists
 
