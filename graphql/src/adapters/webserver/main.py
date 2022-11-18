@@ -22,5 +22,6 @@ if __name__ == "__main__":
         host=INSTANTIATED_WEBSERVER_SETTINGS.HOST,
         port=INSTANTIATED_WEBSERVER_SETTINGS.PORT,
         # Can only enable 'reload' functionality by passing as an import string.
+        # todo: This doesn't catch changes to other modules.
         reload=INSTANTIATED_WEBSERVER_SETTINGS.DEV
     )

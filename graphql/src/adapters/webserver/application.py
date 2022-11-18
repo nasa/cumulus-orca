@@ -4,7 +4,6 @@ from src.adapters.graphql import initialized_adapters
 from src.adapters.graphql.initialized_adapters import logger_provider
 from src.adapters.logger_provider.basic import BasicLoggerProvider
 from src.adapters.webserver.uvicorn_settings import INSTANTIATED_WEBSERVER_SETTINGS
-from src.use_cases.adapter_interfaces.logger_provider import LoggerProviderInterface
 
 
 def initialize_logger_provider():
@@ -34,5 +33,4 @@ initialize_adapters()
 # Don't start setting up fastapi/graphql app until adapters are ready to be referenced.
 from src.adapters.api.fastapi import create_fastapi_app
 
-# In a separate file to enable uvicorn.run to pull in statically-set properties such as adapters.
 application = create_fastapi_app()

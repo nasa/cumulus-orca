@@ -1,5 +1,4 @@
 # todo: largely copy-paste. Rethink, considering previous prototypes.
-import logging
 from abc import abstractmethod
 from enum import Enum
 
