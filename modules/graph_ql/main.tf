@@ -157,7 +157,7 @@ data "aws_iam_policy_document" "assume_ecs_tasks_role_policy_document" {
   }
 }
 
-# IAM role that tasks can use to make API requests to authorized AWS services.
+# IAM role that tasks can use to make API requests to authorized AWS services. If you make a boto3 call, this is what carries it out.
 resource "aws_iam_role" "orca_ecs_tasks_role" {
   name                 = "${var.prefix}_orca_ecs_tasks_role"
   assume_role_policy   = data.aws_iam_policy_document.assume_ecs_tasks_role_policy_document.json
