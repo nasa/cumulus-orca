@@ -192,7 +192,7 @@ resource "aws_ecs_task_definition" "gql_task" {
 [
   {
     "name": "orca-gql",
-    "image": "ghcr.io/nasa/cumulus-orca/graphql:0.0.20",
+    "image": "ghcr.io/nasa/cumulus-orca/graphql:0.0.21",
     "cpu": 512,
     "memory": 256,
     "networkMode": "awsvpc",
@@ -206,6 +206,10 @@ resource "aws_ecs_task_definition" "gql_task" {
       {
         "name": "PORT",
         "value": "${local.graphql_port}"
+      },
+      {
+        "name": "DB_CONNECT_INFO_SECRET_ARN",
+        "value": "${var.db_connect_info_secret_arn}"
       }
     ],
     "logConfiguration": {

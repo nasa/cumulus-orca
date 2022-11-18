@@ -237,7 +237,8 @@ module "orca_graph_ql" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  ecs_cluster_id                     = module.orca_ecs.ecs_cluster_id
+  db_connect_info_secret_arn = module.orca_secretsmanager.secretsmanager_arn
+  ecs_cluster_id             = module.orca_ecs.ecs_cluster_id
 }
 
 ## orca_api_gateway - api gateway module

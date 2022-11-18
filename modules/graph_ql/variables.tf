@@ -29,6 +29,11 @@ variable "tags" {
 
 ## Variables unique to ORCA
 ## REQUIRED
+variable "db_connect_info_secret_arn" {
+  type        = string
+  description = "Secret ARN of the AWS secretsmanager secret for connecting to the database."
+}
+
 variable "ecs_cluster_id" {
   type        = string
   description = "ID of the ECS cluster in AWS."
