@@ -233,10 +233,10 @@ module "orca_ecs" {
   tags = var.tags
 }
 
-## orca_graph_ql - graphql module that sets up centralized db code
+## orca_graphql_1 - graphql module that sets up centralized db code
 ## =============================
-module "orca_graph_ql" {
-  source     = "../graph_ql"
+module "orca_graphql_1" {
+  source     = "../graphql_1"
   depends_on = [module.orca_lambdas, module.orca_ecs, module.orca_graphql_0, module.orca_secretsmanager] ## secretsmanager sets up db connection secrets.
   ## --------------------------
   ## Cumulus Variables
@@ -263,7 +263,7 @@ module "orca_graph_ql" {
 ## =============================================================================
 module "orca_api_gateway" {
   depends_on = [
-    module.orca_lambdas, module.orca_graph_ql
+    module.orca_lambdas
   ]
   source = "../api-gateway"
   ## --------------------------
