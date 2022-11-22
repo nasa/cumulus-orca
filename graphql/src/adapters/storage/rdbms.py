@@ -1,4 +1,3 @@
-# todo: largely copy-paste. Rethink, considering previous prototypes.
 from abc import abstractmethod
 from enum import Enum
 
@@ -18,12 +17,26 @@ class StorageAdapterRDBMS(StorageMetadataInterface):
 
     @abstractmethod
     def create_admin_uri(self,
-                         database_level_override: AccessLevel = None):
+                         database_level_override: AccessLevel = None) -> str:
+        """
+        Creates a URI that can be used to connect to the database as the admin user.
+
+        Args:
+            database_level_override:
+                Default `admin`. If `user`, sets up URI for user database instead of admin.
+
+        Returns: The URI for use in sqlalchemy connections.
+        """
         # abstract to allow other RDBMS technologies
         raise NotImplementedError()
 
     @abstractmethod
-    def create_user_uri(self):
+    def create_user_uri(self) -> str:
+        """
+        Creates a URI that can be used to connect to the database as the application user.
+
+        Returns: The URI for use in sqlalchemy connections.
+        """
         # abstract to allow other RDBMS technologies
         raise NotImplementedError()
 

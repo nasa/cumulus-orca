@@ -14,7 +14,7 @@ data "aws_iam_policy_document" "assume_gql_tasks_role_policy_document" {
 
 data "aws_iam_policy_document" "gql_tasks_role_policy_document" {
   statement {
-    actions   = ["sts:AssumeRole"] # todo: needed?
+    actions   = ["sts:AssumeRole"]
     resources = ["*"]
   }
   statement {

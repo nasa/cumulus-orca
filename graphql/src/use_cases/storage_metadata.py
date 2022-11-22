@@ -1,10 +1,5 @@
-import logging
-
 from src.entities.storage_metadata import StorageSchemaVersion
 from src.use_cases.adapter_interfaces.storage import StorageMetadataInterface
-
-
-# todo: largely copy-paste. Rethink, considering previous prototypes.
 
 
 class StorageMetadata:

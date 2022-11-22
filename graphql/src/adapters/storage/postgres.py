@@ -14,11 +14,14 @@ class StorageAdapterPostgres(StorageAdapterRDBMS):
     def create_admin_uri(self,
                          database_level_override: StorageAdapterRDBMS.AccessLevel = None) -> str:
         """
-        todo
-        :param database_level_override:
-        :return:
-        """
+        Creates a URI that can be used to connect to the database as the admin user.
 
+        Args:
+            database_level_override:
+                Default `admin`. If `user`, sets up URI for user database instead of admin.
+
+        Returns: The URI for use in sqlalchemy connections.
+        """
         if database_level_override is None:
             database_name_override = None
         elif database_level_override == StorageAdapterRDBMS.AccessLevel.admin:
@@ -33,8 +36,9 @@ class StorageAdapterPostgres(StorageAdapterRDBMS):
 
     def create_user_uri(self) -> str:
         """
-        todo
-        :return:
+        Creates a URI that can be used to connect to the database as the application user.
+
+        Returns: The URI for use in sqlalchemy connections.
         """
         return create_postgres_connection_uri.create_user_uri(
             self.db_connect_info, static_logger_provider.get_logger())
