@@ -134,7 +134,7 @@ resource "aws_lb_listener" "gql_app_lb_listener" {
 data "aws_iam_policy_document" "gql_task_execution_policy_document" {
   statement {
     actions   = ["sts:AssumeRole"]
-    resources = [aws_iam_role.orca_ecs_tasks_role.arn]
+    resources = [var.gql_tasks_role_arn]
   }
   statement {
     actions = [
@@ -147,7 +147,7 @@ data "aws_iam_policy_document" "gql_task_execution_policy_document" {
   }
 }
 
-data "aws_iam_policy_document" "assume_ecs_tasks_role_policy_document" {
+data "aws_iam_policy_document" "assume_ecs_task_execution_role_policy_document" {
   statement {
     principals {
       type        = "Service"
@@ -155,14 +155,6 @@ data "aws_iam_policy_document" "assume_ecs_tasks_role_policy_document" {
     }
     actions = ["sts:AssumeRole"]
   }
-}
-
-# IAM role that tasks can use to make API requests to authorized AWS services. If you make a boto3 call, this is what carries it out.
-resource "aws_iam_role" "orca_ecs_tasks_role" {
-  name                 = "${var.prefix}_orca_ecs_tasks_role"
-  assume_role_policy   = data.aws_iam_policy_document.assume_ecs_tasks_role_policy_document.json
-  permissions_boundary = var.permissions_boundary_arn
-  tags                 = var.tags
 }
 
 resource "aws_iam_role_policy" "gql_task_role_policy" {
@@ -173,7 +165,7 @@ resource "aws_iam_role_policy" "gql_task_role_policy" {
 
 resource "aws_iam_role" "orca_ecs_task_execution_role" {
   name                 = "${var.prefix}_orca_ecs_task_execution_role"
-  assume_role_policy   = data.aws_iam_policy_document.assume_ecs_tasks_role_policy_document.json
+  assume_role_policy   = data.aws_iam_policy_document.assume_ecs_task_execution_role_policy_document.json
   permissions_boundary = var.permissions_boundary_arn
   tags                 = var.tags
 }
@@ -185,7 +177,7 @@ resource "aws_ecs_task_definition" "gql_task" {
   requires_compatibilities = ["FARGATE"]
   cpu                      = "1024"
   memory                   = "2048"
-  task_role_arn            = aws_iam_role.orca_ecs_tasks_role.arn
+  task_role_arn            = var.gql_tasks_role_arn
   execution_role_arn       = aws_iam_role.orca_ecs_task_execution_role.arn
   tags                     = var.tags
   container_definitions    = <<DEFINITION

@@ -97,7 +97,7 @@ data "aws_iam_policy_document" "orca_kms_key_policy" {
 
     principals {
       type        = "AWS"
-      identifiers = [var.restore_object_role_arn]
+      identifiers = [var.restore_object_role_arn, var.gql_tasks_role_arn]
     }
   }
 }
