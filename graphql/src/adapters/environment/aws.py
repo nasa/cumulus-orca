@@ -20,6 +20,12 @@ class AWSEnvironment(EnvironmentInterface):
 
     def get_db_connect_info(self, logger_provider: LoggerProviderInterface) \
             -> PostgresConnectionInfo:
+        """
+        Args:
+            logger_provider: The logger provider to use.
+
+        Returns: A standardized object containing connection info.
+        """
         db_connect_info = get_configuration(
             self.INSTANTIATED_AWS_SETTINGS.DB_CONNECT_INFO_SECRET_ARN,
             logger_provider.get_logger())

@@ -10,3 +10,9 @@ class EnvironmentInterface:
 
     def get_db_connect_info(
         self, logger_provider: LoggerProviderInterface) -> PostgresConnectionInfo: ...
+    """
+    Args:
+        logger_provider: The logger provider to use.
+        
+    Returns: A standardized object containing connection info.
+    """

@@ -18,7 +18,6 @@ if __name__ == "__main__":
         # A fresh module instance means the application cannot be set outside a static context.
         # Note that relative paths are not properly supported for this path.
         app="application:application",
-        # _create_application(),  # "src.adapters.webserver.application:application"
         host=INSTANTIATED_WEBSERVER_SETTINGS.HOST,
         port=INSTANTIATED_WEBSERVER_SETTINGS.PORT,
         # Can only enable 'reload' functionality by passing as an import string.

@@ -26,6 +26,12 @@ class LocalEnvironment(EnvironmentInterface):
 
     def get_db_connect_info(self, logger_provider: LoggerProviderInterface) \
             -> PostgresConnectionInfo:
+        """
+        Args:
+            logger_provider: The logger provider to use.
+
+        Returns: A standardized object containing connection info.
+        """
         db_connect_info = PostgresConnectionInfo(
             admin_database_name=self.INSTANTIATED_LOCAL_SETTINGS.ADMIN_DATABASE_NAME,
             admin_password=self.INSTANTIATED_LOCAL_SETTINGS.ADMIN_PASSWORD,
