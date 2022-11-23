@@ -1,6 +1,8 @@
 import json
+import logging
 
 from orca_shared.database.entities import PostgresConnectionInfo
+from orca_shared.database.use_cases.validation import validate_config
 
 from src.adapters.graphql import initialized_adapters
 from src.adapters.graphql.initialized_adapters import logger_provider
@@ -36,6 +38,10 @@ db_connect_info = PostgresConnectionInfo(
     user_database_name=db_connect_info["user_database"],
     host=db_connect_info["host"],
     port=db_connect_info["port"],
+)
+validate_config(
+    db_connect_info,
+    initialized_adapters.logger_provider.static_logger_provider.get_logger()
 )
 
 initialize_adapters()

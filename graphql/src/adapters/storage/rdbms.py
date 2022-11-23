@@ -80,7 +80,7 @@ class StorageAdapterRDBMS(StorageMetadataInterface):
             True if ORCA schema_version table exists.
         """
         LOGGER.debug(
-            "Checking for schema_versions table.")  # todo: init at top of file
+            "Checking for schema_versions table.")
         results = connection.execute(self.app_version_table_exists_sql())
         # todo: Remove this loop and raise error if more than one row is present.
         for row in results.fetchall():
