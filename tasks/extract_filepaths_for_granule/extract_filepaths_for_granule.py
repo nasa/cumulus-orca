@@ -82,6 +82,7 @@ def task(event):
         level = "event['input']"
         grans = []
         for ev_granule in event["input"]["granules"]:
+            recovery_bucket_override = ev_granule.get("recoverybucketoverride", None)
             gran = ev_granule.copy()
             files = []
             level = "event['input']['granules'][]"
@@ -95,13 +96,18 @@ def task(event):
                     LOGGER.debug(f"File {file_name} will be restored")
                     file_key = afile["key"]
                     LOGGER.debug(f"Retrieving information for {file_key}")
-                    matching_regex = next(
-                        filter(lambda key: re.compile(key).match(file_name), regex_buckets),
-                        None
-                    )
-                    if matching_regex is None:
-                        raise ExtractFilePathsError(f"No matching regex for '{file_key}'")
-                    destination_bucket = regex_buckets[matching_regex]
+
+                    if recovery_bucket_override is not None:
+                        destination_bucket = recovery_bucket_override
+                    else:
+                        matching_regex = next(
+                            filter(lambda key: re.compile(key).match(file_name), regex_buckets),
+                            None
+                        )
+                        if matching_regex is None:
+                            raise ExtractFilePathsError(f"No matching regex for '{file_key}'")
+                        destination_bucket = regex_buckets[matching_regex]
+
                     LOGGER.debug(
                         f"Found retrieval destination {destination_bucket} for {file_name}"
                     )
@@ -120,6 +126,24 @@ def task(event):
     return result
 
 
+# def get_recovery_bucket_override(event):
+#     """
+#     Gets the recovery bucket if specified, otherwise returns None.
+
+#         Args:
+#             event (dict): passed through from the handler
+
+#         Returns:
+#             Recovery bucket name if present, otherwise None
+
+#         Raises:
+#             None
+#     """
+#     try:
+#         recovery_bucket_override = event["input"]["granules"].get("recoverybucketoverride", None)
+#         return recovery_bucket_override
+#     except Exception as ex:
+#         raise(ex)
 def get_regex_buckets(event) -> Dict[str, str]:
     """
     Gets a dict of regular expressions and the corresponding archive bucket for files
@@ -203,6 +227,7 @@ def handler(event: Dict[str, Union[str, int]],
                             "granules":[
                                 {
                                     "granuleId":"granxyz",
+                                    "recoverybucketoverride": "test-recovery-bucket"
                                     "version":"006",
                                     "files":[
                                     {

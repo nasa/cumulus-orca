@@ -123,6 +123,7 @@ Lambda handler. Extracts the key's for a granule from an input dict.
   "granules":[
   {
   "granuleId":"granxyz",
+- `"recoverybucketoverride"` - "test-recovery-bucket"
   "version":"006",
   "files":[
   {
