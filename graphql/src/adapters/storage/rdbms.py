@@ -8,6 +8,8 @@ from sqlalchemy.future import Connection
 from src.adapters.graphql.initialized_adapters.logger_provider import static_logger_provider
 from src.use_cases.adapter_interfaces.storage import StorageMetadataInterface
 
+LOGGER = static_logger_provider.get_logger()
+
 
 class StorageAdapterRDBMS(StorageMetadataInterface):
     class AccessLevel(Enum):
@@ -59,7 +61,7 @@ class StorageAdapterRDBMS(StorageMetadataInterface):
 
         # If table exists get the latest version from the table
         if self.app_version_table_exists(connection):
-            static_logger_provider.get_logger().debug("Getting current schema version from table.")
+            LOGGER.debug("Getting current schema version from table.")
             results = connection.execute(self.get_schema_version_sql())
             # todo: Remove this loop and raise error if more than one row is present.
             for row in results.fetchall():
@@ -77,13 +79,14 @@ class StorageAdapterRDBMS(StorageMetadataInterface):
         Returns:
             True if ORCA schema_version table exists.
         """
-        static_logger_provider.get_logger().debug("Checking for schema_versions table.")
+        LOGGER.debug(
+            "Checking for schema_versions table.")  # todo: init at top of file
         results = connection.execute(self.app_version_table_exists_sql())
         # todo: Remove this loop and raise error if more than one row is present.
         for row in results.fetchall():
             table_exists = row[0]
 
-        static_logger_provider.get_logger().debug(f"schema_versions table exists {table_exists}")
+        LOGGER.debug(f"schema_versions table exists {table_exists}")
 
         return table_exists
 

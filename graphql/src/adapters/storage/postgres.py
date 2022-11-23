@@ -5,8 +5,11 @@ from sqlalchemy import text
 from src.adapters.graphql.initialized_adapters.logger_provider import static_logger_provider
 from src.adapters.storage.rdbms import StorageAdapterRDBMS
 
+LOGGER = static_logger_provider.get_logger()
+
 
 class StorageAdapterPostgres(StorageAdapterRDBMS):
+
     def __init__(self, db_connect_info: PostgresConnectionInfo):
         self.db_connect_info = db_connect_info
         super(StorageAdapterPostgres, self).__init__()
@@ -32,7 +35,7 @@ class StorageAdapterPostgres(StorageAdapterRDBMS):
             raise NotImplementedError(f"Access level '{database_level_override}' not supported.")
 
         return create_postgres_connection_uri.create_admin_uri(
-            self.db_connect_info, static_logger_provider.get_logger(), database_name_override)
+            self.db_connect_info, LOGGER, database_name_override)
 
     def create_user_uri(self) -> str:
         """
@@ -41,7 +44,7 @@ class StorageAdapterPostgres(StorageAdapterRDBMS):
         Returns: The URI for use in sqlalchemy connections.
         """
         return create_postgres_connection_uri.create_user_uri(
-            self.db_connect_info, static_logger_provider.get_logger())
+            self.db_connect_info, LOGGER)
 
     @staticmethod
     def get_schema_version_sql() -> text:  # pragma: no cover
