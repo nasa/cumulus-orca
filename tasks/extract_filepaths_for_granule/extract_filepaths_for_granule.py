@@ -126,24 +126,6 @@ def task(event):
     return result
 
 
-# def get_recovery_bucket_override(event):
-#     """
-#     Gets the recovery bucket if specified, otherwise returns None.
-
-#         Args:
-#             event (dict): passed through from the handler
-
-#         Returns:
-#             Recovery bucket name if present, otherwise None
-
-#         Raises:
-#             None
-#     """
-#     try:
-#         recovery_bucket_override = event["input"]["granules"].get("recoverybucketoverride", None)
-#         return recovery_bucket_override
-#     except Exception as ex:
-#         raise(ex)
 def get_regex_buckets(event) -> Dict[str, str]:
     """
     Gets a dict of regular expressions and the corresponding archive bucket for files
