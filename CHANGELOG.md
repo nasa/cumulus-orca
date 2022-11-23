@@ -47,12 +47,38 @@ and includes an additional section for migration notes.
 - *ORCA-336*
   - Added a new standard SQS between archive ORCA bucket and `post_copy_request_to_queue` lambda so that the bucket now triggers the SQS upon successful object retrieval from glacier.
 - *ORCA-554*, *ORCA-561*, *ORCA-579* GraphQL image, service, and Load Balancer will now be deployed by TF.
+- *ORCA-351*
+  - Added new optional `recoverybucketoverride` property to `extract_filepaths_for_granule` input schema so that data managers can now specify their own buckets for recovery if desired.
 
 ### Migration Notes
 - If utilizing the `copied_to_glacier` [output property](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/tasks/copy_to_glacier/schemas/output.json#L47) of `copy_to_glacier`, 
   rename to new key `copied_to_orca`.
 - If utilizing the `orca_lambda_copy_to_glacier_arn` [output of Terraform](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/outputs.tf#L8), likely as a means of pulling the lambda into your workflows, 
   rename to new key `orca_lambda_copy_to_archive_arn`
+- Use the optional `recoverybucketoverride` property in `extract_filepaths_for_granule` input schema to specify a recovery bucket. See example below.
+
+```json
+
+{
+  "input":
+    {
+      "granules": [
+        {
+          "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
+          "recoverybucketoverride": "<YOUR_RECOVERY_BUCKET>",
+          "files": [
+            {
+              "key": "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5",
+              "bucket": "cumulus-test-sandbox-protected",
+              "fileName": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5",
+            }
+          ]
+        }
+      ]
+  }
+}
+
+```
 
 ## [6.0.2]
 ### Changed

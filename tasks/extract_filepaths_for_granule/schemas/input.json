@@ -11,7 +11,7 @@
             "type": "object",
             "properties": {
               "recoverybucketoverride": {
-                "description": "The rocovery bucket to store recovered files",
+                "description": "The user specified recovery S3 bucket to store recovered files",
                 "type": ["string", "null"]
               },
               "granuleId": {
