@@ -39,6 +39,11 @@ variable "ecs_cluster_id" {
   description = "ID of the ECS cluster in AWS."
 }
 
+variable "gql_ecs_task_execution_role_arn" {
+  type        = string
+  description = "The ARN of the role used by the ECS Task runnger."
+}
+
 variable "gql_tasks_role_arn" {
   type        = string
   description = "The ARN of the role used by the code within the Graphql ECS Task."

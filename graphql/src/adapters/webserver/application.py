@@ -1,5 +1,7 @@
-from src.adapters.environment.aws import AWSEnvironment
-from src.adapters.environment.local import LocalEnvironment
+import json
+
+from orca_shared.database.entities import PostgresConnectionInfo
+
 from src.adapters.graphql import initialized_adapters
 from src.adapters.graphql.initialized_adapters import logger_provider
 from src.adapters.logger_provider.basic import BasicLoggerProvider
@@ -20,13 +22,21 @@ def initialize_adapters():
 
 
 initialize_logger_provider()
-if INSTANTIATED_WEBSERVER_SETTINGS.RUNNING_LOCALLY:
-    environment = LocalEnvironment()
-else:
-    environment = AWSEnvironment()
 
-db_connect_info = environment.get_db_connect_info(
-    initialized_adapters.logger_provider.static_logger_provider)
+# todo: Make the loads and init a separate function in shared_db
+db_connect_info = json.loads(
+    INSTANTIATED_WEBSERVER_SETTINGS.DB_CONNECT_INFO
+)
+db_connect_info = PostgresConnectionInfo(
+    admin_database_name=db_connect_info["admin_database"],
+    admin_username=db_connect_info["admin_username"],
+    admin_password=db_connect_info["admin_password"],
+    user_username=db_connect_info["user_username"],
+    user_password=db_connect_info["user_password"],
+    user_database_name=db_connect_info["user_database"],
+    host=db_connect_info["host"],
+    port=db_connect_info["port"],
+)
 
 initialize_adapters()
 

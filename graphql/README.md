@@ -32,13 +32,8 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 - Entry point is `src/adapters/webserver/main.py`, 
   which will start the developer UI at http://127.0.0.1:5000/graphql by default
   - Make sure to set the following environment variables:
-    - `ADMIN_PASSWORD`
-    - `DATABASE_HOST`
-    - `DATABASE_PORT`
-    - `USER_DATABASE_NAME`
-    - `USER_USERNAME`
-    - `APPLICATION_PASSWORD`
-    - `RUNNING_LOCALLY=True`
+    - `DB_CONNECT_INFO` = {"admin_database": "postgres", "admin_password": "{your admin password}", "admin_username": "postgres", "host": "localhost", "port": "5432", "user_database": "{PREFIX}_orca", "user_password": "{your user password}", "user_username": "{PREFIX}_orcauser"}
+      - Replacing placeholders in `{brackets}` with proper values.
 - If running via Docker
   - Set all environment variables in an `env` file.
     - Do NOT check this file into Github. Ideally, store this file outside the cloned repository.

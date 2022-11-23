@@ -131,45 +131,6 @@ resource "aws_lb_listener" "gql_app_lb_listener" {
 # }
 
 # ecs service and task
-data "aws_iam_policy_document" "gql_task_execution_policy_document" {
-  statement {
-    actions   = ["sts:AssumeRole"]
-    resources = [var.gql_tasks_role_arn]
-  }
-  statement {
-    actions = [
-      "logs:CreateLogGroup",
-      "logs:CreateLogStream",
-      "logs:DescribeLogStreams",
-      "logs:PutLogEvents"
-    ]
-    resources = ["*"]
-  }
-}
-
-data "aws_iam_policy_document" "assume_ecs_task_execution_role_policy_document" {
-  statement {
-    principals {
-      type        = "Service"
-      identifiers = ["ecs-tasks.amazonaws.com"]
-    }
-    actions = ["sts:AssumeRole"]
-  }
-}
-
-resource "aws_iam_role_policy" "gql_task_role_policy" {
-  name   = "${var.prefix}_orca_gql_task_role_policy"
-  role   = aws_iam_role.orca_ecs_task_execution_role.id
-  policy = data.aws_iam_policy_document.gql_task_execution_policy_document.json
-}
-
-resource "aws_iam_role" "orca_ecs_task_execution_role" {
-  name                 = "${var.prefix}_orca_ecs_task_execution_role"
-  assume_role_policy   = data.aws_iam_policy_document.assume_ecs_task_execution_role_policy_document.json
-  permissions_boundary = var.permissions_boundary_arn
-  tags                 = var.tags
-}
-
 # Defines how the image will be run.
 resource "aws_ecs_task_definition" "gql_task" {
   family                   = "${var.prefix}_orca_gql_task"
@@ -178,13 +139,13 @@ resource "aws_ecs_task_definition" "gql_task" {
   cpu                      = "1024"
   memory                   = "2048"
   task_role_arn            = var.gql_tasks_role_arn
-  execution_role_arn       = aws_iam_role.orca_ecs_task_execution_role.arn
+  execution_role_arn       = var.gql_ecs_task_execution_role_arn
   tags                     = var.tags
   container_definitions    = <<DEFINITION
 [
   {
     "name": "orca-gql",
-    "image": "ghcr.io/nasa/cumulus-orca/graphql:0.0.21",
+    "image": "ghcr.io/nasa/cumulus-orca/graphql:0.0.22",
     "cpu": 512,
     "memory": 256,
     "networkMode": "awsvpc",
@@ -198,10 +159,12 @@ resource "aws_ecs_task_definition" "gql_task" {
       {
         "name": "PORT",
         "value": "${local.graphql_port}"
-      },
+      }
+    ],
+    "secrets": [
       {
-        "name": "DB_CONNECT_INFO_SECRET_ARN",
-        "value": "${var.db_connect_info_secret_arn}"
+        "name": "DB_CONNECT_INFO",
+        "valueFrom": "${var.db_connect_info_secret_arn}"
       }
     ],
     "logConfiguration": {
