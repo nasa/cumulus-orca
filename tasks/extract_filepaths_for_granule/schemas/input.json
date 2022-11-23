@@ -10,7 +10,7 @@
           {
             "type": "object",
             "properties": {
-              "recoverybucketoverride": {
+              "recoveryBucketOverride": {
                 "description": "The user specified recovery S3 bucket to store recovered files",
                 "type": ["string", "null"]
               },

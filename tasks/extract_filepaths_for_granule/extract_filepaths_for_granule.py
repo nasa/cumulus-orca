@@ -18,7 +18,7 @@ LOGGER = Logger()
 
 CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY = "excludedFileExtensions"
 CONFIG_FILE_BUCKETS_KEY = "fileBucketMaps"
-
+INPUT_RECOVERY_BUCKET_OVERRIDE_KEY = "recoveryBucketOverride"
 OUTPUT_DESTINATION_BUCKET_KEY = "destBucket"
 OUTPUT_KEY_KEY = "key"
 
@@ -82,7 +82,7 @@ def task(event):
         level = "event['input']"
         grans = []
         for ev_granule in event["input"]["granules"]:
-            recovery_bucket_override = ev_granule.get("recoverybucketoverride", None)
+            recovery_bucket_override = ev_granule.get(INPUT_RECOVERY_BUCKET_OVERRIDE_KEY, None)
             gran = ev_granule.copy()
             files = []
             level = "event['input']['granules'][]"
@@ -209,7 +209,7 @@ def handler(event: Dict[str, Union[str, int]],
                             "granules":[
                                 {
                                     "granuleId":"granxyz",
-                                    "recoverybucketoverride": "test-recovery-bucket"
+                                    "recoveryBucketOverride": "test-recovery-bucket"
                                     "version":"006",
                                     "files":[
                                     {
