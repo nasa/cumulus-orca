@@ -204,25 +204,26 @@ def handler(event: Dict[str, Union[str, int]],
                     other dictionary keys may be included, but are not used.
                 other dictionary keys may be included, but are not used.
 
-            Example: {
-                        "event":{
-                            "granules":[
+            Example: 
+                    {
+                        "event": {
+                            "granules": [
                                 {
-                                    "granuleId":"granxyz",
-                                    "recoveryBucketOverride": "test-recovery-bucket"
-                                    "version":"006",
-                                    "files":[
+                                    "granuleId": "granxyz",
+                                    "recoveryBucketOverride": "test-recovery-bucket",
+                                    "version": "006",
+                                    "files": [
                                     {
-                                        "fileName":"file1",
-                                        "key":"key1",
-                                        "source":"s3://dr-test-sandbox-protected/file1",
-                                        "type":"metadata"
+                                        "fileName": "file1",
+                                        "key": "key1",
+                                        "source": "s3://dr-test-sandbox-protected/file1",
+                                        "type": "metadata"
                                     }
                                     ]
                                 }
                             ]
                         }
-                        }
+                    }
 
         context: This object provides information about the lambda invocation, function,
             and execution env.
