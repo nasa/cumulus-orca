@@ -2,6 +2,7 @@ import json
 import logging
 
 from orca_shared.database.entities import PostgresConnectionInfo
+from orca_shared.database.use_cases import create_postgres_connection_uri
 from orca_shared.database.use_cases.validation import validate_config
 
 from src.adapters.graphql import initialized_adapters
@@ -20,7 +21,9 @@ def initialize_adapters():
     # todo: This feels substantially more gross to me than passing logger via parameters.
     from src.adapters.graphql.initialized_adapters import adapters
     from src.adapters.storage.postgres import StorageAdapterPostgres
-    adapters.storage = StorageAdapterPostgres(db_connect_info)
+    user_connection_uri = create_postgres_connection_uri.create_user_uri(
+            db_connect_info, initialized_adapters.logger_provider.static_logger_provider.get_logger())
+    adapters.storage = StorageAdapterPostgres(user_connection_uri)
 
 
 initialize_logger_provider()
