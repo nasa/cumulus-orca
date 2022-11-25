@@ -16,10 +16,10 @@ class BasicLoggerProvider(LoggerProviderInterface):
         """
 
         # noinspection PyTypeChecker
-        return GuidLoggerAdapter(logger, {'request_id': request_id})
+        return RequestIdLoggerAdapter(logger, {'request_id': request_id})
 
 
-class GuidLoggerAdapter(logging.LoggerAdapter):
+class RequestIdLoggerAdapter(logging.LoggerAdapter):
     def process(self, msg: Any, kwargs: MutableMapping[str, Any]) ->\
             tuple[Any, MutableMapping[str, Any]]:
         return f"{self.extra['request_id']}: {msg}", kwargs
