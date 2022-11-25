@@ -1,9 +1,11 @@
 import typing
+import uuid
 from typing import Annotated
 
 # noinspection PyPackageRequirements
 from strawberry import type, field, argument
 
+from src.adapters.graphql import initialized_adapters
 from src.adapters.graphql.dataTypes.sample import GetEchoStrawberryResponse
 from src.adapters.graphql.dataTypes.storage_metadata import \
     GetStorageSchemaVersionStrawberryResponse
@@ -33,4 +35,8 @@ class Queries:
         self,
 
     ) -> GetStorageSchemaVersionStrawberryResponse:
-        return get_storage_migration_version()
+        return get_storage_migration_version(
+            initialized_adapters.logger_provider.static_logger_provider.get_logger(
+                uuid.uuid4().__str__()
+            )
+        )

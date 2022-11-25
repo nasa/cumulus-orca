@@ -1,9 +1,5 @@
 from sqlalchemy import text
-
-from src.adapters.graphql.initialized_adapters.logger_provider import static_logger_provider
 from src.adapters.storage.rdbms import StorageAdapterRDBMS
-
-LOGGER = static_logger_provider.get_logger()
 
 
 class StorageAdapterPostgres(StorageAdapterRDBMS):

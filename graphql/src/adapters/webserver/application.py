@@ -1,32 +1,20 @@
 import json
-import logging
 
 from orca_shared.database.entities import PostgresConnectionInfo
 from orca_shared.database.use_cases import create_postgres_connection_uri
 from orca_shared.database.use_cases.validation import validate_config
 
 from src.adapters.graphql import initialized_adapters
+from src.adapters.graphql.initialized_adapters import adapters
 from src.adapters.graphql.initialized_adapters import logger_provider
 from src.adapters.logger_provider.basic import BasicLoggerProvider
+from src.adapters.storage.postgres import StorageAdapterPostgres
 from src.adapters.webserver.uvicorn_settings import INSTANTIATED_WEBSERVER_SETTINGS
 
+initialized_logger_provider = BasicLoggerProvider()
+initialized_adapters.logger_provider.static_logger_provider = initialized_logger_provider
+logger = initialized_adapters.logger_provider.static_logger_provider.get_logger("Setup")
 
-def initialize_logger_provider():
-    initialized_logger_provider = BasicLoggerProvider()
-    initialized_adapters.logger_provider.static_logger_provider = initialized_logger_provider
-
-
-def initialize_adapters():
-    # Don't start setting up adapters until the static logger adapter is ready to be referenced.
-    # todo: This feels substantially more gross to me than passing logger via parameters.
-    from src.adapters.graphql.initialized_adapters import adapters
-    from src.adapters.storage.postgres import StorageAdapterPostgres
-    user_connection_uri = create_postgres_connection_uri.create_user_uri(
-            db_connect_info, initialized_adapters.logger_provider.static_logger_provider.get_logger())
-    adapters.storage = StorageAdapterPostgres(user_connection_uri)
-
-
-initialize_logger_provider()
 
 # todo: Make the loads and init a separate function in shared_db
 db_connect_info = json.loads(
@@ -44,10 +32,12 @@ db_connect_info = PostgresConnectionInfo(
 )
 validate_config(
     db_connect_info,
-    initialized_adapters.logger_provider.static_logger_provider.get_logger()
+    logger
 )
 
-initialize_adapters()
+user_connection_uri = create_postgres_connection_uri.create_user_uri(
+    db_connect_info, logger)
+adapters.storage = StorageAdapterPostgres(user_connection_uri)
 
 # Don't start setting up fastapi/graphql app until adapters are ready to be referenced.
 from src.adapters.api.fastapi import create_fastapi_app

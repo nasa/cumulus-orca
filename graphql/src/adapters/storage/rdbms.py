@@ -1,14 +1,11 @@
+import logging
 from abc import abstractmethod
 
 from orca_shared.database import shared_db
 from sqlalchemy import text, create_engine
 from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.future import Engine
-
-from src.adapters.graphql.initialized_adapters.logger_provider import static_logger_provider
 from src.use_cases.adapter_interfaces.storage import StorageMetadataInterface
-
-LOGGER = static_logger_provider.get_logger()
 
 
 class StorageAdapterRDBMS(StorageMetadataInterface):
@@ -18,6 +15,7 @@ class StorageAdapterRDBMS(StorageMetadataInterface):
     @shared_db.retry_operational_error()
     def get_schema_version(
         self,
+        logger: logging.Logger,
     ) -> int:
         # noinspection GrazieInspection
         """
@@ -29,7 +27,7 @@ class StorageAdapterRDBMS(StorageMetadataInterface):
         try:
             with self.user_engine.begin() as connection:
                 # If table exists get the latest version from the table
-                LOGGER.debug("Getting current schema version from table.")
+                logger.info("Getting current schema version from table.")
                 results = connection.execute(self.get_schema_version_sql())
                 row = results.fetchone()
                 schema_version = row[0]
