@@ -5,6 +5,7 @@ Description:  Unit tests for extract_file_paths_for_granule.py.
 """
 import json
 import unittest
+import uuid
 from test.helpers import create_handler_event, create_task_event
 from unittest.mock import MagicMock, Mock, patch
 
@@ -571,6 +572,22 @@ class TestExtractFilePaths(unittest.TestCase):
 
         # Validate the output is correct by matching with the output schema
         _OUTPUT_VALIDATE(exp_result)
+
+    @patch("extract_filepaths_for_granule.LOGGER.debug")
+    def test_task_use_recovery_override_bucket(self, mock_debug: MagicMock):
+        """
+        Test no 'granules' key in input event.
+        """
+        self.task_input_event["input"]["granules"][0][
+            extract_filepaths_for_granule.INPUT_RECOVERY_BUCKET_OVERRIDE_KEY
+                ] = uuid.uuid4().__str__()
+
+        result = extract_filepaths_for_granule.task(self.task_input_event)
+        self.assertEqual(
+            result["granules"][0]["keys"][0][
+                extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY
+                ], self.task_input_event["input"]["granules"][0][
+                    extract_filepaths_for_granule.INPUT_RECOVERY_BUCKET_OVERRIDE_KEY])
 
     def test_exclude_file_types(self):
         """
