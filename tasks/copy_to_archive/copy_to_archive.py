@@ -10,10 +10,10 @@ from typing import Any, Dict, List, Union
 
 # Third party libraries
 import boto3
-from boto3.s3.transfer import MB, TransferConfig
-from run_cumulus_task import run_cumulus_task
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
+from boto3.s3.transfer import MB, TransferConfig
+from run_cumulus_task import run_cumulus_task
 
 import sqs_library
 

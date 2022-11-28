@@ -118,25 +118,28 @@ Lambda handler. Extracts the key's for a granule from an input dict.
   other dictionary keys may be included, but are not used.
   other dictionary keys may be included, but are not used.
   
-- `Example` - {
-                "event": {
-                  "granules": [
-                    {
-                      "granuleId": "granxyz",
-                      "recoveryBucketOverride": "test-recovery-bucket",
-                      "version": "006",
-                      "files": [
-                        {
-                          "fileName": "file1",
-                          "key": "key1",
-                          "source": "s3://dr-test-sandbox-protected/file1",
-                          "type": "metadata"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              }
+
+**Example**:
+
+  {
+- `"event"` - {
+- `"granules"` - [
+  {
+- `"granuleId"` - "granxyz",
+- `"recoveryBucketOverride"` - "test-recovery-bucket",
+- `"version"` - "006",
+- `"files"` - [
+  {
+- `"fileName"` - "file1",
+- `"key"` - "key1",
+- `"source"` - "s3://dr-test-sandbox-protected/file1",
+- `"type"` - "metadata"
+  }
+  ]
+  }
+  ]
+  }
+  }
   
 - `context` - This object provides information about the lambda invocation, function,
   and execution env.
