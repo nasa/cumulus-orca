@@ -102,8 +102,8 @@ other:
 version: 2
 plan: 
   key: ORCA-RDOD
-plan-permissions: 
-  groups: 
+plan-permissions:
+- groups: 
   - bamboo-orca-devs
   permissions: 
   - view
