@@ -5,11 +5,32 @@ plan:
   key: RTR
   name: rhassan-test-repository
 stages:
+- Default Stage: 
+    manual: false
+    final: false
+    jobs: 
+    - Default Job
 - Release Stage:
     manual: true
     final: false
     jobs:
     - Release ORCA Documentation
+
+Default Job: 
+  key: JOB1
+  tasks: 
+  - checkout: 
+      force-clean-build: 'false'
+      description: Checkout Default Repository
+  - script: 
+      interpreter: SHELL
+      scripts: 
+      - |-
+        #!/bin/bash
+
+        set -ex
+        ./bin/set_status.sh pending ${bamboo.resultsUrl} "CI Running"
+      description: Set Pending Status
 
 Release ORCA Documentation:
   key: ROD
