@@ -108,7 +108,7 @@ plan:
 stages:
 - Release Stage:
     manual: true
-    final: false
+    final: true
     jobs:
     - Release ORCA Documentation
 
