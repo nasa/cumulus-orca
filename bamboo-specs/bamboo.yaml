@@ -5,44 +5,11 @@ plan:
   key: RTR
   name: rhassan-test-repository
 stages:
-- Setup Env:
-    manual: false
-    final: false
-    jobs:
-    - Set Pending Github Status
 - Release Stage:
     manual: true
     final: false
     jobs:
     - Release ORCA Documentation
-#deploy ORCA buckets, Cumulus and ORCA modules
-# - Deploy Dev Cumulus and ORCA Stack:
-#     manual: true
-#     final: false
-#     jobs:
-#     - Deploy cumulus and orca
-        
-Set Pending Github Status:
-  key: SPGS
-  tasks:
-  - checkout:
-      force-clean-build: 'false'
-      description: Checkout Default Repository
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-   #used for better script formatting
-        set -ex
-        ./bin/set_status.sh pending ${bamboo.resultsUrl} "CI Running"
-      description: Set Pending Status
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-   #used for better script formatting
-        set -ex
-        ./bin/set_status.sh pending ${bamboo.resultsUrl} "CI Running"
-      description: Set Pending Status but again!
-      
 
 Release ORCA Documentation:
   key: ROD
@@ -71,28 +38,6 @@ Release ORCA Documentation:
         bin/create_release_documentation.sh
       description: Run documentation release script
 
-# #job for deploying cumulus and orca
-# Deploy cumulus and orca:
-#   key: DCO
-#   other:
-#     clean-working-dir: true
-#     # Some plugin configurations are not supported by YAML Specs
-#   docker:
-#     image: maven.earthdata.nasa.gov/cumulus_orca
-#     volumes:
-#       ${bamboo.working.directory}: ${bamboo.working.directory}
-#       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
-#   tasks:
-#   - checkout:
-#       force-clean-build: 'true'
-#       description: Checkout Default Repository
-
-#   - script:
-#       interpreter: SHELL
-#       scripts:
-#       - |-
-#         #!/bin/bash
-#         bash integration_test/deploy-orca.sh
 variables:
   DEPLOYMENT: sandbox
   ORCA_VERSION: 5.0.1
@@ -139,6 +84,86 @@ branches:
 version: 2
 plan:
   key: ORCA-RTR
+plan-permissions:
+- users:
+  - bhazuka
+  - andrew.dorn
+  - rizbi.hassan
+  - scott.saxon
+
+  permissions:
+  - view
+  - edit
+  - build
+  - clone
+  - admin
+...
+# ..............................
+---
+version: 2
+plan:
+  project-key: ORCA
+  key: RDOD
+  name: rhassan-deploy-orca-documentation
+stages:
+- Release Stage:
+    manual: true
+    final: false
+    jobs:
+    - Release ORCA Documentation
+
+Release ORCA Documentation:
+  key: ROD
+  description: Releases ORCA Documentation to nasa.github.io/cumulus-orca
+  docker:
+    image: maven.earthdata.nasa.gov/cumulus_orca
+    volumes:
+      ${bamboo.working.directory}: ${bamboo.working.directory}
+      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+  tasks:
+  - checkout:
+      force-clean-build: 'true'
+      path: source
+      description: Checkout Default Repository
+  - script:
+      interpreter: SHELL
+      scripts:
+      - |-
+        #!/bin/bash
+        cd source
+        set -ex
+        if [ ! -f "bin/create_release_documentation.sh" ]; then
+          echo "ERROR: create_release_documentation.sh script does not exist!"
+          exit 1
+        fi
+        bin/create_release_documentation.sh
+      description: Run documentation release script
+
+variables:
+  ORCA_VERSION: 5.0.1
+  RELEASE_FLAG: true
+  REPORT_BUILD_STATUS: 'true'
+  SECRET_GITHUB_EMAIL: BAMSCRT@0@0@w8ZA1at34XmRzY8AZiTs2Btd/wEgI1rehKTfEjSvWxE=
+  SECRET_GITHUB_TOKEN: BAMSCRT@0@0@4vfO1paRwG9p5BgLR57uvW7pCn53thrfpsMTm94fO2Q=
+  SECRET_GITHUB_USER: BAMSCRT@0@0@VkGOQemUQPEvmBYT3dDRgw==
+  AWS_DEFAULT_REGION: us-west-2
+  
+repositories:
+- orca test 2: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact Venku Jayanti with any issues.
+    scope: global
+triggers:
+- polling: # Does not actually poll, as we do not have webhooks enabled.
+    period: '60' #time in seconds
+branches:
+  create: for-new-branch
+  delete:
+    after-deleted-days: 7
+    after-inactive-days: 30
+  link-to-jira: true
+---
+version: 2
+plan:
+  key: ORCA-RDOD
 plan-permissions:
 - users:
   - bhazuka
