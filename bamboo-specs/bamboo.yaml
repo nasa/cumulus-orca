@@ -2,107 +2,6 @@
 version: 2
 plan:
   project-key: ORCA
-  key: RTR
-  name: rhassan-test-repository
-stages:
-- Default Stage: 
-    manual: false
-    final: false
-    jobs: 
-    - Default Job
-- Release Stage:
-    manual: true
-    final: false
-    jobs:
-    - Release ORCA Documentation
-
-Default Job: 
-  key: JOB1
-  tasks: 
-  - checkout: 
-      force-clean-build: 'false'
-      description: Checkout Default Repository
-  - script: 
-      interpreter: SHELL
-      scripts: 
-      - |-
-        #!/bin/bash
-
-        set -ex
-        ./bin/set_status.sh pending ${bamboo.resultsUrl} "CI Running"
-      description: Set Pending Status
-
-Release ORCA Documentation:
-  key: ROD
-  description: Releases ORCA Documentation to nasa.github.io/cumulus-orca
-  docker:
-    image: maven.earthdata.nasa.gov/cumulus_orca
-    volumes:
-      ${bamboo.working.directory}: ${bamboo.working.directory}
-      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
-  tasks:
-  - checkout:
-      force-clean-build: 'true'
-      path: source
-      description: Checkout Default Repository
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-
-        #!/bin/bash
-        cd source
-        set -ex
-        if [ ! -f "bin/create_release_documentation.sh" ]; then
-          echo "ERROR: create_release_documentation.sh script does not exist!"
-          exit 1
-        fi
-        bin/create_release_documentation.sh
-      description: Run documentation release script
-
-variables:
-  ORCA_VERSION: 5.0.1
-  RELEASE_FLAG: true
-  REPORT_BUILD_STATUS: 'true'
-  SECRET_GITHUB_EMAIL: BAMSCRT@0@0@HYUkicwfEqt17JZaZuGYmtmRHrnDySiT+kQkBQa7/Rg7IQgl1lUvbncMUu0Wx2k1ayHojNkh2TdOlF0kJ5tw6Q==
-  SECRET_GITHUB_TOKEN: BAMSCRT@0@0@nPxyXQXMyE6zm3B1oI8Goma78s0H1fJD4vHy6+dpBQJpjDI2ekbcvCAOI8AyjYiILPhqi2w4fT0fx9MFVXxz2JPTp5uPNzG3GM/8XSUgvYo=
-  SECRET_GITHUB_USER: BAMSCRT@0@0@VkGOQemUQPEvmBYT3dDRgw==
-  AWS_DEFAULT_REGION: us-west-2
-  
-repositories:
-- orca test 2: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact Venku Jayanti with any issues.
-    scope: global
-triggers:
-- polling: # Does not actually poll, as we do not have webhooks enabled.
-    period: '60' #time in seconds
-branches:
-  create: for-new-branch
-  delete:
-    after-deleted-days: 7
-    after-inactive-days: 30
-  link-to-jira: true
----
-version: 2
-plan:
-  key: ORCA-RTR
-plan-permissions:
-- users:
-  - bhazuka
-  - andrew.dorn
-  - rizbi.hassan
-  - scott.saxon
-
-  permissions:
-  - view
-  - edit
-  - build
-  - clone
-  - admin
-...
-# ..............................
----
-version: 2
-plan:
-  project-key: ORCA
   key: RDOD
   name: rhassan-deploy-orca-documentation
 stages:
@@ -112,69 +11,105 @@ stages:
     jobs:
     - Release ORCA Documentation
 
-Release ORCA Documentation:
+Release ORCA Documentation: 
   key: ROD
-  description: Releases ORCA Documentation to nasa.github.io/cumulus-orca
-  docker:
-    image: maven.earthdata.nasa.gov/cumulus_orca
-    volumes:
-      ${bamboo.working.directory}: ${bamboo.working.directory}
-      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
-  tasks:
-  - checkout:
+  tasks: 
+  - clean
+  - checkout: 
       force-clean-build: 'true'
-      path: source
       description: Checkout Default Repository
-  - script:
+  - script: 
       interpreter: SHELL
-      scripts:
+      scripts: 
       - |-
         #!/bin/bash
-        cd source
+
+        cat << EOF > tempdockerfile
+        FROM docker.io/node:16
+
+        # Add NodeJS and Yarn repos & update package index
+        COPY . /code
+        RUN chown -R node /code
+        USER node
+        EOF
+
+        docker build --rm -t document_builder_orca -f tempdockerfile .
+      description: Build Documentation Image
+  - script: 
+      interpreter: SHELL
+      scripts: 
+      - |-
+        #!/bin/bash
+
+        # TEMP OVERRIDE
+        bamboo_DOCKER_IMAGE=document_builder_orca
+
         set -ex
         if [ ! -f "bin/create_release_documentation.sh" ]; then
           echo "ERROR: create_release_documentation.sh script does not exist!"
           exit 1
         fi
-        bin/create_release_documentation.sh
-      description: Run documentation release script
 
-variables:
-  ORCA_VERSION: 5.0.1
-  RELEASE_FLAG: true
-  REPORT_BUILD_STATUS: 'true'
+        # env > known_parameters
+
+        docker run --rm \
+             -e bamboo_RELEASE_FLAG \
+             -e bamboo_SECRET_GITHUB_USER \
+             -e bamboo_SECRET_GITHUB_TOKEN \
+             -e bamboo_SECRET_GITHUB_EMAIL \
+             -w /code \
+             ${bamboo_DOCKER_IMAGE} \
+             bash -c "bin/create_release_documentation.sh"
+      description: Run documentation release script
+  final-tasks: 
+  - script: 
+      interpreter: SHELL
+      scripts: 
+      - "#!/bin/bash\n\ndocker run --rm -v $(pwd):/build -w /build alpine \\\n   sh -c \"find /build ! -user $(id -u) -exec chown $(id -u):$(id -g) {} +\"\n   \n# cleanup docker image\ndocker rmi -f document_builder_orca"
+      description: Clean up permissions
+  artifacts: 
+  - name: known_env
+    location: source
+    pattern: known_parameters
+    shared: false
+    required: false
+  artifact-subscriptions: []
+variables: 
+  DOCKER_BASE: docker.io/node:16
+  RELEASE_FLAG: 'true'
   SECRET_GITHUB_EMAIL: BAMSCRT@0@0@w8ZA1at34XmRzY8AZiTs2Btd/wEgI1rehKTfEjSvWxE=
   SECRET_GITHUB_TOKEN: BAMSCRT@0@0@4vfO1paRwG9p5BgLR57uvW7pCn53thrfpsMTm94fO2Q=
   SECRET_GITHUB_USER: BAMSCRT@0@0@VkGOQemUQPEvmBYT3dDRgw==
-  AWS_DEFAULT_REGION: us-west-2
-  
-repositories:
-- orca test 2: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact Venku Jayanti with any issues.
+repositories: 
+- orca test 2: 
     scope: global
-triggers:
-- polling: # Does not actually poll, as we do not have webhooks enabled.
-    period: '60' #time in seconds
-branches:
-  create: for-new-branch
-  delete:
-    after-deleted-days: 7
-    after-inactive-days: 30
+triggers: 
+# Trigger com.atlassian.bamboo.triggers.atlassian-bamboo-triggers:poll is disabled. This state is not supported by YAML.
+branches: 
+  create: manually
+  delete: never
   link-to-jira: true
+dependencies: 
+  require-all-stages-passing: false
+  enabled-for-branches: true
+  block-strategy: none
+  plans: []
+other: 
+  concurrent-build-plugin: system-default
 ---
 version: 2
-plan:
+plan: 
   key: ORCA-RDOD
-plan-permissions:
-- users:
-  - bhazuka
-  - andrew.dorn
-  - rizbi.hassan
-  - scott.saxon
-
-  permissions:
+plan-permissions: 
+- users: 
+  - rhassan
+  groups: 
+  - bamboo-orca-devs
+  permissions: 
   - view
   - edit
   - build
   - clone
   - admin
+  - viewConfiguration
 ...
