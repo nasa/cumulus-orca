@@ -20,9 +20,9 @@ OS_ENVIRON_DEFAULT_STORAGE_CLASS_KEY = "DEFAULT_STORAGE_CLASS"
 OS_ENVIRON_ORCA_DEFAULT_BUCKET_KEY = "ORCA_DEFAULT_BUCKET"
 
 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
-CONFIG_EXCLUDE_FILE_TYPES_KEY = "excludeFileTypes"
-CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY = "orcaDefaultBucketOverride"
-CONFIG_ORCA_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY = "orcaDefaultStorageClassOverride"
+CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY = "excludedFileExtensions"
+CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY = "defaultBucketOverride"
+CONFIG_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY = "defaultStorageClassOverride"
 # Set Cumulus LOGGER
 LOGGER = CumulusLogger()
 
@@ -34,7 +34,7 @@ FILE_HASH_TYPE_KEY = "checksumType"
 
 def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> bool:
     """
-    Tests whether file is included in {excludeFileTypes} from copy to glacier.
+    Tests whether file is included in {excludedFileExtensions} from copy to glacier.
     Args:
         file_key: The key of the file within the s3 bucket.
         exclude_file_types: List of extensions to exclude in the backup.
@@ -67,14 +67,23 @@ def copy_granule_between_buckets(
         multipart_chunksize_mb: The maximum size of chunks to use when copying.
         storage_class: The storage class to store in.
     Returns:
-        A dictionary containing all the file metadata needed for reconciliation with Cumulus with the following keys:
-                "cumulusArchiveLocation" (str): Cumulus S3 bucket where the file is stored in.
-                "orcaArchiveLocation" (str): ORCA S3 Glacier bucket that the file object is stored in
-                "keyPath" (str): Full AWS key path including file name of the file where the file resides in ORCA.
-                "sizeInBytes" (str): Size of the object in bytes
-                "version" (str): Latest version of the file in the S3 Glacier bucket
-                "ingestTime" (str): Date and time the file was originally ingested into ORCA.
-                "etag" (str): etag of the file object in the AWS S3 Glacier bucket.
+        A dictionary containing all the file metadata needed
+        for reconciliation with Cumulus with the following keys:
+                "cumulusArchiveLocation" (str):
+                    Cumulus S3 bucket where the file is stored in.
+                "orcaArchiveLocation" (str):
+                    ORCA S3 Glacier bucket that the file object is stored in.
+                "keyPath" (str):
+                    Full AWS key path including file name of the file
+                    where the file resides in ORCA.
+                "sizeInBytes" (str):
+                    Size of the object in bytes
+                "version" (str):
+                    Latest version of the file in the S3 Glacier bucket
+                "ingestTime" (str):
+                    Date and time the file was originally ingested into ORCA.
+                "etag" (str):
+                    etag of the file object in the AWS S3 Glacier bucket.
     """
     s3 = boto3.client("s3")
     copy_source = {"Bucket": source_bucket_name, "Key": source_key}
@@ -88,7 +97,8 @@ def copy_granule_between_buckets(
             "ContentType": s3.head_object(Bucket=source_bucket_name, Key=source_key)[
                 "ContentType"
             ],
-            "ACL": "bucket-owner-full-control",  # Sets the x-amz-acl URI Request Parameter. Needed for cross-OU copies.
+            "ACL": "bucket-owner-full-control",  # Sets the x-amz-acl URI Request Parameter.
+                                                 # Needed for cross-OU copies.
         },
         Config=TransferConfig(multipart_chunksize=multipart_chunksize_mb * MB),
     )
@@ -96,7 +106,8 @@ def copy_granule_between_buckets(
     file_versions = s3.list_object_versions(
         Bucket=destination_bucket, Prefix=destination_key
     )
-    latest_version = next(  # Find the first item in file_versions["Versions"] that has "IsLatest" set to true.
+    latest_version = next(  # Find the first item in file_versions["Versions"]
+                            # that has "IsLatest" set to true.
         filter(lambda file_version: file_version["IsLatest"], file_versions["Versions"])
     )
     LOGGER.info("collecting metadata from file version")
@@ -123,11 +134,14 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     to the ORCA glacier bucket defined in ORCA_DEFAULT_BUCKET.
 
         Environment Variables:
-            ORCA_DEFAULT_BUCKET (string, required): Name of the default ORCA S3 Glacier bucket.
+            ORCA_DEFAULT_BUCKET (string, required):
+                Name of the default ORCA S3 Glacier bucket.
                 Overridden by bucket specified in config.
-            DEFAULT_MULTIPART_CHUNKSIZE_MB (int, optional): The default maximum size of chunks to use when copying.
+            DEFAULT_MULTIPART_CHUNKSIZE_MB (int, optional):
+                The default maximum size of chunks to use when copying.
                 Can be overridden by collection config.
-            METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
+            METADATA_DB_QUEUE_URL (string, required):
+                SQS URL of the metadata queue.
 
     Args:
         event: Passed through from {handler}
@@ -141,7 +155,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     granules_list = event_input["granules"]
     config = event["config"]
 
-    exclude_file_types = config.get(CONFIG_EXCLUDE_FILE_TYPES_KEY, None)
+    exclude_file_types = config.get(CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY, None)
     if exclude_file_types is None:
         exclude_file_types = []
 
@@ -152,7 +166,8 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     if multipart_chunksize_mb_str is None:
         multipart_chunksize_mb = int(os.environ["DEFAULT_MULTIPART_CHUNKSIZE_MB"])
         LOGGER.debug(
-            "{CONFIG_MULTIPART_CHUNKSIZE_MB_KEY} is not set for config. Using default value of {multipart_chunksize_mb}.",
+            "{CONFIG_MULTIPART_CHUNKSIZE_MB_KEY} is not set for config."
+            "Using default value of {multipart_chunksize_mb}.",
             CONFIG_MULTIPART_CHUNKSIZE_MB_KEY=CONFIG_MULTIPART_CHUNKSIZE_MB_KEY,
             multipart_chunksize_mb=multipart_chunksize_mb,
         )
@@ -176,8 +191,10 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     sqs_body["provider"]["providerId"] = config["providerId"]
     sqs_body["collection"]["shortname"] = config["collectionShortname"]
     sqs_body["collection"]["version"] = config["collectionVersion"]
-    # Cumulus currently creates collectionId by concatenating shortname + ___ + version
-    # See https://github.com/nasa/cumulus-dashboard/blob/18a278ee5a1ac5181ec035b3df0665ef5acadcb0/app/src/js/utils/format.js#L342
+    # Cumulus currently creates collectionId by concatenating
+    # shortname + ___ + version
+    # See https://github.com/nasa/cumulus-dashboard/blob/
+    # 18a278ee5a1ac5181ec035b3df0665ef5acadcb0/app/src/js/utils/format.js#L342
     sqs_body["collection"]["collectionId"] = (
         config["collectionShortname"] + "___" + config["collectionVersion"]
     )
@@ -206,10 +223,8 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             file_hash_type = file.get(FILE_HASH_TYPE_KEY, None)
             if should_exclude_files_type(file_filepath, exclude_file_types):
                 LOGGER.info(
-                    "Excluding {file_filepath} from glacier backup "
-                    "because of collection configured {CONFIG_EXCLUDE_FILE_TYPES_KEY}.",
-                    file_filepath=file_filepath,
-                    CONFIG_EXCLUDE_FILE_TYPES_KEY=CONFIG_EXCLUDE_FILE_TYPES_KEY,
+                    f"Excluding {file_filepath} from glacier backup "
+                    f"because of collection configured {CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY}."
                 )
                 continue
             result = copy_granule_between_buckets(
@@ -228,13 +243,11 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             result["hashType"] = file_hash_type
             copied_file_urls.append(file_source_uri)
             LOGGER.info(
-                "Copied {file_filepath} into glacier storage bucket {default_bucket}.",
-                file_filepath=file_filepath,
-                default_bucket=destination_bucket,
+                f"Copied {file_filepath} into glacier storage bucket {destination_bucket}."
             )
             # Add file record to metadata SQS message
             LOGGER.debug(
-                "Adding the files dictionary to the SQS body {result}.", result=result
+                "Adding the files dictionary to the SQS body. {result}.", result=result
             )
             sqs_body["granule"]["files"].append(result)
         # post to metadata SQS for each granule
@@ -261,10 +274,10 @@ def get_destination_bucket_name(config: Dict[str, Any]) -> str:
         The name of the bucket to use.
     """
     try:
-        destination_bucket = config[CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY]
+        destination_bucket = config[CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY]
     except KeyError:
         LOGGER.warning(
-            f"{CONFIG_ORCA_DEFAULT_BUCKET_OVERRIDE_KEY} is not set. "
+            f"{CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY} is not set. "
             f"Using {OS_ENVIRON_ORCA_DEFAULT_BUCKET_KEY} environment value."
         )
         destination_bucket = None
@@ -294,9 +307,10 @@ def get_storage_class(config: Dict[str, Any]) -> str:
     otherwise the default.
 
     Environment Vars:
-        DEFAULT_STORAGE_CLASS (str): The class of storage to use when ingesting files.
-                                                            Can be overridden by collection config.
-                                                            Must match value in storage_class table.
+        DEFAULT_STORAGE_CLASS (str):
+            The class of storage to use when ingesting files.
+            Can be overridden by collection config.
+            Must match value in storage_class table.
 
     Args:
         config: See schemas/config.json for more information.
@@ -305,11 +319,15 @@ def get_storage_class(config: Dict[str, Any]) -> str:
         The name of the storage class to use.
     """
     try:
-        # run_cumulus_task checked config against config.json, so the number of values this can be is limited.
-        storage_class = config[CONFIG_ORCA_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY]
+        # run_cumulus_task checked config against config.json,
+        # so the number of values this can be is limited.
+        storage_class = config[CONFIG_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY]
+        # run_cumulus_task checked config against config.json,
+        # so the number of values this can be is limited.
+        storage_class = config[CONFIG_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY]
     except KeyError:
         LOGGER.warning(
-            f"{CONFIG_ORCA_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY} is not set. "
+            f"{CONFIG_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY} is not set. "
             f"Using {OS_ENVIRON_DEFAULT_STORAGE_CLASS_KEY} environment value."
         )
         storage_class = None
@@ -338,14 +356,16 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any:
     provide a default ORCA bucket to store the files in.
 
     Environment Vars:
-        DEFAULT_MULTIPART_CHUNKSIZE_MB (int): The default maximum size of chunks to use when copying.
-                                                            Can be overridden by collection config.
-        DEFAULT_STORAGE_CLASS (str): The class of storage to use when ingesting files.
-                                                            Can be overridden by collection config.
-                                                            Must match value in storage_class table.
-        ORCA_DEFAULT_BUCKET (str): Name of the default S3 Glacier
-                                                ORCA bucket files should be
-                                                archived to.
+        DEFAULT_MULTIPART_CHUNKSIZE_MB (int):
+            The default maximum size of chunks to use when copying.
+            Can be overridden by collection config.
+        DEFAULT_STORAGE_CLASS (str):
+            The class of storage to use when ingesting files.
+            Can be overridden by collection config.
+            Must match value in storage_class table.
+        ORCA_DEFAULT_BUCKET (str):
+            Name of the default S3 Glacier
+            ORCA bucket files should be archived to.
         METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
 
     Args:

@@ -13,10 +13,57 @@ and includes an additional section for migration notes.
 - *Fixed* - Any bug fixes.
 - *Security* - Vulnerabilities fixes and changes.
 
-
 ## [Unreleased]
 
-[5.1.0]
+## [6.0.2]
+### Changed
+- *ORCA-570* Fixed an error that could prevent deployment of the database on fresh installations.
+
+## [6.0.1]
+### Changed
+- *ORCA-566* Shortened S3 inventory report name due to length limitation causing errors when a user's naming schema is long.
+
+## [6.0.0]
+### Changed
+- *ORCA-290* Renamed `excludeFileTypes`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` to `excludedFileExtensions`, `defaultBucketOverride` and  `defaultStorageClassOverride` respectively. In addition, ORCA configuration variables `excludedFileExtensions`, `defaultBucketOverride` and `defaultStorageClassOverride` are now under `collection.meta.orca`.
+- *ORCA-290* Adjusted workflows/step functions for `OrcaRecoveryWorkflow`.
+  - `excludeFileTypes`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` arguments in `task_config` are now `excludedFileExtensions`, `defaultBucketOverride` and  `defaultStorageClassOverride` respectively.
+  - `excludedFileExtensions`, `defaultBucketOverride` and `defaultStorageClassOverride` keys are now under `collection.meta.orca`. See the example below under `Migration Notes`.
+- *ORCA-519* Enforced schema checks in `request_status_for_granule` and `request_status_for_job`.
+  Both lambdas will return proper HTTP error codes for bad inputs of internal server errors.
+  Additionally, corrected error in [API Reference](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api) 
+  where the `error` status for these lambdas was incorrectly listed as `failed`.
+- *ORCA-320* Requests to API Gateway now use IAM permissions, restricting anonymous access.
+- *ORCA-496* Mitigated SQS security issue. All SQS queues now use default encryption.
+
+### Migration Notes
+
+- Adjust usage of `copy_to_glacier` in your step functions for new keys.
+  - `excludeFileTypes`, `orcaDefaultBucketOverride`, and `orcaDefaultStorageClassOverride` arguments are now `excludedFileExtensions`, `defaultBucketOverride`, and `defaultStorageClassOverride` and are under a new key `orca`.
+    See example below:
+    ```json
+    "task_config": {
+      "excludedFileExtensions": "{$.meta.collection.meta.orca.excludedFileExtensions}",
+      "defaultBucketOverride": "{$.meta.collection.meta.orca.defaultBucketOverride}",
+      "defaultStorageClassOverride": "{$.meta.collection.meta.orca.defaultStorageClassOverride}"
+    }
+    ```
+- Adjust Cumulus collection configuration integration for new `orca` key paths.
+  -  `excludeFileTypes`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` arguments are now `excludedFileExtensions`, `defaultBucketOverride` and  `defaultStorageClassOverride` respectively.
+  - `excludedFileExtensions`, `defaultBucketOverride` and `defaultStorageClassOverride` keys are now under a new key `orca`. See example below:
+    ```json
+      "collection": {
+          "meta":{
+              "orca": {
+                "defaultStorageClassOverride": "DEEP_ARCHIVE",
+                "excludedFileExtensions": [".xml"],
+                "defaultBucketOverride": "orca-bucket"
+            }
+        }
+      }
+      ```
+
+## [5.1.0]
 ### Changed
 - *ORCA-359* Updated Python version from 3.7 to 3.9.
 - *ORCA-478* Updated bucket policy documentation for deep glacier bucket in DR account so that the users now can only upload objects with storage type as either `GLACIER` or `DEEP_ARCHIVE`.

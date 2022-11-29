@@ -26,10 +26,12 @@ def task(
     db_connect_info: Dict,
 ) -> None:
     """
-    Gets all jobs older than internal_reconciliation_expiration_days days, then deletes their records in Postgres.
+    Gets all jobs older than internal_reconciliation_expiration_days days,
+    then deletes their records in Postgres.
 
     Args:
-        internal_reconciliation_expiration_days: Only reports updated before this many days ago will be deleted.
+        internal_reconciliation_expiration_days:
+            Only reports updated before this many days ago will be deleted.
         db_connect_info: See shared_db.py's get_configuration for further details.
     """
 
@@ -45,10 +47,12 @@ def delete_jobs_older_than_x_days(
     internal_reconciliation_expiration_days: int, engine: Engine
 ) -> None:
     """
-    Deletes all records for the given job older than internal_reconciliation_expiration_days days.
+    Deletes all records for the given job older than
+    internal_reconciliation_expiration_days days.
 
     Args:
-        internal_reconciliation_expiration_days: Only reports updated before this many days ago will be retrieved.
+        internal_reconciliation_expiration_days:
+        Only reports updated before this many days ago will be retrieved.
         engine: The sqlalchemy engine to use for contacting the database.
     """
     cutoff = datetime.now(timezone.utc) - timedelta(
@@ -57,7 +61,8 @@ def delete_jobs_older_than_x_days(
     params = [{"cutoff": cutoff}]
     try:
         LOGGER.debug(
-            f"Deleting data for jobs older than {internal_reconciliation_expiration_days} days ago, {cutoff} UTC."
+            f"Deleting data for jobs older than {internal_reconciliation_expiration_days} "
+            f"days ago, {cutoff} UTC."
         )
         with engine.begin() as connection:
             start = time.perf_counter()
@@ -66,7 +71,8 @@ def delete_jobs_older_than_x_days(
                 params,
             )
             LOGGER.info(
-                f"Deleted {sql_cursor.rowcount} mismatches in {time.perf_counter() - start} seconds."
+                f"Deleted {sql_cursor.rowcount} mismatches "
+                f"in {time.perf_counter() - start} seconds."
             )
             start = time.perf_counter()
             sql_cursor = connection.execute(
@@ -90,7 +96,8 @@ def delete_jobs_older_than_x_days(
                 params,
             )
             LOGGER.info(
-                f"Deleted {sql_cursor.rowcount} s3 objects in {time.perf_counter() - start} seconds."
+                f"Deleted {sql_cursor.rowcount} s3 objects "
+                f"in {time.perf_counter() - start} seconds."
             )
             start = time.perf_counter()
             sql_cursor = connection.execute(
@@ -98,10 +105,11 @@ def delete_jobs_older_than_x_days(
                 params,
             )
             LOGGER.info(
-                f"Deleted {sql_cursor.rowcount} root jobs in {time.perf_counter() - start} seconds."
+                f"Deleted {sql_cursor.rowcount} root jobs "
+                f"in {time.perf_counter() - start} seconds."
             )
 
-            LOGGER.info(f"Finished deleting report data. Closing connection.")
+            LOGGER.info("Finished deleting report data. Closing connection.")
     except Exception as sql_ex:
         LOGGER.error(f"Error while deleting jobs: {sql_ex}")
         raise
@@ -212,9 +220,11 @@ def handler(event: Dict[str, Dict[str, Dict[str, Union[str, int]]]], context) ->
         event: An object passed through by AWS. Unused.
         context: An object passed through by AWS. Used for tracking.
     Environment Vars:
-        DB_CONNECT_INFO_SECRET_ARN (string): Secret ARN of the AWS secretsmanager secret for connecting to the database.
-        See shared_db.py's get_configuration for further details.
-        INTERNAL_RECONCILIATION_EXPIRATION_DAYS (int): Only reports updated before this many days ago will be deleted.
+        DB_CONNECT_INFO_SECRET_ARN (string):
+            Secret ARN of the AWS secretsmanager secret for connecting to the database.
+            See shared_db.py's get_configuration for further details.
+        INTERNAL_RECONCILIATION_EXPIRATION_DAYS (int):
+            Only reports updated before this many days ago will be deleted.
     """
     LOGGER.setMetadata(event, context)
 

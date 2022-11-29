@@ -144,7 +144,7 @@ This is a list of tests that should be created for existing Orca architecture. T
   1. Post a mocked-up manifest to the report bucket.
   1. Retry calls to the [Internal Reconcile Report API](../../../developer/api/api-gateway.md/#internal-reconcile-report-jobs-api) until job is complete.
   1. Check that job is successful, and expected errors can be retrieved through the API.
-     ::: warning
+     :::warning
      If the catalog is not reset prior to this test, or other tests run in parallel, other errors may be present.
      Make sure none of these errors contain your randomized keys.
      :::
@@ -168,7 +168,7 @@ This is a list of tests that should be created for existing Orca architecture. T
      :::
   1. Call the OrcaCopyToGlacierWorkflow to ingest the granules to Orca.
      :::tip
-     Make sure to cover ExcludeFileTypes being set, being unset, and excluding/allowing proper files in either case.
+     Make sure to cover excludedFileExtensions being set, being unset, and excluding/allowing proper files in either case.
      May require additional tests.
      :::
      :::tip
@@ -195,7 +195,7 @@ This is a list of tests that should be created for existing Orca architecture. T
      :::
   1. Call the OrcaRecoveryWorkflow to restore the files from Orca to another bucket.
      :::tip
-     Make sure to cover ExcludeFileTypes being set, being unset, and excluding/allowing proper files in either case.
+     Make sure to cover excludedFileExtensions being set, being unset, and excluding/allowing proper files in either case.
      May require additional tests.
      Ignored files will not be listed in output.
      :::

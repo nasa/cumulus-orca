@@ -56,7 +56,6 @@ fi
 
 mkdir build
 let return_code=$?
-
 check_rc $return_code "ERROR: Failed to create build directory."
 
 ## Create the virtual env. Remove it if it already exists.
@@ -73,7 +72,6 @@ source venv/bin/activate
 pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
 pip install -q -t build -r requirements.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
 let return_code=$?
-
 check_rc $return_code "ERROR: pip install encountered an error."
 
 # Install the aws-lambda psycopg2 libraries
@@ -103,29 +101,24 @@ check_rc $return_code "ERROR: Unable to install psycopg2."
 
 
 ## Copy the lambda files to build
-echo "INFO: Creating the Lambda package ..."
-cp *.py build/
+echo "INFO: Copying src Python files ..."
+find ./src -name '*.py' | xargs cp --parents -t build/
 let return_code=$?
-
-check_rc $return_code "ERROR: Failed to copy lambda files to build directory."
+check_rc $return_code "ERROR: Failed to copy src files to build directory."
 
 ## Copy the schema files to build
-mkdir -p build/schemas
-let return_code=$?
-check_rc $return_code "ERROR: Unable to create build/schemas directory."
 echo "INFO: Copying schema files ..."
-cp -r schemas/ build/schemas/
+cp -r schemas/ build/
 let return_code=$?
-
 check_rc $return_code "ERROR: Failed to copy schema files to build directory."
 
 ## Create the zip archive
+echo "INFO: Creating zip archive ..."
 cd build
 zip -qr ../internal_reconcile_report_orphan.zip .
 let return_code=$?
-cd -
-
 check_rc $return_code "ERROR: Failed to create zip archive."
+cd -
 
 ## Perform cleanup
 echo "INFO: Cleaning up build ..."
