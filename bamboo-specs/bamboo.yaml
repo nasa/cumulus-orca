@@ -103,7 +103,7 @@ plan:
   key: ORCA-RDOD
 plan-permissions: 
 - users: 
-  - rhassan
+  - rizbi.hassan
   groups: 
   - bamboo-orca-devs
   permissions: 
