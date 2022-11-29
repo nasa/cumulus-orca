@@ -83,8 +83,9 @@ variables:
 repositories: 
 - orca test 2: 
     scope: global
-triggers: 
-# Trigger com.atlassian.bamboo.triggers.atlassian-bamboo-triggers:poll is disabled. This state is not supported by YAML.
+triggers:
+- polling: # Does not actually poll, as we do not have webhooks enabled.
+    period: '60' #time in seconds
 branches: 
   create: manually
   delete: never
