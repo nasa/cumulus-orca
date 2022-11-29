@@ -64,8 +64,10 @@ Release ORCA Documentation:
   final-tasks: 
   - script: 
       interpreter: SHELL
-      scripts: 
-      - "#!/bin/bash\n\ndocker run --rm -v $(pwd):/build -w /build alpine \\\n   sh -c \"find /build ! -user $(id -u) -exec chown $(id -u):$(id -g) {} +\"\n   \n# cleanup docker image\ndocker rmi -f document_builder_orca"
+      scripts:
+      - |-
+        #!/bin/bash
+        docker run --rm -v $(pwd):/build -w /build alpine \\\n   sh -c \"find /build ! -user $(id -u) -exec chown $(id -u):$(id -g) {} +\"\n   \n# cleanup docker image\ndocker rmi -f document_builder_orca"
       description: Clean up permissions
   artifacts: 
   - name: known_env
@@ -73,7 +75,6 @@ Release ORCA Documentation:
     pattern: known_parameters
     shared: false
     required: false
-  artifact-subscriptions: []
 variables: 
   DOCKER_BASE: docker.io/node:16
   RELEASE_FLAG: 'true'
@@ -102,8 +103,6 @@ version: 2
 plan: 
   key: ORCA-RDOD
 plan-permissions: 
-- users: 
-  - rizbi.hassan
   groups: 
   - bamboo-orca-devs
   permissions: 
