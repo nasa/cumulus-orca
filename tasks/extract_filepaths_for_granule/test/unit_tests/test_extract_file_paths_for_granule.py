@@ -6,6 +6,9 @@ Description:  Unit tests for extract_file_paths_for_granule.py.
 import json
 import unittest
 import uuid
+
+from fastjsonschema import JsonSchemaValueException
+
 from test.helpers import create_handler_event, create_task_event
 from unittest.mock import MagicMock, Mock, patch
 
@@ -80,7 +83,7 @@ class TestExtractFilePaths(unittest.TestCase):
         }
         context = Mock()
         result = extract_filepaths_for_granule.handler(handler_input_event, context)
-        self.assertEqual(result, mock_task.return_value)
+        self.assertEqual(mock_task.return_value, result)
 
     @patch("extract_filepaths_for_granule.task")
     def test_handler_raises_error_bad_config(self, mock_task: MagicMock):
@@ -118,8 +121,9 @@ class TestExtractFilePaths(unittest.TestCase):
         with self.assertRaises(Exception) as ex:
             extract_filepaths_for_granule.handler(handler_input_event, context)
         self.assertEqual(
-            str(ex.exception), "data.fileBucketMaps[0] must contain "
-                               "['regex', 'bucket'] properties")
+            "data.fileBucketMaps[0] must contain "
+            "['regex', 'bucket'] properties",
+            str(ex.exception))
         mock_task.assert_not_called()
 
     @patch("extract_filepaths_for_granule.task")
@@ -127,34 +131,31 @@ class TestExtractFilePaths(unittest.TestCase):
         """
         Tests that expected error is raised on bad input such as missing granuleId.
         """
-        bad_handler_input_event = {
-            "input":
+        bad_handler_input_event = {"input": {
+            "granules": [
                 {
-                    "granules": [
+                    "status": "completed",
+                    "files": [
                         {
-                            "status": "completed",
-                            "files": [
-                                {
-                                    "checksumType": "md5",
-                                    "bucket": "podaac-ngap-dev-cumulus-test-input",
-                                    "type": "data",
-                                    "fileName": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
-                                    "key": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
-                                    "size": 2154070040
-                                }
-                            ],
-                            "endingDateTime": "2015-09-25T23:29:57.000Z",
+                            "checksumType": "md5",
+                            "bucket": "podaac-ngap-dev-cumulus-test-input",
+                            "type": "data",
+                            "fileName": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
+                            "key": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
+                            "size": 2154070040
                         }
-                    ]
-                 }
-             }
-        bad_handler_input_event["config"] = Mock()
+                    ],
+                    "endingDateTime": "2015-09-25T23:29:57.000Z",
+                }
+            ]
+        }, "config": Mock()}
         context = Mock()
         with self.assertRaises(Exception) as ex:
             extract_filepaths_for_granule.handler(bad_handler_input_event, context)
         self.assertEqual(
-            str(ex.exception), "data.granules[0] must contain "
-                               "['granuleId', 'files'] properties")
+            "data.granules[0] must contain "
+            "['granuleId', 'files'] properties",
+            str(ex.exception))
         mock_task.assert_not_called()
 
     @patch("extract_filepaths_for_granule.task")
@@ -196,15 +197,15 @@ class TestExtractFilePaths(unittest.TestCase):
         }
 
         mock_task.return_value = {
-                    "granules": [
-                        {
-                            "keys": [
-                                        "key1",
-                                        "key2"
-                                    ]
-                        }
+            "granules": [
+                {
+                    "keys": [
+                        "key1",
+                        "key2"
                     ]
                 }
+            ]
+        }
         context = Mock()
         with self.assertRaises(Exception) as ex:
             extract_filepaths_for_granule.handler(handler_input_event, context)
@@ -275,7 +276,7 @@ class TestExtractFilePaths(unittest.TestCase):
                     "type": "metadata",
                     "url_path": "{cmrMetadata.Granule.Collection.ShortName}___"
                                 "{cmrMetadata.Granule.Collection.VersionId}/{substring(file.name, "
-                    "0, 3)}",
+                                "0, 3)}",
                 },
             ],
             "granuleId": self.task_input_event["input"]["granules"][0]["granuleId"],
@@ -296,11 +297,9 @@ class TestExtractFilePaths(unittest.TestCase):
         self.task_input_event["input"].pop("granules", None)
         exp_err = "KeyError: \"event['input']['granules']\" is required"
         extract_filepaths_for_granule.LOGGER.error = Mock()
-        try:
+        with self.assertRaises(extract_filepaths_for_granule.ExtractFilePathsError) as cm:
             extract_filepaths_for_granule.task(self.task_input_event)
-            self.fail("ExtractFilePathsError expected")
-        except extract_filepaths_for_granule.ExtractFilePathsError as ex:
-            self.assertEqual(exp_err, str(ex))
+        self.assertEqual(exp_err, str(cm.exception))
 
     @patch("extract_filepaths_for_granule.LOGGER.debug")
     def test_task_no_granule(self, mock_debug: MagicMock):
@@ -311,11 +310,9 @@ class TestExtractFilePaths(unittest.TestCase):
 
         exp_err = "KeyError: \"event['input']['granules'][]['granuleId']\" is required"
         extract_filepaths_for_granule.LOGGER.error = Mock()
-        try:
+        with self.assertRaises(extract_filepaths_for_granule.ExtractFilePathsError) as cm:
             extract_filepaths_for_granule.task(self.task_input_event)
-            self.fail("ExtractFilePathsError expected")
-        except extract_filepaths_for_granule.ExtractFilePathsError as ex:
-            self.assertEqual(exp_err, str(ex))
+        self.assertEqual(exp_err, str(cm.exception))
 
     @patch("extract_filepaths_for_granule.LOGGER.debug")
     def test_task_no_files(self, mock_debug: MagicMock):
@@ -328,11 +325,9 @@ class TestExtractFilePaths(unittest.TestCase):
         ]
 
         exp_err = "KeyError: \"event['input']['granules'][]['files']\" is required"
-        try:
+        with self.assertRaises(extract_filepaths_for_granule.ExtractFilePathsError) as cm:
             extract_filepaths_for_granule.task(self.task_input_event)
-            self.fail("ExtractFilePathsError expected")
-        except extract_filepaths_for_granule.ExtractFilePathsError as ex:
-            self.assertEqual(exp_err, str(ex))
+        self.assertEqual(exp_err, str(cm.exception))
 
     @patch("extract_filepaths_for_granule.LOGGER.debug")
     def test_task_no_filepath(self, mock_debug):
@@ -378,11 +373,9 @@ class TestExtractFilePaths(unittest.TestCase):
         exp_err = (
             "KeyError: \"event['input']['granules'][]['files']['key']\" is required"
         )
-        try:
+        with self.assertRaises(extract_filepaths_for_granule.ExtractFilePathsError) as cm:
             extract_filepaths_for_granule.task(self.task_input_event)
-            self.fail("ExtractFilePathsError expected")
-        except extract_filepaths_for_granule.ExtractFilePathsError as ex:
-            self.assertEqual(exp_err, str(ex))
+        self.assertEqual(exp_err, str(cm.exception))
 
     @patch("extract_filepaths_for_granule.LOGGER.debug")
     def test_task_one_file(self, mock_debug: MagicMock):
@@ -485,7 +478,7 @@ class TestExtractFilePaths(unittest.TestCase):
                                 "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr",
                         }
                     ],
-                    "keys": [],  # this will be empty since the filetpye is .cmr
+                    "keys": [],  # this will be empty since the filetype is .cmr
                     "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
                 }
             ]
@@ -580,14 +573,14 @@ class TestExtractFilePaths(unittest.TestCase):
         """
         self.task_input_event["input"]["granules"][0][
             extract_filepaths_for_granule.INPUT_GRANULE_RECOVERY_BUCKET_OVERRIDE_KEY
-                ] = uuid.uuid4().__str__()
+        ] = uuid.uuid4().__str__()
 
         result = extract_filepaths_for_granule.task(self.task_input_event)
         self.assertEqual(
+            self.task_input_event["input"]["granules"][0][
+                extract_filepaths_for_granule.INPUT_GRANULE_RECOVERY_BUCKET_OVERRIDE_KEY],
             result["granules"][0]["keys"][0][
-                extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY
-                ], self.task_input_event["input"]["granules"][0][
-                    extract_filepaths_for_granule.INPUT_GRANULE_RECOVERY_BUCKET_OVERRIDE_KEY])
+                extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY])
 
     def test_exclude_file_types(self):
         """
@@ -599,35 +592,8 @@ class TestExtractFilePaths(unittest.TestCase):
         result_false = extract_filepaths_for_granule.should_exclude_files_type(
             "s3://test-bucket/will_not_exclude.cmr", [".xml", ".met"]
         )
-        self.assertEqual(result_true, True)
-        self.assertEqual(result_false, False)
-
-    def test_task_input_schema_return_error(self):
-        """
-        Test that having no granules["files"]["fileName"], ["key"],
-        and ["bucket"] give an error in input schema.
-        """
-        input_event = {
-            "granules": [
-                {
-                    "granuleId": "MOD09GQ.A0219115.N5aUCG.006.0656338553321",
-                    "version": "006",
-                    "files": [
-                        {
-                            "filename": "MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml",
-                        }
-                    ],
-                }
-            ]
-        }
-        # Validate the input is correct by matching with the input schema
-        try:
-            _INPUT_VALIDATE(input_event)
-        except Exception as ex:
-            self.assertEqual(
-                ex.message,
-                "data.granules[0].files[0] must contain ['fileName', 'key', 'bucket'] properties",
-            )
+        self.assertEqual(True, result_true)
+        self.assertEqual(False, result_false)
 
 
 if __name__ == "__main__":
