@@ -6,16 +6,13 @@ Description:  Unit tests for extract_file_paths_for_granule.py.
 import json
 import unittest
 import uuid
-
-from fastjsonschema import JsonSchemaValueException
-
-from test.helpers import create_handler_event, create_task_event
 from unittest.mock import MagicMock, Mock, patch
 
 # noinspection PyPackageRequirements
 import fastjsonschema as fastjsonschema
 
 import extract_filepaths_for_granule
+from test.helpers import create_handler_event, create_task_event
 
 # Generating schema validators can take time, so do it once and reuse.
 with open("schemas/input.json", "r") as raw_schema:
