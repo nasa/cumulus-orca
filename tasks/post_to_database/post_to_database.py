@@ -150,6 +150,7 @@ def create_status_for_job_and_files(
         )
 
     if len(file_parameters) == 0:
+        LOGGER.info(f"No files given for job '{job_id}' granule '{granule_id}'. Creating error status entry.")
         # No files given. Assume that this is in error.
         job_status = OrcaStatus.FAILED
         job_completion_time = datetime.datetime.now(datetime.timezone.utc).isoformat().__str__()
