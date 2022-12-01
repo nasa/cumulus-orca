@@ -25,7 +25,7 @@ Release ORCA Documentation:
         #!/bin/bash
 
         cat << EOF > tempdockerfile
-        FROM maven.earthdata.nasa.gov/cumulus_orca
+        FROM docker.io/node:16
 
         # Add NodeJS and Yarn repos & update package index
         COPY . /code
