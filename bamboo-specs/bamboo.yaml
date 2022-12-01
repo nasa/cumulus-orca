@@ -23,8 +23,9 @@ Release ORCA Documentation:
       scripts: 
       - |-
         #!/bin/bash
-
         cat << EOF > tempdockerfile
+        # tempdockerfile is located under build working directory of bamboo agent
+        # using cumulus_orca docker image raises authentication error during npm deploy
         FROM docker.io/node:16
 
         # Add NodeJS and Yarn repos & update package index
