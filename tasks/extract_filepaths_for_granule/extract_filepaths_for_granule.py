@@ -127,6 +127,7 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any]):
     return {OUTPUT_GRANULES_KEY: result_granules}
 
 
+# todo: create dedicated unit tests
 def get_regex_buckets(config: Dict[str, Any]) -> Dict[str, str]:
     """
     Gets a dict of regular expressions and the corresponding archive bucket for files
