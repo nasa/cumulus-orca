@@ -391,7 +391,7 @@ class TestPostToDatabase(
         mock_datetime: MagicMock,
     ):
         """
-        If all files failed, job should be marked as such.
+        If no files present for granule, job+granule should be marked as error.
         """
         job_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
