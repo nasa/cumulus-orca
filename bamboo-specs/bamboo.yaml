@@ -65,9 +65,7 @@ Release ORCA Documentation:
   - script: 
       interpreter: SHELL
       scripts:
-      - |-
-        #!/bin/bash
-        docker run --rm -v $(pwd):/build -w /build alpine \\\n   sh -c \"find /build ! -user $(id -u) -exec chown $(id -u):$(id -g) {} +\"\n   \n# cleanup docker image\ndocker rmi -f document_builder_orca"
+      - "#!/bin/bash\n\ndocker run --rm -v $(pwd):/build -w /build alpine \\\n   sh -c \"find /build ! -user $(id -u) -exec chown $(id -u):$(id -g) {} +\"\n   \n# cleanup docker image\ndocker rmi -f document_builder_orca"
       description: Clean up permissions
   artifacts: 
   - name: known_env
