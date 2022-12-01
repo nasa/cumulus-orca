@@ -579,7 +579,7 @@ class TestExtractFilePaths(unittest.TestCase):
         Test no 'granules' key in input event.
         """
         self.task_input_event["input"]["granules"][0][
-            extract_filepaths_for_granule.INPUT_RECOVERY_BUCKET_OVERRIDE_KEY
+            extract_filepaths_for_granule.INPUT_GRANULE_RECOVERY_BUCKET_OVERRIDE_KEY
                 ] = uuid.uuid4().__str__()
 
         result = extract_filepaths_for_granule.task(self.task_input_event)
@@ -587,7 +587,7 @@ class TestExtractFilePaths(unittest.TestCase):
             result["granules"][0]["keys"][0][
                 extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY
                 ], self.task_input_event["input"]["granules"][0][
-                    extract_filepaths_for_granule.INPUT_RECOVERY_BUCKET_OVERRIDE_KEY])
+                    extract_filepaths_for_granule.INPUT_GRANULE_RECOVERY_BUCKET_OVERRIDE_KEY])
 
     def test_exclude_file_types(self):
         """

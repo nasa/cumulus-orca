@@ -18,7 +18,11 @@ LOGGER = Logger()
 
 CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY = "excludedFileExtensions"
 CONFIG_FILE_BUCKETS_KEY = "fileBucketMaps"
-INPUT_RECOVERY_BUCKET_OVERRIDE_KEY = "recoveryBucketOverride"
+CONFIG_BUCKETS_KEY = "buckets"
+
+INPUT_GRANULES_KEY = "granules"
+INPUT_GRANULE_RECOVERY_BUCKET_OVERRIDE_KEY = "recoveryBucketOverride"
+
 OUTPUT_DESTINATION_BUCKET_KEY = "destBucket"
 OUTPUT_KEY_KEY = "key"
 
@@ -79,16 +83,13 @@ def task(event):
     result = {}
     try:
         regex_buckets = get_regex_buckets(event)
-        level = "event['input']"
         grans = []
-        for ev_granule in event["input"]["granules"]:
-            recovery_bucket_override = ev_granule.get(INPUT_RECOVERY_BUCKET_OVERRIDE_KEY, None)
+        for ev_granule in event["input"][INPUT_GRANULES_KEY]:
+            recovery_bucket_override = ev_granule.get(INPUT_GRANULE_RECOVERY_BUCKET_OVERRIDE_KEY, None)
             gran = ev_granule.copy()
             files = []
-            level = "event['input']['granules'][]"
             gran["granuleId"] = ev_granule["granuleId"]
             for afile in ev_granule["files"]:
-                level = "event['input']['granules'][]['files']"
                 file_name = afile["fileName"]
                 LOGGER.debug(f"Validating file {file_name}")
                 # filtering excludedFileExtensions
@@ -140,32 +141,26 @@ def get_regex_buckets(event) -> Dict[str, str]:
         Raises:
             ExtractFilePathsError: An error occurred parsing the input.
     """
-    try:
-        file_buckets = event["config"][CONFIG_FILE_BUCKETS_KEY]
-        # file_buckets example:
-        # [{'regex': '.*.h5$', 'sampleFileName': 'L0A_0420.h5', 'bucket': 'protected'},
-        # {'regex': '.*.iso.xml$', 'sampleFileName': 'L0A_0420.iso.xml', 'bucket': 'protected'},
-        # {'regex': '.*.h5.mp$', 'sampleFileName': 'L0A_0420.h5.mp', 'bucket': 'public'},
-        # {'regex': '.*.cmr.json$', 'sampleFileName': 'L0A_0420.cmr.json', 'bucket': 'public'}]
-        buckets = event["config"]["buckets"]
-        # buckets example:
-        # {"protected": {"name": "sndbx-cumulus-protected", "type": "protected"},
-        # "internal": {"name": "sndbx-cumulus-internal", "type": "internal"},
-        # "private": {"name": "sndbx-cumulus-private", "type": "private"},
-        # "public": {"name": "sndbx-cumulus-public", "type": "public"}}
-        regex_buckets = {}
-        for regx in file_buckets:
-            regex_buckets[regx["regex"]] = buckets[regx["bucket"]]["name"]
-        # regex_buckets example:
-        # {'.*.h5$': 'podaac-sndbx-cumulus-protected',
-        #  '.*.iso.xml$': 'podaac-sndbx-cumulus-protected',
-        #  '.*.h5.mp$': 'podaac-sndbx-cumulus-public',
-        #  '.*.cmr.json$': 'podaac-sndbx-cumulus-public'}
-    except KeyError as err:
-        level = "event['config']"
-        message = f'KeyError: "{level}[{str(err)}]" is required'
-        LOGGER.error(message)
-        raise ExtractFilePathsError(message)
+    file_buckets = event["config"][CONFIG_FILE_BUCKETS_KEY]
+    # file_buckets example:
+    # [{'regex': '.*.h5$', 'sampleFileName': 'L0A_0420.h5', 'bucket': 'protected'},
+    # {'regex': '.*.iso.xml$', 'sampleFileName': 'L0A_0420.iso.xml', 'bucket': 'protected'},
+    # {'regex': '.*.h5.mp$', 'sampleFileName': 'L0A_0420.h5.mp', 'bucket': 'public'},
+    # {'regex': '.*.cmr.json$', 'sampleFileName': 'L0A_0420.cmr.json', 'bucket': 'public'}]
+    buckets = event["config"][CONFIG_BUCKETS_KEY]
+    # buckets example:
+    # {"protected": {"name": "sndbx-cumulus-protected", "type": "protected"},
+    # "internal": {"name": "sndbx-cumulus-internal", "type": "internal"},
+    # "private": {"name": "sndbx-cumulus-private", "type": "private"},
+    # "public": {"name": "sndbx-cumulus-public", "type": "public"}}
+    regex_buckets = {}
+    for regx in file_buckets:
+        regex_buckets[regx["regex"]] = buckets[regx["bucket"]]["name"]
+    # regex_buckets example:
+    # {'.*.h5$': 'podaac-sndbx-cumulus-protected',
+    #  '.*.iso.xml$': 'podaac-sndbx-cumulus-protected',
+    #  '.*.h5.mp$': 'podaac-sndbx-cumulus-public',
+    #  '.*.cmr.json$': 'podaac-sndbx-cumulus-public'}
     return regex_buckets
 
 
