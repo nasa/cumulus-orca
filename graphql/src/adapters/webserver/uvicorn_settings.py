@@ -7,7 +7,7 @@ class UvicornSettings(BaseSettings):
     Common settings used by the framework.
     """
     HOST: str = "0.0.0.0"
-    PORT: int = 5000
+    PORT: int = 5000  # Used for local testing. Overwritten in Dockerfile.
     DEV: bool = True if os.environ.get("ORCA_ENV", "production") == "development" else False
 
 

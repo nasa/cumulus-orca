@@ -46,7 +46,7 @@ and includes an additional section for migration notes.
 ### Added
 - *ORCA-336*
   - Added a new standard SQS between archive ORCA bucket and `post_copy_request_to_queue` lambda so that the bucket now triggers the SQS upon successful object retrieval from glacier.
-- *ORCA-554*, *ORCA-561*, *ORCA-579* GraphQL image, service, and Load Balancer will now be deployed by TF.
+- *ORCA-554*, *ORCA-561*, *ORCA-579*, *ORCA-581* GraphQL image, service, and Load Balancer will now be deployed by TF.
 - *ORCA-351*
   - Added new optional `recoveryBucketOverride` property to `extract_filepaths_for_granule` input schema so that data managers can now specify their own buckets for recovery if desired.
 
