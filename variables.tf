@@ -154,6 +154,13 @@ variable "metadata_queue_message_retention_time_seconds" {
 }
 
 
+variable "archive_recovery_queue_message_retention_time_seconds" {
+  type        = number
+  description = "The number of seconds archive-recovery-queue SQS retains a message in seconds. Maximum value is 14 days."
+  default     = 777600 #9 days
+}
+
+
 variable "orca_default_recovery_type" {
   type        = string
   description = "The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'."
@@ -323,9 +330,9 @@ variable "vpc_endpoint_id" {
 
 
 variable "log_level" {
-  type            = string
-  description     = "Sets the verbose of powertools logger. Must be one of 'INFO', 'DEBUG', 'WARN', 'ERROR'. Defaults to 'INFO'."
-  default         = "INFO"
+  type        = string
+  description = "Sets the verbose of powertools logger. Must be one of 'INFO', 'DEBUG', 'WARN', 'ERROR'. Defaults to 'INFO'."
+  default     = "INFO"
   validation {
     condition     = contains(["INFO", "DEBUG", "WARN", "ERROR"], var.log_level)
     error_message = "Valid values are 'INFO'|'DEBUG'|'WARN'|'ERROR'."

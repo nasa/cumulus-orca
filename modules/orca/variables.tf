@@ -105,6 +105,12 @@ variable "dlq_subscription_email" {
 }
 
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
+variable "archive_recovery_queue_message_retention_time_seconds" {
+  type        = number
+  description = "The number of seconds archive-recovery-queue SQS retains a message in seconds. Maximum value is 14 days."
+}
+
+
 variable "db_admin_username" {
   description = "Username for RDS database administrator authentication"
   type        = string
@@ -136,7 +142,7 @@ variable "orca_default_recovery_type" {
 
 
 variable "orca_default_storage_class" {
-  type           = string
+  type        = string
   description = "The class of storage to use when ingesting files. Can be overridden by collection config. Must match value in storage_class table."
 }
 

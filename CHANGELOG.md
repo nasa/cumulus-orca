@@ -15,6 +15,9 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 ### Changed
+- *ORCA-336*
+  - `request_from_archive` lambda now posts to the new SQS for files that have already been recovered from glacier instead of throwing an error.
+  - `post_copy_request_to_queue` lambda now receives event messages of files recovered from archive from the new archive recovery SQS instead of archive bucket.
 - *ORCA-522*
   - Removed `run_cumulus_task` function from extract_filepath_for_granule lambda to decouple ORCA from Cumulus.
 - *ORCA-575*
@@ -41,13 +44,41 @@ and includes an additional section for migration notes.
   - Postgres table/user names can now begin with an '_' and contain '$' if your Postgres DB version supports this.
 
 ### Added
+- *ORCA-336*
+  - Added a new standard SQS between archive ORCA bucket and `post_copy_request_to_queue` lambda so that the bucket now triggers the SQS upon successful object retrieval from glacier.
 - *ORCA-554*, *ORCA-561*, *ORCA-579* GraphQL image, service, and Load Balancer will now be deployed by TF.
+- *ORCA-351*
+  - Added new optional `recoveryBucketOverride` property to `extract_filepaths_for_granule` input schema so that data managers can now specify their own buckets for recovery if desired.
 
 ### Migration Notes
 - If utilizing the `copied_to_glacier` [output property](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/tasks/copy_to_glacier/schemas/output.json#L47) of `copy_to_glacier`, 
   rename to new key `copied_to_orca`.
 - If utilizing the `orca_lambda_copy_to_glacier_arn` [output of Terraform](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/outputs.tf#L8), likely as a means of pulling the lambda into your workflows, 
   rename to new key `orca_lambda_copy_to_archive_arn`
+- Use the optional `recoveryBucketOverride` property in `extract_filepaths_for_granule` input schema to specify a recovery bucket. See example below.
+
+```json
+
+{
+  "input":
+    {
+      "granules": [
+        {
+          "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
+          "recoveryBucketOverride": "<YOUR_RECOVERY_BUCKET>",
+          "files": [
+            {
+              "key": "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5",
+              "bucket": "cumulus-test-sandbox-protected",
+              "fileName": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5",
+            }
+          ]
+        }
+      ]
+  }
+}
+
+```
 
 ## [6.0.2]
 ### Changed

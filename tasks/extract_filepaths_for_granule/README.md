@@ -47,7 +47,7 @@ The `modules/lambdas/main.tf` shows an example of deploying this lambda through 
 resource "aws_lambda_function" "extract_filepaths_for_granule" {
   ## REQUIRED
   function_name = "${var.prefix}_extract_filepaths_for_granule"
-  role          = module.restore_object_arn.restore_object_role_arn
+  role          = aws_iam_role.extract_filepaths_for_granule_iam_role.arn
 
   ## OPTIONAL
   description      = "Extracts bucket info and granules filepath from the CMA for ORCA request_from_archive lambda."
@@ -56,12 +56,18 @@ resource "aws_lambda_function" "extract_filepaths_for_granule" {
   memory_size      = var.orca_recovery_lambda_memory_size
   runtime          = "python3.9"
   source_code_hash = filebase64sha256("${path.module}/../../tasks/extract_filepaths_for_granule/extract_filepaths_for_granule.zip")
-  tags             = local.tags
+  tags             = var.tags
   timeout          = var.orca_recovery_lambda_timeout
 
   vpc_config {
     subnet_ids         = var.lambda_subnet_ids
     security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+  }
+  environment {
+    variables = {
+      POWERTOOLS_SERVICE_NAME = "orca.recovery"
+      LOG_LEVEL               = var.log_level
+    }
   }
 }
 ```
@@ -77,7 +83,7 @@ resource "aws_lambda_function" "extract_filepaths_for_granule" {
 
 
 ## Input
-The lambda handler event excepts a dictionary having a list of granules as input. Check the input schema [here](https://github.com/nasa/cumulus-orca/blob/master/tasks/extract_filepaths_for_granule/schemas/input.json) and the configuration schema [here](https://github.com/nasa/cumulus-orca/blob/master/tasks/extract_filepaths_for_granule/schemas/config.json). An example input to the Lambda function can be seen below.
+The lambda handler event expects a dictionary having a list of granules as input. Check the input schema [here](https://github.com/nasa/cumulus-orca/blob/master/tasks/extract_filepaths_for_granule/schemas/input.json) and the configuration schema [here](https://github.com/nasa/cumulus-orca/blob/master/tasks/extract_filepaths_for_granule/schemas/config.json). An example input to the Lambda function can be seen below.
 ```
 {
    "payload":{

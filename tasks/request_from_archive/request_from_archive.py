@@ -34,6 +34,7 @@ OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY = "RESTORE_REQUEST_RETRIES"
 OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY = "RESTORE_RETRY_SLEEP_SECS"
 OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY = "DEFAULT_RECOVERY_TYPE"
 OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY = "STATUS_UPDATE_QUEUE_URL"
+OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY = "ARCHIVE_RECOVERY_QUEUE_URL"
 OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY = "ORCA_DEFAULT_BUCKET"
 
 EVENT_CONFIG_KEY = "config"
@@ -132,8 +133,9 @@ def task(
         )
         retry_sleep_secs = DEFAULT_RESTORE_RETRY_SLEEP_SECS
 
-    # Get QUEUE URL
+    # Get QUEUE URLS
     status_update_queue_url = str(os.environ[OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY])
+    archive_recovery_queue_url = str(os.environ[OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY])
 
     # Use the default archive bucket if none is specified for the collection or otherwise given.
     event[EVENT_CONFIG_KEY][
@@ -170,6 +172,7 @@ def task(
         recovery_type,
         exp_days,
         status_update_queue_url,
+        archive_recovery_queue_url
     )
 
 
@@ -230,6 +233,7 @@ def inner_task(
     recovery_type: str,
     restore_expire_days: int,
     status_update_queue_url: str,
+    archive_recovery_queue_url: str,
 ) -> Dict[str, Any]:  # pylint: disable-msg=unused-argument
     """
     Task called by the handler to perform the work.
@@ -258,6 +262,8 @@ def inner_task(
             restore_expire_days: The number of days the restored file will be accessible
                 in the S3 bucket before it expires.
             status_update_queue_url: The URL of the SQS queue to post status to.
+            archive_recovery_queue_url: The URL of the SQS queue that request_from_archive posts to
+                in case of files already recovered from archive.
         Returns:
             See schemas/output.json
         Raises:
@@ -377,6 +383,7 @@ def inner_task(
             recovery_type,
             job_id,
             status_update_queue_url,
+            archive_recovery_queue_url
         )
 
     # Cumulus expects response (payload.granules) to be a list of granule objects.
@@ -398,6 +405,7 @@ def process_granule(
     recovery_type: str,
     job_id: str,
     status_update_queue_url: str,
+    archive_recovery_queue_url: str
 ) -> None:  # pylint: disable-msg=unused-argument
     """Call restore_object for the files in the granule_list. Modifies granule for output.
     Args:
@@ -421,6 +429,8 @@ def process_granule(
             'Standard'|'Bulk'|'Expedited'.
         job_id: The unique identifier used for tracking requests.
         status_update_queue_url: The URL of the SQS queue to post status to.
+        archive_recovery_queue_url: The URL of the SQS queue that request_from_archive posts to
+            in case of files already recovered from archive.
 
     Raises: RestoreRequestError if any file restore could not be initiated.
     """
@@ -443,6 +453,7 @@ def process_granule(
                         attempt,
                         job_id,
                         recovery_type,
+                        archive_recovery_queue_url
                     )
 
                     # Successful restore
@@ -569,9 +580,11 @@ def restore_object(
     attempt: int,
     job_id: str,
     recovery_type: str,
+    archive_recovery_queue_url: str,
 ) -> None:
     # noinspection SpellCheckingInspection
     """Restore an archived S3 object in an Amazon S3 bucket.
+       Posts to archive recovery queue if object is already recovered from archive bucket.
     Args:
         s3_cli: An instance of boto3 s3 client.
         key: The key of the archived object being restored.
@@ -582,26 +595,35 @@ def restore_object(
         job_id: The unique id of the job. Used for logging.
         recovery_type: Valid values are
             'Standard'|'Bulk'|'Expedited'.
+        archive_recovery_queue_url: The URL of the SQS queue that request_from_archive posts to
+            in case of files already recovered from archive.
     Raises:
-        ClientError: Raises ClientErrors from restore_object, or if the file is already restored.
+        None
     """
     request = {"Days": days, "GlacierJobParameters": {"Tier": recovery_type}}
     # Submit the request
     restore_result = s3_cli.restore_object(
         Bucket=db_archive_bucket_key, Key=key, RestoreRequest=request
-    )  # Allow ClientErrors to bubble up.
+    )
     if restore_result["ResponseMetadata"]["HTTPStatusCode"] == 200:
-        # Will have a non-error path after https://bugs.earthdata.nasa.gov/browse/ORCA-336
-        raise ClientError(
-            {
-                "Error": {
-                    "Code": "HTTPStatus: 200",
-                    "Message": f"File '{key}' in bucket "
-                    f"'{db_archive_bucket_key}' has already been recovered.",
-                }
-            },
-            "restore_object",
-        )
+        LOGGER.info(f"File '{key}' in bucket '{db_archive_bucket_key}' has already been recovered"
+                    "Sending to archive recovery SQS")
+        # Create message format for sending to archive recovery SQS
+        message = {
+                    "Records": [
+                            {
+                                "s3": {
+                                    "bucket": {
+                                        "name": db_archive_bucket_key
+                                        },
+                                    "object": {
+                                        "key": key
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+        shared_recovery.post_entry_to_standard_queue(message, archive_recovery_queue_url)
 
     LOGGER.info(
         f"Restore {key} from {db_archive_bucket_key} "
