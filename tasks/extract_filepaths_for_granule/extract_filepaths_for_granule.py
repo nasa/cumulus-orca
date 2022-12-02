@@ -204,7 +204,7 @@ def handler(event: Dict[str, Union[str, int]],
                     other dictionary keys may be included, but are not used.
                 other dictionary keys may be included, but are not used.
 
-            Example: 
+            Example:
                     {
                         "event": {
                             "granules": [
