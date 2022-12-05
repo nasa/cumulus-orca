@@ -1,12 +1,12 @@
 ---
 id: research-multipart-chunksize
 title: Multipart Chunksize Research Notes
-description: Research Notes on Modifying Multipart-Chunksize for copy_to_glacier.
+description: Research Notes on Modifying Multipart-Chunksize for copy_to_archive.
 ---
 
 ## Overview
 
-[copy_to_glacier](https://github.com/nasa/cumulus-orca/blob/2f2600a2edd85e0af216d78180c5d46ebda03060/tasks/copy_to_glacier/copy_to_glacier.py#L50)
+[copy_to_archive](https://github.com/nasa/cumulus-orca/blob/2f2600a2edd85e0af216d78180c5d46ebda03060/tasks/copy_to_glacier/copy_to_glacier.py#L50)
 uses a copy command that has a chunk-size for multi-part transfers.
 We currently are using the default value of 8mb, which will cause problems when transferring large files, sometimes exceeding 120Gb.
 
@@ -28,7 +28,7 @@ We currently are using the default value of 8mb, which will cause problems when 
   )
   ```
 - This will require a variable passed into the lambda.
-  - Could be set at the collection level under `config['collection']['s3MultipartChunksizeMb']` with a default value in the lambdas/main.tf entry for `copy_to_glacier` defined as
+  - Could be set at the collection level under `config['collection']['s3MultipartChunksizeMb']` with a default value in the lambdas/main.tf entry for `copy_to_archive` defined as
     ```
     environment {
       variables = {
@@ -37,7 +37,7 @@ We currently are using the default value of 8mb, which will cause problems when 
       }
     }
     ```
-  - Could also be an overall environment variable, though this is less flexible. In the lambdas/main.tf entry for `copy_to_glacier` this would look like
+  - Could also be an overall environment variable, though this is less flexible. In the lambdas/main.tf entry for `copy_to_archive` this would look like
     ```
     environment {
       variables = {

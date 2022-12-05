@@ -4,27 +4,45 @@ Name: extract_filepaths_for_granule.py
 Description:  Extracts the keys (filepaths) for a granule's files from a Cumulus Message.
 """
 
+import json
 import re
-from typing import List
+from typing import Dict, List, Union
 
-from cumulus_logger import CumulusLogger
-from run_cumulus_task import run_cumulus_task
+import fastjsonschema as fastjsonschema
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext
+from fastjsonschema import JsonSchemaException
 
-# instantiate Cumulus logger
-LOGGER = CumulusLogger(name="ORCA")
+# Set AWS powertools logger
+LOGGER = Logger()
 
 CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY = "excludedFileExtensions"
 CONFIG_FILE_BUCKETS_KEY = "fileBucketMaps"
-
+INPUT_RECOVERY_BUCKET_OVERRIDE_KEY = "recoveryBucketOverride"
 OUTPUT_DESTINATION_BUCKET_KEY = "destBucket"
 OUTPUT_KEY_KEY = "key"
+
+# Generating schema validators can take time, so do it once and reuse.
+try:
+    with open("schemas/input.json", "r") as raw_schema:
+        input_schema = json.loads(raw_schema.read())
+        _VALIDATE_INPUT = fastjsonschema.compile(input_schema)
+    with open("schemas/config.json", "r") as raw_schema:
+        config_schema = json.loads(raw_schema.read())
+        _VALIDATE_CONFIG = fastjsonschema.compile(config_schema)
+    with open("schemas/output.json", "r") as raw_schema:
+        output_schema = json.loads(raw_schema.read())
+        _VALIDATE_OUTPUT = fastjsonschema.compile(output_schema)
+except Exception as ex:
+    LOGGER.error(f"Could not build schema validator: {ex}")
+    raise
 
 
 class ExtractFilePathsError(Exception):
     """Exception to be raised if any errors occur"""
 
 
-def task(event, context):  # pylint: disable-msg=unused-argument
+def task(event):
     """
     Task called by the handler to perform the work.
 
@@ -32,7 +50,6 @@ def task(event, context):  # pylint: disable-msg=unused-argument
 
         Args:
             event (dict): passed through from the handler
-            context (Object): passed through from the handler
 
         Returns:
             dict: dict containing granuleId and keys. See handler for detail.
@@ -40,7 +57,7 @@ def task(event, context):  # pylint: disable-msg=unused-argument
         Raises:
             ExtractFilePathsError: An error occurred parsing the input.
     """
-    LOGGER.debug("event: {event}", event=event)
+    LOGGER.debug(f"event: {event}")
     try:
         config = event["config"]
         exclude_file_types = config.get(CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY, None)
@@ -56,15 +73,16 @@ def task(event, context):  # pylint: disable-msg=unused-argument
                 f"list {exclude_file_types} was found."
             )
     except KeyError as ke:
-        message = "Key {key} is missing from the event configuration: {config}"
-        LOGGER.error(message, key=ke, config=config)
-        raise KeyError(message.format(key=ke, config=config))
+        message = f"Key {ke} is missing from the event configuration: {config}"
+        LOGGER.error(message)
+        raise KeyError(message)
     result = {}
     try:
         regex_buckets = get_regex_buckets(event)
         level = "event['input']"
         grans = []
         for ev_granule in event["input"]["granules"]:
+            recovery_bucket_override = ev_granule.get(INPUT_RECOVERY_BUCKET_OVERRIDE_KEY, None)
             gran = ev_granule.copy()
             files = []
             level = "event['input']['granules'][]"
@@ -78,20 +96,26 @@ def task(event, context):  # pylint: disable-msg=unused-argument
                     LOGGER.debug(f"File {file_name} will be restored")
                     file_key = afile["key"]
                     LOGGER.debug(f"Retrieving information for {file_key}")
-                    dest_bucket = None
-                    for key in regex_buckets:
-                        pattern = re.compile(key)
-                        if pattern.match(file_name):
-                            dest_bucket = regex_buckets[key]
-                            LOGGER.debug(
-                                "Found retrieval destination {dest_bucket} for {file}",
-                                dest_bucket=dest_bucket,
-                                file=file_name,
-                            )
+
+                    if recovery_bucket_override is not None:
+                        destination_bucket = recovery_bucket_override
+                    else:
+                        matching_regex = next(
+                            filter(lambda key: re.compile(key).match(file_name), regex_buckets),
+                            None
+                        )
+                        if matching_regex is None:
+                            raise ExtractFilePathsError(f"No matching regex for '{file_key}'")
+                        destination_bucket = regex_buckets[matching_regex]
+
+                    LOGGER.debug(
+                        f"Found retrieval destination {destination_bucket} for {file_name}"
+                    )
+
                     files.append(
                         {
                             OUTPUT_KEY_KEY: file_key,
-                            OUTPUT_DESTINATION_BUCKET_KEY: dest_bucket,
+                            OUTPUT_DESTINATION_BUCKET_KEY: destination_bucket,
                         }
                     )
             gran["keys"] = files
@@ -102,7 +126,7 @@ def task(event, context):  # pylint: disable-msg=unused-argument
     return result
 
 
-def get_regex_buckets(event):
+def get_regex_buckets(event) -> Dict[str, str]:
     """
     Gets a dict of regular expressions and the corresponding archive bucket for files
     matching the regex.
@@ -147,7 +171,7 @@ def get_regex_buckets(event):
 
 def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> bool:
     """
-    Tests whether or not file is included in {excludedFileExtensions} from copy to glacier.
+    Tests whether or not file is included in {excludedFileExtensions} from copy_to_archive.
     Args:
         file_key: The key of the file within the s3 bucket.
         exclude_file_types: List of extensions to exclude in the backup.
@@ -165,7 +189,9 @@ def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> b
     return False
 
 
-def handler(event, context):  # pylint: disable-msg=unused-argument
+@LOGGER.inject_lambda_context
+def handler(event: Dict[str, Union[str, int]],
+            context: LambdaContext):  # pylint: disable-msg=unused-argument
     """Lambda handler. Extracts the key's for a granule from an input dict.
 
     Args:
@@ -178,26 +204,29 @@ def handler(event, context):  # pylint: disable-msg=unused-argument
                     other dictionary keys may be included, but are not used.
                 other dictionary keys may be included, but are not used.
 
-            Example: {
-                        "event":{
-                            "granules":[
+            Example:
+                    {
+                        "event": {
+                            "granules": [
                                 {
-                                    "granuleId":"granxyz",
-                                    "version":"006",
-                                    "files":[
+                                    "granuleId": "granxyz",
+                                    "recoveryBucketOverride": "test-recovery-bucket",
+                                    "version": "006",
+                                    "files": [
                                     {
-                                        "fileName":"file1",
-                                        "key":"key1",
-                                        "source":"s3://dr-test-sandbox-protected/file1",
-                                        "type":"metadata"
+                                        "fileName": "file1",
+                                        "key": "key1",
+                                        "source": "s3://dr-test-sandbox-protected/file1",
+                                        "type": "metadata"
                                     }
                                     ]
                                 }
                             ]
                         }
-                        }
+                    }
 
-        context (Object): None
+        context: This object provides information about the lambda invocation, function,
+            and execution env.
 
     Returns:
         dict: A dict with the following keys:
@@ -214,6 +243,24 @@ def handler(event, context):  # pylint: disable-msg=unused-argument
     Raises:
         ExtractFilePathsError: An error occurred parsing the input.
     """
-    LOGGER.setMetadata(event, context)
-    result = run_cumulus_task(task, event, context)
+    try:
+        _VALIDATE_INPUT(event["input"])
+    except JsonSchemaException as json_schema_exception:
+        LOGGER.error(json_schema_exception)
+        raise
+
+    try:
+        _VALIDATE_CONFIG(event["config"])
+    except JsonSchemaException as json_schema_exception:
+        LOGGER.error(json_schema_exception)
+        raise
+
+    result = task(event)
+
+    try:
+        _VALIDATE_OUTPUT(result)
+    except JsonSchemaException as json_schema_exception:
+        LOGGER.error(json_schema_exception)
+        raise
+
     return result

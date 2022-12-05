@@ -52,4 +52,3 @@ then
 else
   echo "All tests succeeded."
 fi
-exit 0

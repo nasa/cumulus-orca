@@ -1,6 +1,6 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/internal_reconcile_report_job/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/internal_reconcile_report_job/requirements.txt)
 
-**Lambda function internal_reconcile_report_job **
+**Lambda function internal_reconcile_report_job**
 
 Receives page index from end user and returns available internal reconciliation jobs from the Orca database.
 

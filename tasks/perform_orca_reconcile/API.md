@@ -17,7 +17,8 @@
 Name: perform_orca_reconcile.py
 
 Description: Compares entries in reconcile_s3_objects to the Orca catalog,
-writing differences to reconcile_catalog_mismatch_report, reconcile_orphan_report, and reconcile_phantom_report.
+writing differences to reconcile_catalog_mismatch_report,
+reconcile_orphan_report, and reconcile_phantom_report.
 
 <a id="perform_orca_reconcile.task"></a>
 
@@ -29,13 +30,14 @@ def task(job_id: int, orca_archive_location: str,
          db_connect_info: Dict) -> Dict[str, Any]
 ```
 
-Reads the record to find the location of manifest.json, then uses that information to spawn of business logic
+Reads the record to find the location of manifest.json,
+then uses that information to spawn of business logic
 for pulling manifest's data into sql.
 
 **Arguments**:
 
 - `job_id` - The id of the job containing s3 inventory info.
-- `orca_archive_location` - The name of the glacier bucket the job targets.
+- `orca_archive_location` - The name of the archive bucket the job targets.
 - `internal_report_queue_url` - The url of the queue containing the message.
 - `message_receipt_handle` - The ReceiptHandle for the event in the queue.
 - `db_connect_info` - See shared_db.py's get_configuration for further details.
@@ -123,26 +125,31 @@ Removes the completed job from the queue, preventing it from going to the dead-l
 **Arguments**:
 
 - `internal_report_queue_url` - The url of the queue containing the message.
-- `message_receipt_handle` - message_receipt_handle: The ReceiptHandle for the event in the queue.
+- `message_receipt_handle` - The ReceiptHandle for the event in the queue.
 
 <a id="perform_orca_reconcile.handler"></a>
 
 #### handler
 
 ```python
+@LOGGER.inject_lambda_context
 def handler(event: Dict[str, Dict[str, Dict[str, Union[str, int]]]],
-            context) -> Dict[str, Any]
+            context: LambdaContext) -> Dict[str, Any]
 ```
 
-Lambda handler. Receives a list of s3 events from an SQS queue, and loads the s3 inventory specified into postgres.
+Lambda handler. Receives a list of s3 events from an SQS queue,
+and loads the s3 inventory specified into postgres.
 
 **Arguments**:
 
 - `event` - See input.json for details.
-- `context` - An object passed through by AWS. Used for tracking.
+- `context` - This object provides information about the lambda invocation, function,
+  and execution env.
   Environment Vars:
-- `INTERNAL_REPORT_QUEUE_URL` _string_ - The URL of the SQS queue the job came from.
-- `DB_CONNECT_INFO_SECRET_ARN` _string_ - Secret ARN of the AWS secretsmanager secret for connecting to the database.
+  INTERNAL_REPORT_QUEUE_URL (string):
+  The URL of the SQS queue the job came from.
+  DB_CONNECT_INFO_SECRET_ARN (string):
+  Secret ARN of the AWS secretsmanager secret for connecting to the database.
   See shared_db.py's get_configuration for further details.
 - `Returns` - See output.json for details.
 

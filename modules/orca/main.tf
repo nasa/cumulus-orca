@@ -26,6 +26,8 @@ module "orca_lambdas" {
   db_connect_info_secret_arn                           = module.orca_secretsmanager.secretsmanager_arn
   orca_default_bucket                                  = var.orca_default_bucket
   orca_secretsmanager_s3_access_credentials_secret_arn = module.orca_secretsmanager.s3_access_credentials_secret_arn
+  orca_sqs_archive_recovery_queue_arn                  = module.orca_sqs.orca_sqs_archive_recovery_queue_arn
+  orca_sqs_archive_recovery_queue_id                   = module.orca_sqs.orca_sqs_archive_recovery_queue_id
   orca_sqs_internal_report_queue_id                    = module.orca_sqs.orca_sqs_internal_report_queue_id
   orca_sqs_metadata_queue_arn                          = module.orca_sqs.orca_sqs_metadata_queue_arn
   orca_sqs_metadata_queue_id                           = module.orca_sqs.orca_sqs_metadata_queue_id
@@ -53,6 +55,7 @@ module "orca_lambdas" {
   orca_recovery_retry_limit                     = var.orca_recovery_retry_limit
   orca_recovery_retry_interval                  = var.orca_recovery_retry_interval
   orca_recovery_retry_backoff                   = var.orca_recovery_retry_backoff
+  log_level                                     = var.log_level
 }
 
 ## orca_lambdas_secondary - lambdas module that is dependent on resources that presently are created after most lambdas
@@ -86,6 +89,7 @@ module "orca_lambdas_secondary" {
   orca_reconciliation_lambda_memory_size = var.orca_reconciliation_lambda_memory_size
   orca_reconciliation_lambda_timeout     = var.orca_reconciliation_lambda_timeout
   s3_report_frequency                    = var.s3_report_frequency
+  log_level                              = var.log_level
 }
 
 
@@ -109,11 +113,11 @@ module "orca_workflows" {
   ## --------------------------
   ## REQUIRED
   orca_default_bucket                           = var.orca_default_bucket
-  orca_lambda_copy_to_glacier_arn               = module.orca_lambdas.copy_to_glacier_arn
+  orca_lambda_copy_to_archive_arn               = module.orca_lambdas.copy_to_archive_arn
   orca_lambda_extract_filepaths_for_granule_arn = module.orca_lambdas.extract_filepaths_for_granule_arn
   orca_lambda_get_current_archive_list_arn      = module.orca_lambdas.get_current_archive_list_arn
   orca_lambda_perform_orca_reconcile_arn        = module.orca_lambdas.perform_orca_reconcile_arn
-  orca_lambda_request_files_arn                 = module.orca_lambdas.request_files_arn
+  orca_lambda_request_from_archive_arn          = module.orca_lambdas.request_from_archive_arn
 }
 
 
@@ -176,7 +180,8 @@ module "orca_sqs" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  prefix = var.prefix
+  buckets = var.buckets
+  prefix  = var.prefix
 
   ## OPTIONAL
   tags = var.tags
@@ -190,22 +195,60 @@ module "orca_sqs" {
   orca_reports_bucket_name = var.orca_reports_bucket_name
 
   ## OPTIONAL
-  internal_report_queue_message_retention_time_seconds = var.internal_report_queue_message_retention_time_seconds
-  metadata_queue_message_retention_time_seconds        = var.metadata_queue_message_retention_time_seconds
-  orca_reconciliation_lambda_timeout                   = var.orca_reconciliation_lambda_timeout
-  s3_inventory_queue_message_retention_time_seconds    = var.s3_inventory_queue_message_retention_time_seconds
-  sqs_delay_time_seconds                               = var.sqs_delay_time_seconds
-  sqs_maximum_message_size                             = var.sqs_maximum_message_size
-  staged_recovery_queue_message_retention_time_seconds = var.staged_recovery_queue_message_retention_time_seconds
-  status_update_queue_message_retention_time_seconds   = var.status_update_queue_message_retention_time_seconds
+  archive_recovery_queue_message_retention_time_seconds = var.archive_recovery_queue_message_retention_time_seconds
+  internal_report_queue_message_retention_time_seconds  = var.internal_report_queue_message_retention_time_seconds
+  metadata_queue_message_retention_time_seconds         = var.metadata_queue_message_retention_time_seconds
+  orca_reconciliation_lambda_timeout                    = var.orca_reconciliation_lambda_timeout
+  s3_inventory_queue_message_retention_time_seconds     = var.s3_inventory_queue_message_retention_time_seconds
+  sqs_delay_time_seconds                                = var.sqs_delay_time_seconds
+  sqs_maximum_message_size                              = var.sqs_maximum_message_size
+  staged_recovery_queue_message_retention_time_seconds  = var.staged_recovery_queue_message_retention_time_seconds
+  status_update_queue_message_retention_time_seconds    = var.status_update_queue_message_retention_time_seconds
 }
 
+## orca_ecs - ecs module that sets up ecs cluster
+## =============================
+module "orca_ecs" {
+  source = "../ecs"
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  prefix = var.prefix
+
+  ## OPTIONAL
+  tags = var.tags
+}
+
+## orca_graph_ql - graphql module that sets up centralized db code
+## =============================
+module "orca_graph_ql" {
+  source     = "../graph_ql"
+  depends_on = [module.orca_lambdas, module.orca_ecs, module.orca_secretsmanager] ## secretsmanager sets up db connection secrets.
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  lambda_subnet_ids        = var.lambda_subnet_ids
+  permissions_boundary_arn = var.permissions_boundary_arn
+  prefix                   = var.prefix
+  vpc_id                   = var.vpc_id
+
+  ## OPTIONAL
+  tags = var.tags
+
+  ## --------------------------
+  ## ORCA Variables
+  ## --------------------------
+  ## REQUIRED
+  ecs_cluster_id                     = module.orca_ecs.ecs_cluster_id
+}
 
 ## orca_api_gateway - api gateway module
 ## =============================================================================
 module "orca_api_gateway" {
   depends_on = [
-    module.orca_lambdas
+    module.orca_lambdas, module.orca_graph_ql
   ]
   source = "../api-gateway"
   ## --------------------------

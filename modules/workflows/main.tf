@@ -44,13 +44,13 @@ module "orca_recovery_workflow" {
 
   # Task ARNS needed for workflow template
   orca_lambda_extract_filepaths_for_granule_arn = var.orca_lambda_extract_filepaths_for_granule_arn
-  orca_lambda_request_files_arn                 = var.orca_lambda_request_files_arn
+  orca_lambda_request_from_archive_arn                 = var.orca_lambda_request_from_archive_arn
 }
 
-# copy_to_glacier_workflow - On-Demand execution of copy_to_glacier.
+# copy_to_archive_workflow - On-Demand execution of copy_to_archive.
 # ===============================================================================
-module "orca_copy_to_glacier_workflow" {
-  source = "./OrcaCopyToGlacierWorkflow"
+module "orca_copy_to_archive_workflow" {
+  source = "./OrcaCopyToArchiveWorkflow"
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------
@@ -65,5 +65,5 @@ module "orca_copy_to_glacier_workflow" {
   ## --------------------------
   ## REQUIRED
   # Task ARNS needed for workflow template
-  orca_lambda_copy_to_glacier_arn                    = var.orca_lambda_copy_to_glacier_arn
+  orca_lambda_copy_to_archive_arn                    = var.orca_lambda_copy_to_archive_arn
 }

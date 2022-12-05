@@ -1,7 +1,7 @@
 """
 Name: sqs_library.py
 Description: library for post_to_queue_and_trigger_step_function lambda
-function for posting to fifo SQS queue. Largely copied from copy_to_glacier
+function for posting to fifo SQS queue. Largely copied from copy_to_archive
 """
 # todo: Move to shared lib ORCA-406
 # Standard libraries
@@ -15,10 +15,11 @@ from typing import Any, Callable, Dict, TypeVar
 # Third party libraries
 import boto3
 import fastjsonschema
-from cumulus_logger import CumulusLogger
+from aws_lambda_powertools import Logger
 
-# Set Cumulus LOGGER
-LOGGER = CumulusLogger(name="ORCA")
+# Set AWS powertools logger
+LOGGER = Logger()
+
 MAX_RETRIES = 3  # number of times to retry.
 BACKOFF_FACTOR = 2  # Value of the factor used to backoff
 INITIAL_BACKOFF_IN_SECONDS = 1  # Number of seconds to sleep the first time through.
@@ -120,14 +121,14 @@ def post_to_fifo_queue(
 
     md5_body = hashlib.md5(body.encode("utf8")).hexdigest()  # nosec
 
-    LOGGER.debug("Sending the following data to queue: {body}", body=body)
+    LOGGER.debug(f"Sending the following data to queue: {body}")
     response = boto3.client("sqs").send_message(
         QueueUrl=queue_url,
         MessageDeduplicationId=deduplication_id,
         MessageGroupId="general_group",
         MessageBody=body,
     )
-    LOGGER.debug("SQS Message Response: {response}", response=json.dumps(response))
+    LOGGER.debug(f"SQS Message Response: {json.dumps(response)}")
     return_status = response["ResponseMetadata"]["HTTPStatusCode"]
     if return_status < 200 or return_status > 299:
         raise Exception(

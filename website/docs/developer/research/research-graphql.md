@@ -128,8 +128,8 @@ Some of the lambdas that might be affected are:
 - post_copy_request_to_queue
 - db_deploy
 - post_to_database
-- request_files
-- copy_files_to_archive
+- request_from_archive
+- copy_from_archive
 - request_status_for_granule
 - request_status_for_job
 - db_deploy
@@ -151,13 +151,13 @@ In case of using Python library like [Graphene](https://github.com/graphql-pytho
  - `shared_recovery.update_status_for_file()` and `shared_recovery.post_entry_to_queue()` functions for sending to SQS might need to be removed and  replaced with code that leverages GraphQL to write to the database.
  - Additional changes are expected.
 
-#### copy_files_to_archive
+#### copy_from_archive
 
  - `shared_recovery.update_status_for_file()` and `shared_recovery.post_entry_to_queue()` functions for sending to SQS might need to be removed and replaced with code that leverages GraphQL to write to the database.
  - Additional changes are expected.
 
 
-#### request_files
+#### request_from_archive
 
  - `shared_recovery.update_status_for_file()`, `shared_recovery.create_status_for_job()` and `shared_recovery.post_entry_to_queue()` functions for sending to SQS might need to be removed and replaced with code that leverages GraphQL to write to the database.
  - `db_queue_url` arg in `inner_task()` will not be needed if SQS is not used.

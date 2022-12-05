@@ -4,7 +4,8 @@ from http import HTTPStatus
 from typing import Any, Dict, List
 
 import fastjsonschema
-from cumulus_logger import CumulusLogger
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext
 from fastjsonschema import JsonSchemaException
 from orca_shared.database import shared_db
 from sqlalchemy import text
@@ -30,7 +31,8 @@ with open("schemas/input.json", "r") as raw_schema:
 with open("schemas/output.json", "r") as raw_schema:
     _VALIDATE_OUTPUT = fastjsonschema.compile(json.loads(raw_schema.read()))
 
-LOGGER = CumulusLogger()
+# Set AWS powertools logger
+LOGGER = Logger()
 
 
 def task(job_id: str, db_connect_info: Dict) -> Dict[str, Any]:
@@ -107,7 +109,7 @@ def get_granule_status_entries_for_job(
 
 
 def get_granule_status_entries_for_job_sql() -> text:  # pragma: no cover
-    return text(
+    return text(  # nosec
         f"""
                 SELECT
                     granule_id as "{OUTPUT_GRANULE_ID_KEY}",
@@ -154,7 +156,7 @@ def get_status_totals_for_job(job_id: str, engine: Engine) -> Dict[str, int]:
 
 def get_status_totals_for_job_sql() -> text:  # pragma: no cover
     return text(  # nosec
-        f"""
+        """
                 with granule_status_count AS (
                     SELECT status_id
                         , count(*) as total
@@ -165,7 +167,7 @@ def get_status_totals_for_job_sql() -> text:  # pragma: no cover
                 SELECT value
                     , coalesce(total, 0) as total
                 FROM recovery_status os
-                LEFT JOIN granule_status_count gsc ON (gsc.status_id = os.id)"""  # nosec   # noqa
+                LEFT JOIN granule_status_count gsc ON (gsc.status_id = os.id)"""  # noqa
     )
 
 
@@ -195,14 +197,15 @@ def create_http_error_dict(
     }
 
 
-def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
+@LOGGER.inject_lambda_context
+def handler(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:
     """
     Entry point for the request_status_for_job Lambda.
     Args:
         event: A dict with the following keys:
             asyncOperationId: The unique asyncOperationId of the recovery job.
-        context: An object provided by AWS Lambda. Used for context tracking.
-
+        context: This object provides information about the lambda invocation, function,
+            and execution env.
     Environment Vars:
         DB_CONNECT_INFO_SECRET_ARN (string):
             Secret ARN of the AWS secretsmanager secret for connecting to the database.
@@ -236,7 +239,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         raise
 
     try:
-        LOGGER.setMetadata(event, context)
 
         try:
             _VALIDATE_INPUT(event)

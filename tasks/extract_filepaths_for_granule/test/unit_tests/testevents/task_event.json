@@ -1,62 +1,63 @@
 {
-  "input": {
-    "granules": [
-      {
-        "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-        "dataType": "MOD09GQ_test-jk2-IngestGranuleSuccess-1558420117156",
-        "version": "006",
-        "files": [
-          {
-            "key": "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5",
-            "bucket": "cumulus-test-sandbox-protected",
-            "fileName": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5",
-            "path": "jk2-IngestGranuleSuccess-1558420117156-test-data/files",
-            "url_path": "{cmrMetadata.Granule.Collection.ShortName}___{cmrMetadata.Granule.Collection.VersionId}/{extractYear(cmrMetadata.Granule.Temporal.RangeDateTime.BeginningDateTime)}/{substring(file.name, 0, 3)}",
-            "type": "data",
-            "duplicate_found": "True",
-            "size": 1098034
-          },
-          {
-            "key": "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5.mp",
-            "bucket": "cumulus-test-sandbox-private",
-            "fileName": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5.mp",
-            "path": "jk2-IngestGranuleSuccess-1558420117156-test-data/files",
-            "url_path": "{cmrMetadata.Granule.Collection.ShortName}___{cmrMetadata.Granule.Collection.VersionId}/{substring(file.name, 0, 3)}",
-            "type": "metadata",
-            "duplicate_found": "True",
-            "size": 21708
-          },
-          {
-            "fileName": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.json",
-            "key": "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.json",
-            "bucket": "cumulus-test-sandbox-protected-2",
-            "source": "s3://cumulus-test-sandbox-protected-2/MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.json",
-            "url_path": "{cmrMetadata.Granule.Collection.ShortName}___{cmrMetadata.Granule.Collection.VersionId}/{substring(file.name, 0, 3)}",
-            "type": "metadata"
-          }
-        ]
-      }
-    ]
-  },
-    "config": 
-      {
-        "fileBucketMaps":
-            [
-              {"regex": ".*.h5$", "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.h5", "bucket": "protected"},
-              {"regex": ".*.cmr.xml$", "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.iso.xml", "bucket": "protected"},
-              {"regex": ".*.h5.mp$", "sampleFileName": "L0A_HR_RAW_product_0001-of-0019.h5.mp", "bucket": "public"},
-              {"regex": ".*.cmr.json$", "sampleFileName": "L0A_HR_RAW_product_0001-of-0019.cmr.json", "bucket": "public"
+  "input":
+    {
+      "granules": [
+        {
+          "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
+          "dataType": "MOD09GQ_test-jk2-IngestGranuleSuccess-1558420117156",
+          "version": "006",
+          "files": [
+            {
+              "key": "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5",
+              "bucket": "cumulus-test-sandbox-protected",
+              "fileName": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5",
+              "path": "jk2-IngestGranuleSuccess-1558420117156-test-data/files",
+              "url_path": "{cmrMetadata.Granule.Collection.ShortName}___{cmrMetadata.Granule.Collection.VersionId}/{extractYear(cmrMetadata.Granule.Temporal.RangeDateTime.BeginningDateTime)}/{substring(file.name, 0, 3)}",
+              "type": "data",
+              "duplicate_found": "True",
+              "size": 1098034
+            },
+            {
+              "key": "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5.mp",
+              "bucket": "cumulus-test-sandbox-private",
+              "fileName": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5.mp",
+              "path": "jk2-IngestGranuleSuccess-1558420117156-test-data/files",
+              "url_path": "{cmrMetadata.Granule.Collection.ShortName}___{cmrMetadata.Granule.Collection.VersionId}/{substring(file.name, 0, 3)}",
+              "type": "metadata",
+              "duplicate_found": "True",
+              "size": 21708
+            },
+            {
+              "fileName": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.json",
+              "key": "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.json",
+              "bucket": "cumulus-test-sandbox-protected-2",
+              "source": "s3://cumulus-test-sandbox-protected-2/MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.json",
+              "url_path": "{cmrMetadata.Granule.Collection.ShortName}___{cmrMetadata.Granule.Collection.VersionId}/{substring(file.name, 0, 3)}",
+              "type": "metadata"
             }
-          ],
-        "buckets": 
-
-          {"protected": {"name": "sndbx-cumulus-protected", "type": "protected"},
-          "internal": {"name": "sndbx-cumulus-internal", "type": "internal"},
-          "private": {"name": "sndbx-cumulus-private", "type": "private"},
-          "public": {"name": "sndbx-cumulus-public", "type": "public"}},
-      
-        "excludedFileExtensions": [
-        ".cmr"
+          ]
+        }
       ]
-    }
+  },
+  "config": 
+    {
+      "fileBucketMaps":
+          [
+            {"regex": ".*.h5$", "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.h5", "bucket": "protected"},
+            {"regex": ".*.cmr.xml$", "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.iso.xml", "bucket": "protected"},
+            {"regex": ".*.h5.mp$", "sampleFileName": "L0A_HR_RAW_product_0001-of-0019.h5.mp", "bucket": "public"},
+            {"regex": ".*.cmr.json$", "sampleFileName": "L0A_HR_RAW_product_0001-of-0019.cmr.json", "bucket": "public"
+          }
+        ],
+      "buckets": 
+
+        {"protected": {"name": "sndbx-cumulus-protected", "type": "protected"},
+        "internal": {"name": "sndbx-cumulus-internal", "type": "internal"},
+        "private": {"name": "sndbx-cumulus-private", "type": "private"},
+        "public": {"name": "sndbx-cumulus-public", "type": "public"}},
+    
+      "excludedFileExtensions": [
+      ".cmr"
+    ]
+  }
 }

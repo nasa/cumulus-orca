@@ -3,6 +3,7 @@ Name: test_post_copy_request_to_queue.py
 Description: unit tests for post_copy_request_to_queue.py
 """
 import copy
+import json
 import os
 import random
 import time
@@ -56,13 +57,25 @@ class TestPostCopyRequestToQueue(TestCase):
 
     @patch("post_copy_request_to_queue.task")
     def test_handler_happy_path(self, mock_task: MagicMock):
-        key_path = uuid.uuid4().__str__()
-        bucket_name = uuid.uuid4().__str__()
-        event = {
+        key_path = f"{uuid.uuid4()}.ext"
+        bucket_name = f"{uuid.uuid4()}-bucket"
+
+        body_json = json.dumps({
             "Records": [
-                {"s3": {"object": {"key": key_path}, "bucket": {"name": bucket_name}}}
+                {
+                    "s3": {
+                        "bucket": {
+                            "name": bucket_name
+                        },
+                        "object": {
+                            "key": key_path
+                        }
+                    }
+                }
             ]
-        }
+        })
+        event = {"Records": [{"body": body_json}]}
+        context = Mock()
 
         db_queue_url = uuid.uuid4().__str__()
         recovery_queue_url = uuid.uuid4().__str__()
@@ -89,7 +102,7 @@ class TestPostCopyRequestToQueue(TestCase):
             },
             clear=True,
         ):
-            handler(event, None)
+            handler(event, context)
         mock_task.assert_called_once_with(
             key_path,
             bucket_name,
@@ -125,6 +138,7 @@ class TestPostCopyRequestToQueue(TestCase):
                 },
             ]
         }
+        context = Mock()
 
         with self.assertRaises(ValueError) as cm:
             with patch.dict(
@@ -145,8 +159,8 @@ class TestPostCopyRequestToQueue(TestCase):
                 },
                 clear=True,
             ):
-                handler(event, None)
-        self.assertEqual("Must be passed a single record. Was 2", str(cm.exception))
+                handler(event, context)
+        self.assertEqual("Must be passed as a single record. Was 2", str(cm.exception))
         mock_task.assert_not_called()
 
     @patch.dict(
@@ -177,6 +191,7 @@ class TestPostCopyRequestToQueue(TestCase):
                 {"s3": {"object": {"key": key_path}, "bucket": {"name": bucket_name}}}
             ]
         }
+        context = Mock()
 
         env_names = [
             post_copy_request_to_queue.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY,
@@ -203,7 +218,7 @@ class TestPostCopyRequestToQueue(TestCase):
                         Exception,
                         handler,
                         event,
-                        context=None,
+                        context,
                     )
                     # Reset the value
                     os.environ[name] = good_value
@@ -235,6 +250,7 @@ class TestPostCopyRequestToQueue(TestCase):
                 {"s3": {"object": {"key": key_path}, "bucket": {"name": bucket_name}}}
             ]
         }
+        context = Mock()
 
         env_names = [
             post_copy_request_to_queue.OS_ENVIRON_MAX_RETRIES_KEY,
@@ -260,41 +276,27 @@ class TestPostCopyRequestToQueue(TestCase):
                         with self.assertRaises(ValueError) as cm:
                             handler(
                                 event,
-                                context=None,
+                                context,
                             )
                         message = f"{name} must be set to an integer."
                         self.assertEqual(str(cm.exception), message)
 
     @patch("post_copy_request_to_queue.task")
     def test_handler_missing_record_properties_causes_error(self, mock_task: MagicMock):
+
         bad_events = [
             {
-                "event": {
-                    "Records": [
-                        {
-                            "s3": {
-                                "object": {},
-                                "bucket": {"name": uuid.uuid4().__str__()},
-                            }
-                        }
-                    ]
-                },
-                "key": "key",
+                "event": {"Records": [{"body": "{\"Records\": [{\"s3\": {\"bucket\": {\"name\": \"test-bucket\"},\
+                    \"object\": {}}}]}"}]},
+                "key": "key"
             },
             {
-                "event": {
-                    "Records": [
-                        {
-                            "s3": {
-                                "object": {"key": uuid.uuid4().__str__()},
-                                "bucket": {},
-                            }
-                        }
-                    ]
-                },
-                "key": "name",
+                "event": {"Records": [{"body": "{\"Records\": [{\"s3\": {\"bucket\": {},\
+                    \"object\": {\"key\": \"test.jpg\"}}}]}"}]},
+                "key": "name"
             },
         ]
+        context = Mock()
 
         db_queue_url = uuid.uuid4().__str__()
         recovery_queue_url = uuid.uuid4().__str__()
@@ -324,7 +326,7 @@ class TestPostCopyRequestToQueue(TestCase):
             for bad_event in bad_events:
                 with self.subTest(bad_event=bad_event):
                     with self.assertRaises(KeyError) as cm:
-                        handler(bad_event["event"], None)
+                        handler(bad_event["event"], context)
                     self.assertEqual(f"'{bad_event['key']}'", str(cm.exception))
                     mock_task.assert_not_called()
 
@@ -444,16 +446,16 @@ class TestPostCopyRequestToQueue(TestCase):
             db_connect_info_secret_arn,
         ]
         # calling the task function
-        message = "Error sending message to recovery_queue_url for {new_data}"
+        message = f"Error sending message to recovery_queue_url for {row}"
         with self.assertRaises(Exception) as cm:
             task(key_path, bucket_name, *environment_args)
             # Check the message from the exception
-        self.assertEqual(str.format(message, new_data=row), cm.exception.args[0])
+        self.assertEqual(message, cm.exception.args[0])
         mock_query_db.assert_called_once_with(
             key_path, bucket_name, db_connect_info_secret_arn
         )
         # verify the logging captured matches the expected message
-        mock_LOGGER.critical.assert_called_once_with(message, new_data=str(row))
+        mock_LOGGER.critical.assert_called_once_with(message)
         mock_update_status_for_file.assert_called_once_with(
             job_id,
             granule_id,
@@ -526,14 +528,11 @@ class TestPostCopyRequestToQueue(TestCase):
             db_connect_info_secret_arn,
         ]
         # calling the task function
-        # calling the task function
-        message = "Error sending message to status_update_queue_url for {row}"
+        message = f"Error sending message to status_update_queue_url for {row}"
         with self.assertRaises(Exception) as cm:
             task(key_path, bucket_name, *environment_args)
         # Check the message from the exception
-        self.assertEqual(str.format(message, row=row), cm.exception.args[0])
-        # verify the logging captured matches the expected message
-        mock_LOGGER.critical.assert_called_once_with(message, new_data=str(row))
+        self.assertEqual(message, cm.exception.args[0])
         mock_update_status_for_file.assert_has_calls(
             [
                 call(
@@ -646,8 +645,14 @@ class TestPostCopyRequestToQueue(TestCase):
         mock_get_user_connection.assert_called_once_with(
             mock_get_configuration.return_value
         )
-        mock_get_metadata_sql.assert_called_once_with(key_path)
-        mock_execute.assert_called_once_with(mock_get_metadata_sql.return_value)
+        mock_get_metadata_sql.assert_called_once_with()
+        mock_execute.assert_called_once_with(
+            mock_get_metadata_sql.return_value,
+            {
+                "key_path": key_path,
+                "status_id": shared_recovery.OrcaStatus.PENDING.value
+            }
+        )
         self.assertEqual(
             [
                 {
@@ -719,8 +724,14 @@ class TestPostCopyRequestToQueue(TestCase):
         mock_get_user_connection.assert_called_once_with(
             mock_get_configuration.return_value
         )
-        mock_get_metadata_sql.assert_called_once_with(key_path)
-        mock_execute.assert_called_once_with(mock_get_metadata_sql.return_value)
+        mock_get_metadata_sql.assert_called_once_with()
+        mock_execute.assert_called_once_with(
+            mock_get_metadata_sql.return_value,
+            {
+                "key_path": key_path,
+                "status_id": shared_recovery.OrcaStatus.PENDING.value
+            }
+        )
 
     @patch("post_copy_request_to_queue.shared_db.get_user_connection")
     @patch("post_copy_request_to_queue.shared_db.get_configuration")
@@ -763,22 +774,27 @@ class TestPostCopyRequestToQueue(TestCase):
         mock_get_user_connection.assert_called_once_with(
             mock_get_configuration.return_value
         )
-        mock_get_metadata_sql.assert_called_once_with(key_path)
-        mock_execute.assert_called_once_with(mock_get_metadata_sql.return_value)
+        mock_get_metadata_sql.assert_called_once()
+        mock_execute.assert_called_once_with(
+            mock_get_metadata_sql.return_value,
+            {
+                "key_path": key_path,
+                "status_id": shared_recovery.OrcaStatus.PENDING.value
+            }
+        )
 
     def test_get_metadata_sql_happy_path(self):
-        key_path = uuid.uuid4().__str__()
-        result = post_copy_request_to_queue.get_metadata_sql(key_path)
+        result = post_copy_request_to_queue.get_metadata_sql()
         self.assertEqual(
-            f"""
+            """
             SELECT
                 job_id, granule_id, filename, restore_destination, multipart_chunksize_mb
             FROM
                 recovery_file
             WHERE
-                key_path = '{key_path}'
+                key_path = :key_path
             AND
-                status_id = {shared_recovery.OrcaStatus.PENDING.value}
-        """,  # nosec
+                status_id = :status_id
+        """,
             result.text,
         )

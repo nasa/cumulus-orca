@@ -7,6 +7,7 @@ import boto3
 from orca_shared.database.entities.postgres_connection_info import (
     PostgresConnectionInfo,
 )
+from orca_shared.database.use_cases.validation import validate_config
 
 
 def get_configuration(db_connect_info_secret_arn: str, logger: logging.Logger) \
@@ -29,7 +30,8 @@ def get_configuration(db_connect_info_secret_arn: str, logger: logging.Logger) \
                               The schema for the output is available [here](schemas/output.json).
 
     Raises:
-        Exception (Exception): When variables or secrets are not available.
+        Exception: When variables or secrets are not available,
+        or if configured values are illegal.
     """
 
     # Get the AWS_REGION defined runtime environment reserved variable
@@ -61,7 +63,7 @@ def get_configuration(db_connect_info_secret_arn: str, logger: logging.Logger) \
         raise Exception("Failed to retrieve secret manager value.")
 
     # return the config dict
-    return PostgresConnectionInfo(
+    result = PostgresConnectionInfo(
             admin_database_name=db_connect_info["admin_database"],
             admin_username=db_connect_info["admin_username"],
             admin_password=db_connect_info["admin_password"],
@@ -71,3 +73,6 @@ def get_configuration(db_connect_info_secret_arn: str, logger: logging.Logger) \
             host=db_connect_info["host"],
             port=db_connect_info["port"],
         )
+
+    validate_config(result, logger)
+    return result

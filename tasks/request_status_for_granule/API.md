@@ -95,7 +95,7 @@ Gets the individual status entries for the files for the given job+granule.
   
 - `Returns` - A Dict with the following keys:
 - `'file_name'` _str_ - The name and extension of the file.
-- `'restore_destination'` _str_ - The name of the glacier bucket the file is being copied to.
+- `'restore_destination'` _str_ - The name of the archive bucket the file is being copied to.
 - `'status'` _str_ - The status of the restoration of the file.
   May be 'pending', 'staged', 'success', or 'error'.
 - `'error_message'` _str_ - If the restoration of the file errored,
@@ -132,7 +132,8 @@ Creates a standardized dictionary for error reporting.
 #### handler
 
 ```python
-def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]
+@LOGGER.inject_lambda_context
+def handler(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]
 ```
 
 Entry point for the request_status_for_granule Lambda.
@@ -143,8 +144,8 @@ Entry point for the request_status_for_granule Lambda.
 - `granule_id` - The unique ID of the granule to retrieve status for.
 - `asyncOperationId` _Optional_ - The unique ID of the asyncOperation.
   May apply to a request that covers multiple granules.
-- `context` - An object provided by AWS Lambda. Used for context tracking.
-  
+- `context` - This object provides information about the lambda invocation, function,
+  and execution env.
   Environment Vars:
   DB_CONNECT_INFO_SECRET_ARN (string):
   Secret ARN of the AWS secretsmanager secret for connecting to the database.
@@ -156,7 +157,7 @@ Entry point for the request_status_for_granule Lambda.
 - `'files'` _List_ - Description and status of the files within the given granule.
   List of Dicts with keys:
 - `'file_name'` _str_ - The name and extension of the file.
-- `'restore_destination'` _str_ - The name of the glacier bucket
+- `'restore_destination'` _str_ - The name of the archive bucket
   the file is being copied to.
 - `'status'` _str_ - The status of the restoration of the file.
   May be 'pending', 'staged', 'success', or 'error'.

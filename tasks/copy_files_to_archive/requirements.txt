@@ -1,4 +1,0 @@
-boto3==1.18.40
-fastjsonschema==2.15.0
-cumulus-message-adapter-python==2.0.1
-../../shared_libraries[recovery]

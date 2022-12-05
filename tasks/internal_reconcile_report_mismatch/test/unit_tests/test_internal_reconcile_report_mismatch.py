@@ -21,12 +21,10 @@ class TestInternalReconcileReportMismatch(
 
     @patch("internal_reconcile_report_mismatch.task")
     @patch("orca_shared.database.shared_db.get_configuration")
-    @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch("internal_reconcile_report_mismatch.check_env_variable")
     def test_handler_happy_path(
         self,
         mock_check_env_variable: MagicMock,
-        mock_setMetadata: MagicMock,
         mock_get_configuration: MagicMock,
         mock_task: MagicMock,
     ):
@@ -86,7 +84,6 @@ class TestInternalReconcileReportMismatch(
         mock_get_configuration.assert_called_once_with(
             mock_check_env_variable.return_value
         )
-        mock_setMetadata.assert_called_once_with(event, context)
         mock_task.assert_called_once_with(
             job_id,
             page_index,
@@ -97,10 +94,8 @@ class TestInternalReconcileReportMismatch(
     # noinspection PyPep8Naming
     @patch("internal_reconcile_report_mismatch.create_http_error_dict")
     @patch("orca_shared.database.shared_db.get_configuration")
-    @patch("cumulus_logger.CumulusLogger.setMetadata")
     def test_handler_missing_page_index_returns_error(
         self,
-        mock_setMetadata: MagicMock,
         mock_get_configuration: MagicMock,
         mock_create_http_error_dict: MagicMock,
     ):
@@ -116,7 +111,6 @@ class TestInternalReconcileReportMismatch(
         context = Mock()
         result = internal_reconcile_report_mismatch.handler(event, context)
 
-        mock_setMetadata.assert_called_once_with(event, context)
         mock_create_http_error_dict.assert_called_once_with(
             "BadRequest",
             HTTPStatus.BAD_REQUEST,
@@ -129,12 +123,10 @@ class TestInternalReconcileReportMismatch(
     @patch("internal_reconcile_report_mismatch.create_http_error_dict")
     @patch("internal_reconcile_report_mismatch.task")
     @patch("orca_shared.database.shared_db.get_configuration")
-    @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch("internal_reconcile_report_mismatch.check_env_variable")
     def test_handler_bad_output_raises_error(
         self,
         mock_check_env_variable: MagicMock,
-        mock_setMetadata: MagicMock,
         mock_get_configuration: MagicMock,
         mock_task: MagicMock,
         mock_create_http_error_dict: MagicMock,
@@ -428,7 +420,7 @@ class TestInternalReconcileReportMismatch(
             result,
         )
 
-    @patch("cumulus_logger.CumulusLogger.error")
+    @patch("internal_reconcile_report_mismatch.LOGGER.error")
     def test_create_http_error_dict_happy_path(
             self,
             mock_error: MagicMock

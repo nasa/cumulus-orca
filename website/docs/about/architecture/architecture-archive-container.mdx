@@ -10,13 +10,14 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 The archive data container contains all the components that make up the ORCA
 ingest service functionality. The diagram below shows how the various components
 interact. A majority of the work for this functionality is done by the
-**copy_to_glacier** lambda function. This component was designed such that it
+**copy_to_archive** lambda function, shown in AWS as **PREFIX_copy_to_orca**. 
+This component was designed such that it
 could be added to any ingest workflow in order to create a secondary archive copy
 of the data for disaster recovery. Other than the lambda, the additional
 archiving measures are handled through AWS S3 bucket policy and by components
 used to write metadata to the ORCA catalog. This was done to preserve as much
 metadata as possible about the files and to simplify interactions with the AWS
-glacier archive. The metadata written to the catalog is used for data management
+archive. The metadata written to the catalog is used for data management
 of ORCA and supports features like reconciliation with Cumulus.
 
 

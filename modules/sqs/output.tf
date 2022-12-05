@@ -1,3 +1,13 @@
+output "orca_sqs_archive_recovery_queue_arn" {
+  description = "The ARN of the archive-recovery-queue SQS"
+  value       = aws_sqs_queue.archive_recovery_queue.arn
+}
+
+output "orca_sqs_archive_recovery_queue_id" {
+  description = "The URL of the archive-recovery-queue SQS"
+  value       = aws_sqs_queue.archive_recovery_queue.id
+}
+
 output "orca_sqs_internal_report_queue_id" {
   description = "The URL of the internal-report-queue SQS"
   value       = aws_sqs_queue.internal_report_queue.id
