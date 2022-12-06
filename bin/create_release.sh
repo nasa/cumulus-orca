@@ -76,8 +76,6 @@ else
   echo "$RELEASE_URL has not been released. Proceeding."
 fi
 
-# Release Package
-echo $RELEASE_URL
 curl \
     -X POST \
     -H "Authorization: token $bamboo_SECRET_GITHUB_TOKEN" \
