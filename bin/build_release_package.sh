@@ -87,9 +87,13 @@ run_and_check_returncode "mkdir dist"
 echo "INFO: Creating distribution ..."
 run_and_check_returncode "cd build"
 ##TODO: Possibly send normal output to /dev/null and only capture error output
-run_and_check_returncode 'zip -qr "../dist/cumulus-orca-terraform.zip" .'
+zip -qr "../dist/cumulus-orca-terraform.zip" .
+let ZIP_RC=$?
 cd -
-
+if [ $ZIP_RC -ne 0 ]; then
+    echo "ERROR: 'zip -r ../dist/cumulus-orca-terraform.zip' command failed with error code [$ZIP_RC]"
+    exit 1
+fi
 ## Validate that this build and release should occur
 ## Validate that the release flag is set
 ## TODO: Pull this code out as a separate step in Release area and use artifacts
