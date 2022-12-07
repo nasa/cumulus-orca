@@ -48,7 +48,7 @@ fi
 export url="https://github.com/nasa/cumulus-orca/releases/tag/"v$bamboo_ORCA_VERSION""
 if curl --output /null --silent --fail "$url"; then
   echo "Release URL already exists: $url. Exiting."
-  exit 0
+  exit 1
 else
   echo "$url does not exist. Proceeding with release..."
 fi
@@ -70,7 +70,7 @@ export RELEASE_URL=$(curl \
 
 # Release URL is created only if there is valid github token
 if [[ ! $RELEASE_URL ]]; then
-  echo "RELEASE_URL is empty. Exiting"
+  echo "RELEASE_URL is empty. This may be caused by an invalid 'GITHUB_TOKEN'. Exiting"
   exit 1
 else
   echo "$RELEASE_URL has not been released. Proceeding."
