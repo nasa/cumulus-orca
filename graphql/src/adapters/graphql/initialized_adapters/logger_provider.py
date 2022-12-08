@@ -1,3 +1,0 @@
-from src.use_cases.adapter_interfaces.logger_provider import LoggerProviderInterface
-
-static_logger_provider: LoggerProviderInterface

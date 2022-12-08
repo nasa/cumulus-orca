@@ -6,14 +6,13 @@ from orca_shared.database.use_cases.validation import validate_config
 
 from src.adapters.graphql import initialized_adapters
 from src.adapters.graphql.initialized_adapters import adapters
-from src.adapters.graphql.initialized_adapters import logger_provider
 from src.adapters.logger_provider.basic import BasicLoggerProvider
 from src.adapters.storage.postgres import StorageAdapterPostgres
 from src.adapters.webserver.uvicorn_settings import INSTANTIATED_WEBSERVER_SETTINGS
 
 initialized_logger_provider = BasicLoggerProvider()
-initialized_adapters.logger_provider.static_logger_provider = initialized_logger_provider
-logger = initialized_adapters.logger_provider.static_logger_provider.get_logger("Setup")
+initialized_adapters.adapters.static_logger_provider = initialized_logger_provider
+logger = initialized_adapters.adapters.static_logger_provider.get_logger("Setup")
 
 
 # todo: Make the loads and init a separate function in shared_db
