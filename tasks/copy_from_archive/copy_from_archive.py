@@ -12,12 +12,12 @@ import boto3
 import fastjsonschema
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
-from orca_shared.recovery import shared_recovery
 
 # noinspection PyPackageRequirements
 from boto3.s3.transfer import MB, TransferConfig
 from botocore.client import BaseClient
 from botocore.exceptions import ClientError
+from orca_shared.recovery import shared_recovery
 
 OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY = "STATUS_UPDATE_QUEUE_URL"
 
@@ -132,7 +132,7 @@ def task(
                 a_file[FILE_SUCCESS_KEY] for a_file in files
             ):  # Check for early completion
                 break
-            LOGGER.warn(
+            LOGGER.warning(
                 f"Attempt {attempt +1} of restore failed. Retrying in {retry_sleep_secs} seconds."
             )
             time.sleep(retry_sleep_secs)
@@ -265,14 +265,14 @@ def handler(
         str_env_val = os.environ["COPY_RETRIES"]
         retries = int(str_env_val)
     except KeyError:
-        LOGGER.warn("Setting COPY_RETRIES value to a default of 2")
+        LOGGER.warning("Setting COPY_RETRIES value to a default of 2")
         retries = 2
 
     try:
         str_env_val = os.environ["COPY_RETRY_SLEEP_SECS"]
         retry_sleep_secs = float(str_env_val)
     except KeyError:
-        LOGGER.warn("Setting COPY_RETRY_SLEEP_SECS value to a default of 30")
+        LOGGER.warning("Setting COPY_RETRY_SLEEP_SECS value to a default of 30")
         retry_sleep_secs = 30
 
     try:

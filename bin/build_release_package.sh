@@ -87,7 +87,8 @@ run_and_check_returncode "mkdir dist"
 echo "INFO: Creating distribution ..."
 run_and_check_returncode "cd build"
 ##TODO: Possibly send normal output to /dev/null and only capture error output
-run_and_check_returncode 'zip -qr "../dist/cumulus-orca-terraform.zip" .'
+run_and_check_returncode "zip -qr "../dist/cumulus-orca-terraform.zip" ."
+cd -
 
 ## Validate that this build and release should occur
 ## Validate that the release flag is set

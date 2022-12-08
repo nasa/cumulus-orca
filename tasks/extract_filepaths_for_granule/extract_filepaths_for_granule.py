@@ -18,7 +18,7 @@ LOGGER = Logger()
 
 CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY = "excludedFileExtensions"
 CONFIG_FILE_BUCKETS_KEY = "fileBucketMaps"
-
+INPUT_RECOVERY_BUCKET_OVERRIDE_KEY = "recoveryBucketOverride"
 OUTPUT_DESTINATION_BUCKET_KEY = "destBucket"
 OUTPUT_KEY_KEY = "key"
 
@@ -82,6 +82,7 @@ def task(event):
         level = "event['input']"
         grans = []
         for ev_granule in event["input"]["granules"]:
+            recovery_bucket_override = ev_granule.get(INPUT_RECOVERY_BUCKET_OVERRIDE_KEY, None)
             gran = ev_granule.copy()
             files = []
             level = "event['input']['granules'][]"
@@ -91,17 +92,24 @@ def task(event):
                 file_name = afile["fileName"]
                 LOGGER.debug(f"Validating file {file_name}")
                 # filtering excludedFileExtensions
-                if not should_exclude_files_type(file_name, exclude_file_types):
+                if should_exclude_files_type(file_name, exclude_file_types):
+                    LOGGER.info(f"Excluding file '{file_name}'")
+                else:
                     LOGGER.debug(f"File {file_name} will be restored")
                     file_key = afile["key"]
                     LOGGER.debug(f"Retrieving information for {file_key}")
-                    matching_regex = next(
-                        filter(lambda key: re.compile(key).match(file_name), regex_buckets),
-                        None
-                    )
-                    if matching_regex is None:
-                        raise ExtractFilePathsError(f"No matching regex for '{file_key}'")
-                    destination_bucket = regex_buckets[matching_regex]
+
+                    if recovery_bucket_override is not None:
+                        destination_bucket = recovery_bucket_override
+                    else:
+                        matching_regex = next(
+                            filter(lambda key: re.compile(key).match(file_name), regex_buckets),
+                            None
+                        )
+                        if matching_regex is None:
+                            raise ExtractFilePathsError(f"No matching regex for '{file_key}'")
+                        destination_bucket = regex_buckets[matching_regex]
+
                     LOGGER.debug(
                         f"Found retrieval destination {destination_bucket} for {file_name}"
                     )
@@ -112,6 +120,8 @@ def task(event):
                             OUTPUT_DESTINATION_BUCKET_KEY: destination_bucket,
                         }
                     )
+            if len(files) == 0:
+                LOGGER.warning(f"All files for granule '{gran['granuleId']}' excluded.")
             gran["keys"] = files
             grans.append(gran)
         result["granules"] = grans
@@ -175,7 +185,7 @@ def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> b
     for file_type in exclude_file_types:
         # Returns the first instance in the string that matches .ext or None if no match was found.
         if re.search(f"^.*{file_type}$", file_key) is not None:
-            LOGGER.warn(
+            LOGGER.warning(
                 f"The file {file_key} will not be restored "
                 f"because it matches the excluded file type {file_type}."
             )
@@ -198,24 +208,26 @@ def handler(event: Dict[str, Union[str, int]],
                     other dictionary keys may be included, but are not used.
                 other dictionary keys may be included, but are not used.
 
-            Example: {
-                        "event":{
-                            "granules":[
+            Example:
+                    {
+                        "event": {
+                            "granules": [
                                 {
-                                    "granuleId":"granxyz",
-                                    "version":"006",
-                                    "files":[
+                                    "granuleId": "granxyz",
+                                    "recoveryBucketOverride": "test-recovery-bucket",
+                                    "version": "006",
+                                    "files": [
                                     {
-                                        "fileName":"file1",
-                                        "key":"key1",
-                                        "source":"s3://dr-test-sandbox-protected/file1",
-                                        "type":"metadata"
+                                        "fileName": "file1",
+                                        "key": "key1",
+                                        "source": "s3://dr-test-sandbox-protected/file1",
+                                        "type": "metadata"
                                     }
                                     ]
                                 }
                             ]
                         }
-                        }
+                    }
 
         context: This object provides information about the lambda invocation, function,
             and execution env.
