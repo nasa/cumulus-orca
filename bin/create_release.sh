@@ -44,8 +44,16 @@ if [[ ! $bamboo_RELEASE_FLAG == true ]]; then
   exit 0
 fi
 
+## Check if the code has already been released.
+export url="https://github.com/nasa/cumulus-orca/releases/tag/"v$bamboo_ORCA_VERSION""
+if curl --output /null --silent --fail "$url"; then
+  echo "Release URL already exists: $url. Exiting."
+  exit 1
+else
+  echo "$url does not exist. Proceeding with release..."
+fi
+
 ## Release the Code
-## TODO: Make this more robust. Check for errors see if release already created, etc.
 cd dist
 
 # Create Release
@@ -60,8 +68,14 @@ export RELEASE_URL=$(curl \
     | sed -e 's/.*\(https.*\)\"\,/\1/' \
     | sed -e 's/api/uploads/')
 
-# Release Package
-echo $RELEASE_URL
+# Release URL is created only if there is valid github token
+if [[ ! $RELEASE_URL ]]; then
+  echo "RELEASE_URL is empty. This may be caused by an invalid 'GITHUB_TOKEN'. Exiting"
+  exit 1
+else
+  echo "$RELEASE_URL has not been released. Proceeding."
+fi
+
 curl \
     -X POST \
     -H "Authorization: token $bamboo_SECRET_GITHUB_TOKEN" \
@@ -71,3 +85,5 @@ curl \
 check_returncode $? "Error during curl command."
 
 cd ..
+
+exit 0
