@@ -8,7 +8,7 @@ import strawberry
 
 @strawberry.enum  # Not strictly clean, but alternative is duplicating classes in graphql adapter.
 class WordTypeEnum(str, Enum):
-    # Whenever this class changes, update WordTypeEnumStrawberryType
+    # Whenever this class changes, update WordTypeEnumGraphqlType
     palindrome = 'palindrome'
     chaos = 'chaos'
 

@@ -22,7 +22,7 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
     Since this means that GraphQL will return these entities, 
     make sure they do not contain any fields that clients should not see.
   - `resolvers` should catch and convert any exceptions to `dataTypes`.
-    When returning an `ExceptionStrawberryType` there should always be a `message` property 
+    When returning an `ExceptionGraphqlType` there should always be a `message` property 
     with a human-friendly explanation of the error.
 - `resolvers` are called by `queries` or `mutations`.
 - `queries` and `mutations` are standard GraphQL components, mapped to in the `graphql` package.
@@ -95,7 +95,7 @@ Once a new version is ready for deployment, perform the following steps:
 ### Customer-Accessible Schemas
 See [ORCA API Reference](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api) 
 for customer-centric API documentation.
-# todo: add recommendation to docs to ALWAYS request ErrorStrawberryTypeInterface with __typename and message properties
+# todo: add recommendation to docs to ALWAYS request ErrorGraphqlTypeInterface with __typename and message properties
 
 ### Orca-Internal Schemas
 todo

@@ -27,7 +27,11 @@ class Queries:
             )
         ] = None,  # Default value actually MAKES it optional
     ) -> GetEchoStrawberryResponse:
-        return get_echo(word)
+        return get_echo(word,
+                        initialized_adapters.logger_provider.static_logger_provider.get_logger(
+                            uuid.uuid4().__str__()
+                        )
+                        )
 
     @field(
         description="""Gets all phantom reports for the given filter.""")

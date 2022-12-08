@@ -1,3 +1,4 @@
+import logging
 import random
 
 import src.entities.echo
@@ -26,7 +27,9 @@ class Test:
         """
         return EdgeCursor.encode_cursor(**{"word": echo.word})
 
-    def get_echo(self, word: str) -> Edge[entities.echo.Echo]:
+    def get_echo(self, word: str, logger: logging.Logger) -> Edge[entities.echo.Echo]:
+        logger.warning("Running test code. Not for use in production.")
+
         if word is None or word == "":
             word = self.word_generator.get_random_word()
 
