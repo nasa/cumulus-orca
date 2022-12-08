@@ -149,7 +149,13 @@ def create_status_for_job_and_files(
             }
         )
 
-    if found_pending:
+    if len(file_parameters) == 0:
+        LOGGER.info(f"No files given for job '{job_id}' granule '{granule_id}'. "
+                    "Creating error status entry.")
+        # No files given. Assume that this is in error.
+        job_status = OrcaStatus.FAILED
+        job_completion_time = datetime.datetime.now(datetime.timezone.utc).isoformat().__str__()
+    elif found_pending:
         # Most jobs will be this. Some files are still pending.
         job_status = OrcaStatus.PENDING
         job_completion_time = None
@@ -174,7 +180,8 @@ def create_status_for_job_and_files(
                     }
                 ],
             )
-            connection.execute(create_file_sql(), file_parameters)
+            if len(file_parameters) > 0:
+                connection.execute(create_file_sql(), file_parameters)
     except Exception as sql_ex:
         # Can't use f"" because of '{}' bug in CumulusLogger.
         LOGGER.error(

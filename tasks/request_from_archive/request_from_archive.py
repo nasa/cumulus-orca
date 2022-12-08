@@ -117,7 +117,7 @@ def task(
     try:
         max_retries = int(os.environ[OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY])
     except KeyError:
-        LOGGER.warn(
+        LOGGER.warning(
             f"{OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY} is not set. "
             f"Defaulting to a value of {DEFAULT_MAX_REQUEST_RETRIES}"
         )
@@ -127,7 +127,7 @@ def task(
     try:
         retry_sleep_secs = float(os.environ[OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY])
     except KeyError:
-        LOGGER.warn(
+        LOGGER.warning(
             f"{OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY} is not set. "
             f"Defaulting to a value of {DEFAULT_RESTORE_RETRY_SLEEP_SECS} seconds."
         )
@@ -148,7 +148,7 @@ def task(
     try:
         exp_days = int(os.environ[OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY])
     except KeyError:
-        LOGGER.warn(
+        LOGGER.warning(
             f"{OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY} is not set. Defaulting "
             f"to a value of {DEFAULT_RESTORE_EXPIRE_DAYS} days."
         )
@@ -222,7 +222,7 @@ def get_default_archive_bucket_name(config: Dict[str, Any]) -> str:
         if default_bucket is not None:
             return default_bucket
     except KeyError:
-        LOGGER.warn(f"{CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY} is not set.")
+        LOGGER.warning(f"{CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY} is not set.")
     return str(os.environ[OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY])
 
 
@@ -302,6 +302,8 @@ def inner_task(
         # Initialize the granule copy, file array, and timestamp variables
         files = []
         time_stamp = datetime.now(timezone.utc).isoformat()
+        if len(granule[GRANULE_KEYS_KEY]) == 0:
+            LOGGER.warning(f"No files given for granule '{granule[GRANULE_GRANULE_ID_KEY]}'")
         # Loop through the granule files and find the ones to restore
         for keys in granule[GRANULE_KEYS_KEY]:
             # Get the file key (path/filename)

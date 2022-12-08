@@ -94,7 +94,9 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any]):
             file_name = a_file[INPUT_GRANULE_FILE_FILENAME_KEY]
             LOGGER.debug(f"Validating file {file_name}")
             # filtering excludedFileExtensions
-            if not should_exclude_files_type(file_name, exclude_file_types):
+            if should_exclude_files_type(file_name, exclude_file_types):
+                    LOGGER.info(f"Excluding file '{file_name}'")
+            else:
                 LOGGER.debug(f"File {file_name} will be restored")
                 file_key = a_file[INPUT_GRANULE_FILE_KEY_KEY]
                 LOGGER.debug(f"Retrieving information for {file_key}")
@@ -120,6 +122,8 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any]):
                         OUTPUT_DESTINATION_BUCKET_KEY: destination_bucket,
                     }
                 )
+        if len(files) == 0:
+            LOGGER.warning(f"All files for granule '{a_granule['granuleId']}' excluded.")
         result_granules.append({
             "granuleId": a_granule[INPUT_GRANULE_ID_KEY],
             "keys": files,
@@ -177,7 +181,7 @@ def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> b
     for file_type in exclude_file_types:
         # Returns the first instance in the string that matches .ext or None if no match was found.
         if re.search(f"^.*{file_type}$", file_key) is not None:
-            LOGGER.warn(
+            LOGGER.warning(
                 f"The file {file_key} will not be restored "
                 f"because it matches the excluded file type {file_type}."
             )
@@ -199,7 +203,7 @@ def handler(event: Dict[str, Dict[str, Any]],
                     other dictionary keys may be included, but are not used.
                 other dictionary keys may be included, but are not used.
 
-            Example: 
+            Example:
                     {
                         "event": {
                             "granules": [
