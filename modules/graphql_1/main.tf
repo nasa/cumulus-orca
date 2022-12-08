@@ -12,6 +12,35 @@ data "aws_vpc" "primary" {
   id = var.vpc_id
 }
 
+# Final IAM setup
+data "aws_iam_policy_document" "gql_task_execution_policy_document" {
+  statement {
+    actions   = ["sts:AssumeRole"]
+    resources = [var.gql_tasks_role_arn]
+  }
+  statement {
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:DescribeLogStreams",
+      "logs:PutLogEvents"
+    ]
+    resources = ["*"]
+  }
+  statement {
+    actions = [
+      "secretsmanager:GetSecretValue"
+    ]
+    resources = [var.db_connect_info_secret_arn]
+  }
+}
+
+resource "aws_iam_role_policy" "gql_task_role_policy" {
+  name   = "${var.prefix}_orca_gql_task_role_policy"
+  role   = var.gql_ecs_task_execution_role_id
+  policy = data.aws_iam_policy_document.gql_task_execution_policy_document.json
+}
+
 resource "aws_security_group" "gql_security_group" {
   name        = "${var.prefix}-gql"
   description = "Allow inbound communication on container port."
@@ -133,6 +162,9 @@ resource "aws_lb_listener" "gql_app_lb_listener" {
 # ecs service and task
 # Defines how the image will be run.
 resource "aws_ecs_task_definition" "gql_task" {
+  depends_on = [
+    aws_iam_role_policy.gql_task_role_policy # wait for the iam role to be finalized
+  ]
   family                   = "${var.prefix}_orca_gql_task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]

@@ -44,6 +44,11 @@ variable "gql_ecs_task_execution_role_arn" {
   description = "The ARN of the role used by the ECS Task runnger."
 }
 
+variable "gql_ecs_task_execution_role_id" {
+  type        = string
+  description = "The ID of the role used by the ECS Task runnger."
+}
+
 variable "gql_tasks_role_arn" {
   type        = string
   description = "The ARN of the role used by the code within the Graphql ECS Task."

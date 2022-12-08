@@ -7,3 +7,8 @@ output "gql_ecs_task_execution_role_arn" {
   value       = aws_iam_role.orca_ecs_task_execution_role.arn
   description = "The ARN of the role used by the ECS Task runnger."
 }
+
+output "gql_ecs_task_execution_role_id" {
+  value       = aws_iam_role.orca_ecs_task_execution_role.id
+  description = "The ID of the role used by the ECS Task runnger."
+}
