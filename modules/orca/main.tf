@@ -143,6 +143,7 @@ module "orca_iam" {
 }
 
 ## orca_graphql_0- graphql module that sets up centralized db code
+## sets up components required by other modules, such as IAM roles for secretsmanager to grant permissions to
 ## =============================
 module "orca_graphql_0" {
   source     = "../graphql_0"
