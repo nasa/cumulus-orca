@@ -27,7 +27,8 @@ wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION
 tar xvf Python-${PYTHON_VERSION}.tgz && \
 cd Python-*/ && \
 ./configure --enable-optimizations && \
-make altinstall
+make altinstall && \
+rm -f Python-${PYTHON_VERSION}.tgz
 
 # Install and configure git-secrets
 RUN \
