@@ -5,6 +5,7 @@ LABEL maintainer="Rizbi Hassan" \
 
 ENV NODE_VERSION="16.x"
 ENV TERRAFORM_VERSION "0.13.6"
+ENV PYTHON_VERSION "3.9.10"
 
 # Add NodeJS and Yarn repos & update package index
 RUN \
@@ -23,8 +24,8 @@ pip3 install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pytho
 # install Python 3.9
 RUN \
 yum install -y openssl-devel bzip2-devel libffi-devel && \
-wget https://www.python.org/ftp/python/3.9.10/Python-3.9.10.tgz && \
-tar xvf Python-3.9.10.tgz && \
+wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz && \
+tar xvf Python-${PYTHON_VERSION}.tgz && \
 cd Python-*/ && \
 ./configure --enable-optimizations && \
 make altinstall
