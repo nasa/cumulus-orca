@@ -42,6 +42,7 @@ and includes an additional section for migration notes.
 - *ORCA-461*
   - Invalid database connection parameters will now be detected earlier and more consistently.
   - Postgres table/user names can now begin with an '_' and contain '$' if your Postgres DB version supports this.
+- *ORCA-533* RecoveryWorkflow no longer requires the `bucket` property on files. Was unused by ORCA.
 
 ### Added
 - *ORCA-336*
