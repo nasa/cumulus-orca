@@ -5,7 +5,8 @@ from typing import Annotated
 # noinspection PyPackageRequirements
 from strawberry import type, field, argument
 
-from src.adapters.graphql import initialized_adapters
+from src.adapters.graphql import adapters
+from src.adapters.graphql.adapters import initialized_adapters
 from src.adapters.graphql.dataTypes.sample import GetEchoStrawberryResponse
 from src.adapters.graphql.dataTypes.storage_metadata import \
     GetStorageSchemaVersionStrawberryResponse
@@ -28,7 +29,7 @@ class Queries:
         ] = None,  # Default value actually MAKES it optional
     ) -> GetEchoStrawberryResponse:
         return get_echo(word,
-                        initialized_adapters.logger_provider.static_logger_provider.get_logger(
+                        initialized_adapters.logger_provider.get_logger(
                             uuid.uuid4().__str__()
                         )
                         )
@@ -40,7 +41,7 @@ class Queries:
 
     ) -> GetStorageSchemaVersionStrawberryResponse:
         return get_storage_migration_version(
-            initialized_adapters.logger_provider.static_logger_provider.get_logger(
+            initialized_adapters.logger_provider.get_logger(
                 uuid.uuid4().__str__()
             )
         )
