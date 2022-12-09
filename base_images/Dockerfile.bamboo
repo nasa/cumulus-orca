@@ -14,10 +14,20 @@ curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64b
 amazon-linux-extras install epel -y && \
 yum update -y
 
-# install Python 3, pip, CLI utilities, session manager and other tools
+# install pip, CLI utilities, session manager and other tools
 RUN \
-yum install -y jq gcc git make openssl wget zip unzip tar python3-devel nodejs yarn python3-pip awscli session-manager-plugin.rpm procps parallel && \
+yum install -y jq gcc git make openssl wget zip unzip tar nodejs yarn python3-pip awscli session-manager-plugin.rpm procps parallel && \
 pip3 install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org pydoc-markdown bandit safety flake8 black isort
+
+
+# install Python 3.9
+RUN \
+yum install -y openssl-devel bzip2-devel libffi-devel && \
+wget https://www.python.org/ftp/python/3.9.10/Python-3.9.10.tgz && \
+tar xvf Python-3.9.10.tgz && \
+cd Python-*/ && \
+./configure --enable-optimizations && \
+make altinstall
 
 # Install Terraform
 RUN \
