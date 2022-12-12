@@ -10,7 +10,7 @@ function create_and_activate_venv () {
     find . -type d -name "__pycache__" -exec rm -rf {} +
   fi
   
-  run_and_check_returncode "python3 -m venv venv"
+  run_and_check_returncode "python3.9 -m venv venv"
   run_and_check_returncode "source venv/bin/activate"
 
   echo "INFO: Virtual environment ready."
