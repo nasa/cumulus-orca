@@ -5,7 +5,7 @@ LABEL maintainer="Rizbi Hassan" \
 
 ENV NODE_VERSION="16.x"
 ENV TERRAFORM_VERSION "0.13.6"
-ENV PYTHON_VERSION "3.9.10"
+ENV PYTHON_VERSION "3.9.16"
 
 # Add NodeJS and Yarn repos & update package index
 RUN \
