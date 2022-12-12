@@ -29,8 +29,6 @@ ln -sf /usr/local/bin/python3.9 /usr/local/bin/python3 && \
 ln -sf /url/local/bin/pip3.9 /usr/local/bin/pip3 && \
 rm -f Python-${PYTHON_VERSION}.tgz && \
 rm -rf Python-${PYTHON_VERSION}
-# Getting error "pip command not found"
-# pip install --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org pydoc-markdown
 
 # Install and configure git-secrets
 RUN \
