@@ -8,16 +8,17 @@ from src.adapters.graphql import adapters
 from src.adapters.graphql.adapters import AdaptersStorage
 from src.adapters.logger_provider.basic import BasicLoggerProvider
 from src.adapters.storage.postgres import StorageAdapterPostgres
-from src.adapters.webserver.uvicorn_settings import INSTANTIATED_WEBSERVER_SETTINGS
+from src.adapters.webserver.uvicorn_settings import UvicornSettings
 from src.adapters.word_generation.word_generation import UUIDWordGeneration
 
 initialized_logger_provider = BasicLoggerProvider()
 logger = initialized_logger_provider.get_logger("Setup")
 
+uvicorn_settings = UvicornSettings()  # todo: pass in via parameter
 
 # todo: Make the loads and init a separate function in shared_db
 db_connect_info = json.loads(
-    INSTANTIATED_WEBSERVER_SETTINGS.DB_CONNECT_INFO
+    uvicorn_settings.DB_CONNECT_INFO
 )
 db_connect_info = PostgresConnectionInfo(
     admin_database_name=db_connect_info["admin_database"],
@@ -45,4 +46,4 @@ adapters.initialized_adapters = AdaptersStorage(
 # Don't start setting up fastapi/graphql app until adapters are ready to be referenced.
 from src.adapters.api.fastapi import create_fastapi_app
 
-application = create_fastapi_app()
+application = create_fastapi_app(uvicorn_settings)

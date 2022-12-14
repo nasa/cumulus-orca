@@ -3,10 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.adapters.api.graphql_app import get_graphql_app
 from src.adapters.graphql.graphql_settings import GraphQLSettings
-from src.adapters.webserver.uvicorn_settings import INSTANTIATED_WEBSERVER_SETTINGS
+from src.adapters.webserver.uvicorn_settings import UvicornSettings
 
 
-def create_fastapi_app():
+def create_fastapi_app(uvicorn_settings: UvicornSettings):
     app = FastAPI()
 
     # TODO: Need to lock down origins, methods and headers
@@ -20,7 +20,7 @@ def create_fastapi_app():
 
     # Create GraphQL routes
     app.include_router(
-        router=get_graphql_app(GraphQLSettings(INSTANTIATED_WEBSERVER_SETTINGS)),
+        router=get_graphql_app(GraphQLSettings(uvicorn_settings)),
         prefix="/graphql"
     )
 
