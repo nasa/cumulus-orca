@@ -5,8 +5,8 @@ from typing import Annotated
 # noinspection PyPackageRequirements
 from strawberry import type, field, argument
 
-from src.adapters.graphql import adapters
-from src.adapters.graphql.adapters import initialized_adapters
+from src.adapters.graphql.adapters import \
+    initialized_adapters  # todo: This a bad boundary. Find a different way to set up.
 from src.adapters.graphql.dataTypes.sample import GetEchoStrawberryResponse
 from src.adapters.graphql.dataTypes.storage_metadata import \
     GetStorageSchemaVersionStrawberryResponse
