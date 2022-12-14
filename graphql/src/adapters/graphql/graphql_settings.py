@@ -1,4 +1,4 @@
-from src.adapters.webserver.uvicorn_settings import INSTANTIATED_WEBSERVER_SETTINGS
+from src.adapters.webserver.uvicorn_settings import UvicornSettings
 
 
 class GraphQLSettings:
@@ -9,9 +9,12 @@ class GraphQLSettings:
     class sets additional GRAPHQL options for dev or production.
     """
     # URI: str = os.environ.get("ORCA_DB_USER_URI", "sqlite://")
-    GRAPHIQL: bool = INSTANTIATED_WEBSERVER_SETTINGS.DEV
-    DEBUG: bool = INSTANTIATED_WEBSERVER_SETTINGS.DEV
-    ALLOW_GET: bool = INSTANTIATED_WEBSERVER_SETTINGS.DEV
+    GRAPHIQL: bool
+    DEBUG: bool
+    ALLOW_GET: bool
 
+    def __init__(self, webserver_settings: UvicornSettings):
+        self.GRAPHIQL = webserver_settings.DEV
+        self.DEBUG = webserver_settings.DEV
+        self.ALLOW_GET = webserver_settings.DEV
 
-INSTANTIATED_GRAPHQL_SETTINGS = GraphQLSettings()

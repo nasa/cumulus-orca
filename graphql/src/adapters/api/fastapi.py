@@ -1,7 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.adapters.api.graphql_app import graphql_app
+from src.adapters.api.graphql_app import get_graphql_app
+from src.adapters.graphql.graphql_settings import GraphQLSettings
+from src.adapters.webserver.uvicorn_settings import INSTANTIATED_WEBSERVER_SETTINGS
 
 
 def create_fastapi_app():
@@ -17,7 +19,10 @@ def create_fastapi_app():
     )
 
     # Create GraphQL routes
-    app.include_router(graphql_app, prefix="/graphql")
+    app.include_router(
+        router=get_graphql_app(GraphQLSettings(INSTANTIATED_WEBSERVER_SETTINGS)),
+        prefix="/graphql"
+    )
 
     # Create health check
     @app.get("/healthz")
