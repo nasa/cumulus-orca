@@ -2,6 +2,7 @@ import os
 from pydantic import BaseSettings
 
 
+# todo: Give this a proper constructor to make it testable. As-is, it will auto-eval defaults on IMPORT.
 class UvicornSettings(BaseSettings):
     """
     Common settings used by the framework.

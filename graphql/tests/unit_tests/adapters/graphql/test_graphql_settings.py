@@ -6,7 +6,7 @@ from src.adapters.graphql.graphql_settings import GraphQLSettings
 
 class TestGraphqlSettings(unittest.TestCase):
 
-    def test_GraphQLSettings_init(self):
+    def test_init_happy_path(self):
         """
         Parameters should properly map to properties.
         """
@@ -17,5 +17,3 @@ class TestGraphqlSettings(unittest.TestCase):
         self.assertEqual(result.GRAPHIQL, mock_webserver_settings.DEV)
         self.assertEqual(result.DEBUG, mock_webserver_settings.DEV)
         self.assertEqual(result.ALLOW_GET, mock_webserver_settings.DEV)
-
-    # todo: test env get
