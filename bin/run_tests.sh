@@ -9,13 +9,14 @@ echo "Scanning Infrastructure as code with Snyk for potential vulnerabilities...
 snyk iac test || true
 echo "Scanning open-source code with Snyk for potential vulnerabilities..."
 cd website && snyk test -d || true
+cd -
 
 # run tests for shared libraries
 echo
 echo "Running tests in shared_libraries"
 echo
 
-cd ../shared_libraries
+cd shared_libraries
 bin/run_tests.sh
 return_code=$?
 cd -
