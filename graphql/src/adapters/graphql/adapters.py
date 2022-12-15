@@ -1,5 +1,7 @@
 import dataclasses
 
+# noinspection PyPackageRequirements
+import strawberry
 from pydantic import BaseModel
 
 from src.adapters.storage.rdbms import StorageAdapterRDBMS
@@ -8,6 +10,7 @@ from src.use_cases.adapter_interfaces.word_generation import WordGenerationInter
 
 
 @dataclasses.dataclass
+@strawberry.type
 class AdaptersStorage(BaseModel):
     class Config:
         arbitrary_types_allowed = True
@@ -26,6 +29,3 @@ class AdaptersStorage(BaseModel):
             word_generation=word_generation,
             storage=storage,
             logger_provider=logger_provider)
-
-
-initialized_adapters: AdaptersStorage  # initialized in src/adapters/webserver/application.py

@@ -4,7 +4,7 @@ from orca_shared.database.entities import PostgresConnectionInfo
 from orca_shared.database.use_cases import create_postgres_connection_uri
 from orca_shared.database.use_cases.validation import validate_config
 
-from src.adapters.graphql import adapters
+from src.adapters.api.fastapi import create_fastapi_app
 from src.adapters.graphql.adapters import AdaptersStorage
 from src.adapters.logger_provider.basic import BasicLoggerProvider
 from src.adapters.storage.postgres import StorageAdapterPostgres
@@ -37,13 +37,10 @@ validate_config(
 
 user_connection_uri = create_postgres_connection_uri.create_user_uri(
     db_connect_info, logger)
-adapters.initialized_adapters = AdaptersStorage(
+adapters_storage = AdaptersStorage(
     UUIDWordGeneration(),
     StorageAdapterPostgres(user_connection_uri),
     initialized_logger_provider
 )
 
-# Don't start setting up fastapi/graphql app until adapters are ready to be referenced.
-from src.adapters.api.fastapi import create_fastapi_app
-
-application = create_fastapi_app(uvicorn_settings)
+application = create_fastapi_app(uvicorn_settings, adapters_storage)

@@ -3,10 +3,10 @@ import uuid
 from typing import Annotated
 
 # noinspection PyPackageRequirements
-from strawberry import type, field, argument
+import strawberry
+from strawberry import type, field, argument, private
 
-from src.adapters.graphql.adapters import \
-    initialized_adapters  # todo: This a bad boundary. Find a different way to set up.
+from src.adapters.graphql.adapters import AdaptersStorage
 from src.adapters.graphql.dataTypes.sample import GetEchoStrawberryResponse
 from src.adapters.graphql.dataTypes.storage_metadata import \
     GetStorageSchemaVersionStrawberryResponse
@@ -16,6 +16,9 @@ from src.adapters.graphql.resolvers.storage_metadata import get_storage_migratio
 
 @type
 class Queries:
+    # Set in schemas.py,
+    # can't use constructor due to Strawberry not accepting constructed classes.
+    adapters_storage: strawberry.Private[AdaptersStorage]
 
     @field(
         description="""Echos the given word back as a check of basic GraphQL functionality.""")
@@ -29,7 +32,8 @@ class Queries:
         ] = None,  # Default value actually MAKES it optional
     ) -> GetEchoStrawberryResponse:
         return get_echo(word,
-                        initialized_adapters.logger_provider.get_logger(
+                        Queries.adapters_storage.word_generation,
+                        Queries.adapters_storage.logger_provider.get_logger(
                             uuid.uuid4().__str__()
                         )
                         )
@@ -41,7 +45,8 @@ class Queries:
 
     ) -> GetStorageSchemaVersionStrawberryResponse:
         return get_storage_migration_version(
-            initialized_adapters.logger_provider.get_logger(
+            self.adapters_storage.storage,
+            self.adapters_storage.logger_provider.get_logger(
                 uuid.uuid4().__str__()
             )
         )
