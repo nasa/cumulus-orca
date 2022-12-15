@@ -7,7 +7,15 @@ from src.adapters.graphql.graphql_settings import GraphQLSettings
 from src.adapters.webserver.uvicorn_settings import UvicornSettings
 
 
-def create_fastapi_app(uvicorn_settings: UvicornSettings, adapters_storage: AdaptersStorage):
+def create_fastapi_app(uvicorn_settings: UvicornSettings, adapters_storage: AdaptersStorage) \
+        -> FastAPI:
+    """
+    Creates a Fast API app with graphql routes and a health check.
+
+    Args:
+        uvicorn_settings: Contains settings required by application components.
+        adapters_storage: Adapters required by application functionality.
+    """
     app = FastAPI()
 
     # TODO: Need to lock down origins, methods and headers

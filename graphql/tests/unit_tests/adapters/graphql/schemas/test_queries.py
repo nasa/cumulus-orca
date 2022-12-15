@@ -1,6 +1,6 @@
 import unittest
 
 
-class TestRDBMS(unittest.TestCase):
+class TestQueries(unittest.TestCase):
     # placeholder for future tests
     pass

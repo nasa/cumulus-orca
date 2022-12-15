@@ -13,6 +13,12 @@ from src.adapters.word_generation.word_generation import UUIDWordGeneration
 
 
 def get_application(uvicorn_settings: UvicornSettings):
+    """
+    Sets up an application for use with uvicorn.
+
+    Args:
+        uvicorn_settings: Contains settings required by application components.
+    """
     initialized_logger_provider = BasicLoggerProvider()
     logger = initialized_logger_provider.get_logger("Setup")
 

@@ -16,7 +16,7 @@ class BasicLoggerProvider(LoggerProviderInterface):
         """
 
         # noinspection PyTypeChecker
-        return RequestIdLoggerAdapter(logger, {'request_id': request_id})
+        return RequestIdLoggerAdapter(logger, {"request_id": request_id})
 
 
 class RequestIdLoggerAdapter(logging.LoggerAdapter):
