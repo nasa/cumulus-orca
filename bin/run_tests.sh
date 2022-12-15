@@ -4,12 +4,18 @@ set -e
 base=$(pwd)
 failed=0
 
+# run snyk tests locally. Skip in bamboo due to authentication token requirement.
+echo "Scanning Infrastructure as code with Snyk for potential vulnerabilities..."
+snyk iac test || true
+echo "Scanning open-source code with Snyk for potential vulnerabilities..."
+cd website && snyk test -d || true
+
 # run tests for shared libraries
 echo
 echo "Running tests in shared_libraries"
 echo
 
-cd shared_libraries
+cd ../shared_libraries
 bin/run_tests.sh
 return_code=$?
 cd -

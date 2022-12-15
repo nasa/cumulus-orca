@@ -6,7 +6,7 @@ Description:  Extracts the keys (filepaths) for a granule's files from a Cumulus
 
 import json
 import re
-from typing import Dict, List, Any
+from typing import Any, Dict, List
 
 import fastjsonschema as fastjsonschema
 from aws_lambda_powertools import Logger
