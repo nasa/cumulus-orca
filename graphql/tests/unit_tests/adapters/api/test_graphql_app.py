@@ -9,28 +9,27 @@ class TestGraphqlApp(unittest.TestCase):
 
     @patch("src.adapters.api.graphql_app.get_schema")
     @patch("src.adapters.api.graphql_app.GraphQLRouter")
-    def test_todo(
+    def test_get_graphql_app_happy_path(
         self,
         mock_GraphQLRouter: MagicMock,
         mock_get_schema: MagicMock,
     ):
-        for attribute in ["GRAPHIQL", "DEBUG", "ALLOW_GET"]:
-            with self.subTest(attribute=attribute):
-                mock_instantiated_graphql_settings = Mock()
-                mock_instantiated_graphql_settings.GRAPHIQL = True
-                mock_instantiated_graphql_settings.DEBUG = True
-                mock_instantiated_graphql_settings.ALLOW_GET = True
-                setattr(mock_instantiated_graphql_settings, attribute, False)  # override attribute under test
-                backup_instantiated_graphql_settings = copy(mock_instantiated_graphql_settings)
+        graphiql = Mock()
+        debug = Mock()
+        allow_get = Mock()
+        mock_graphql_settings = Mock()
+        mock_graphql_settings.GRAPHIQL = graphiql
+        mock_graphql_settings.DEBUG = debug
+        mock_graphql_settings.ALLOW_GET = allow_get
+        mock_adapters_storage = Mock()
 
-                get_graphql_app(mock_instantiated_graphql_settings)
+        get_graphql_app(mock_graphql_settings, mock_adapters_storage)
 
-                mock_get_schema.assert_called_once_with(mock_instantiated_graphql_settings)
-                mock_get_schema.reset_mock()
-                mock_GraphQLRouter.assert_called_once_with(
-                    mock_get_schema.return_value,
-                    graphiql=backup_instantiated_graphql_settings.GRAPHIQL,
-                    allow_queries_via_get=backup_instantiated_graphql_settings.ALLOW_GET,
-                    debug=backup_instantiated_graphql_settings.DEBUG
-                )
-                mock_GraphQLRouter.reset_mock()
+        mock_get_schema.assert_called_once_with(
+            mock_graphql_settings, mock_adapters_storage)
+        mock_GraphQLRouter.assert_called_once_with(
+            mock_get_schema.return_value,
+            graphiql=graphiql,
+            allow_queries_via_get=allow_get,
+            debug=debug
+        )
