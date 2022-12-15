@@ -17,7 +17,7 @@ class TestUvicornSettings(unittest.TestCase):
         mock_port = random.randint(0, 99999)
         mock_db_connect_info = uuid.uuid4().__str__()
 
-        for orca_env in ["production", "development", None, ""]:
+        for orca_env in ["production", "development", None, "apples"]:
             with self.subTest(orca_env=orca_env):
                 with patch.dict(os.environ,
                                 {
