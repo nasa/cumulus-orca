@@ -95,7 +95,7 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any]):
             LOGGER.debug(f"Validating file {file_name}")
             # filtering excludedFileExtensions
             if should_exclude_files_type(file_name, exclude_file_types):
-                    LOGGER.info(f"Excluding file '{file_name}'")
+                LOGGER.info(f"Excluding file '{file_name}'")
             else:
                 LOGGER.debug(f"File {file_name} will be restored")
                 file_key = a_file[INPUT_GRANULE_FILE_KEY_KEY]
