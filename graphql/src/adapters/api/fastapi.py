@@ -10,11 +10,14 @@ from src.adapters.webserver.uvicorn_settings import UvicornSettings
 def create_fastapi_app(uvicorn_settings: UvicornSettings, adapters_storage: AdaptersStorage) \
         -> FastAPI:
     """
-    Creates a Fast API app with graphql routes and a health check.
+    Creates a Fast API app based on arguments, including GraphQL setup.
 
     Args:
         uvicorn_settings: Contains settings required by application components.
         adapters_storage: Adapters required by application functionality.
+
+    Returns:
+        A Fast API app with graphql routes and a health check.
     """
     app = FastAPI()
 

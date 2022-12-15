@@ -22,7 +22,7 @@ class EdgeCursor:
             kwargs: key/value dictionary with the column names and values needed for the cursor
 
         Returns:
-            (str): Base 64 encoded json string
+            Base 64 encoded json string
         """
         # Change the dictionary to a JSON string
         values = json.dumps(kwargs)

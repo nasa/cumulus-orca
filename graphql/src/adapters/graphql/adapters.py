@@ -12,6 +12,9 @@ from src.use_cases.adapter_interfaces.word_generation import WordGenerationInter
 @dataclasses.dataclass
 @strawberry.type
 class AdaptersStorage(BaseModel):
+    """
+    Stores adapters required by GraphQL use cases.
+    """
     class Config:
         arbitrary_types_allowed = True
 
