@@ -1,8 +1,11 @@
 import logging
 import unittest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
-from src.adapters.logger_provider.basic import BasicLoggerProvider, RequestIdLoggerAdapter
+from src.adapters.logger_provider.basic import (
+    BasicLoggerProvider,
+    RequestIdLoggerAdapter,
+)
 
 
 class TestBasic(unittest.TestCase):

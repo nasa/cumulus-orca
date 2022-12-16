@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 from src.adapters.graphql.dataTypes.common import InternalServerErrorGraphqlType
 

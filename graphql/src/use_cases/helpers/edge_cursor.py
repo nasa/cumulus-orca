@@ -1,5 +1,5 @@
 import json
-from base64 import b64encode, b64decode
+from base64 import b64decode, b64encode
 from typing import Generic
 
 from src.entities.common import GenericType

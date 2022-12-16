@@ -1,4 +1,5 @@
 from sqlalchemy import text
+
 from src.adapters.storage.rdbms import StorageAdapterRDBMS
 
 

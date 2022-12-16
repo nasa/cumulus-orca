@@ -1,7 +1,7 @@
 import json
 import unittest
 import uuid
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 from src.adapters.webserver.application import get_application
 

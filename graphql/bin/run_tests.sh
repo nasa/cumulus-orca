@@ -5,14 +5,14 @@
 ##
 ## DESCRIPTION
 ## -----------------------------------------------------------------------------
-## Tests the lambda (task) for lambda_name using unit tests.
+## Tests graphql using unit tests.
 ##
 ##
 ## USAGE
 ## -----------------------------------------------------------------------------
 ## bin/run_tests.sh
 ##
-## This must be called from the (root) lambda directory /tasks/lambda_name
+## This must be called from the (root) lambda directory /graphql
 ## =============================================================================
 
 ## Set this for Debugging only
@@ -21,15 +21,15 @@
 ## Make sure we are calling the script the correct way.
 BASEDIR=$(dirname $0)
 if [ "$BASEDIR" != "bin" ]; then
-  >&2 echo "ERROR: This script must be called from the root directory of the task lambda [bin/run_tests.sh]."
+  >&2 echo "ERROR: This script must be called from the root directory of graphql [bin/run_tests.sh]."
   exit 1
 fi
 
 
 ## FUNCTIONS
 ## -----------------------------------------------------------------------------
-source ../../bin/common/check_returncode.sh
-source ../../bin/common/venv_management.sh
+source ../bin/common/check_returncode.sh
+source ../bin/common/venv_management.sh
 
 
 ## MAIN
@@ -52,37 +52,37 @@ isort \
     --use-parentheses \
     --force-grid-wrap 0 \
     -m 3 \
-    *.py test
+    src test
 
 
 echo "INFO: Formatting with black ..."
-black *.py test
+black src test
 
 
 echo "INFO: Checking lint rules ..."
 flake8 \
     --max-line-length 99 \
-    *.py test
+    src test
 check_returncode $? "ERROR: Linting issues found."
 
 
 ## Run code smell and security tests using bandit
 echo "INFO: Running code smell security tests ..."
-bandit -r *.py test
+bandit -r src test
 check_returncode $? "ERROR: Potential security or code issues found."
 
 
 ## Check code third party libraries for CVE issues
-echo "INFO: Running checks on third party libraries ..."
-safety check -r requirements.txt -r requirements-dev.txt
-check_returncode $? "ERROR: Potential security issues third party libraries."
+# echo "INFO: Running checks on third party libraries ..."
+# safety check -r requirements.txt -r requirements-dev.txt
+# check_returncode $? "ERROR: Potential security issues third party libraries."
 
 
 ## Run unit tests and check Coverage
 echo "INFO: Running unit and coverage tests ..."
 
 # Currently just running unit tests until we fix/support large tests
-coverage run --source=lambda_name -m pytest
+coverage run --source=graphql -m pytest
 check_returncode $? "ERROR: Unit tests encountered failures."
 
 # Unit tests expected to cover minimum of 80%.

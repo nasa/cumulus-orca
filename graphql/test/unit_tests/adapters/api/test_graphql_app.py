@@ -1,6 +1,6 @@
 import unittest
 from copy import copy
-from unittest.mock import patch, MagicMock, Mock
+from unittest.mock import MagicMock, Mock, patch
 
 from src.adapters.api.graphql_app import get_graphql_app
 

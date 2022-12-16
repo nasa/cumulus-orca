@@ -2,9 +2,10 @@ import logging
 from abc import abstractmethod
 
 from orca_shared.database import shared_db
-from sqlalchemy import text, create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.future import Engine
+
 from src.use_cases.adapter_interfaces.storage import StorageMetadataInterface
 
 

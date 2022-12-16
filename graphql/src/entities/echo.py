@@ -2,6 +2,7 @@ import dataclasses
 from enum import Enum
 
 import pydantic
+
 # noinspection PyPackageRequirements
 import strawberry
 

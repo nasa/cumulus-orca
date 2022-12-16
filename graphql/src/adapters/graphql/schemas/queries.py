@@ -4,14 +4,17 @@ from typing import Annotated
 
 # noinspection PyPackageRequirements
 import strawberry
-from strawberry import type, field, argument, private
+from strawberry import argument, field, private, type
 
 from src.adapters.graphql.adapters import AdaptersStorage
 from src.adapters.graphql.dataTypes.sample import GetEchoStrawberryResponse
-from src.adapters.graphql.dataTypes.storage_metadata import \
-    GetStorageSchemaVersionStrawberryResponse
+from src.adapters.graphql.dataTypes.storage_metadata import (
+    GetStorageSchemaVersionStrawberryResponse,
+)
 from src.adapters.graphql.resolvers.sample import get_echo
-from src.adapters.graphql.resolvers.storage_metadata import get_storage_migration_version
+from src.adapters.graphql.resolvers.storage_metadata import (
+    get_storage_migration_version,
+)
 
 
 @type

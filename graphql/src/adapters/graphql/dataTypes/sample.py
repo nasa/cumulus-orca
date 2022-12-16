@@ -1,8 +1,10 @@
 # noinspection PyPackageRequirements
 import strawberry
 
-from src.adapters.graphql.dataTypes.common import InternalServerErrorGraphqlType, \
-    ErrorGraphqlTypeInterface
+from src.adapters.graphql.dataTypes.common import (
+    ErrorGraphqlTypeInterface,
+    InternalServerErrorGraphqlType,
+)
 from src.entities.common import Edge
 from src.entities.echo import BoringWordException, Echo
 

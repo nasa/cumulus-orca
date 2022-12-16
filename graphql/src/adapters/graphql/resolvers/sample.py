@@ -1,8 +1,10 @@
 import logging
 
 from src.adapters.graphql.dataTypes.common import InternalServerErrorGraphqlType
-from src.adapters.graphql.dataTypes.sample import BoringWordExceptionGraphqlType, \
-    GetEchoStrawberryResponse
+from src.adapters.graphql.dataTypes.sample import (
+    BoringWordExceptionGraphqlType,
+    GetEchoStrawberryResponse,
+)
 from src.entities.echo import BoringWordException
 from src.use_cases.adapter_interfaces.word_generation import WordGenerationInterface
 from src.use_cases.sample import Test

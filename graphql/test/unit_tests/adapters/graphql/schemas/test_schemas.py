@@ -1,8 +1,7 @@
 import unittest
-from unittest.mock import MagicMock, patch, Mock
+from unittest.mock import MagicMock, Mock, patch
 
 from graphql import NoSchemaIntrospectionCustomRule
-
 from src.adapters.graphql.schemas.schemas import get_schema
 
 
