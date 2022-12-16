@@ -17,8 +17,10 @@
 ## export SNYK_AUTHENTICATION_TOKEN=<YOUR_TOKEN>
 ## -----------------------------------------------------------------------------
 
+source bin/common/check_returncode.sh
+
 # authenticate snyk CLI locally
-snyk auth $SNYK_AUTHENTICATION_TOKEN
+run_and_check_returncode "snyk auth $SNYK_AUTHENTICATION_TOKEN"
 
 # Iac run limited to 20 runs a month. TBD Discuss with Jon Velapondi.
 # echo "Scanning Infrastructure as code with Snyk for potential vulnerabilities..."
