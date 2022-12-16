@@ -14,7 +14,7 @@ class TestUvicornSettings(unittest.TestCase):
         os.environ should be able to override values.
         """
         mock_host = uuid.uuid4().__str__()
-        mock_port = random.randint(0, 99999) # nosec
+        mock_port = random.randint(0, 99999)  # nosec
         mock_db_connect_info = uuid.uuid4().__str__()
 
         for orca_env in ["production", "development", None, "apples"]:

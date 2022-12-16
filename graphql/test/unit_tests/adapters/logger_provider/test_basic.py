@@ -41,4 +41,5 @@ class TestBasic(unittest.TestCase):
 
         mock_message = Mock()
         adapter.error(mock_message)
-        mock_logger.log.assert_called_once_with(logging.ERROR, f"{mock_request_id}: {mock_message}")
+        mock_logger.log.assert_called_once_with(
+            logging.ERROR, f"{mock_request_id}: {mock_message}")

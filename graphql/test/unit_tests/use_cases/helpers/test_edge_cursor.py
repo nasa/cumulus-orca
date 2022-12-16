@@ -1,5 +1,4 @@
 import unittest
-from typing import Dict
 
 from src.use_cases.helpers.edge_cursor import EdgeCursor
 

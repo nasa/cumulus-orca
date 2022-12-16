@@ -17,4 +17,3 @@ class GraphQLSettings:
         self.GRAPHIQL = webserver_settings.DEV
         self.DEBUG = webserver_settings.DEV
         self.ALLOW_GET = webserver_settings.DEV
-

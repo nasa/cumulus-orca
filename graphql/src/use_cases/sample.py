@@ -33,7 +33,7 @@ class Test:
         if word is None or word == "":
             word = self.word_generator.get_random_word()
 
-        if random.randint(0, 10) == 5: # nosec
+        if random.randint(0, 10) == 5:  # nosec
             raise Exception("Whoops, random error.")
 
         if word == len(word) * word[0]:

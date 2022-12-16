@@ -37,8 +37,7 @@ class TestSchemas(unittest.TestCase):
                 self.assertEqual(mock_schema.return_value, result)
                 mock_schema.assert_called_once_with(
                     query=mock_queries,
-                    extensions=
-                    [mock_add_validation_rules.return_value, ]
+                    extensions=[mock_add_validation_rules.return_value]
                     if graphiql_setting is False else
                     []
                 )

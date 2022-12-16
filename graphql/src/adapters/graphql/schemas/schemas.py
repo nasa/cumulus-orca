@@ -28,8 +28,7 @@ def get_schema(graphql_settings: GraphQLSettings, adapters_storage: AdaptersStor
         # subscription=Subscription,
         # config=
         # types=
-        extensions=
-        [AddValidationRules([NoSchemaIntrospectionCustomRule]), ]
+        extensions=[AddValidationRules([NoSchemaIntrospectionCustomRule])]
         if graphql_settings.GRAPHIQL is False else
         []
         # scalar_overrides=

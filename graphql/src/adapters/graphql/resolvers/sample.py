@@ -10,7 +10,8 @@ from src.use_cases.adapter_interfaces.word_generation import WordGenerationInter
 from src.use_cases.sample import Test
 
 
-def get_echo(word: str, word_generation: WordGenerationInterface, logger: logging.Logger) -> GetEchoStrawberryResponse:
+def get_echo(word: str, word_generation: WordGenerationInterface, logger: logging.Logger) \
+        -> GetEchoStrawberryResponse:
     try:
         return Test(word_generation).get_echo(word, logger)
     except BoringWordException as ex:
