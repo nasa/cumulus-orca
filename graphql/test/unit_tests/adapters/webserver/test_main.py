@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 from src.adapters.webserver.main import main
 
 
-class TestApplication(unittest.TestCase):
+class TestMain(unittest.TestCase):
 
     @patch("src.adapters.webserver.main.get_application")
     @patch("src.adapters.webserver.main.uvicorn")
