@@ -70,12 +70,6 @@ bandit -r src test
 check_returncode $? "ERROR: Potential security or code issues found."
 
 
-## Check code third party libraries for CVE issues
-echo "INFO: Running checks on third party libraries ..."
-safety check -r requirements.txt -r requirements-dev.txt
-check_returncode $? "ERROR: Potential security issues third party libraries."
-
-
 ## Run unit tests and check Coverage
 echo "INFO: Running unit and coverage tests ..."
 
