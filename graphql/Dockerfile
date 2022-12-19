@@ -8,8 +8,11 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # Install python app requirements
-COPY requirements.txt .
-RUN pip wheel --no-cache-dir --wheel-dir /app/wheels -r requirements.txt
+# Copy external dependencies
+COPY shared_libraries shared_libraries
+COPY requirements.txt graphql/requirements.txt
+WORKDIR graphql
+RUN pip wheel --no-cache-dir --wheel-dir /app/wheels -r requirements.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
 
 
 # Final Stage

@@ -220,8 +220,8 @@ class TestPostCopyRequestToQueue(TestCase):
                         event,
                         context,
                     )
-                    # Reset the value
-                    os.environ[name] = good_value
+                # Reset the value
+                os.environ[name] = good_value
 
     @patch.dict(
         os.environ,

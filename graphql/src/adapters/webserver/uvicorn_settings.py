@@ -1,4 +1,3 @@
-import os
 from pydantic import BaseSettings
 
 
@@ -6,9 +5,12 @@ class UvicornSettings(BaseSettings):
     """
     Common settings used by the framework.
     """
-    HOST: str = "0.0.0.0"
+    HOST: str = "0.0.0.0"  # nosec
     PORT: int = 5000
-    DEV: bool = True if os.environ.get("ORCA_ENV", "production") == "development" else False
+    ORCA_ENV = "production"
+    DB_CONNECT_INFO: str
 
-
-INSTANTIATED_WEBSERVER_SETTINGS = UvicornSettings()
+    # noinspection PyPep8Naming
+    def get_DEV(self) -> bool:
+        return True if self.ORCA_ENV == "development" else False
+    DEV = property(get_DEV)

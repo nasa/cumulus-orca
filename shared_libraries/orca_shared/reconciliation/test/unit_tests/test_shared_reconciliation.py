@@ -51,14 +51,14 @@ class TestSharedReconciliationLibraries(unittest.TestCase):
                     mock_engine,
                 )
 
-            mock_internal_update_job.assert_called_once_with(
-                mock_job_id,
-                status,
-                unittest.mock.ANY,
-                unittest.mock.ANY if end_time_present.__contains__(status) else None,
-                mock_error_message if status == OrcaStatus.ERROR else None,
-                mock_engine,
-            )
+                mock_internal_update_job.assert_called_once_with(
+                    mock_job_id,
+                    status,
+                    unittest.mock.ANY,
+                    unittest.mock.ANY if end_time_present.__contains__(status) else None,
+                    mock_error_message if status == OrcaStatus.ERROR else None,
+                    mock_engine,
+                )
             mock_internal_update_job.reset_mock()
 
     @patch("orca_shared.reconciliation.shared_reconciliation.internal_update_job")
@@ -106,12 +106,12 @@ class TestSharedReconciliationLibraries(unittest.TestCase):
                         mock_error_message,
                         mock_engine,
                     )
-                self.assertEqual(
-                    "Cannot set error message outside of error status entries.",
-                    str(cm.exception),
-                )
+                    self.assertEqual(
+                        "Cannot set error message outside of error status entries.",
+                        str(cm.exception),
+                    )
 
-            mock_internal_update_job.assert_not_called()
+                    mock_internal_update_job.assert_not_called()
 
     @patch("orca_shared.reconciliation.shared_reconciliation.update_job_sql")
     def test_internal_update_job_happy_path(

@@ -84,5 +84,5 @@ coverage run --source src -m pytest
 check_returncode $? "ERROR: Unit tests encountered failures."
 
 # Unit tests expected to cover minimum of 80%.
-coverage report 
+coverage report --fail-under=80
 check_returncode $? "ERROR: Unit tests coverage is less than 80%"
