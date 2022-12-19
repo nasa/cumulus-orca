@@ -1,5 +1,5 @@
 import json
-from base64 import b64encode, b64decode
+from base64 import b64decode, b64encode
 from typing import Generic
 
 from src.entities.common import GenericType
@@ -22,7 +22,7 @@ class EdgeCursor:
             kwargs: key/value dictionary with the column names and values needed for the cursor
 
         Returns:
-            (str): Base 64 encoded json string
+            Base 64 encoded json string
         """
         # Change the dictionary to a JSON string
         values = json.dumps(kwargs)

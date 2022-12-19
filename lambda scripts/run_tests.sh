@@ -63,7 +63,7 @@ echo "INFO: Checking lint rules ..."
 flake8 \
     --max-line-length 99 \
     *.py test
-check_returncode $return_code "ERROR: Linting issues found."
+check_returncode $? "ERROR: Linting issues found."
 
 
 ## Run code smell and security tests using bandit

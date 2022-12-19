@@ -142,12 +142,29 @@ module "orca_iam" {
   orca_reports_bucket_name = var.orca_reports_bucket_name
 }
 
+## orca_graphql_0- graphql module that sets up centralized db code
+## sets up components required by other modules, such as IAM roles for secretsmanager to grant permissions to
+## =============================
+module "orca_graphql_0" {
+  source     = "../graphql_0"
+  depends_on = []
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  permissions_boundary_arn = var.permissions_boundary_arn
+  prefix                   = var.prefix
+  vpc_id                   = var.vpc_id
+
+  ## OPTIONAL
+  tags = var.tags
+}
 
 ## orca_secretsmanager - secretsmanager module
 ## =============================================================================
 module "orca_secretsmanager" {
   source     = "../secretsmanager"
-  depends_on = [module.orca_iam]
+  depends_on = [module.orca_iam, module.orca_graphql_0]
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------
@@ -160,12 +177,13 @@ module "orca_secretsmanager" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  db_admin_password       = var.db_admin_password
-  db_user_password        = var.db_user_password
-  db_host_endpoint        = var.db_host_endpoint
-  restore_object_role_arn = module.orca_iam.restore_object_role_arn
-  s3_access_key           = var.s3_access_key
-  s3_secret_key           = var.s3_secret_key
+  db_admin_password               = var.db_admin_password
+  db_user_password                = var.db_user_password
+  db_host_endpoint                = var.db_host_endpoint
+  gql_ecs_task_execution_role_arn = module.orca_graphql_0.gql_ecs_task_execution_role_arn
+  restore_object_role_arn         = module.orca_iam.restore_object_role_arn
+  s3_access_key                   = var.s3_access_key
+  s3_secret_key                   = var.s3_secret_key
 
   ## OPTIONAL
   db_admin_username = var.db_admin_username
@@ -220,11 +238,11 @@ module "orca_ecs" {
   tags = var.tags
 }
 
-## orca_graph_ql - graphql module that sets up centralized db code
+## orca_graphql_1 - graphql module that sets up centralized db code
 ## =============================
-module "orca_graph_ql" {
-  source     = "../graph_ql"
-  depends_on = [module.orca_lambdas, module.orca_ecs, module.orca_secretsmanager] ## secretsmanager sets up db connection secrets.
+module "orca_graphql_1" {
+  source     = "../graphql_1"
+  depends_on = [module.orca_lambdas, module.orca_ecs, module.orca_graphql_0, module.orca_secretsmanager] ## secretsmanager sets up db connection secrets.
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------
@@ -241,14 +259,18 @@ module "orca_graph_ql" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  ecs_cluster_id                     = module.orca_ecs.ecs_cluster_id
+  db_connect_info_secret_arn      = module.orca_secretsmanager.secretsmanager_arn
+  ecs_cluster_id                  = module.orca_ecs.ecs_cluster_id
+  gql_ecs_task_execution_role_arn = module.orca_graphql_0.gql_ecs_task_execution_role_arn
+  gql_ecs_task_execution_role_id  = module.orca_graphql_0.gql_ecs_task_execution_role_id
+  gql_tasks_role_arn              = module.orca_graphql_0.gql_tasks_role_arn
 }
 
 ## orca_api_gateway - api gateway module
 ## =============================================================================
 module "orca_api_gateway" {
   depends_on = [
-    module.orca_lambdas, module.orca_graph_ql
+    module.orca_lambdas
   ]
   source = "../api-gateway"
   ## --------------------------
