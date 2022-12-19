@@ -31,4 +31,4 @@ echo "Scanning open-source code with Snyk for potential vulnerabilities..."
 cd website
 snyk test -d --severity-threshold=high || true
 
-# TODO: scan orca lambdas
+# TODO ORCA:598-Scan orca lambda requirements file using snyk
