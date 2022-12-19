@@ -1,3 +1,4 @@
+
 ---
 id: versioning-releases
 title:  ORCA Versioning and Releases
@@ -14,13 +15,13 @@ versioning can be found [here](https://semver.org/).
 ### Create a release branch
 
 From develop, create a new release branch from develop following the
-`release-MAJOR.MINOR.x`. For example, `release-1.14.1`. Push this branch 
+`release-MAJOR.MINOR.x`. For example, `release-1.14.1`. Push this branch
 to github if you created it locally.
 
 ### Update CHANGELOG.md
 
-Update the [CHANGELOG.md](https://github.com/nasa/cumulus-orca/blob/master/CHANGELOG.md). 
-Put a header under the 'Unreleased' section with the new version number and 
+Update the [CHANGELOG.md](https://github.com/nasa/cumulus-orca/blob/master/CHANGELOG.md).
+Put a header under the 'Unreleased' section with the new version number and
 the date.
 
 ### Create a git tag for the release
@@ -48,7 +49,7 @@ bamboo deployment plan.
 1. If you have updated the `bamboo.yaml` config file, you will need to import the updated spec file from Bamboo specs UI. Under `Specs` section, click on the `Set up Specs Repository`. On the `Project Type`, select `Build Project` and then `ORCA`. On the Specs repository, select the repository host as `orca-develop`. Note that choosing the wrong repository branch will cause issues in deployment. `ORCA repo` repository host is for `master` branch and `orca test branch` host is for `feature/ORCA-test-bamboo` branch used for testing and prototyping. Contact `Venku Jayanti` from CI/CD team for additional support.
 1. In the ORCA project (https://ci.earthdata.nasa.gov/browse/ORCA-OI), scroll to the top left of the page where it indicates `Plan branch`. From the `Plan branch` dropdown menu, select the release branch you created for the release which should be in the format `release-X.X.X`.
 1. Once inside the release branch page, scroll to the top right of the page and click `Actions`-> `Configure branch`.
-1. On the `Plan branch configuration` page, under `Plan branch configuration`, enable 'Change Trigger'. Set the 
+1. On the `Plan branch configuration` page, under `Plan branch configuration`, enable 'Change Trigger'. Set the
    Trigger type to manual, and this will prevent commits to the branch from triggering the build plan.
 1. Click on the `Variables` tab.
 Ensure that you are on your branch plan and not the master plan. Click on the `Choose from inherited variables` dropdown menu.
@@ -68,13 +69,16 @@ Bamboo will build and run unit tests against that tagged release.
 
 The release is automated in Bamboo, but the step must be manually started. If
 you set the `RELEASE_FLAG` to `true` and the build steps passed, you will
-be able to run the manual 'Release' step in Bamboo. Make sure to use the `ORCA Integrator` plan under ORCA on bamboo website for performing a release.
+be able to run the manual 'Release' step in Bamboo. Make sure to use the `ORCA Integrator` plan under ORCA on bamboo website for performing a code release.
+In order to release the ORCA documentation, use the  `Release ORCA Documentation` plan under ORCA on bamboo website and then follow the steps in `Creating a Bamboo deployment plan branch` section above.
+Make sure to replace your bamboo github variables before running the pipeline.
+
 
 The CI release scripts will create a release based on the release version tag,
 as well as uploading release artifacts to the Github release for the Terraform
 modules provided by Cumulus. The Terraform release artifacts include:
 
-* A multi-module Terraform .zip artifact containing filtered copies of the 
+* A multi-module Terraform .zip artifact containing filtered copies of the
   tf-modules, packages, and tasks directories for use as Terraform module sources.
 
 Just make sure to verify the appropriate .zip files are present on Github after
@@ -88,10 +92,10 @@ If this is the latest version, you need to merge the version update changes back
 1. Once complete, create a PR to merge master into develop.
    This should only contain changes from the release process.
 
-:::note Note: 
+:::note Note:
 
-Do not squash this merge. Doing so will make the "compare" view from step 4 
-show an incorrect diff, because the tag is linked to a specific commit on the 
+Do not squash this merge. Doing so will make the "compare" view from step 4
+show an incorrect diff, because the tag is linked to a specific commit on the
 base branch.
 
 :::
@@ -128,7 +132,7 @@ DO NOT RUN THE RELEASE STAGE FROM `PROTOTYPE-LATEST`
 Comment the release stage out in `bamboo.yaml` at the top of the file, and under `stages:`. Note that indentation is not a reliable indicator of block length, so make sure that all release code, including `repositories`, `triggers`, and `branches`, are commented out.
 :::
 
-You will use the `ORCA Deploy Plan` bamboo plan for deploying the resources. 
+You will use the `ORCA Deploy Plan` bamboo plan for deploying the resources.
 
 After hitting the play button on `Deploy DR ORCA Buckets` stage in bamboo plan, but before hitting `Run` in the popup, replace the following variables with yours.
 
@@ -154,7 +158,7 @@ Some of these buckets have cross-account IAM policies attached so that they can 
 Hitting 'play' next to `Deploy DR ORCA buckets`, `Deploy Dev RDS Stack` and `Deploy Dev Cumulus and ORCA Stack` brings up a checkbox list to run multiple jobs at once. Note that none of the checkboxes should be checked.
 :::
 
-The Cumulus and TF buckets as well as dynamoDB table in cumulus OU account are created automatically in the Bamboo `Deploy Cumulus buckets and Cumulus and Orca modules` stage. 
+The Cumulus and TF buckets as well as dynamoDB table in cumulus OU account are created automatically in the Bamboo `Deploy Cumulus buckets and Cumulus and Orca modules` stage.
 These are the buckets that will be created in cumulus OU account:
 
 - `<PREFIX>-internal`

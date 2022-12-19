@@ -42,6 +42,7 @@ and includes an additional section for migration notes.
 - *ORCA-461*
   - Invalid database connection parameters will now be detected earlier and more consistently.
   - Postgres table/user names can now begin with an '_' and contain '$' if your Postgres DB version supports this.
+- *ORCA-533* RecoveryWorkflow no longer requires the `bucket` property on files. Was unused by ORCA.
 
 ### Added
 - *ORCA-336*
@@ -49,6 +50,7 @@ and includes an additional section for migration notes.
 - *ORCA-554*, *ORCA-561*, *ORCA-579*, *ORCA-581* GraphQL image, service, and Load Balancer will now be deployed by TF.
 - *ORCA-351*
   - Added new optional `recoveryBucketOverride` property to `extract_filepaths_for_granule` input schema so that data managers can now specify their own buckets for recovery if desired.
+- *ORCA-574/580* Added additional logging to the `extract_filepaths_for_granule` and `request_from_archive` steps of the recovery workflow to identify when an input granule is entirely excluded, or otherwise has no files to request. Status entries for these granules will display an `ERROR` status.
 
 ### Migration Notes
 - If utilizing the `copied_to_glacier` [output property](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/tasks/copy_to_glacier/schemas/output.json#L47) of `copy_to_glacier`, 
