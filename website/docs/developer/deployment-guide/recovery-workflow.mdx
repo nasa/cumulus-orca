@@ -34,3 +34,100 @@ directly or by checking the status on the Cumulus Dashboard.
     zoomOutPic={useBaseUrl('img/zoom-out.svg')}
     resetPic={useBaseUrl('img/zoom-pan-reset.svg')}
 />
+
+See the recovery workflow [stepfunction modules](https://github.com/nasa/cumulus-orca/tree/master/modules/workflows/OrcaRecoveryWorkflow) 
+for additional details on recovering files belonging to a granule.
+
+## Recovery workflow parameters
+
+The following are the parameters needed for recovery workflow:
+
+- buckets- AWS S3 bucket mapping used for Cumulus and ORCA configuration. Contains the following properties:
+  - name (Required)- Name of the S3 bucket.
+  - type (Optional)- the type of bucket - i.e. internal, public, private, protected. 
+
+  It can be set up using the following configuration.
+  ```json
+        "config": {
+          "buckets.$": "$.meta.buckets"
+        }
+    ```
+    Example:
+
+    ```json
+    "buckets": {
+            "protected": {"name": "sndbx-cumulus-protected", "type": "protected"},
+            "internal": {"name": "sndbx-cumulus-internal", "type": "internal"},
+            "private": {"name": "sndbx-cumulus-private", "type": "private"},
+            "public": {"name": "sndbx-cumulus-public", "type": "public"}
+        }
+    ```
+- fileBucketMaps- A list of dictionaries that contains details of the configured storage bucket and file regex. Contains the following properties:
+  - regex (Required)- The regex that matches the file extension type.
+  - bucket (Required))- The name of the key that points to the correct S3 bucket. Examples include public, private, protected, etc.
+  - sampleFileName (Optional)- name of a sample file having extension.
+
+  It can be set up using the following configuration.
+  ```json
+        "config": {
+          "fileBucketMaps.$": "$.meta.collection.files"
+        }
+    ```
+    Example: 
+    ```json
+        "fileBucketMaps":[
+            {
+            "regex":".*.h5$",
+            "sampleFileName":"L0A_HR_RAW_product_0010-of-0420.h5",
+            "bucket":"protected"
+            },
+            {
+            "regex":".*.cmr.xml$",
+            "sampleFileName":"L0A_HR_RAW_product_0010-of-0420.iso.xml",
+            "bucket":"protected"
+            }
+    ```
+- excludedFileExtensions (Optional)- A list of file extensions to ignore when copying files.
+  It can be set up using the following configuration.
+  ```json
+        "config": {
+          "excludedFileExtensions.$": "$.meta.collection.meta.orca.excludedFileExtensions"
+        }
+    ```
+    Example: 
+    ```json
+        "excludedFileExtensions":[
+            ".cmr",
+            ".hdf
+        ]
+    ```
+- defaultRecoveryTypeOverride (Optional)- Overrides the default restore type via a change in the collections configuration under `meta` tag as shown below. 
+  ```json
+  "meta": {
+    "defaultRecoveryTypeOverride": "Standard"
+  }
+  ```
+- defaultBucketOverride (Optional)- Overrides the default bucket to copy recovered files to.
+  ```json
+    "task_config": {
+      "defaultBucketOverride": "{$.meta.collection.meta.orca.defaultBucketOverride}"
+    }
+    ```
+- s3MultipartChunksizeMb (Optional)- Overrides default_multipart_chunksize from TF. Defaults to 250.
+  ```json
+    "task_config": {
+      "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}"
+    }
+    ```
+- asyncOperationId (Optional)- The unique identifier used for tracking requests. If not present, it will be generated.
+  ```json
+    "task_config": {
+      "asyncOperationId": "{$.cumulus_meta.asyncOperationId}"
+    }
+    ```
+
+For full definition of the parameters, see the following schema.
+- [request_from_archive schema](https://github.com/nasa/cumulus-orca/blob/master/tasks/request_from_archive/schemas/config.json)
+- [extract_filepath_from_granule schema](https://github.com/nasa/cumulus-orca/blob/master/tasks/extract_filepaths_for_granule/schemas/config.json)
+
+For details on deploying Cumulus and ORCA via terraform, see [this documentation.](https://github.com/nasa/cumulus-orca/blob/master/website/docs/developer/deployment-guide/deployment-with-cumulus.md)
