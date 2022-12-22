@@ -22,7 +22,7 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
     Since this means that GraphQL will return these entities, 
     make sure they do not contain any fields that clients should not see.
   - `resolvers` should catch and convert any exceptions to `dataTypes`.
-    When returning an `ExceptionStrawberryType` there should always be a `message` property 
+    When returning an `ExceptionGraphqlType` there should always be a `message` property 
     with a human-friendly explanation of the error.
 - `resolvers` are called by `queries` or `mutations`.
 - `queries` and `mutations` are standard GraphQL components, mapped to in the `graphql` package.
@@ -31,7 +31,15 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 ## Local Testing
 - Entry point is `src/adapters/webserver/main.py`, 
   which will start the developer UI at http://127.0.0.1:5000/graphql by default
-- If running via Docker, use the command `docker run -d -p 5000:5000 imageName` replacing `imageName` with the name of your built image.
+  - Make sure to set the following environment variables:
+    - `DB_CONNECT_INFO` = {"admin_database": "postgres", "admin_password": "{your admin password}", "admin_username": "postgres", "host": "localhost", "port": "5432", "user_database": "{PREFIX}_orca", "user_password": "{your user password}", "user_username": "{PREFIX}_orcauser"}
+      - Replacing placeholders in `{brackets}` with proper values.
+- If running via Docker
+  - Set all environment variables in an `env` file.
+    - Do NOT check this file into Github. Ideally, store this file outside the cloned repository.
+  - Use the command `docker run -d -p 5000:5000 --env-file path/to/env imageName` 
+    - Replace `imageName` with the name of your built image.
+    - Replace `path/to/env` with the path to the env file you created in the previous step.
 - If using the developer UI, queries can be converted to code-friendly representations using the following code:
   ```python
   query = """query {
@@ -87,7 +95,7 @@ Once a new version is ready for deployment, perform the following steps:
 ### Customer-Accessible Schemas
 See [ORCA API Reference](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api) 
 for customer-centric API documentation.
-# todo: add recommendation to docs to ALWAYS request ErrorStrawberryTypeInterface with __typename and message properties
+# todo: add recommendation to docs to ALWAYS request ErrorGraphqlTypeInterface with __typename and message properties
 
 ### Orca-Internal Schemas
 todo

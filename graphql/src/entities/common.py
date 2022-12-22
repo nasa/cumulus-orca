@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Generic, TypeVar
 
+# noinspection PyPackageRequirements
 import strawberry
 
 GenericType = TypeVar("GenericType")

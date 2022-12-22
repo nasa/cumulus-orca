@@ -156,8 +156,8 @@ class TestRequestStatusForJobUnit(
                 self.assertEqual(1, mock_create_http_error_dict.call_count)
                 self.assertEqual(mock_create_http_error_dict.return_value, result)
 
-                mock_create_http_error_dict.reset_mock()
-                mock_task.reset_mock()
+            mock_create_http_error_dict.reset_mock()
+            mock_task.reset_mock()
 
     # noinspection PyPep8Naming
     @patch("request_status_for_job.create_http_error_dict")

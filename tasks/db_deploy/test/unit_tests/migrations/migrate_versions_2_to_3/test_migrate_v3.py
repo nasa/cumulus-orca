@@ -100,9 +100,9 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 mock_conn_enter.assert_has_calls(execution_order, any_order=False)
                 self.assertEqual(len(execution_order), len(mock_conn_enter.method_calls))
 
-                # Reset the mocks for next loop
-                mock_text.reset_mock()
-                mock_create_admin_uri.reset_mock()
-                mock_create_engine.reset_mock()
-                mock_add_multipart_chunksize_sql.reset_mock()
-                mock_schema_versions_data.reset_mock()
+            # Reset the mocks for next loop
+            mock_text.reset_mock()
+            mock_create_admin_uri.reset_mock()
+            mock_create_engine.reset_mock()
+            mock_add_multipart_chunksize_sql.reset_mock()
+            mock_schema_versions_data.reset_mock()
