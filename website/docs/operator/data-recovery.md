@@ -4,7 +4,13 @@ title: Data Recovery
 description: Provides documentation for Operators to recover missing data.
 ---
 
-An operator kicks off the recovery processes manually via the `Recovery Workflow` step-function. 
+import MyImage from '@site/docs/templates/pan-zoom-image.mdx';
+import useBaseUrl from '@docusaurus/useBaseUrl';
+
+## Recovery via Cumulus Dashboard
+
+Recovery processes are kicked off manually by an operator through the Cumulus Dashboard. 
+The dashboard calls an API which kicks off a recovery workflow.
 Recovery is an asynchronous operation since data
 requested from GLACIER can take up to 4 hours or more to reconstitute,
 and DEEP_ARCHIVE can take 12 hours. 
@@ -15,9 +21,33 @@ from archive into an S3 bucket. Currently data is copied back to the
 Cumulus S3 primary data bucket which is the default bucket. The operator 
 has the option to override the default bucket with another restore bucket if desired. 
 Determining the status of the recovery job is done manually by querying the database
-directly or by checking the status on the UI.
+directly or by checking the status on the dashboard.
 
-## Recovery workflow input and output examples
+A screenshot of the Cumulus dashboard used for recovering granules is shown below.
+
+<MyImage
+    imageSource={useBaseUrl('img/Cumulus-Dashboard-Recovery-Workflow.png')}
+    imageAlt="Cumulus Dashboard used for recovery"
+    zoomInPic={useBaseUrl('img/zoom-in.svg')}
+    zoomOutPic={useBaseUrl('img/zoom-out.svg')}
+    resetPic={useBaseUrl('img/zoom-pan-reset.svg')}
+/>
+
+On the dashboard home page, click on `Granules` option and add the granule to recover.
+Then click on the `Options` button and select `Execute`. From the dropdown menu, 
+select `OrcaRecoveryWorkflow` and hit `Confirm`. This will execute the recovery process.
+There are several configurable parameters can be set up while running the workflow are explained in 
+the section [below](#recovery-workflow-configurable-parameters).
+
+## Manual recovery via step function workflow
+
+An operator can also run the recovery by running the `Recovery Workflow` in step function. 
+
+:::warning
+The operator should have access to AWS console to manually run the workflow which is not ideal.
+:::
+
+### Recovery workflow input and output examples
 
 The following is an input event example that an operator might set up while running the recovery workflow.
 
@@ -130,7 +160,7 @@ The following is the corresponding output that the workflow will return if succe
 
 ```
 
-## ## Recovery workflow configurable parameters
+### Recovery workflow configurable parameters
 The following are the parameters needed for recovery workflow:
 
 - buckets- AWS S3 bucket mapping used for Cumulus and ORCA configuration. Contains the following properties:
