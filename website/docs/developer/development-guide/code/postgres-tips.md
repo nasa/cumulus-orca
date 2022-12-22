@@ -153,12 +153,12 @@ key0     key1     key2
 In our example table, this would consist of `key0`, `key1`, and `key2` to be able to enforce paging uniqueness.
 These cursors point to individual elements.
 At minimum, users should be given a `start_cursor` and an `end_cursor` for any page they retrieve.
-The customer can then make a request with `cursor: {their end_cursor}, direction: 'Next', limit: 100` to get the page past the end_cursor,
-or `cursor: {their start_cursor}, direction: 'Previous', limit: 100` to get the page before the start_cursor.
+The customer can then make a request with `cursor: {their end_cursor}, direction: 'next', limit: 100` to get the page past the end_cursor,
+or `cursor: {their start_cursor}, direction: 'previous', limit: 100` to get the page before the start_cursor.
 
 #### No Cursor
 If no cursor is specified, behavior depends on `direction`.
-- If `direction` is `Next`, get the first page of results using standard ordering.
-- If `direction` is `Previous`, get the last page of results using inverted ordering.
+- If `direction` is `next`, get the first page of results using standard ordering.
+- If `direction` is `previous`, get the last page of results using inverted ordering.
 This allows users to retrieve either the first or last page of results, effectively allowing them to begin at the start or end of the record-set and page from there.
 This is particularly helpful in cases where the query is ordered by date, and users may want to look at events in chronological order, or may only want to look at the most recent events.
