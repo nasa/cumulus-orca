@@ -135,6 +135,18 @@ SELECT * FROM (
 ) results
 ORDER BY key0 ASC, key1 ASC, key2 ASC
 ```
+Which will return data in the format:
+```
+key0     key1     key2    
+-------  -------  ------- 
+50       97       60      
+50       97       62
+50       97       63
+  ... TRUNCATED ...
+50       98       57  
+50       98       58      
+50       98       59 
+```
 
 ### Cursors
 `decode_cursor` and `encode_cursor` in the graphql project can be used to encode and decode arbitrary dictionaries for use in future queries.
