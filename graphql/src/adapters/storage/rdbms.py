@@ -53,7 +53,7 @@ class StorageAdapterRDBMS(
         cursor_collection_id: str,
         cursor_granule_id: str,
         cursor_key_path: str,
-        direction: DirectionEnum,  # todo: use
+        direction: DirectionEnum,
         limit: int,
         logger: logging.Logger
     ) -> List[Mismatch]:
@@ -63,7 +63,7 @@ class StorageAdapterRDBMS(
         with self.user_engine.begin() as connection:
             logger.info("todo")
             results = connection.execute(
-                self.get_mismatch_page_sql(),
+                self.get_mismatch_page_sql(direction),
                 [{
                     "job_id": job_id,
                     "cursor_collection_id": cursor_collection_id,
@@ -95,6 +95,8 @@ class StorageAdapterRDBMS(
                         comment=result["comment"]
                     )
                 )
+            if direction == DirectionEnum.previous:
+                mismatches.reverse()
             return mismatches
 
     @staticmethod
@@ -105,6 +107,6 @@ class StorageAdapterRDBMS(
 
     @staticmethod
     @abstractmethod
-    def get_mismatch_page_sql() -> text:
+    def get_mismatch_page_sql(direction: DirectionEnum) -> text:
         # abstract to allow other sql formats
         raise NotImplementedError()

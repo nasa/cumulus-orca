@@ -79,8 +79,8 @@ class Queries:
         return get_mismatch_page(
             job_id,
             page_parameters,
-            self.adapters_storage.storage,
-            self.adapters_storage.logger_provider.get_logger(
+            Queries.adapters_storage.storage,
+            Queries.adapters_storage.logger_provider.get_logger(
                 uuid.uuid4().__str__()
             )
         )

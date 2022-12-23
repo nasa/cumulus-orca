@@ -1,6 +1,7 @@
 from sqlalchemy import text
 
 from src.adapters.storage.rdbms import StorageAdapterRDBMS
+from src.entities.common import DirectionEnum
 
 
 class StorageAdapterPostgres(StorageAdapterRDBMS):
@@ -24,13 +25,20 @@ WHERE
                     )
 
     @staticmethod
-    def get_mismatch_page_sql() -> text:  # pragma: no cover
+    def get_mismatch_page_sql(direction: DirectionEnum) -> text:  # pragma: no cover
         """
-        todo
+        SQL for retrieving a page of mismatches for a given job.
         """
+        if direction == DirectionEnum.previous:
+            sign = "<"
+            order = "DESC"
+            # todo: reverse results order
+        else:
+            sign = ">"
+            order = "ASC"
+
         return text(
-            # todo: Allow for different orders
-            """
+            f"""
 SELECT
     job_id,
     collection_id,
@@ -68,25 +76,25 @@ SELECT
         job_id = :job_id
         AND
             /* One check to see if no cursor is specified */
-            (:cursor_collection_id = NULL
+            (:cursor_collection_id is NULL
             OR
-                (collection_id >= :cursor_collection_id
+                (collection_id {sign}= :cursor_collection_id
                 AND
-                    (collection_id > :cursor_collection_id
+                    (collection_id {sign} :cursor_collection_id
                     OR
-                        (granule_id >= :cursor_granule_id
+                        (granule_id {sign}= :cursor_granule_id
                         AND
-                            (granule_id > :cursor_granule_id
+                            (granule_id {sign} :cursor_granule_id
                             OR
-                                (key_path > :cursor_key_path)
+                                (key_path {sign} :cursor_key_path)
                             )
                         )
                     )
                 )
             )
     ORDER BY 
-        collection_id ASC, 
-        granule_id ASC, 
-        key_path ASC
+        collection_id {order}, 
+        granule_id {order}, 
+        key_path {order}
     LIMIT :limit"""
         )

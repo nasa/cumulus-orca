@@ -50,7 +50,14 @@ class InternalReconcileReport:
             The indicated page of mismatch reports.
         """
         # todo: cursor type instead of dict?
-        cursor = EdgeCursor.decode_cursor(page_parameters.cursor, dict)
+        if page_parameters.cursor is None:
+            cursor = {
+                CURSOR_COLLECTION_ID_KEY: None,
+                CURSOR_GRANULE_ID_KEY: None,
+                CURSOR_KEY_PATH_KEY: None
+            }
+        else:
+            cursor = EdgeCursor.decode_cursor(page_parameters.cursor, dict)
 
         mismatches = self.storage.get_mismatch_page(
             job_id,
@@ -63,11 +70,11 @@ class InternalReconcileReport:
         )
 
         if len(mismatches) == 0:
-            start_cursor = self._create_mismatch_cursor(mismatches[0])
-            end_cursor = self._create_mismatch_cursor(mismatches[len(mismatches) - 1])
-        else:
             start_cursor = None
             end_cursor = None
+        else:
+            start_cursor = self._create_mismatch_cursor(mismatches[0])
+            end_cursor = self._create_mismatch_cursor(mismatches[len(mismatches) - 1])
 
         return Page(items=mismatches,
                     start_cursor=start_cursor,

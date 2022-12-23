@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 from typing import Generic, TypeVar, List
+import typing
 
 # noinspection PyPackageRequirements
 import strawberry
@@ -26,8 +27,8 @@ class Page(Generic[GenericType]):
     A page contains multiple records plus string cursor values for the first and last elements.
     """
     items: List[GenericType]
-    start_cursor: str
-    end_cursor: str
+    start_cursor: typing.Optional[str]
+    end_cursor: typing.Optional[str]
 
 
 @strawberry.enum  # Not strictly clean, but alternative is duplicating classes in graphql adapter.
@@ -37,12 +38,12 @@ class DirectionEnum(str, Enum):
     previous = 'previous'
 
 
-@strawberry.type  # Not strictly clean, but alternative is duplicating classes in graphql adapter.
+@strawberry.input  # Not strictly clean, but alternative is duplicating classes in graphql adapter.
 @dataclass
 class PageParameters:
     """
     A page contains multiple records plus string cursor values for the first and last elements.
     """
-    cursor: str = None
-    direction: DirectionEnum = next
-    limit: int = None  # todo: Set default in resolver or some other level
+    cursor: typing.Optional[str] = None
+    direction: DirectionEnum = DirectionEnum.next
+    limit: typing.Optional[int] = None  # todo: Set default in resolver or some other level
