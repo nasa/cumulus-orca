@@ -6,8 +6,8 @@ description: Tips on writing efficient Postgres queries.
 
 ## Limit
 Users may wish to adjust the number of results they receive to adjust memory usage, processing time, etc.
-However, this `limit` value should have an upper bound, to avoid users requesting far too much data at once.
-In GraphQL in particular, the webserver may have limits on how much data is returned via HTTP requests.
+Ideally this `limit` value would have an upper bound, to avoid users requesting far too much data at once.
+However, in the particular case of GraphQL, users may request varying amounts of properties on their data, making an upper limit difficult to calculate for a given query.
 
 ## Paging
 It will not always be feasible/desired to return all results at once.
@@ -109,33 +109,30 @@ The filter should eliminate all of the previously retrieved rows.
 #### Previous Page
 In the event the user requests the previous page, modify the default query by flipping the signs and `ORDER`, then reversing the `ORDER` of results.
 ```
-SELECT * FROM (
-    SELECT
-		* 
-	FROM
-		orca.test_table
-	WHERE
-		key0 <= 50
-		AND
-			(key0 < 50
-			OR
-				(key1 <= 98
-				AND
-					(key1 < 98
-					OR
-						(key2 < 60)
-					)
+SELECT
+	* 
+FROM
+	orca.test_table
+WHERE
+	key0 <= 50
+	AND
+		(key0 < 50
+		OR
+			(key1 <= 98
+			AND
+				(key1 < 98
+				OR
+					(key2 < 60)
 				)
 			)
-	ORDER BY 
-		key0 DESC, 
-		key1 DESC, 
-		key2 DESC
-	LIMIT 100
-) results
-ORDER BY key0 ASC, key1 ASC, key2 ASC
+		)
+ORDER BY 
+	key0 DESC, 
+	key1 DESC, 
+	key2 DESC
+LIMIT 100
 ```
-Which will return data in the format:
+Once the results are reversed, data will be in the format:
 ```
 key0     key1     key2    
 -------  -------  ------- 

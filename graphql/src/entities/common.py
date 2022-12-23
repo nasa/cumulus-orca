@@ -46,4 +46,4 @@ class PageParameters:
     """
     cursor: typing.Optional[str] = None
     direction: DirectionEnum = DirectionEnum.next
-    limit: int = 100  # todo: Docs suggest ceiling, but don't know what that should be.
+    limit: int = 100
