@@ -1,6 +1,8 @@
 import logging
 
 from src.adapters.graphql.dataTypes.common import InternalServerErrorGraphqlType
+from src.adapters.graphql.dataTypes.internal_reconcile_report import \
+    GetMismatchPageStrawberryResponse
 from src.entities.common import PageParameters
 from src.use_cases.adapter_interfaces.storage import StorageInternalReconcileReportInterface
 from src.use_cases.internal_reconcile_report import InternalReconcileReport
@@ -11,8 +13,9 @@ def get_mismatch_page(
     page_parameters: PageParameters,
     storage_irr: StorageInternalReconcileReportInterface,
     logger: logging.Logger
-):
+) -> GetMismatchPageStrawberryResponse:
     try:
-        return InternalReconcileReport(storage_irr).get_mismatch_page(job_id, page_parameters, logger)
+        return InternalReconcileReport(storage_irr)\
+            .get_mismatch_page(job_id, page_parameters, logger)
     except Exception as ex:
         return InternalServerErrorGraphqlType(ex)
