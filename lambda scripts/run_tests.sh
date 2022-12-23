@@ -63,19 +63,13 @@ echo "INFO: Checking lint rules ..."
 flake8 \
     --max-line-length 99 \
     *.py test
-check_returncode $return_code "ERROR: Linting issues found."
+check_returncode $? "ERROR: Linting issues found."
 
 
 ## Run code smell and security tests using bandit
 echo "INFO: Running code smell security tests ..."
 bandit -r *.py test
 check_returncode $? "ERROR: Potential security or code issues found."
-
-
-## Check code third party libraries for CVE issues
-echo "INFO: Running checks on third party libraries ..."
-safety check -r requirements.txt -r requirements-dev.txt
-check_returncode $? "ERROR: Potential security issues third party libraries."
 
 
 ## Run unit tests and check Coverage

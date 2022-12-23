@@ -70,12 +70,6 @@ bandit -r *.py test_packages
 check_returncode $? "ERROR: Potential security or code issues found."
 
 
-## Check code third party libraries for CVE issues
-echo "INFO: Running checks on third party libraries ..."
-safety check -r requirements.txt
-check_returncode $? "ERROR: Potential security issues third party libraries."
-
-
 ## Run tests
 echo "INFO: Running integration tests ..."
 

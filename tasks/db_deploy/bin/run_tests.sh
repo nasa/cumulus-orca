@@ -70,12 +70,6 @@ bandit -r *.py install migrations test
 check_returncode $? "ERROR: Potential security or code issues found."
 
 
-## Check code third party libraries for CVE issues
-echo "INFO: Running security checks on third party libraries ..."
-safety check -r requirements.txt -r requirements-dev.txt
-check_returncode $? "ERROR: Potential security issues third party libraries."
-
-
 ## Get the modules we want to test
 file_list=""
 first_time="1"

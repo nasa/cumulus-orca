@@ -1,3 +1,4 @@
+import logging
 import random
 
 import src.entities.echo
@@ -5,7 +6,7 @@ from src import entities
 from src.entities.common import Edge
 from src.entities.echo import BoringWordException
 from src.use_cases.adapter_interfaces.word_generation import WordGenerationInterface
-from src.use_cases.edge_cursor import EdgeCursor
+from src.use_cases.helpers.edge_cursor import EdgeCursor
 
 
 class Test:
@@ -26,11 +27,13 @@ class Test:
         """
         return EdgeCursor.encode_cursor(**{"word": echo.word})
 
-    def get_echo(self, word: str) -> Edge[entities.echo.Echo]:
-        if word is None or word is "":
+    def get_echo(self, word: str, logger: logging.Logger) -> Edge[entities.echo.Echo]:
+        logger.warning("Running test code. Not for use in production.")
+
+        if word is None or word == "":
             word = self.word_generator.get_random_word()
 
-        if random.randint(0, 10) == 5:
+        if random.randint(0, 10) == 5:  # nosec
             raise Exception("Whoops, random error.")
 
         if word == len(word) * word[0]:
