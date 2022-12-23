@@ -17,7 +17,7 @@ and DEEP_ARCHIVE can take 12 hours.
 Since it is asynchronous, the recovery container
 relies on a database to maintain the status of the request and event
 driven triggers to restore the data once it has been reconstituted
-from archive into an S3 bucket. Currently data is copied back to the
+from archive into an S3 bucket. Currently, data is copied back to the
 Cumulus S3 primary data bucket which is the default bucket. The operator 
 has the option to override the default bucket with another restore bucket if desired. 
 Determining the status of the recovery job is done manually by querying the database
@@ -36,7 +36,7 @@ A screenshot of the Cumulus dashboard used for recovering granules is shown belo
 On the dashboard home page, click on `Granules` option and add the granule to recover.
 Then click on the `Options` button and select `Execute`. From the dropdown menu, 
 select `OrcaRecoveryWorkflow` and hit `Confirm`. This will execute the recovery process.
-There are several configurable parameters can be set up while running the workflow are explained in 
+There are several configurable parameters that can be set up while running the workflow and are explained in 
 the section [below](#recovery-workflow-configurable-parameters).
 
 ## Manual recovery via step function workflow
