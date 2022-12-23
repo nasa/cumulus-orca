@@ -15,8 +15,7 @@ class EdgeCursor:
     @staticmethod
     def encode_cursor(**kwargs: dict) -> str:
         """
-        Creates a cursor value for a specific record. For reconcile jobs, a cursor
-        is made up of the job_id and inventory_creation_time.
+        Creates a cursor value for a specific record.
 
         Args:
             kwargs: key/value dictionary with the column names and values needed for the cursor

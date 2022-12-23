@@ -46,4 +46,4 @@ class PageParameters:
     """
     cursor: typing.Optional[str] = None
     direction: DirectionEnum = DirectionEnum.next
-    limit: typing.Optional[int] = None  # todo: Set default in resolver or some other level
+    limit: int = 100  # todo: Docs suggest ceiling, but don't know what that should be.

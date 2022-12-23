@@ -1,5 +1,7 @@
+import dataclasses
 import unittest
 
+from src.entities.internal_reconcile_report import Mismatch
 from src.use_cases.helpers.edge_cursor import EdgeCursor
 
 
@@ -31,3 +33,22 @@ class TestEdgeCursor(unittest.TestCase):
             "monitors": 1.5,
         },
             result)
+
+    def test_encode_cursor_dataclass(self):
+        dataclass = Mismatch.Cursor(
+            job_id=1024,
+            collection_id="some collection id",
+            granule_id="some granule id",
+            key_path="some key path",
+        )
+        result = EdgeCursor.encode_cursor(**dataclasses.asdict(dataclass))
+        self.assertEqual(
+            "eyJqb2JfaWQiOiAxMDI0LCAiY29sbGVjdGlvbl9pZCI6ICJzb21lIGNvbGxlY3Rpb24gaWQiLCAiZ3JhbnVsZ"
+            "V9pZCI6ICJzb21lIGdyYW51bGUgaWQiLCAia2V5X3BhdGgiOiAic29tZSBrZXkgcGF0aCJ9",
+            result)
+        result = EdgeCursor.decode_cursor(
+            "eyJqb2JfaWQiOiAxMDI0LCAiY29sbGVjdGlvbl9pZCI6ICJzb21lIGNvbGxlY3Rpb24gaWQiLCAiZ3JhbnVsZ"
+            "V9pZCI6ICJzb21lIGdyYW51bGUgaWQiLCAia2V5X3BhdGgiOiAic29tZSBrZXkgcGF0aCJ9",
+            Mismatch.Cursor
+        )
+        self.assertEqual(dataclass, result)

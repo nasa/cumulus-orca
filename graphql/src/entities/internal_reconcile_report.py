@@ -6,6 +6,8 @@ import pydantic
 # noinspection PyPackageRequirements
 import strawberry
 
+from src.use_cases.helpers.edge_cursor import EdgeCursor
+
 
 @strawberry.type  # Not strictly clean, but alternative is duplicating classes in graphql adapter.
 @dataclasses.dataclass
@@ -27,6 +29,13 @@ class Mismatch(pydantic.BaseModel):
     s3_storage_class: str
     discrepancy_type: str
     comment: Optional[str]
+
+    @dataclasses.dataclass
+    class Cursor:
+        job_id: int = None
+        collection_id: str = None
+        granule_id: str = None
+        key_path: str = None
 
     # Overriding constructor to give us type/name hints for Pydantic class.
     def __init__(self,
@@ -65,4 +74,12 @@ class Mismatch(pydantic.BaseModel):
             s3_storage_class=s3_storage_class,
             discrepancy_type=discrepancy_type,
             comment=comment,
+        )
+
+    def get_cursor(self):
+        return Mismatch.Cursor(
+            job_id=self.job_id,
+            collection_id=self.collection_id,
+            granule_id=self.granule_id,
+            key_path=self.key_path,
         )

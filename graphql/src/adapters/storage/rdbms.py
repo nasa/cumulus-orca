@@ -29,6 +29,9 @@ class StorageAdapterRDBMS(
         """
         Queries the database version table and returns the latest version.
 
+        Args:
+            logger: The logger to use.
+
         Returns:
             Version number of the currently installed ORCA schema.
         """
@@ -58,10 +61,23 @@ class StorageAdapterRDBMS(
         logger: logging.Logger
     ) -> List[Mismatch]:
         """
-        todo
+        Returns a page of mismatches,
+        ordered by collection_id, granule_id, then key_path.
+
+        Args:
+            job_id: The job to return mismatches for.
+            cursor_collection_id: Points to start/end of the page (non-inclusive).
+            cursor_granule_id: Points to start/end of the page (non-inclusive).
+            cursor_key_path: Points to start/end of the page (non-inclusive).
+            direction: If `next`, cursor is the start of the page. Otherwise, end.
+            limit: Limits the number of rows returned.
+            logger: The logger to use.
+
+        Returns:
+            A list of mismatches.
         """
         with self.user_engine.begin() as connection:
-            logger.info("todo")
+            logger.info(f"Retrieving mismatches for job '{job_id}'.")
             results = connection.execute(
                 self.get_mismatch_page_sql(direction),
                 [{
@@ -96,6 +112,7 @@ class StorageAdapterRDBMS(
                     )
                 )
             if direction == DirectionEnum.previous:
+                # due to how previous pages are retrieved, order must be reversed to be consistent.
                 mismatches.reverse()
             return mismatches
 

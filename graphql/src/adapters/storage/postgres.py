@@ -27,12 +27,12 @@ WHERE
     @staticmethod
     def get_mismatch_page_sql(direction: DirectionEnum) -> text:  # pragma: no cover
         """
-        SQL for retrieving a page of mismatches for a given job.
+        SQL for retrieving a page of mismatches for a given job,
+        ordered by collection_id, granule_id, then key_path.
         """
         if direction == DirectionEnum.previous:
             sign = "<"
             order = "DESC"
-            # todo: reverse results order
         else:
             sign = ">"
             order = "ASC"
