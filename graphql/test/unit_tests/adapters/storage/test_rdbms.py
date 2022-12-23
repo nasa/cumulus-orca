@@ -8,9 +8,9 @@ from src.entities.common import DirectionEnum
 from src.entities.internal_reconcile_report import Mismatch
 
 
-@patch("src.adapters.storage.rdbms.StorageAdapterRDBMS.get_mismatch_page_sql")
-@patch("src.adapters.storage.rdbms.create_engine")
 class TestRDBMS(unittest.TestCase):
+    @patch("src.adapters.storage.rdbms.StorageAdapterRDBMS.get_mismatch_page_sql")
+    @patch("src.adapters.storage.rdbms.create_engine")
     def test_get_mismatch_page_next_page(
         self,
         mock_create_engine: MagicMock,
