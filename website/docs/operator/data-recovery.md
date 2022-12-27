@@ -53,69 +53,69 @@ The following is an input event example that an operator might set up while runn
 
 ```json
 {
-    "payload": {
-      "granules": [
-        {
-          "granuleId": "integrationGranuleId",
-          "version": "integrationGranuleVersion",
-          "files": [
-            {
-              "fileName": "MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
-              "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
-              "bucket": "test-orca-primary"
-            }
-          ]
-        }
-      ]
-    },
-    "meta": {
-      "buckets": {
-        "protected": {
-          "name": "test-protected",
-          "type": "protected"
-        },
-        "internal": {
-          "name": "test-internal",
-          "type": "internal"
-        },
-        "private": {
-          "name": "test-private",
-          "type": "private"
-        },
-        "public": {
-          "name": "test-public",
-          "type": "public"
-        },
-        "orca_default": {
-          "name": "test-orca-primary",
-          "type": "orca"
-        }
-      },
-      "collection": {
-        "meta": {
-          "orca": {
-            "excludedFileExtensions": [
-              ".xml"
-            ],
-            "defaultBucketOverride": "test-orca-primary",
-            "defaultRecoveryTypeOverride": "Standard"
-          },
-          "s3MultipartChunksizeMb": 200
-        },
+  "payload": {
+    "granules": [
+      {
+        "granuleId": "integrationGranuleId",
+        "version": "integrationGranuleVersion",
         "files": [
           {
-            "regex": ".*.tar.gz",
-            "sampleFileName": "blah.tar.gz",
-            "bucket": "public"
+            "fileName": "MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
+            "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
+            "bucket": "test-orca-primary"
           }
         ]
       }
+    ]
+  },
+  "meta": {
+    "buckets": {
+      "protected": {
+        "name": "test-protected",
+        "type": "protected"
+      },
+      "internal": {
+        "name": "test-internal",
+        "type": "internal"
+      },
+      "private": {
+        "name": "test-private",
+        "type": "private"
+      },
+      "public": {
+        "name": "test-public",
+        "type": "public"
+      },
+      "orca_default": {
+        "name": "test-orca-primary",
+        "type": "orca"
+      }
     },
-    "cumulus_meta": {
-      "system_bucket": "test-internal",
-      "asyncOperationId": "1234"
+    "collection": {
+      "meta": {
+        "orca": {
+          "excludedFileExtensions": [
+            ".xml"
+          ],
+          "defaultBucketOverride": "test-orca-primary",
+          "defaultRecoveryTypeOverride": "Standard"
+        },
+        "s3MultipartChunksizeMb": 200
+      },
+      "files": [
+        {
+          "regex": ".*.tar.gz",
+          "sampleFileName": "blah.tar.gz",
+          "bucket": "public"
+        }
+      ]
     }
+  },
+  "cumulus_meta": {
+    "system_bucket": "test-internal",
+    "asyncOperationId": "1234"
   }
+}
 ```
 
 The following is the corresponding output that the workflow will return if successful.
@@ -169,20 +169,33 @@ The following are the parameters needed for recovery workflow:
 
   It can be set up using the following configuration.
   ```json
-        "config": {
-          "buckets.$": "$.meta.buckets"
-        }
-    ```
-    Example:
+  "config": {
+    "buckets.$": "$.meta.buckets"
+  }
+  ```
+  Example:
 
-    ```json
-    "buckets": {
-            "protected": {"name": "sndbx-cumulus-protected", "type": "protected"},
-            "internal": {"name": "sndbx-cumulus-internal", "type": "internal"},
-            "private": {"name": "sndbx-cumulus-private", "type": "private"},
-            "public": {"name": "sndbx-cumulus-public", "type": "public"}
-        }
-    ```
+  ```json
+  "buckets": {
+    "protected": {
+      "name": "test-protected",
+      "type": "protected"
+    },
+    "internal": {
+      "name": "test-internal",
+      "type": "internal"
+    },
+    "private": {
+      "name": "test-private",
+      "type": "private"
+    },
+    "public": {
+      "name": "test-public",
+      "type": "public"
+    }
+  }
+
+  ```
 - fileBucketMaps- A list of dictionaries that contains details of the configured storage bucket and file regex. Contains the following properties:
   - regex (Required)- The regex that matches the file extension type.
   - bucket (Required))- The name of the key that points to the correct S3 bucket. Examples include public, private, protected, etc.
@@ -190,50 +203,53 @@ The following are the parameters needed for recovery workflow:
 
   It can be set up using the following configuration.
   ```json
-        "config": {
-          "fileBucketMaps.$": "$.meta.collection.files"
-        }
-    ```
-    Example: 
-    ```json
-        "fileBucketMaps":[
-            {
-            "regex":".*.h5$",
-            "sampleFileName":"L0A_HR_RAW_product_0010-of-0420.h5",
-            "bucket":"protected"
-            },
-            {
-            "regex":".*.cmr.xml$",
-            "sampleFileName":"L0A_HR_RAW_product_0010-of-0420.cmr.xml",
-            "bucket":"protected"
-            }
-    ```
+  "config": {
+    "fileBucketMaps.$": "$.meta.collection.files"
+  }
+  ```
+  Example: 
+  ```json
+  "fileBucketMaps": [
+    {
+      "regex": ".*.h5$",
+      "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.h5",
+      "bucket": "protected"
+    },
+    {
+      "regex": ".*.cmr.xml$",
+      "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.cmr.xml",
+      "bucket": "protected"
+    }
+  ]
+  ```
 - excludedFileExtensions (Optional)- A list of file extensions to ignore when copying files.
   It can be set up using the following configuration.
   ```json
-        "config": {
-          "excludedFileExtensions.$": "$.meta.collection.meta.orca.excludedFileExtensions"
-        }
-    ```
-    Example: 
-    ```json
-      "collection": {
-          "meta":{
-              "orca": {
-                "excludedFileExtensions": [".xml"]
-            }
-        }
+  "config": {
+    "excludedFileExtensions.$": "$.meta.collection.meta.orca.excludedFileExtensions"
+  }
+  ```
+  Example: 
+  ```json
+  "collection": {
+    "meta": {
+      "orca": {
+        "excludedFileExtensions": [
+          ".xml"
+        ]
       }
-    ```
+    }
+  }
+  ```
 - defaultRecoveryTypeOverride (Optional)- Overrides the [orca_default_recovery_type](https://github.com/nasa/cumulus-orca/blob/master/website/docs/developer/deployment-guide/deployment-with-cumulus.md#orca-optional-variables) via a change in the collections configuration under `meta` tag as shown below. 
 
   ```json
     "config": {
       "defaultRecoveryTypeOverride": "{$.event.meta.collection.meta.orca.defaultRecoveryTypeOverride}"
     }
-    ```
-    Example:
-    ```json
+  ```
+  Example:
+  ```json
       "collection": {
           "meta":{
               "orca": {
@@ -241,50 +257,50 @@ The following are the parameters needed for recovery workflow:
             }
         }
       }
-    ```
+  ```
 - defaultBucketOverride (Optional)- Overrides the [orca_default_bucket](https://github.com/nasa/cumulus-orca/blob/master/website/docs/developer/deployment-guide/deployment-with-cumulus.md#orca-required-variables) to copy recovered files to.
   ```json
-    "config": {
+  "config": {
       "defaultBucketOverride": "{$.meta.collection.meta.orca.defaultBucketOverride}"
     }
-    ```
-    Example: 
-    ```json
-      "collection": {
-          "meta":{
-              "orca": {
-                "defaultBucketOverride": "orca-bucket"
-            }
-        }
+  ```
+  Example: 
+  ```json
+  "collection": {
+    "meta": {
+      "orca": {
+        "defaultBucketOverride": "orca-bucket"
       }
-    ```
+    }
+  }
+  ```
 - s3MultipartChunksizeMb (Optional)- Overrides the [default_multipart_chunksize_mb](https://github.com/nasa/cumulus-orca/blob/master/website/docs/developer/deployment-guide/deployment-with-cumulus.md#orca-optional-variables) from TF. Defaults to 250.
   ```json
-    "config": {
-      "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}"
+  "config": {
+    "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}"
+  }
+  ```
+  Example:
+  ```json
+  "collection": {
+    "meta": {
+      "s3MultipartChunksizeMb": 300
     }
-    ```
-    Example:
-    ```json
-      "collection": {
-          "meta":{
-            "s3MultipartChunksizeMb": 300
-        }
-      }
-    ```
+  }
+  ```
 
 - asyncOperationId (Optional)- The unique identifier used for tracking requests. If not present, it will be generated.
   ```json
-    "config": {
-      "asyncOperationId": "{$.cumulus_meta.asyncOperationId}"
-    }
-    ```
-    Example:
-    ```json
-        "cumulus_meta": {
-            "asyncOperationId": "1234"
-        }
-    ```
+  "config": {
+    "asyncOperationId": "{$.cumulus_meta.asyncOperationId}"
+  }
+  ```
+  Example:
+  ```json
+  "cumulus_meta": {
+    "asyncOperationId": "1234"
+  }
+  ```
 
 For full definition of the parameters, see the following schema.
 - [request_from_archive schema](https://github.com/nasa/cumulus-orca/blob/master/tasks/request_from_archive/schemas/config.json)
