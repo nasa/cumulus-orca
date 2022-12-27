@@ -60,7 +60,7 @@ class MyTestCase(unittest.TestCase):
             call(**mock_dict1),
         ])
         self.assertEqual(2, mock_encode_cursor.call_count)
-        
+
         self.assertEqual([mismatch0, mismatch1], result.items)
         self.assertEqual(mock_start_cursor, result.start_cursor)
         self.assertEqual(mock_end_cursor, result.end_cursor)
