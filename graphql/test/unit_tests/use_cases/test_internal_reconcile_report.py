@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import Mock, patch, MagicMock, call
+from unittest.mock import MagicMock, Mock, call, patch
 
 from src.entities.internal_reconcile_report import Mismatch
 from src.use_cases.internal_reconcile_report import InternalReconcileReport
@@ -64,5 +64,3 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual([mismatch0, mismatch1], result.items)
         self.assertEqual(mock_start_cursor, result.start_cursor)
         self.assertEqual(mock_end_cursor, result.end_cursor)
-
-

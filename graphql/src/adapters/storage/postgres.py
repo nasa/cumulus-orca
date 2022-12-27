@@ -37,7 +37,7 @@ WHERE
             sign = ">"
             order = "ASC"
 
-        return text(
+        return text(  # nosec
             f"""
 SELECT
     job_id,
@@ -72,7 +72,7 @@ SELECT
     (
         orca_storage_class_id=storage_class.id
     )
-    WHERE 
+    WHERE
         job_id = :job_id
         AND
             /* One check to see if no cursor is specified */
@@ -92,9 +92,9 @@ SELECT
                     )
                 )
             )
-    ORDER BY 
-        collection_id {order}, 
-        granule_id {order}, 
+    ORDER BY
+        collection_id {order},
+        granule_id {order},
         key_path {order}
     LIMIT :limit"""
         )

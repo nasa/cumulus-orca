@@ -1,7 +1,7 @@
 import logging
 from typing import List
 
-from src.entities.common import PageParameters, DirectionEnum
+from src.entities.common import DirectionEnum
 from src.entities.internal_reconcile_report import Mismatch
 
 

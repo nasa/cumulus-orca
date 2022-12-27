@@ -1,7 +1,7 @@
+import typing
 from dataclasses import dataclass
 from enum import Enum
-from typing import Generic, TypeVar, List
-import typing
+from typing import Generic, List, TypeVar
 
 # noinspection PyPackageRequirements
 import strawberry

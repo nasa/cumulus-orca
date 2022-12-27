@@ -9,8 +9,10 @@ from sqlalchemy.future import Engine
 
 from src.entities.common import DirectionEnum
 from src.entities.internal_reconcile_report import Mismatch
-from src.use_cases.adapter_interfaces.storage import StorageMetadataInterface, \
-    StorageInternalReconcileReportInterface
+from src.use_cases.adapter_interfaces.storage import (
+    StorageInternalReconcileReportInterface,
+    StorageMetadataInterface,
+)
 
 
 class StorageAdapterRDBMS(

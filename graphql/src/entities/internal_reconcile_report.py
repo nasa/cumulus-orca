@@ -6,8 +6,6 @@ import pydantic
 # noinspection PyPackageRequirements
 import strawberry
 
-from src.use_cases.helpers.edge_cursor import EdgeCursor
-
 
 @strawberry.type  # Not strictly clean, but alternative is duplicating classes in graphql adapter.
 @dataclasses.dataclass

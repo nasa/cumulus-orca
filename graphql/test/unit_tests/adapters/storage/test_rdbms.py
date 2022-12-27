@@ -1,7 +1,7 @@
 import random
 import unittest
 import uuid
-from unittest.mock import patch, MagicMock, Mock
+from unittest.mock import MagicMock, Mock, patch
 
 from src.adapters.storage.rdbms import StorageAdapterRDBMS
 from src.entities.common import DirectionEnum
@@ -34,7 +34,7 @@ class TestRDBMS(unittest.TestCase):
                 rows = []
                 for i in range(0, 3):
                     mismatch = Mismatch(
-                        job_id=random.randint(0, 10000),
+                        job_id=random.randint(0, 10000),  # nosec
                         collection_id=uuid.uuid4().__str__(),
                         granule_id=uuid.uuid4().__str__(),
                         filename=uuid.uuid4().__str__(),
@@ -42,10 +42,10 @@ class TestRDBMS(unittest.TestCase):
                         cumulus_archive_location=uuid.uuid4().__str__(),
                         orca_etag=uuid.uuid4().__str__(),
                         s3_etag=uuid.uuid4().__str__(),
-                        orca_last_update=random.randint(0, 10000),
-                        s3_last_update=random.randint(0, 10000),
-                        orca_size_in_bytes=random.randint(0, 10000),
-                        s3_size_in_bytes=random.randint(0, 10000),
+                        orca_last_update=random.randint(0, 10000),  # nosec
+                        s3_last_update=random.randint(0, 10000),  # nosec
+                        orca_size_in_bytes=random.randint(0, 10000),  # nosec
+                        s3_size_in_bytes=random.randint(0, 10000),  # nosec
                         orca_storage_class=uuid.uuid4().__str__(),
                         s3_storage_class=uuid.uuid4().__str__(),
                         discrepancy_type=uuid.uuid4().__str__(),

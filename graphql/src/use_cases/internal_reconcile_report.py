@@ -3,7 +3,9 @@ import logging
 
 from src.entities.common import Page, PageParameters
 from src.entities.internal_reconcile_report import Mismatch
-from src.use_cases.adapter_interfaces.storage import StorageInternalReconcileReportInterface
+from src.use_cases.adapter_interfaces.storage import (
+    StorageInternalReconcileReportInterface,
+)
 from src.use_cases.helpers.edge_cursor import EdgeCursor
 
 

@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import MagicMock, patch, Mock
+from unittest.mock import MagicMock, Mock, patch
 
 from src.adapters.graphql.resolvers import internal_reconcile_report
 
