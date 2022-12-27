@@ -1,6 +1,6 @@
 ## Testing libraries
 coverage==5.3
-pytest==6.1.2
+pytest==6.2.5
 
 ## Libraries needed for testing the application
 boto3==1.18.40
