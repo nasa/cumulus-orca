@@ -1,7 +1,7 @@
 ---
-!include 'unit-tests-bamboo-spec.yml'
+!include 'unit-tests-bamboo-spec.yaml'
 ---
-!include 'orca-documentation-release-bamboo-spec.yml'
+!include 'orca-documentation-release-bamboo-spec.yaml'
 
 # unit-tests-bamboo-spec.yml
 ---
