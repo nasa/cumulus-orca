@@ -1,5 +1,3 @@
 ---
 !include unit-tests-bamboo-spec.yml
-!include orca-documentation-release-bamboo-spec.yml
-
 ---
