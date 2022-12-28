@@ -1,15 +1,7 @@
 ---
 !include 'unit-tests-bamboo-spec.yaml'
+version: 2
 ---
 !include 'orca-documentation-release-bamboo-spec.yaml'
-
-# unit-tests-bamboo-spec.yml
----
 version: 2
-# ...
-
-
-# orca-documentation-release-bamboo-spec.yml
 ---
-version: 2
-# ...
