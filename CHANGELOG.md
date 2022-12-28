@@ -92,7 +92,7 @@ and includes an additional section for migration notes.
 
 ## [6.0.0]
 ### Changed
-- *ORCA-290* Renamed `excludeFileTypes`, `orcaDefaultBucketOverride`, `orcaDefaultRecoveryTypeOverride`, and `orcaDefaultStorageClassOverride` to `excludedFileExtensions`, `defaultBucketOverride` `defaultRecoveryTypeOverride`, and  `defaultStorageClassOverride` respectively. In addition, ORCA configuration variables `excludedFileExtensions`, `defaultBucketOverride`, `defaultRecoveryTypeOverride`, and `defaultStorageClassOverride` are now under `collection.meta.orca`.
+- *ORCA-290* Renamed `excludeFileTypes`, `orcaDefaultBucketOverride`, `orcaDefaultRecoveryTypeOverride`, and `orcaDefaultStorageClassOverride` to `excludedFileExtensions`, `defaultBucketOverride`, `defaultRecoveryTypeOverride`, and  `defaultStorageClassOverride` respectively. In addition, ORCA configuration variables `excludedFileExtensions`, `defaultBucketOverride`, `defaultRecoveryTypeOverride`, and `defaultStorageClassOverride` are now under `collection.meta.orca`.
 - *ORCA-290* Adjusted workflows/step functions for `OrcaRecoveryWorkflow`.
   - `excludeFileTypes`, `orcaDefaultBucketOverride` and `orcaDefaultStorageClassOverride` arguments in `task_config` are now `excludedFileExtensions`, `defaultBucketOverride` and  `defaultStorageClassOverride` respectively.
   - `excludedFileExtensions`, `defaultBucketOverride` and `defaultStorageClassOverride` keys are now under `collection.meta.orca`. See the example below under `Migration Notes`.
