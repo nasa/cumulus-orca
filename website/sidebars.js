@@ -40,6 +40,7 @@ module.exports = {
                 'developer/development-guide/code/postgres-tests',
                 'developer/development-guide/code/orca-logging',
                 'developer/development-guide/code/parallel-scripting',
+                'developer/development-guide/code/postgres-tips',
             ],
             "Developing Documentation": [
                 'developer/development-guide/documentation/contrib-documentation-intro',
