@@ -12,7 +12,7 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 Recovery processes are kicked off manually by an operator through the Cumulus Dashboard. 
 The dashboard calls an API which kicks off a recovery workflow.
 Recovery is an asynchronous operation since data
-requested from GLACIER can take up to 4 hours or more to reconstitute,
+requested from GLACIER can take 4 hours or more to reconstitute,
 and DEEP_ARCHIVE can take 12 hours. 
 Since it is asynchronous, the recovery container
 relies on a database to maintain the status of the request and event
