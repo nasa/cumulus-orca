@@ -1,5 +1,33 @@
 ---
 !include 'unit-tests-bamboo-spec.yaml'
+version: 2
+plan: 
+  key: ORCA-RDOD
+plan-permissions:
+- groups: 
+  - bamboo-orca-devs
+  permissions: 
+  - view
+  - edit
+  - build
+  - clone
+  - admin
+  - viewConfiguration
+...
 ---
 !include 'orca-documentation-release-bamboo-spec.yaml'
+version: 2
+plan: 
+  key: ORCA-RT
+plan-permissions:
+- groups: 
+  - bamboo-orca-devs
+  permissions: 
+  - view
+  - edit
+  - build
+  - clone
+  - admin
+  - viewConfiguration
+...
 ---
