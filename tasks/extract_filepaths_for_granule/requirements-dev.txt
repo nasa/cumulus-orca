@@ -1,5 +1,5 @@
 aws-lambda-powertools==1.31.1
-pytest==6.1.2
+pytest==6.2.5
 coverage==5.3
 fastjsonschema==2.15.0
 
