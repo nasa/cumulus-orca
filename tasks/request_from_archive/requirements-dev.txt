@@ -1,6 +1,6 @@
 ## Libraries needed for testing
 coverage==5.3
-pytest==6.1.2
+pytest==6.2.5
 
 ## Application libraries needed for testing
 fastjsonschema==2.15.0
