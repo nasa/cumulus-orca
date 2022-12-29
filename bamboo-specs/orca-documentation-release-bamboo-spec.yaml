@@ -10,7 +10,16 @@ stages:
     final: true
     jobs:
     - Release ORCA Documentation
-
+plan-permissions:
+- groups: 
+  - bamboo-orca-devs
+  permissions: 
+  - view
+  - edit
+  - build
+  - clone
+  - admin
+  - viewConfiguration
 Release ORCA Documentation: 
   key: ROD
   tasks: 
@@ -100,17 +109,3 @@ dependencies:
   plans: []
 other: 
   concurrent-build-plugin: system-default
-# version: 2
-# plan: 
-#   key: ORCA-RDOD
-# plan-permissions:
-# - groups: 
-#   - bamboo-orca-devs
-#   permissions: 
-#   - view
-#   - edit
-#   - build
-#   - clone
-#   - admin
-#   - viewConfiguration
-# ...
