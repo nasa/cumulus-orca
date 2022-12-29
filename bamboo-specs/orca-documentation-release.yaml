@@ -4,16 +4,6 @@ plan:
   project-key: ORCA
   key: RDOD
   name: rhassan-deploy-orca-documentation
-plan-permissions:
-  - groups: 
-      - bamboo-orca-devs
-    permissions: 
-      - view
-      - edit
-      - build
-      - clone
-      - admin
-      - viewConfiguration
 stages:
 - Release Stage:
     manual: true
