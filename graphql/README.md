@@ -28,9 +28,10 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 - `queries` and `mutations` are standard GraphQL components, mapped to in the `graphql` package.
 - `graphql` is run via the `webserver` package.
 
-## Local Testing
+## Testing
+### Local Testing
 - Entry point is `src/adapters/webserver/main.py`, 
-  which will start the developer UI at http://127.0.0.1:5000/graphql by default
+  which will start the developer UI at http://localhost:5000/graphql by default
   - Make sure to set the following environment variables:
     - `DB_CONNECT_INFO` = {"admin_database": "postgres", "admin_password": "{your admin password}", "admin_username": "postgres", "host": "localhost", "port": "5432", "user_database": "{PREFIX}_orca", "user_password": "{your user password}", "user_username": "{PREFIX}_orcauser"}
       - Replacing placeholders in `{brackets}` with proper values.
@@ -40,6 +41,41 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
   - Use the command `docker run -d -p 5000:5000 --env-file path/to/env imageName` 
     - Replace `imageName` with the name of your built image.
     - Replace `path/to/env` with the path to the env file you created in the previous step.
+- The GraphQL URL is `http://localhost:5000/graphql`
+
+### AWS Testing
+1. If you wish to enable the developer GUI, add/modify the "ORCA_ENV" 
+   in the `environment` section in your Terraform's `aws_ecs_task_definition` to include
+   ```json
+   {
+     "name": "ORCA_ENV",
+     "value": "development"
+   }
+   ```
+   then redeploy.
+
+2. Get your `PREFIX-CumulusECSCluster` ec2 instance ID.
+   This can be retrieved via the AWS GUI, or by running
+   ```shell
+   aws ec2 describe-instances --filters Name=instance-state-name,Values=running Name=tag:Name,Values={PREFIX}-CumulusECSCluster --query "Reservations[*].Instances[*].InstanceId" --output text
+   ```
+   replacing `{PREFIX}` with your prefix.
+
+3. Run the following bash command, 
+   replacing `i-00000000000000000` with your `PREFIX-CumulusECSCluster` ec2 instance ID.
+   ```shell
+   aws ssm pytest==6.2.5 --target i-00000000000000000 --document-name AWS-StartPortForwardingSession --parameters portNumber=22,localPortNumber=6868
+   ```
+4. In a separate bash, run the following command,
+   replacing `/blah/prefix.pem` with the path to your local `.pem` file for your installation and
+   replacing `internal-PREFIX-gql-a-0000000000.us-west-2.elb.amazonaws.com` with the DNS name of your `PREFIX-gql-a` Application Load Balancer.
+   ```shell
+   ssh -p 6868 -L 5000:internal-PREFIX-gql-a-0000000000.us-west-2.elb.amazonaws.com:5000 -i "/blah/prefix.pem" -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" ec2-user@127.0.0.1
+   ```
+5. The GraphQL URL is `http://localhost:5000/graphql`
+
+### Test Code
+- If the developer UI is enabled, you can access it at your GraphQL URL in a web browser.
 - If using the developer UI, queries can be converted to code-friendly representations using the following code:
   ```python
   query = """query {
@@ -61,7 +97,7 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
   import json
   import requests
   
-  endpoint = "http://0.0.0.0:5000/graphql/"
+  endpoint = "http://localhost:5000/graphql/"
   headers = {}
   
   r = requests.post(endpoint, json=json_body, headers=headers)
@@ -70,6 +106,7 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
   else:
       raise Exception(f"Query failed to run with a {r.status_code}.")
   ```
+  If needed, replace the `endpoint` with your GraphQL URL.
 
 ## Deployment
 Compiled packages are stored at the [NASA Github packages page](https://github.com/orgs/nasa/packages/container/package/cumulus-orca%2Fgraphql).
