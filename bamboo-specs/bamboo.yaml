@@ -1,4 +1,6 @@
 ---
-!include 'unit-tests.yaml'
+!include 'deploy-cumulus-orca-buckets.yaml'
+---
+!include 'orca-code-release.yaml'
 ---
 !include 'orca-documentation-release.yaml'

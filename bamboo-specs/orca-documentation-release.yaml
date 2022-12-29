@@ -1,9 +1,10 @@
+#bamboo plan for doing an ORCA documentation release
 ---
 version: 2
 plan:
   project-key: ORCA
-  key: RDOD
-  name: rhassan-deploy-orca-documentation
+  key: RODT
+  name: Release ORCA Documentation Test
 stages:
 - Release Stage:
     manual: true
@@ -11,51 +12,42 @@ stages:
     jobs:
     - Release ORCA Documentation
 
-Release ORCA Documentation: 
+Release ORCA Documentation:
   key: ROD
-  tasks: 
+  tasks:
   - clean
-  - checkout: 
+  - checkout:
       force-clean-build: 'true'
       description: Checkout Default Repository
-  - script: 
+  - script:
       interpreter: SHELL
-      scripts: 
+      scripts:
       - |-
         #!/bin/bash
         cat << EOF > tempdockerfile
         # tempdockerfile is located under build working directory of bamboo agent
-        # using cumulus_orca docker image raises authentication error during npm deploy
+        # using cumulus_orca docker image raises authentication error during npm deploy.
         FROM docker.io/node:16
-
         # Add NodeJS and Yarn repos & update package index
         COPY . /code
         RUN chown -R node /code
         USER node
         EOF
-
-        less tempdockerfile
-        pwd
-        ls
         docker build --rm -t document_builder_orca -f tempdockerfile .
       description: Build Documentation Image
-  - script: 
+  - script:
       interpreter: SHELL
-      scripts: 
+      scripts:
       - |-
         #!/bin/bash
-
         # TEMP OVERRIDE
         bamboo_DOCKER_IMAGE=document_builder_orca
-
         set -ex
         if [ ! -f "bin/create_release_documentation.sh" ]; then
           echo "ERROR: create_release_documentation.sh script does not exist!"
           exit 1
         fi
-
         # env > known_parameters
-
         docker run --rm \
              -e bamboo_RELEASE_FLAG \
              -e bamboo_SECRET_GITHUB_USER \
@@ -65,38 +57,37 @@ Release ORCA Documentation:
              ${bamboo_DOCKER_IMAGE} \
              bash -c "bin/create_release_documentation.sh"
       description: Run documentation release script
-  final-tasks: 
-  - script: 
+  final-tasks:
+  - script:
       interpreter: SHELL
       scripts:
       - "#!/bin/bash\n\ndocker run --rm -v $(pwd):/build -w /build alpine \\\n   sh -c \"find /build ! -user $(id -u) -exec chown $(id -u):$(id -g) {} +\"\n   \n# cleanup docker image\ndocker rmi -f document_builder_orca"
       description: Clean up permissions
-  artifacts: 
+  artifacts:
   - name: known_env
     location: source
     pattern: known_parameters
     shared: false
     required: false
-variables: 
+variables:
   DOCKER_BASE: docker.io/node:16
   RELEASE_FLAG: 'true'
   SECRET_GITHUB_EMAIL: BAMSCRT@0@0@w8ZA1at34XmRzY8AZiTs2Btd/wEgI1rehKTfEjSvWxE=
   SECRET_GITHUB_TOKEN: BAMSCRT@0@0@4vfO1paRwG9p5BgLR57uvW7pCn53thrfpsMTm94fO2Q=
   SECRET_GITHUB_USER: BAMSCRT@0@0@VkGOQemUQPEvmBYT3dDRgw==
-repositories: 
-- orca test 2: 
+repositories:
+- orca test 2:
     scope: global
 triggers:
 - polling: # Does not actually poll, as we do not have webhooks enabled.
     period: '60' #time in seconds
-branches: 
+branches:
   create: manually
   delete: never
   link-to-jira: true
-dependencies: 
+dependencies:
   require-all-stages-passing: false
   enabled-for-branches: true
   block-strategy: none
-  plans: []
-other: 
+other:
   concurrent-build-plugin: system-default
