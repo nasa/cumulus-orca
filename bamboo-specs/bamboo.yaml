@@ -1,4 +1,13 @@
 ---
-!include 'unit-tests-bamboo-spec.yaml'
+!include 'unit-tests.yaml'
+plan-permissions:
+  - groups: bamboo-orca-devs
+    permissions: 
+      - view
+      - edit
+      - build
+      - clone
+      - admin
+      - viewConfiguration
 ---
-!include 'orca-documentation-release-bamboo-spec.yaml'
+!include 'orca-documentation-release.yaml'
