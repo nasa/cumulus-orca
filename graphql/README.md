@@ -31,7 +31,7 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 ## Testing
 ### Local Testing
 - Entry point is `src/adapters/webserver/main.py`, 
-  which will start the developer UI at http://127.0.0.1:5000/graphql by default
+  which will start the developer UI at http://localhost:5000/graphql by default
   - Make sure to set the following environment variables:
     - `DB_CONNECT_INFO` = {"admin_database": "postgres", "admin_password": "{your admin password}", "admin_username": "postgres", "host": "localhost", "port": "5432", "user_database": "{PREFIX}_orca", "user_password": "{your user password}", "user_username": "{PREFIX}_orcauser"}
       - Replacing placeholders in `{brackets}` with proper values.
@@ -41,8 +41,8 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
   - Use the command `docker run -d -p 5000:5000 --env-file path/to/env imageName` 
     - Replace `imageName` with the name of your built image.
     - Replace `path/to/env` with the path to the env file you created in the previous step.
-- The GraphQL URL is `http://0.0.0.0:5000/graphql`
-- 
+- The GraphQL URL is `http://localhost:5000/graphql`
+
 ### AWS Testing
 1. If you wish to enable the developer GUI, add/modify the "ORCA_ENV" 
    in the `environment` section in your Terraform's `aws_ecs_task_definition` to
@@ -90,7 +90,7 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
   import json
   import requests
   
-  endpoint = "http://0.0.0.0:5000/graphql/"
+  endpoint = "http://localhost:5000/graphql/"
   headers = {}
   
   r = requests.post(endpoint, json=json_body, headers=headers)
