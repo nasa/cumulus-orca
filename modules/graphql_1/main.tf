@@ -5,6 +5,12 @@ locals {
 }
 
 resource "random_id" "lb_name" {
+  keepers = {
+    # gql_app_lb change requirements
+    "graphql_port" = local.graphql_port
+    "vpc_id"       = var.vpc_id
+  }
+
   byte_length = 4
 }
 
@@ -191,6 +197,10 @@ resource "aws_ecs_task_definition" "gql_task" {
       {
         "name": "PORT",
         "value": "${local.graphql_port}"
+      },
+      {
+        "name": "ORCA_ENV",
+        "value": "production"
       }
     ],
     "secrets": [
