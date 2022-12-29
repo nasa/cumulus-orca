@@ -5,15 +5,14 @@ plan:
   key: RT
   name: rhassan-test
 plan-permissions:
-- groups: 
-  - bamboo-orca-devs
-  permissions: 
-  - view
-  - edit
-  - build
-  - clone
-  - admin
-  - viewConfiguration
+  - groups: bamboo-orca-devs
+    permissions: 
+      - view
+      - edit
+      - build
+      - clone
+      - admin
+      - viewConfiguration
 stages:
 - Release Stage:
     manual: true

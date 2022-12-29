@@ -11,15 +11,14 @@ stages:
     jobs:
     - Release ORCA Documentation
 plan-permissions:
-- groups: 
-  - bamboo-orca-devs
-  permissions: 
-  - view
-  - edit
-  - build
-  - clone
-  - admin
-  - viewConfiguration
+  - groups: bamboo-orca-devs
+    permissions: 
+      - view
+      - edit
+      - build
+      - clone
+      - admin
+      - viewConfiguration
 Release ORCA Documentation: 
   key: ROD
   tasks: 
