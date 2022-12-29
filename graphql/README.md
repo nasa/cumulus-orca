@@ -45,7 +45,7 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 
 ### AWS Testing
 1. If you wish to enable the developer GUI, add/modify the "ORCA_ENV" 
-   in the `environment` section in your Terraform's `aws_ecs_task_definition` to
+   in the `environment` section in your Terraform's `aws_ecs_task_definition` to include
    ```json
    {
      "name": "ORCA_ENV",
