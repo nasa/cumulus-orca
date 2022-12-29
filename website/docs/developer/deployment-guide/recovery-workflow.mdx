@@ -14,7 +14,7 @@ on which components can be modified and which components should not
 be modified. Refer to the legend on the diagram for details on which
 components can be modified.
 
-A developer kicks off the recovery processes manually via the UI,
+A developer kicks off the recovery processes manually via the AWS UI,
 which then triggers an API that kicks off a recovery workflow. Recovery is an asynchronous operation since data
 requested from GLACIER can take 4 hours or more to reconstitute,
 and DEEP_ARCHIVE can take 12 hours. 
@@ -25,7 +25,7 @@ from archive into an S3 bucket. Currently data is copied back to the
 Cumulus S3 primary data bucket which is the default bucket. The developer 
 has the option to override the default bucket with another restore bucket if desired. 
 Determining the status of the recovery job is done manually by querying the database
-directly or by checking the status on the UI.
+directly or by checking the status on the UI. In addition, you can also check the job status by calling the ORCA API.
 
 <MyImage
     imageSource={useBaseUrl('img/ORCA-Recovery-Workflow.svg')}
