@@ -109,13 +109,3 @@ dependencies:
   plans: []
 other: 
   concurrent-build-plugin: system-default
-
-plan-permissions:
-  - groups: bamboo-orca-devs
-    permissions: 
-      - view
-      - edit
-      - build
-      - clone
-      - admin
-      - viewConfiguration
