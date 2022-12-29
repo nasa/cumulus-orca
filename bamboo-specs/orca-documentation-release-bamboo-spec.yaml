@@ -100,18 +100,17 @@ dependencies:
   plans: []
 other: 
   concurrent-build-plugin: system-default
----
-version: 2
-plan: 
-  key: ORCA-RDOD
-plan-permissions:
-- groups: 
-  - bamboo-orca-devs
-  permissions: 
-  - view
-  - edit
-  - build
-  - clone
-  - admin
-  - viewConfiguration
-...
+# version: 2
+# plan: 
+#   key: ORCA-RDOD
+# plan-permissions:
+# - groups: 
+#   - bamboo-orca-devs
+#   permissions: 
+#   - view
+#   - edit
+#   - build
+#   - clone
+#   - admin
+#   - viewConfiguration
+# ...
