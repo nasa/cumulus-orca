@@ -55,7 +55,7 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
    then redeploy.
    
 2. Run the following bash command, 
-   replacing `i-00000000000000000` with your ec2 instance name.
+   replacing `i-00000000000000000` with your `PREFIX-CumulusECSCluster` ec2 instance ID.
    ```shell
    aws ssm pytest==6.2.5 --target i-00000000000000000 --document-name AWS-StartPortForwardingSession --parameters portNumber=22,localPortNumber=6868
    ```

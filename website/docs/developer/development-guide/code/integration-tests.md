@@ -38,7 +38,7 @@ As tests are run in parallel, it is generally good practice to have one test-per
    1. `orca_API_DEPLOYMENT_INVOKE_URL` Output from the ORCA TF module. ex: `https://0000000000.execute-api.us-west-2.amazonaws.com`
    2. `orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN` ARN of the copy_to_archive step function. ex: `arn:aws:states:us-west-2:000000000000:stateMachine:PREFIX-OrcaCopyToArchiveWorkflow`
 4. Run the following bash command, 
-   replacing `i-00000000000000000` with your ec2 instance name, 
+   replacing `i-00000000000000000` with your `PREFIX-CumulusECSCluster` ec2 instance ID, 
    and `0000000000.execute-api.us-west-2.amazonaws.com` with your API Gateway identifier:
 
    ```shell
