@@ -5,7 +5,7 @@ plan:
   key: RDOD
   name: rhassan-deploy-orca-documentation
 plan-permissions:
-  groups: bamboo-orca-devs
+  # groups: bamboo-orca-devs
   permissions: 
     - view
     - edit

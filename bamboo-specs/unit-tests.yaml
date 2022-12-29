@@ -5,7 +5,7 @@ plan:
   key: RT
   name: rhassan-test
 plan-permissions:
-  groups: bamboo-orca-devs
+  # groups: bamboo-orca-devs
   permissions: 
     - view
     - edit
