@@ -53,19 +53,26 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
    }
    ```
    then redeploy.
-   
-2. Run the following bash command, 
+
+2. Get your `PREFIX-CumulusECSCluster` ec2 instance ID.
+   This can be retrieved via the AWS GUI, or by running
+   ```shell
+   aws ec2 describe-instances --filters Name=instance-state-name,Values=running Name=tag:Name,Values={PREFIX}-CumulusECSCluster --query "Reservations[*].Instances[*].InstanceId" --output text
+   ```
+   replacing `{PREFIX}` with your prefix.
+
+3. Run the following bash command, 
    replacing `i-00000000000000000` with your `PREFIX-CumulusECSCluster` ec2 instance ID.
    ```shell
    aws ssm pytest==6.2.5 --target i-00000000000000000 --document-name AWS-StartPortForwardingSession --parameters portNumber=22,localPortNumber=6868
    ```
-3. In a separate bash, run the following command,
+4. In a separate bash, run the following command,
    replacing `/blah/prefix.pem` with the path to your local `.pem` file for your installation and
    replacing `internal-PREFIX-gql-a-0000000000.us-west-2.elb.amazonaws.com` with the DNS name of your `PREFIX-gql-a` Application Load Balancer.
    ```shell
    ssh -p 6868 -L 5000:internal-PREFIX-gql-a-0000000000.us-west-2.elb.amazonaws.com:5000 -i "/blah/prefix.pem" -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" ec2-user@127.0.0.1
    ```
-4. The GraphQL URL is `http://localhost:5000/graphql`
+5. The GraphQL URL is `http://localhost:5000/graphql`
 
 ### Test Code
 - If the developer UI is enabled, you can access it at your GraphQL URL in a web browser.
