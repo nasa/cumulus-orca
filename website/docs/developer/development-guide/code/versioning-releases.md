@@ -65,6 +65,22 @@ Ensure that you are on your branch plan and not the master plan. Click on the `C
 
 Bamboo will build and run unit tests against that tagged release.
 
+## Publish Documentation
+
+1. Go to the [`Release ORCA Documentation` plan under ORCA](https://ci.earthdata.nasa.gov/browse/ORCA-ROD)
+1. Click the `Create plan branch` button next to the `Plan branch` selector.
+1. Choose your release branch and click `Create`.
+Make sure to replace your bamboo github variables before running the pipeline.
+1. Click on the `Variables` tab.
+Ensure that you are on your branch plan and not the master plan. Click on the `Choose from inherited variables` dropdown menu.
+   except in special cases such as incompatible backport branches. Then add and set the following variables:
+     * SECRET_GITHUB_EMAIL: `<secret github email>`
+     * SECRET_GITHUB_TOKEN: `<secret github token>`
+     * SECRET_GITHUB_USER: `<secret github user>`
+   
+   Contact ORCA team to know values of the three github variables.
+1. Run the branch using the 'Run' button in the top right.
+
 ## Finalizing ORCA release on github
 
 The release is automated in Bamboo, but the step must be manually started. If
@@ -96,13 +112,6 @@ show an incorrect diff, because the tag is linked to a specific commit on the
 base branch.
 
 :::
-
-## Publish Documentation
-
-In order to release the ORCA documentation, use the [`Release ORCA Documentation` plan under ORCA](https://ci.earthdata.nasa.gov/browse/ORCA-ROD) and then follow the steps in `Creating a Bamboo deployment plan branch` section above.
-Make sure to replace your bamboo github variables before running the pipeline.
-
-Note that this plan can only target the `develop` and `master` branches. Make sure that this step is run after your release branch has been merged back into develop and master.
 
 ## Troubleshooting
 
