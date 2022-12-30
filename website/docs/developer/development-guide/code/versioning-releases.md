@@ -70,9 +70,6 @@ Bamboo will build and run unit tests against that tagged release.
 The release is automated in Bamboo, but the step must be manually started. If
 you set the `RELEASE_FLAG` to `true` and the build steps passed, you will
 be able to run the manual 'Release' step in Bamboo. Make sure to use the `ORCA Integrator` plan under ORCA on bamboo website for performing a code release.
-In order to release the ORCA documentation, use the  `Release ORCA Documentation` plan under ORCA on bamboo website and then follow the steps in `Creating a Bamboo deployment plan branch` section above.
-Make sure to replace your bamboo github variables before running the pipeline.
-
 
 The CI release scripts will create a release based on the release version tag,
 as well as uploading release artifacts to the Github release for the Terraform
@@ -99,6 +96,13 @@ show an incorrect diff, because the tag is linked to a specific commit on the
 base branch.
 
 :::
+
+## Publish Documentation
+
+In order to release the ORCA documentation, use the [`Release ORCA Documentation` plan under ORCA](https://ci.earthdata.nasa.gov/browse/ORCA-ROD) and then follow the steps in `Creating a Bamboo deployment plan branch` section above.
+Make sure to replace your bamboo github variables before running the pipeline.
+
+Note that this plan can only target the `develop` and `master` branches. Make sure that this step is run after your release branch has been merged back into develop and master.
 
 ## Troubleshooting
 
