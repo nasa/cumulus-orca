@@ -81,7 +81,7 @@ modules provided by Cumulus. The Terraform release artifacts include:
 Just make sure to verify the appropriate .zip files are present on Github after
 the release process is complete.
 
-**Merge the base branch back into develop and master**
+## Merge the base branch back into develop and master
 
 If this is the latest version, you need to merge the version update changes back into master, then synchronize master and develop.
 
