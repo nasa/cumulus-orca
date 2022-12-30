@@ -178,7 +178,7 @@
 <CP name="COMMENTS">Name of the file including extension</CP>
 </Column>
 <Column id="41" name="orca_archive_location" type="text" length="25" nulls="false">
-<CP name="COMMENTS">S3 Glacier bucket that the file object is stored in</CP>
+<CP name="COMMENTS">S3 archive bucket that the file object is stored in</CP>
 </Column>
 <Column id="42" name="cumulus_archive_location" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Cumulus S3 bucket where the file is thought to be stored.</CP>
@@ -190,10 +190,10 @@
 <CP name="COMMENTS">Date and time the file was ingested into ORCA</CP>
 </Column>
 <Column id="45" name="etag" type="text" length="25" nulls="false">
-<CP name="COMMENTS">etag of the file object in the AWS S3 Glacier bucket.</CP>
+<CP name="COMMENTS">etag of the file object in the AWS S3 archive bucket.</CP>
 </Column>
 <Column id="46" name="version" type="text" length="25" nulls="false">
-<CP name="COMMENTS">Version of the file in the S3 Glacier bucket</CP>
+<CP name="COMMENTS">Version of the file in the S3 archive bucket</CP>
 </Column>
 <Column id="47" name="size_in_bytes" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">Size of the object in bytes</CP>
@@ -221,7 +221,7 @@
 <CP name="COMMENTS">Job the S3 listing is a part of for the comparison. Foreign key to the reconcile jobs table.</CP>
 </Column>
 <Column id="52" name="orca_archive_location" type="text" length="25" nulls="false">
-<CP name="COMMENTS">ORCA S3 Glacier bucket name where the file is stored.</CP>
+<CP name="COMMENTS">Archive bucket name where the file is stored.</CP>
 </Column>
 <Column id="53" name="key_path" type="text" length="25" nulls="false">
 <CP name="COMMENTS">Full path and file name of the object in the S3 bucket from the S3 list command.</CP>
@@ -255,7 +255,7 @@
 <CP name="COMMENTS">Job ID unique to each internal reconciliation job.</CP>
 </Column>
 <Column id="60" name="orca_archive_location" type="text" length="25" nulls="false">
-<CP name="COMMENTS">ORCA S3 Glacier bucket the file resides in.</CP>
+<CP name="COMMENTS">Archive bucket the file resides in.</CP>
 </Column>
 <Column id="61" name="status_id" type="int2" length="25" nulls="false">
 <CP name="COMMENTS">Current status of the job.</CP>
@@ -324,7 +324,7 @@
 <Storage name="External" value="false"/>
 </Table>
 <Table id="76" name="reconcile_orphan_report" schema="orca" database="orca" background="16777165">
-<Text>Table that identifies objects in the ORCA S3 Glacier bucket that are not in the ORCA catalog from the internal reconciliation job.</Text>
+<Text>Table that identifies objects in the archive bucket that are not in the ORCA catalog from the internal reconciliation job.</Text>
 <Column id="77" name="job_id" type="int8" length="25" nulls="false">
 <CP name="COMMENTS">Associates the orphaned file to a internal reconcilation job. References the reconcile jobs table.</CP>
 </Column>
