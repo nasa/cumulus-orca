@@ -26,7 +26,6 @@ echo "terraform {
     dynamodb_table = \"${bamboo_PREFIX}-tf-locks\"
   }
 }" >> terraform.tf
-terraform init -input=false
 
 #clone cumulus orca template for deploying RDS cluster
 cd ..
