@@ -80,6 +80,8 @@ Ensure that you are on your branch plan and not the master plan. Click on the `C
    
    Contact ORCA team to know values of the three github variables.
 1. Run the branch using the 'Run' button in the top right.
+1. Click on the `Tests` tab, followed by the `Release ORCA Documentation.` link.
+1. Hit the play button next to the `Release Stage` and run the stage.
 
 ## Finalizing ORCA release on github
 
