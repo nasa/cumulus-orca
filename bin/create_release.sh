@@ -44,6 +44,7 @@ if [[ ! $bamboo_RELEASE_FLAG == true ]]; then
   exit 0
 fi
 
+# todo: The following check raises an error if the TAG exists, not a release. ORCA-606
 ## Check if the code has already been released.
 # export url="https://github.com/nasa/cumulus-orca/releases/tag/"v$bamboo_ORCA_VERSION""
 # if curl --output /null --silent --fail "$url"; then
