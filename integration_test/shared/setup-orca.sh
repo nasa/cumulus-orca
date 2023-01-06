@@ -10,6 +10,24 @@ export AWS_DEFAULT_REGION=$bamboo_CUMULUS_AWS_DEFAULT_REGION
 #remove old files from bamboo as they throw error
 rm *.tf
 
+if aws s3api head-bucket --bucket ${bamboo_PREFIX}-tf-state;then
+    echo "terraform state bucket already present. Using existing state file"
+else
+    echo "Something went wrong when checking terraform state bucket. Creating ..."
+    aws s3api create-bucket --bucket ${bamboo_PREFIX}-tf-state  --region ${bamboo_AWS_DEFAULT_REGION} --create-bucket-configuration LocationConstraint=${bamboo_AWS_DEFAULT_REGION}
+    
+    aws s3api put-bucket-versioning \
+    --bucket ${bamboo_PREFIX}-tf-state \
+    --versioning-configuration Status=Enabled
+
+    aws dynamodb create-table \
+      --table-name ${bamboo_PREFIX}-tf-locks \
+      --attribute-definitions AttributeName=LockID,AttributeType=S \
+      --key-schema AttributeName=LockID,KeyType=HASH \
+      --billing-mode PAY_PER_REQUEST \
+      --region ${bamboo_AWS_DEFAULT_REGION}
+fi
+
 git clone --branch ${bamboo_BRANCH_NAME} --single-branch https://github.com/nasa/cumulus-orca.git
 echo "Cloned Orca, branch ${bamboo_BRANCH_NAME}"
 
@@ -26,6 +44,7 @@ echo "terraform {
     dynamodb_table = \"${bamboo_PREFIX}-tf-locks\"
   }
 }" >> terraform.tf
+terraform init -input=false
 
 #clone cumulus orca template for deploying RDS cluster
 cd ..
@@ -44,17 +63,20 @@ export VPC_ID=$(aws ec2 describe-vpcs | jq -r '.Vpcs | to_entries | .[] | .value
 export AWS_SUBNET_ID1=$(aws ec2 describe-subnets --filters "Name=availability-zone,Values=us-west-2a"| jq -r '.Subnets | .[] | select (.Tags | .[] | .Value | contains ("Private application ")) | .SubnetId ')
 export AWS_SUBNET_ID2=$(aws ec2 describe-subnets --filters "Name=availability-zone,Values=us-west-2b"| jq -r '.Subnets | .[] | select (.Tags | .[] | .Value | contains ("Private application ")) | .SubnetId ')
 export AWS_SUBNET_ID3=$(aws ec2 describe-subnets --filters "Name=availability-zone,Values=us-west-2c"| jq -r '.Subnets | .[] | select (.Tags | .[] | .Value | contains ("Private application ")) | .SubnetId ')
+terraform init -input=false
 
 #data persistence tf module
 cd ../data-persistence-tf
 mv terraform.tfvars.example terraform.tfvars
 #replacing terraform.tf with proper values
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g; s/us-east-1/'"$bamboo_AWS_DEFAULT_REGION"'/g' terraform.tf.example > terraform.tf
+terraform init -input=false
 
 cd ../cumulus-tf
 #replacing .tf files with proper values
 sed 's/PREFIX/'"$bamboo_PREFIX"'/g' terraform.tfvars.example > terraform.tfvars
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g; s/us-east-1/'"$bamboo_AWS_DEFAULT_REGION"'/g' terraform.tf.example > terraform.tf
+terraform init -input=false
 
 cd ../..
 # Remove all prevent_destroy properties

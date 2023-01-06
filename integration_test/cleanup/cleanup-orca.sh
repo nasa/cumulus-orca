@@ -7,25 +7,21 @@ source integration_test/shared/orca-terraform.sh
 
 cd cumulus-orca-deploy-template/cumulus-tf
 # Destroy cumulus-tf via terraform
-terraform init -input=false
 perform_terraform_command_cumulus "destroy"
 cd ../..
 
 cd cumulus-orca-deploy-template/data-persistence-tf
 # Destroy data-persistence via terraform
-terraform init -input=false
 perform_terraform_command_data_persistence "destroy"
 cd ../..
 
 cd cumulus-orca-deploy-template/rds-cluster-tf
 # Destroy rds-cluster-tf via terraform
-terraform init -input=false
 perform_terraform_command_rds_cluster "destroy"
 cd ../..
 
 cd integration_test
 echo "Destroying Cumulus S3 buckets and dynamoDB table"
-terraform init -input=false
 terraform destroy \
   -auto-approve \
   -input=false
