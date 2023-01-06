@@ -1,0 +1,151 @@
+#bamboo plan for deploying cumulus, ORCA and relevant buckets.
+---
+version: 2
+plan:
+  project-key: ORCA
+  key: ODP
+  name: ORCA Deploy Plan
+stages:
+- Deploy DR ORCA Buckets:
+    manual: true
+    final: false
+    jobs:
+    - Deploy DR ORCA buckets
+- Deploy Cumulus buckets and Cumulus and Orca modules:
+    manual: true
+    final: false
+    jobs:
+    - Deploy Cumulus buckets and Cumulus and Orca modules
+- Clean up ORCA buckets and modules:
+    manual: true
+    final: false
+    jobs:
+    - Clean up ORCA buckets and modules
+- Clean up DR ORCA buckets:
+    manual: true
+    final: false
+    jobs:
+    - Clean up DR ORCA buckets
+
+#job for deploying ORCA buckets in DR account
+Deploy DR ORCA buckets:
+  key: DDROB
+  other:
+    clean-working-dir: true
+  docker:
+    image: maven.earthdata.nasa.gov/cumulus_orca
+    volumes:
+      ${bamboo.working.directory}: ${bamboo.working.directory}
+      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+  tasks:
+  - checkout:
+      force-clean-build: 'true'
+      description: Checkout Default Repository
+  - script:
+      interpreter: SHELL
+      scripts:
+      - |-
+        #!/bin/bash
+        bash integration_test/input-validation.sh
+        . ./integration_test/shared/setup-dr-buckets.sh
+        bash integration_test/deployment-dr-buckets.sh
+         
+#job for deploying ORCA buckets, Cumulus and ORCA modules
+Deploy Cumulus buckets and Cumulus and Orca modules:
+  key: DOBM
+  other:
+    clean-working-dir: true
+    # Some plugin configurations are not supported by YAML Specs
+  docker:
+    image: maven.earthdata.nasa.gov/cumulus_orca
+    volumes:
+      ${bamboo.working.directory}: ${bamboo.working.directory}
+      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+  tasks:
+  - checkout:
+      force-clean-build: 'true'
+      description: Checkout Default Repository
+  - script:
+      interpreter: SHELL
+      scripts:
+      - |-
+        #!/bin/bash
+        . ./integration_test/shared/setup-orca.sh
+        bash integration_test/deployment-orca.sh
+# Job for cleaning up ORCA buckets, Cumulus, and ORCA modules
+Clean up ORCA buckets and modules:
+  key: CDROB
+  other:
+    clean-working-dir: true
+  docker:
+    image: maven.earthdata.nasa.gov/cumulus_orca
+    volumes:
+      ${bamboo.working.directory}: ${bamboo.working.directory}
+      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+  tasks:
+  - checkout:
+      force-clean-build: 'true'
+      description: Checkout Default Repository
+  - script:
+      interpreter: SHELL
+      scripts:
+      - |-
+        #!/bin/bash
+        . ./integration_test/shared/setup-orca.sh
+        bash integration_test/cleanup/cleanup-orca.sh
+# Job for cleaning up ORCA buckets, Cumulus, and ORCA modules
+Clean up DR ORCA buckets:
+  key: COBM
+  other:
+    clean-working-dir: true
+    # Some plugin configurations are not supported by YAML Specs
+  docker:
+    image: maven.earthdata.nasa.gov/cumulus_orca
+    volumes:
+      ${bamboo.working.directory}: ${bamboo.working.directory}
+      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+  tasks:
+  - checkout:
+      force-clean-build: 'true'
+      description: Checkout Default Repository
+
+  - script:
+      interpreter: SHELL
+      scripts:
+      - |-
+        #!/bin/bash
+        . ./integration_test/shared/setup-dr-buckets.sh
+        bash integration_test/cleanup/cleanup-dr-buckets.sh
+variables:
+  DEPLOYMENT: sandbox
+  ORCA_VERSION: 6.0.2
+  AWS_DEFAULT_REGION: us-west-2
+  CUMULUS_AWS_DEFAULT_REGION: us-west-2
+  CUMULUS_AWS_ACCESS_KEY_ID: REPLACE ME
+  CUMULUS_AWS_SECRET_ACCESS_KEY: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
+  DR_AWS_ACCESS_KEY_ID: REPLACE ME
+  DR_AWS_SECRET_ACCESS_KEY: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
+  RDS_ENGINE_VERSION: 10.18
+  ROLE_BOUNDARY: NGAPShRoleBoundary
+  CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION: release/v11.1.1-v4.0.1
+  PREFIX: REPLACE ME
+  DB_ADMIN_USERNAME: postgres
+  DB_ADMIN_PASSWORD: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
+  DB_USER_PASSWORD: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
+  EARTHDATA_CLIENT_ID: REPLACE ME
+  EARTHDATA_CLIENT_PASSWORD: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
+  BRANCH_NAME: ${bamboo.planRepository.branchName}
+  CMR_OAUTH_PROVIDER: earthdata
+ 
+repositories:
+- orca-develop:
+    scope: global
+triggers:
+- polling: # Does not actually poll, as we do not have webhooks enabled.
+    period: '60' #time in seconds
+branches:
+  create: for-new-branch
+  delete:
+    after-deleted-days: 7
+    after-inactive-days: 30
+  link-to-jira: true
