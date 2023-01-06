@@ -45,13 +45,13 @@ if [[ ! $bamboo_RELEASE_FLAG == true ]]; then
 fi
 
 ## Check if the code has already been released.
-export url="https://github.com/nasa/cumulus-orca/releases/tag/"v$bamboo_ORCA_VERSION""
-if curl --output /null --silent --fail "$url"; then
-  echo "Release URL already exists: $url. Exiting."
-  exit 1
-else
-  echo "$url does not exist. Proceeding with release..."
-fi
+# export url="https://github.com/nasa/cumulus-orca/releases/tag/"v$bamboo_ORCA_VERSION""
+# if curl --output /null --silent --fail "$url"; then
+#   echo "Release URL already exists: $url. Exiting."
+#   exit 1
+# else
+#   echo "$url does not exist. Proceeding with release..."
+# fi
 
 ## Release the Code
 cd dist
