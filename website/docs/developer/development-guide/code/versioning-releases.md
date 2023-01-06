@@ -147,6 +147,15 @@ DO NOT RUN THE RELEASE STAGE FROM `PROTOTYPE-LATEST`
 Comment the release stage out in `bamboo.yaml` at the top of the file, and under `stages:`. Note that indentation is not a reliable indicator of block length, so make sure that all release code, including `repositories`, `triggers`, and `branches`, are commented out.
 :::
 
+An EC2 key pair must be created using the AWS CLI if you are using a new `PREFIX`. Make sure to save the generated private key for connecting to this instance later.
+
+```bash
+aws ec2 create-key-pair --key-name <PREFIX> --query 'KeyMaterial' --output text > <PREFIX>.pem
+```
+:::note
+Make sure your AWS is configured to use the cumulus sandbox account by using that account's AWS access keys before creating the EC2 key pair.
+:::
+
 You will use the `ORCA Deploy Plan` bamboo plan for deploying the resources.
 
 After hitting the play button on `Deploy DR ORCA Buckets` stage in bamboo plan, but before hitting `Run` in the popup, replace the following variables with yours.
@@ -222,15 +231,6 @@ The dynamodb table and bucket versioning can be created manually as well.
     --bucket <PREFIX>-tf-state \
     --versioning-configuration Status=Enabled
 ```
-
-An EC2 key pair can be created using the AWS CLI. Make sure to save the generated private key for connecting to this instance later.
-
-```bash
-aws ec2 create-key-pair --key-name <PREFIX> --query 'KeyMaterial' --output text > <PREFIX>.pem
-```
-:::note
-Make sure your AWS is configured to use the cumulus sandbox account by using that account's AWS access keys before creating the EC2 key pair.
-:::
 
 A new earthdata application will need to be created if not done previously which will give the values for `EARTHDATA_CLIENT_ID` and `EARTHDATA_CLIENT_PASSWORD`. If you already have the application, use the existing values. `CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION` is the branch you want to check out in the [deployment repo](https://git.earthdata.nasa.gov/projects/ORCA/repos/cumulus-orca-deploy-template/browse) such as `v11.1.1-v4.0.1`.
 
