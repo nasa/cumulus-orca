@@ -608,8 +608,9 @@ def restore_object(
         Bucket=db_archive_bucket_key, Key=key, RestoreRequest=request
     )
     if restore_result["ResponseMetadata"]["HTTPStatusCode"] == 200:
-        LOGGER.info(f"File '{key}' in bucket '{db_archive_bucket_key}' has already been recovered"
-                    "Sending to archive recovery SQS")
+        LOGGER.info(
+            f"File '{key}' in bucket '{db_archive_bucket_key}' has already been recovered. "
+            "Sending to archive recovery SQS.")
         # Create message format for sending to archive recovery SQS
         message = {
                     "Records": [

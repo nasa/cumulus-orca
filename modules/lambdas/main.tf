@@ -51,6 +51,7 @@ resource "aws_lambda_function" "copy_to_archive" {
       ORCA_DEFAULT_BUCKET            = var.orca_default_bucket
       DEFAULT_MULTIPART_CHUNKSIZE_MB = var.default_multipart_chunksize_mb
       DEFAULT_STORAGE_CLASS          = var.orca_default_storage_class
+      METADATA_DB_QUEUE_URL          = var.orca_sqs_metadata_queue_id
       POWERTOOLS_SERVICE_NAME        = "orca.ingest"
       LOG_LEVEL                      = var.log_level
     }

@@ -65,14 +65,29 @@ Ensure that you are on your branch plan and not the master plan. Click on the `C
 
 Bamboo will build and run unit tests against that tagged release.
 
+## Publish Documentation
+
+1. Go to the [`Release ORCA Documentation` plan under ORCA](https://ci.earthdata.nasa.gov/browse/ORCA-ROD)
+1. Click the `Create plan branch` button next to the `Plan branch` selector.
+1. Choose your release branch and click `Create`.
+Make sure to replace your bamboo github variables before running the pipeline.
+1. Click on the `Variables` tab.
+Ensure that you are on your branch plan and not the master plan. Click on the `Choose from inherited variables` dropdown menu.
+   except in special cases such as incompatible backport branches. Then add and set the following variables:
+     * SECRET_GITHUB_EMAIL: `<secret github email>`
+     * SECRET_GITHUB_TOKEN: `<secret github token>`
+     * SECRET_GITHUB_USER: `<secret github user>`
+   
+   Contact ORCA team to know values of the three github variables.
+1. Run the branch using the 'Run' button in the top right.
+1. Click on the `Tests` tab, followed by the `Release ORCA Documentation.` link.
+1. Hit the play button next to the `Release Stage` and run the stage.
+
 ## Finalizing ORCA release on github
 
 The release is automated in Bamboo, but the step must be manually started. If
 you set the `RELEASE_FLAG` to `true` and the build steps passed, you will
 be able to run the manual 'Release' step in Bamboo. Make sure to use the `ORCA Integrator` plan under ORCA on bamboo website for performing a code release.
-In order to release the ORCA documentation, use the  `Release ORCA Documentation` plan under ORCA on bamboo website and then follow the steps in `Creating a Bamboo deployment plan branch` section above.
-Make sure to replace your bamboo github variables before running the pipeline.
-
 
 The CI release scripts will create a release based on the release version tag,
 as well as uploading release artifacts to the Github release for the Terraform
@@ -84,7 +99,7 @@ modules provided by Cumulus. The Terraform release artifacts include:
 Just make sure to verify the appropriate .zip files are present on Github after
 the release process is complete.
 
-**Merge the base branch back into develop and master**
+## Merge the base branch back into develop and master
 
 If this is the latest version, you need to merge the version update changes back into master, then synchronize master and develop.
 
@@ -130,6 +145,15 @@ You should reset `feature/ORCA-test-bamboo` before using it.
 `prototype-latest` exposes an ordering issue where the release stage must be run before deployment/integration checks can be run.
 DO NOT RUN THE RELEASE STAGE FROM `PROTOTYPE-LATEST`
 Comment the release stage out in `bamboo.yaml` at the top of the file, and under `stages:`. Note that indentation is not a reliable indicator of block length, so make sure that all release code, including `repositories`, `triggers`, and `branches`, are commented out.
+:::
+
+An EC2 key pair must be created using the AWS CLI if you are using a new `PREFIX`. Make sure to save the generated private key for connecting to this instance later.
+
+```bash
+aws ec2 create-key-pair --key-name <PREFIX> --query 'KeyMaterial' --output text > <PREFIX>.pem
+```
+:::note
+Make sure your AWS is configured to use the cumulus sandbox account by using that account's AWS access keys before creating the EC2 key pair.
 :::
 
 You will use the `ORCA Deploy Plan` bamboo plan for deploying the resources.
@@ -207,15 +231,6 @@ The dynamodb table and bucket versioning can be created manually as well.
     --bucket <PREFIX>-tf-state \
     --versioning-configuration Status=Enabled
 ```
-
-An EC2 key pair can be created using the AWS CLI. Make sure to save the generated private key for connecting to this instance later.
-
-```bash
-aws ec2 create-key-pair --key-name <PREFIX> --query 'KeyMaterial' --output text > <PREFIX>.pem
-```
-:::note
-Make sure your AWS is configured to use the cumulus sandbox account by using that account's AWS access keys before creating the EC2 key pair.
-:::
 
 A new earthdata application will need to be created if not done previously which will give the values for `EARTHDATA_CLIENT_ID` and `EARTHDATA_CLIENT_PASSWORD`. If you already have the application, use the existing values. `CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION` is the branch you want to check out in the [deployment repo](https://git.earthdata.nasa.gov/projects/ORCA/repos/cumulus-orca-deploy-template/browse) such as `v11.1.1-v4.0.1`.
 

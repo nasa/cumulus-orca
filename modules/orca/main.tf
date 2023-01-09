@@ -267,7 +267,7 @@ module "orca_graphql_1" {
   ## --------------------------
   ## REQUIRED
   db_connect_info_secret_arn      = module.orca_secretsmanager.secretsmanager_arn
-  ecs_cluster_id                  = local.deploy_graphql ? module.orca_ecs.ecs_cluster_id : null
+  ecs_cluster_id                  = local.deploy_graphql ? module.orca_ecs[0].ecs_cluster_id : null
   gql_ecs_task_execution_role_arn = module.orca_graphql_0.gql_ecs_task_execution_role_arn
   gql_ecs_task_execution_role_id  = module.orca_graphql_0.gql_ecs_task_execution_role_id
   gql_tasks_role_arn              = module.orca_graphql_0.gql_tasks_role_arn
