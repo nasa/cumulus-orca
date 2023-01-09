@@ -1,6 +1,6 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/nasa/cumulus-orca/badge.svg?targetFile=tasks/get_current_archive_list/requirements.txt)](https://snyk.io/test/github/nasa/cumulus-orca?targetFile=tasks/get_current_archive_list/requirements.txt)
 
-**Lambda function get_current_archive_list **
+**Lambda function get_current_archive_list**
 
 Receives a list of s3 events from an SQS queue, and loads the s3 inventory specified into postgres.
 Events must be for manifest.json files that correspond to s3 inventory reports.

@@ -111,7 +111,8 @@ Creates a standardized dictionary for error reporting.
 #### handler
 
 ```python
-def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]
+@LOGGER.inject_lambda_context
+def handler(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]
 ```
 
 Entry point for the request_status_for_job Lambda.
@@ -120,8 +121,8 @@ Entry point for the request_status_for_job Lambda.
 
 - `event` - A dict with the following keys:
 - `asyncOperationId` - The unique asyncOperationId of the recovery job.
-- `context` - An object provided by AWS Lambda. Used for context tracking.
-  
+- `context` - This object provides information about the lambda invocation, function,
+  and execution env.
   Environment Vars:
   DB_CONNECT_INFO_SECRET_ARN (string):
   Secret ARN of the AWS secretsmanager secret for connecting to the database.

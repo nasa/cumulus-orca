@@ -34,14 +34,27 @@ if [ "$BASEDIR" != "bin" ]; then
   exit 1
 fi
 
+
+source bin/common/check_returncode.sh
+
+
 ## Validate that the release flag is set
 if [[ ! $bamboo_RELEASE_FLAG == true ]]; then
   >&2 echo "WARN: Skipping Release ORCA code step, PUBLISH_FLAG is [ $bamboo_RELEASE_FLAG ]"
   exit 0
 fi
 
+# todo: The following check raises an error if the TAG exists, not a release. ORCA-606
+## Check if the code has already been released.
+# export url="https://github.com/nasa/cumulus-orca/releases/tag/"v$bamboo_ORCA_VERSION""
+# if curl --output /null --silent --fail "$url"; then
+#   echo "Release URL already exists: $url. Exiting."
+#   exit 1
+# else
+#   echo "$url does not exist. Proceeding with release..."
+# fi
+
 ## Release the Code
-## TODO: Make this more robust. Check for errors see if release already created, etc.
 cd dist
 
 # Create Release
@@ -56,13 +69,22 @@ export RELEASE_URL=$(curl \
     | sed -e 's/.*\(https.*\)\"\,/\1/' \
     | sed -e 's/api/uploads/')
 
-# Release Package
-echo $RELEASE_URL
+# Release URL is created only if there is valid github token
+if [[ ! $RELEASE_URL ]]; then
+  echo "RELEASE_URL is empty. This may be caused by an invalid 'GITHUB_TOKEN'. Exiting"
+  exit 1
+else
+  echo "$RELEASE_URL has not been released. Proceeding."
+fi
+
 curl \
     -X POST \
     -H "Authorization: token $bamboo_SECRET_GITHUB_TOKEN" \
     --data-binary "@cumulus-orca-terraform.zip" \
     -H "Content-type: application/octet-stream" \
     $RELEASE_URL/assets?name=cumulus-orca-terraform.zip
+check_returncode $? "Error during curl command."
 
 cd ..
+
+exit 0

@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_from_archive/schemas/input.json",
+  "title": "copy_from_archive Lambda Input",
+  "description": "The input for the copy_from_archive Lambda.",
+  "type": "object",
+  "properties": {
+    "Records": {
+      "description": "A list of dicts representing files to copy and where to copy them.",
+      "type": "array",
+      "items": {
+        "properties": {
+          "body": {
+            "description": "A string passed in by SQS. When converted via the json library, see sub_schemas/body.json for converted schema."
+          }
+        },
+        "required": ["body"]
+      }
+    }
+  },
+  "required": ["Records"]
+}

@@ -1,19 +1,19 @@
 ## Libraries needed for testing
+## Libraries needed for testing
 coverage==5.3
-pytest==6.1.2
+pytest==6.2.5
 
 ## Application libraries needed for testing
 psycopg2-binary==2.8.6
 
 ## Application libraries
-cumulus-message-adapter-python==2.0.1
+aws_lambda_powertools==1.31.0
 fastjsonschema~=2.15.1
 ../../shared_libraries[database, reconciliation]
 
 ## Additional validation libraries
 ## ---------------------------------------------------------------------------
 bandit==1.7.0
-safety==1.10.3
 flake8==4.0.1
 black==21.12b0
 isort==5.10.1

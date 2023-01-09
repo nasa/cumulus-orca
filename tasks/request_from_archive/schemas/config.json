@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/request_from_archive/schemas/config.json",
+  "title": "request_from_archive Lambda Config",
+  "description": "The config for the request_from_archive Lambda.",
+  "type": "object",
+  "properties": {
+    "asyncOperationId": {
+      "description": "The unique identifier used for tracking requests. If not present, will be generated.",
+      "type": ["string", "null"]
+    },
+    "s3MultipartChunksizeMb": {
+      "description": "Overrides default_multipart_chunksize from TF.",
+      "type": ["number", "null"]
+    },
+    "defaultBucketOverride": {
+      "type": ["string", "null"],
+      "description": "Overrides the default bucket to copy to in os.environ['ORCA_DEFAULT_BUCKET']."
+    },
+    "defaultRecoveryTypeOverride": {
+      "type": ["string", "null"],
+      "description": "Overrides the default restore type in os.environ['DEFAULT_RECOVERY_TYPE']."
+    }
+  }
+}

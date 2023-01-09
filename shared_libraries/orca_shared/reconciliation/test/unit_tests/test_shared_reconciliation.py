@@ -15,7 +15,10 @@ class TestSharedReconciliationLibraries(unittest.TestCase):
     Unit tests for the shared_reconciliation library used by ORCA Reconciliation Lambdas.
     """
 
-    def test_get_partition_name_from_bucket_name_happy_path(self):
+    @patch("orca_shared.reconciliation.shared_reconciliation.validate_postgres_name")
+    def test_get_partition_name_from_bucket_name_happy_path(self,
+                                                            mock_validate_name: MagicMock
+                                                            ):
         """
         Should replace dashes with underscores.
         Leave this test hardcoded to avoid unintentional deviations from DB.
@@ -23,22 +26,11 @@ class TestSharedReconciliationLibraries(unittest.TestCase):
         result = shared_reconciliation.get_partition_name_from_bucket_name(
             "apple-banana_-lemon"
         )
-        self.assertEqual("reconcile_s3_object_apple_banana__lemon", result)
-
-    def test_get_partition_name_from_bucket_name_rejects_non_alphanumeric(self):
-        """
-        Should replace dashes with underscores.
-        """
-        for error_case in ["a a", "a!a"]:
-            with self.subTest(error_case=error_case):
-                with self.assertRaises(Exception) as cm:
-                    shared_reconciliation.get_partition_name_from_bucket_name(
-                        error_case
-                    )
-                self.assertEqual(
-                    f"'reconcile_s3_object_{error_case}' is not a valid partition name.",
-                    str(cm.exception),
-                )
+        expected_result = "reconcile_s3_object_apple_banana__lemon"
+        mock_validate_name.assert_called_once_with(expected_result,
+                                                   f"Partition name '{expected_result}'",
+                                                   shared_reconciliation.LOGGER)
+        self.assertEqual(expected_result, result)
 
     @patch("orca_shared.reconciliation.shared_reconciliation.internal_update_job")
     def test_update_job_happy_path(self, mock_internal_update_job: MagicMock):
@@ -59,14 +51,14 @@ class TestSharedReconciliationLibraries(unittest.TestCase):
                     mock_engine,
                 )
 
-            mock_internal_update_job.assert_called_once_with(
-                mock_job_id,
-                status,
-                unittest.mock.ANY,
-                unittest.mock.ANY if end_time_present.__contains__(status) else None,
-                mock_error_message if status == OrcaStatus.ERROR else None,
-                mock_engine,
-            )
+                mock_internal_update_job.assert_called_once_with(
+                    mock_job_id,
+                    status,
+                    unittest.mock.ANY,
+                    unittest.mock.ANY if end_time_present.__contains__(status) else None,
+                    mock_error_message if status == OrcaStatus.ERROR else None,
+                    mock_engine,
+                )
             mock_internal_update_job.reset_mock()
 
     @patch("orca_shared.reconciliation.shared_reconciliation.internal_update_job")
@@ -114,12 +106,12 @@ class TestSharedReconciliationLibraries(unittest.TestCase):
                         mock_error_message,
                         mock_engine,
                     )
-                self.assertEqual(
-                    "Cannot set error message outside of error status entries.",
-                    str(cm.exception),
-                )
+                    self.assertEqual(
+                        "Cannot set error message outside of error status entries.",
+                        str(cm.exception),
+                    )
 
-            mock_internal_update_job.assert_not_called()
+                    mock_internal_update_job.assert_not_called()
 
     @patch("orca_shared.reconciliation.shared_reconciliation.update_job_sql")
     def test_internal_update_job_happy_path(

@@ -31,7 +31,7 @@ Example Cloudwatch message:
 
 Recommend we move away from CumulusLogger where possible.
 The `ReplaceConfig` keys that would indicate use of the Logger's features are red-herrings, and the input formatting can be handled via standard AWS Step Function construction.
-`copy_to_glacier` is the one Lambda that Cumulus calls in their own workflows, and thus must be able to handle [S3 storage of inputs](https://nasa.github.io/cumulus/docs/workflows/input_output#replaceconfig-cumulus-remote-message).
+`copy_to_archive` is the one Lambda that Cumulus calls in their own workflows, and thus must be able to handle [S3 storage of inputs](https://nasa.github.io/cumulus/docs/workflows/input_output#replaceconfig-cumulus-remote-message).
 
 ## Default Logger
 - Python's default [logging library](https://docs.python.org/3/library/logging.html) provides an excellent interface.
@@ -124,8 +124,8 @@ Resulting Cloudwatch message:
   - Schema validation checks should be added to calling function.
   - References to run_cumulus_task should be replaced with manual transformation of inputs into non-architecture-specific formats.
     [Jira card for removal here](https://bugs.earthdata.nasa.gov/browse/ORCA-522).
-  - `copy_to_glacier` S3 requirements could be accomplished with a helper Lambda developed initially by us and maintained by Cumulus that handles the S3 retrieval 
-    and passes the result along to `copy_to_glacier`.
+  - `copy_to_archive` S3 requirements could be accomplished with a helper Lambda developed initially by us and maintained by Cumulus that handles the S3 retrieval 
+    and passes the result along to `copy_to_archive`.
     [Jira card for implementation here](https://bugs.earthdata.nasa.gov/browse/ORCA-520).
 - Given the standardized implementation and features of Powertools, it is a good pick for replacing the CumulusLogger in Orca code.
   [Jira card for replacement here](https://bugs.earthdata.nasa.gov/browse/ORCA-521).

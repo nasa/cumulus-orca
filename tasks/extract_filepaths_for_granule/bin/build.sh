@@ -26,25 +26,8 @@ if [ "$BASEDIR" != "bin" ]; then
 fi
 
 
-## FUNCTIONS
-## -----------------------------------------------------------------------------
-function check_rc () {
-  ## Checks the return code of call and if not equal to 0, emits an error and
-  ## exits the script with a failure.
-  ##
-  ## Args:
-  ##   $1 - Return Code from command
-  ##   $2 - Error message if failure occurs.
-
-  let RC=$1
-  MESSAGE=$2
-
-  if [ $RC -ne 0 ]; then
-      >&2 echo "$MESSAGE"
-      deactivate
-      exit 1
-  fi
-}
+source ../../bin/common/check_returncode.sh
+source ../../bin/common/venv_management.sh
 
 ## MAIN
 ## -----------------------------------------------------------------------------
@@ -54,53 +37,27 @@ if [ -d build ]; then
     rm -rf build
 fi
 
-mkdir build
-let return_code=$?
+run_and_check_returncode "mkdir build"
+trap 'rm -rf build' EXIT
 
-check_rc $return_code "ERROR: Failed to create build directory."
-
-## Create the virtual env. Remove it if it already exists.
-echo "INFO: Creating virtual environment ..."
-if [ -d venv ]; then
-  rm -rf venv
-  find . -type d -name "__pycache__" -exec rm -rf {} +
-fi
-
-python3 -m venv venv
-source venv/bin/activate
+run_and_check_returncode "create_and_activate_venv"
+trap 'deactivate_and_delete_venv;rm -rf build;' EXIT
+run_and_check_returncode "pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org"
 
 ## Install the requirements
-pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org
 pip install -q -t build -r requirements.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
-let return_code=$?
-
-check_rc $return_code "ERROR: pip install encountered an error."
+check_returncode $? "ERROR: pip install encountered an error."
 
 ## Copy the lambda files to build
 echo "INFO: Creating the Lambda package ..."
 cp *.py build/
-let return_code=$?
-
-check_rc $return_code "ERROR: Failed to copy lambda files to build directory."
+check_returncode $? "ERROR: Failed to copy lambda files to build directory."
 
 ## Copy the schema files to build
 echo "INFO:  Copying the input, output and config schemas..."
 cp -r schemas/ build/
-let return_code=$?
-
-check_rc $return_code "ERROR: Failed to copy schema files to build directory."
+check_returncode $? "ERROR: Failed to copy schema files to build directory."
 ## Create the zip archive
-echo "INFO: Creating zip archive ..."
 cd build
-zip -qr ../extract_filepaths_for_granule.zip .
-let return_code=$?
-cd -
-
-check_rc $return_code "ERROR: Failed to create zip archive."
-
-## Perform cleanup
-echo "INFO: Cleaning up build ..."
-deactivate
-rm -rf build
-
-exit 0
+trap 'cd -;deactivate_and_delete_venv;rm -rf build;' EXIT
+run_and_check_returncode "zip -qr ../extract_filepaths_for_granule.zip ."

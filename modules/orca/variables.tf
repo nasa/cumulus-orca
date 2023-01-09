@@ -85,7 +85,7 @@ variable "db_host_endpoint" {
 
 variable "orca_default_bucket" {
   type        = string
-  description = "Default ORCA S3 Glacier bucket to use if no overrides exist."
+  description = "Default archive bucket to use if no overrides exist."
 }
 
 variable "orca_reports_bucket_name" {
@@ -105,6 +105,12 @@ variable "dlq_subscription_email" {
 }
 
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
+variable "archive_recovery_queue_message_retention_time_seconds" {
+  type        = number
+  description = "The number of seconds archive-recovery-queue SQS retains a message in seconds. Maximum value is 14 days."
+}
+
+
 variable "db_admin_username" {
   description = "Username for RDS database administrator authentication"
   type        = string
@@ -136,7 +142,7 @@ variable "orca_default_recovery_type" {
 
 
 variable "orca_default_storage_class" {
-  type           = string
+  type        = string
   description = "The class of storage to use when ingesting files. Can be overridden by collection config. Must match value in storage_class table."
 }
 
@@ -149,13 +155,13 @@ variable "orca_delete_old_reconcile_jobs_frequency_cron" {
 
 variable "orca_ingest_lambda_memory_size" {
   type        = number
-  description = "Amount of memory in MB the ORCA copy_to_glacier lambda can use at runtime."
+  description = "Amount of memory in MB the ORCA copy_to_archive lambda can use at runtime."
 }
 
 
 variable "orca_ingest_lambda_timeout" {
   type        = number
-  description = "Timeout in number of seconds for ORCA copy_to_glacier lambda."
+  description = "Timeout in number of seconds for ORCA copy_to_archive lambda."
 }
 
 
@@ -185,7 +191,7 @@ variable "orca_recovery_buckets" {
 
 variable "orca_recovery_complete_filter_prefix" {
   type        = string
-  description = "Specifies object key name prefix by the Glacier Bucket trigger."
+  description = "Specifies object key name prefix by the archive bucket trigger."
 }
 
 
@@ -282,4 +288,10 @@ variable "status_update_queue_message_retention_time_seconds" {
 variable "vpc_endpoint_id" {
   type        = string
   description = "NGAP vpc endpoint id needed to access the api. Defaults to null"
+}
+
+
+variable "log_level" {
+  type        = string
+  description = "Sets the verbose of powertools logger. Must be one of 'INFO', 'DEBUG', 'WARN', 'ERROR'. Defaults to 'INFO'."
 }

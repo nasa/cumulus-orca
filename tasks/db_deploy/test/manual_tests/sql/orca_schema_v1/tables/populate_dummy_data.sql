@@ -6,7 +6,7 @@ SELECT
     substr(md5(random()::text), 0, 25) AS granule_id,
     substr(md5(random()::text), 0, 25) AS object_key,
     'restore' AS job_type,
-    'myarchiveglacierbucket' AS restore_bucket_dest,
+    'myarchivebucket' AS restore_bucket_dest,
     substr(md5(random()::text), 0, 25) AS archive_bucket_dest,
     'inprogress' as job_status,
     generate_series(now()-'14 days'::interval, now(), '1 hour'::interval) AS request_time,

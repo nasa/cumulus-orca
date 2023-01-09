@@ -31,8 +31,8 @@
         "name": "podaac-sndbx-cumulus-dashboard",
         "type": "public"
       },
-      "glacier": {
-        "name": "podaac-sndbx-cumulus-glacier",
+      "archive": {
+        "name": "podaac-sndbx-cumulus-archive",
         "type": "private"
       }
     },
@@ -78,9 +78,9 @@
       "updatedAt": 1561752645046,
       "meta": {
         "response-endpoint": "arn:aws:sns:us-west-2:065089468788:providerResponseSNS",
-        "glacier-bucket": "podaac-sndbx-cumulus-glacier",
+        "archive-bucket": "podaac-sndbx-cumulus-archive",
         "granuleRecoveryWorkflow": "DrRecoveryWorkflow",
-        "glacierBucket": "podaac-sndbx-cumulus-glacier"
+        "archiveBucket": "podaac-sndbx-cumulus-archive"
       },
       "createdAt": 1561749178492,
       "granuleId": "^.*$",
@@ -136,8 +136,8 @@
     "ExtractFilepaths": {
       "fileBucketMaps": "{{$.meta.collection.files}}"
     },
-    "RequestFiles": {
-      "glacier-bucket": "{{$.meta.collection.meta.glacier-bucket}}"
+    "RequestFromArchive": {
+      "archive-bucket": "{{$.meta.collection.meta.archive-bucket}}"
     },
     "StopStatus": {
       "sfnEnd": true,

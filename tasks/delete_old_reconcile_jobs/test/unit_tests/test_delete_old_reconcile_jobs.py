@@ -161,7 +161,6 @@ class TestDeleteOldReconcileJobs(
 
     # noinspection PyPep8Naming
     @patch("orca_shared.database.shared_db.get_configuration")
-    @patch("delete_old_reconcile_jobs.LOGGER")
     @patch("delete_old_reconcile_jobs.task")
     @patch.dict(
         os.environ,
@@ -171,7 +170,6 @@ class TestDeleteOldReconcileJobs(
     def test_handler_happy_path(
         self,
         mock_task: MagicMock,
-        mock_LOGGER: MagicMock,
         mock_get_configuration: MagicMock,
     ):
         """
@@ -192,7 +190,6 @@ class TestDeleteOldReconcileJobs(
         ):
             delete_old_reconcile_jobs.handler(event, mock_context)
 
-        mock_LOGGER.setMetadata.assert_called_once_with(event, mock_context)
         mock_get_configuration.assert_called_once_with(
             os.environ["DB_CONNECT_INFO_SECRET_ARN"]
         )

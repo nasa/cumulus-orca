@@ -1,3 +1,8 @@
+locals {
+  # Used for Load Balancer, EC2 Service, and Container ports. Specifies how GQL will be hosted.
+  deploy_graphql = false
+}
+
 ## Referenced Modules
 
 ## orca_lambdas - lambdas module that calls iam and security_groups module
@@ -26,6 +31,8 @@ module "orca_lambdas" {
   db_connect_info_secret_arn                           = module.orca_secretsmanager.secretsmanager_arn
   orca_default_bucket                                  = var.orca_default_bucket
   orca_secretsmanager_s3_access_credentials_secret_arn = module.orca_secretsmanager.s3_access_credentials_secret_arn
+  orca_sqs_archive_recovery_queue_arn                  = module.orca_sqs.orca_sqs_archive_recovery_queue_arn
+  orca_sqs_archive_recovery_queue_id                   = module.orca_sqs.orca_sqs_archive_recovery_queue_id
   orca_sqs_internal_report_queue_id                    = module.orca_sqs.orca_sqs_internal_report_queue_id
   orca_sqs_metadata_queue_arn                          = module.orca_sqs.orca_sqs_metadata_queue_arn
   orca_sqs_metadata_queue_id                           = module.orca_sqs.orca_sqs_metadata_queue_id
@@ -53,6 +60,7 @@ module "orca_lambdas" {
   orca_recovery_retry_limit                     = var.orca_recovery_retry_limit
   orca_recovery_retry_interval                  = var.orca_recovery_retry_interval
   orca_recovery_retry_backoff                   = var.orca_recovery_retry_backoff
+  log_level                                     = var.log_level
 }
 
 ## orca_lambdas_secondary - lambdas module that is dependent on resources that presently are created after most lambdas
@@ -86,6 +94,7 @@ module "orca_lambdas_secondary" {
   orca_reconciliation_lambda_memory_size = var.orca_reconciliation_lambda_memory_size
   orca_reconciliation_lambda_timeout     = var.orca_reconciliation_lambda_timeout
   s3_report_frequency                    = var.s3_report_frequency
+  log_level                              = var.log_level
 }
 
 
@@ -109,11 +118,11 @@ module "orca_workflows" {
   ## --------------------------
   ## REQUIRED
   orca_default_bucket                           = var.orca_default_bucket
-  orca_lambda_copy_to_glacier_arn               = module.orca_lambdas.copy_to_glacier_arn
+  orca_lambda_copy_to_archive_arn               = module.orca_lambdas.copy_to_archive_arn
   orca_lambda_extract_filepaths_for_granule_arn = module.orca_lambdas.extract_filepaths_for_granule_arn
   orca_lambda_get_current_archive_list_arn      = module.orca_lambdas.get_current_archive_list_arn
   orca_lambda_perform_orca_reconcile_arn        = module.orca_lambdas.perform_orca_reconcile_arn
-  orca_lambda_request_files_arn                 = module.orca_lambdas.request_files_arn
+  orca_lambda_request_from_archive_arn          = module.orca_lambdas.request_from_archive_arn
 }
 
 
@@ -138,12 +147,29 @@ module "orca_iam" {
   orca_reports_bucket_name = var.orca_reports_bucket_name
 }
 
+## orca_graphql_0- graphql module that sets up centralized db code
+## sets up components required by other modules, such as IAM roles for secretsmanager to grant permissions to
+## =============================
+module "orca_graphql_0" {
+  source     = "../graphql_0"
+  depends_on = []
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  permissions_boundary_arn = var.permissions_boundary_arn
+  prefix                   = var.prefix
+  vpc_id                   = var.vpc_id
+
+  ## OPTIONAL
+  tags = var.tags
+}
 
 ## orca_secretsmanager - secretsmanager module
 ## =============================================================================
 module "orca_secretsmanager" {
   source     = "../secretsmanager"
-  depends_on = [module.orca_iam]
+  depends_on = [module.orca_iam, module.orca_graphql_0]
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------
@@ -156,12 +182,13 @@ module "orca_secretsmanager" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  db_admin_password       = var.db_admin_password
-  db_user_password        = var.db_user_password
-  db_host_endpoint        = var.db_host_endpoint
-  restore_object_role_arn = module.orca_iam.restore_object_role_arn
-  s3_access_key           = var.s3_access_key
-  s3_secret_key           = var.s3_secret_key
+  db_admin_password               = var.db_admin_password
+  db_user_password                = var.db_user_password
+  db_host_endpoint                = var.db_host_endpoint
+  gql_ecs_task_execution_role_arn = module.orca_graphql_0.gql_ecs_task_execution_role_arn
+  restore_object_role_arn         = module.orca_iam.restore_object_role_arn
+  s3_access_key                   = var.s3_access_key
+  s3_secret_key                   = var.s3_secret_key
 
   ## OPTIONAL
   db_admin_username = var.db_admin_username
@@ -176,7 +203,8 @@ module "orca_sqs" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  prefix = var.prefix
+  buckets = var.buckets
+  prefix  = var.prefix
 
   ## OPTIONAL
   tags = var.tags
@@ -190,16 +218,60 @@ module "orca_sqs" {
   orca_reports_bucket_name = var.orca_reports_bucket_name
 
   ## OPTIONAL
-  internal_report_queue_message_retention_time_seconds = var.internal_report_queue_message_retention_time_seconds
-  metadata_queue_message_retention_time_seconds        = var.metadata_queue_message_retention_time_seconds
-  orca_reconciliation_lambda_timeout                   = var.orca_reconciliation_lambda_timeout
-  s3_inventory_queue_message_retention_time_seconds    = var.s3_inventory_queue_message_retention_time_seconds
-  sqs_delay_time_seconds                               = var.sqs_delay_time_seconds
-  sqs_maximum_message_size                             = var.sqs_maximum_message_size
-  staged_recovery_queue_message_retention_time_seconds = var.staged_recovery_queue_message_retention_time_seconds
-  status_update_queue_message_retention_time_seconds   = var.status_update_queue_message_retention_time_seconds
+  archive_recovery_queue_message_retention_time_seconds = var.archive_recovery_queue_message_retention_time_seconds
+  internal_report_queue_message_retention_time_seconds  = var.internal_report_queue_message_retention_time_seconds
+  metadata_queue_message_retention_time_seconds         = var.metadata_queue_message_retention_time_seconds
+  orca_reconciliation_lambda_timeout                    = var.orca_reconciliation_lambda_timeout
+  s3_inventory_queue_message_retention_time_seconds     = var.s3_inventory_queue_message_retention_time_seconds
+  sqs_delay_time_seconds                                = var.sqs_delay_time_seconds
+  sqs_maximum_message_size                              = var.sqs_maximum_message_size
+  staged_recovery_queue_message_retention_time_seconds  = var.staged_recovery_queue_message_retention_time_seconds
+  status_update_queue_message_retention_time_seconds    = var.status_update_queue_message_retention_time_seconds
 }
 
+## orca_ecs - ecs module that sets up ecs cluster
+## =============================
+module "orca_ecs" {
+  count  = local.deploy_graphql ? 1 : 0
+  source = "../ecs"
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  prefix = var.prefix
+
+  ## OPTIONAL
+  tags = var.tags
+}
+
+## orca_graphql_1 - graphql module that sets up centralized db code
+## =============================
+module "orca_graphql_1" {
+  count      = local.deploy_graphql ? 1 : 0
+  source     = "../graphql_1"
+  depends_on = [module.orca_lambdas, module.orca_ecs, module.orca_graphql_0, module.orca_secretsmanager] ## secretsmanager sets up db connection secrets.
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  lambda_subnet_ids        = var.lambda_subnet_ids
+  permissions_boundary_arn = var.permissions_boundary_arn
+  prefix                   = var.prefix
+  vpc_id                   = var.vpc_id
+
+  ## OPTIONAL
+  tags = var.tags
+
+  ## --------------------------
+  ## ORCA Variables
+  ## --------------------------
+  ## REQUIRED
+  db_connect_info_secret_arn      = module.orca_secretsmanager.secretsmanager_arn
+  ecs_cluster_id                  = local.deploy_graphql ? module.orca_ecs[0].ecs_cluster_id : null
+  gql_ecs_task_execution_role_arn = module.orca_graphql_0.gql_ecs_task_execution_role_arn
+  gql_ecs_task_execution_role_id  = module.orca_graphql_0.gql_ecs_task_execution_role_id
+  gql_tasks_role_arn              = module.orca_graphql_0.gql_tasks_role_arn
+}
 
 ## orca_api_gateway - api gateway module
 ## =============================================================================

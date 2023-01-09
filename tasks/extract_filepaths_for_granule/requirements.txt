@@ -1,1 +1,3 @@
-cumulus-message-adapter-python==2.0.1
+aws_lambda_powertools==1.31.0
+cumulus-process==0.8.0
+fastjsonschema~=2.15.1

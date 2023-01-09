@@ -35,16 +35,16 @@ Retries can then be configured in the workflow json if desired. See
 and
 [tutorials](https://aws.amazon.com/getting-started/hands-on/handle-serverless-application-errors-step-functions-lambda/)
 for more information.
-The following snippet from the copy_to_glacier lambda demonstrates usage of retries for a lambda in an ingest workflow.
+The following snippet from the copy_to_archive lambda demonstrates usage of retries for a lambda in an ingest workflow.
 `MaxAttempts` is set to 6, meaning that it will run the function a maximum of 7 times before transitioning to the `WorkflowFailed` state.
 `IntervalSeconds` determines how many seconds the workflow will sleep between retries.
 A `BackOffRate` of 2 means that the `IntervalSeconds` will be doubled on each failure beyond the first.
 
 ```json
-"CopyToGlacier": {
+"CopyToArchive": {
   ...
   "Type": "Task",
-  "Resource": "${copy_to_glacier_task_arn}",
+  "Resource": "${copy_to_archive_task_arn}",
   "Retry": [
     {
       "ErrorEquals": [

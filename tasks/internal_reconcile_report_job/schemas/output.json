@@ -33,7 +33,7 @@
           },
           "orcaArchiveLocation": {
             "type": "string",
-            "description": "ORCA S3 Glacier bucket the reconciliation targets."
+            "description": "Archive bucket the reconciliation targets."
           },
           "status": {
             "type": "string",
@@ -59,7 +59,7 @@
             "properties": {
               "orphan": {
                 "type": "integer",
-                "description": "Number of files that have records in the S3 glacier bucket but are missing in the ORCA catalog.",
+                "description": "Number of files that have records in the S3 archive bucket but are missing in the ORCA catalog.",
                 "minimum": 0
               },
               "phantom": {

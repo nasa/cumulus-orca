@@ -15,6 +15,7 @@ from sqlalchemy import text
 from sqlalchemy.future import Engine
 
 from orca_shared.database import shared_db
+from orca_shared.database.use_cases.validation import validate_postgres_name
 
 LOGGER = logging.Logger("ORCA")
 
@@ -42,8 +43,7 @@ def get_partition_name_from_bucket_name(bucket_name: str):
     bucket_name: The name of the Orca bucket in AWS.
     """
     partition_name = "reconcile_s3_object_" + bucket_name.replace("-", "_")
-    if not partition_name.replace("_", "").isalnum():
-        raise Exception(f"'{partition_name}' is not a valid partition name.")
+    validate_postgres_name(partition_name, f"Partition name '{partition_name}'", LOGGER)
     return partition_name
 
 

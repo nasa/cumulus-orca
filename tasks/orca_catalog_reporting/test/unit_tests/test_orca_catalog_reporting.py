@@ -18,7 +18,6 @@ class TestOrcaCatalogReportingUnit(
 ):  # pylint: disable-msg=too-many-instance-attributes
     @patch("orca_catalog_reporting.task")
     @patch("orca_shared.database.shared_db.get_configuration")
-    @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
         os.environ,
         {"DB_CONNECT_INFO_SECRET_ARN": "test"},
@@ -26,7 +25,6 @@ class TestOrcaCatalogReportingUnit(
     )
     def test_handler_happy_path(
         self,
-        mock_setMetadata: MagicMock,
         mock_get_configuration: MagicMock,
         mock_task: MagicMock,
     ):
@@ -80,7 +78,6 @@ class TestOrcaCatalogReportingUnit(
 
         result = orca_catalog_reporting.handler(event, context)
 
-        mock_setMetadata.assert_called_once_with(event, context)
         mock_task.assert_called_once_with(
             provider_id,
             collection_id,
@@ -94,7 +91,6 @@ class TestOrcaCatalogReportingUnit(
 
     @patch("orca_catalog_reporting.task")
     @patch("orca_shared.database.shared_db.get_configuration")
-    @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
         os.environ,
         {"DB_CONNECT_INFO_SECRET_ARN": "test"},
@@ -102,7 +98,6 @@ class TestOrcaCatalogReportingUnit(
     )
     def test_handler_missing_properties_uses_default(
         self,
-        mock_setMetadata: MagicMock,
         mock_get_configuration: MagicMock,
         mock_task: MagicMock,
     ):
@@ -118,7 +113,6 @@ class TestOrcaCatalogReportingUnit(
 
         result = orca_catalog_reporting.handler(event, context)
 
-        mock_setMetadata.assert_called_once_with(event, context)
         mock_task.assert_called_once_with(
             None,
             None,
@@ -132,7 +126,6 @@ class TestOrcaCatalogReportingUnit(
 
     @patch("orca_catalog_reporting.create_http_error_dict")
     @patch("orca_shared.database.shared_db.get_configuration")
-    @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
         os.environ,
         {"DB_CONNECT_INFO_SECRET_ARN": "test"},
@@ -140,7 +133,6 @@ class TestOrcaCatalogReportingUnit(
     )
     def test_handler_missing_page_index_returns_error(
         self,
-        mock_setMetadata: MagicMock,
         mock_get_configuration: MagicMock,
         mock_create_http_error_dict: MagicMock,
     ):
@@ -164,7 +156,6 @@ class TestOrcaCatalogReportingUnit(
         context = Mock()
         result = orca_catalog_reporting.handler(event, context)
 
-        mock_setMetadata.assert_called_once_with(event, context)
         mock_create_http_error_dict.assert_called_once_with(
             "BadRequest",
             HTTPStatus.BAD_REQUEST,
@@ -175,10 +166,8 @@ class TestOrcaCatalogReportingUnit(
 
     @patch("orca_catalog_reporting.create_http_error_dict")
     @patch("orca_shared.database.shared_db.get_configuration")
-    @patch("cumulus_logger.CumulusLogger.setMetadata")
     def test_handler_missing_end_timestamp_returns_error(
         self,
-        mock_setMetadata: MagicMock,
         mock_get_configuration: MagicMock,
         mock_create_http_error_dict: MagicMock,
     ):
@@ -201,7 +190,6 @@ class TestOrcaCatalogReportingUnit(
         context = Mock()
         result = orca_catalog_reporting.handler(event, context)
 
-        mock_setMetadata.assert_called_once_with(event, context)
         mock_create_http_error_dict.assert_called_once_with(
             "BadRequest",
             HTTPStatus.BAD_REQUEST,
@@ -213,7 +201,6 @@ class TestOrcaCatalogReportingUnit(
     @patch("orca_catalog_reporting.create_http_error_dict")
     @patch("orca_catalog_reporting.task")
     @patch("orca_shared.database.shared_db.get_configuration")
-    @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
         os.environ,
         {"DB_CONNECT_INFO_SECRET_ARN": "test"},
@@ -221,7 +208,6 @@ class TestOrcaCatalogReportingUnit(
     )
     def test_handler_bad_output_raises_error(
         self,
-        mock_setMetadata: MagicMock,
         mock_get_configuration: MagicMock,
         mock_task: MagicMock,
         mock_create_http_error_dict: MagicMock,
@@ -452,7 +438,7 @@ class TestOrcaCatalogReportingUnit(
             result,
         )
 
-    @patch("cumulus_logger.CumulusLogger.error")
+    @patch("orca_catalog_reporting.LOGGER.error")
     def test_create_http_error_dict_happy_path(self, mock_error: MagicMock):
         error_type = uuid.uuid4().__str__()
         http_status_code = random.randint(0, 9999)  # nosec

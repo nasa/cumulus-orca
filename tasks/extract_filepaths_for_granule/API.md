@@ -30,7 +30,7 @@ Exception to be raised if any errors occur
 #### task
 
 ```python
-def task(event, context)
+def task(event)
 ```
 
 Task called by the handler to perform the work.
@@ -40,7 +40,6 @@ This task will parse the input, removing the granuleId and file keys for a granu
 **Arguments**:
 
 - `event` _dict_ - passed through from the handler
-- `context` _Object_ - passed through from the handler
   
 
 **Returns**:
@@ -57,7 +56,7 @@ This task will parse the input, removing the granuleId and file keys for a granu
 #### get\_regex\_buckets
 
 ```python
-def get_regex_buckets(event)
+def get_regex_buckets(event) -> Dict[str, str]
 ```
 
 Gets a dict of regular expressions and the corresponding archive bucket for files
@@ -86,7 +85,7 @@ def should_exclude_files_type(file_key: str,
                               exclude_file_types: List[str]) -> bool
 ```
 
-Tests whether or not file is included in {excludedFileExtensions} from copy to glacier.
+Tests whether or not file is included in {excludedFileExtensions} from copy_to_archive.
 
 **Arguments**:
 
@@ -102,7 +101,8 @@ Tests whether or not file is included in {excludedFileExtensions} from copy to g
 #### handler
 
 ```python
-def handler(event, context)
+@LOGGER.inject_lambda_context
+def handler(event: Dict[str, Union[str, int]], context: LambdaContext)
 ```
 
 Lambda handler. Extracts the key's for a granule from an input dict.
@@ -118,18 +118,22 @@ Lambda handler. Extracts the key's for a granule from an input dict.
   other dictionary keys may be included, but are not used.
   other dictionary keys may be included, but are not used.
   
-- `Example` - {
-  "event":{
-  "granules":[
+
+**Example**:
+
   {
-  "granuleId":"granxyz",
-  "version":"006",
-  "files":[
+- `"event"` - {
+- `"granules"` - [
   {
-  "fileName":"file1",
-  "key":"key1",
-  "source":"s3://dr-test-sandbox-protected/file1",
-  "type":"metadata"
+- `"granuleId"` - "granxyz",
+- `"recoveryBucketOverride"` - "test-recovery-bucket",
+- `"version"` - "006",
+- `"files"` - [
+  {
+- `"fileName"` - "file1",
+- `"key"` - "key1",
+- `"source"` - "s3://dr-test-sandbox-protected/file1",
+- `"type"` - "metadata"
   }
   ]
   }
@@ -137,7 +141,8 @@ Lambda handler. Extracts the key's for a granule from an input dict.
   }
   }
   
-- `context` _Object_ - None
+- `context` - This object provides information about the lambda invocation, function,
+  and execution env.
   
 
 **Returns**:

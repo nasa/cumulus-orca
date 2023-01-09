@@ -27,7 +27,6 @@ class TestPostToDatabase(
 
     @patch("post_to_database.task")
     @patch("orca_shared.database.shared_db.get_configuration")
-    @patch("cumulus_logger.CumulusLogger.setMetadata")
     @patch.dict(
         os.environ,
         {"DB_CONNECT_INFO_SECRET_ARN": "test"},
@@ -35,7 +34,6 @@ class TestPostToDatabase(
     )
     def test_handler_happy_path(
         self,
-        mock_set_metadata: MagicMock,
         mock_get_configuration: MagicMock,
         mock_task: MagicMock,
     ):
@@ -43,7 +41,6 @@ class TestPostToDatabase(
         event = {"Records": records}
         context = Mock()
         post_to_database.handler(event, context)
-        mock_set_metadata.assert_called_once_with(event, context)
         mock_task.assert_called_once_with(records, mock_get_configuration.return_value)
 
     @patch("orca_shared.database.shared_db.get_user_connection")
@@ -385,6 +382,54 @@ class TestPostToDatabase(
             ]
         )
         self.assertEqual(2, mock_connection.execute.call_count)
+
+    @patch("post_to_database.datetime.datetime")
+    @patch("post_to_database.create_job_sql")
+    def test_create_status_for_job_and_files_no_files_failed(
+        self,
+        mock_create_job_sql: MagicMock,
+        mock_datetime: MagicMock,
+    ):
+        """
+        If no files present for granule, job+granule should be marked as error.
+        """
+        job_id = uuid.uuid4().__str__()
+        granule_id = uuid.uuid4().__str__()
+        request_time = uuid.uuid4().__str__()
+        archive_destination = uuid.uuid4().__str__()
+        files = [
+        ]
+
+        mock_engine = Mock()
+        mock_engine.begin.return_value = Mock()
+        mock_connection = Mock()
+        mock_engine.begin.return_value.__enter__ = Mock()
+        mock_engine.begin.return_value.__enter__.return_value = mock_connection
+        mock_engine.begin.return_value.__exit__ = Mock(return_value=False)
+
+        post_to_database.create_status_for_job_and_files(
+            job_id, granule_id, request_time, archive_destination, files, mock_engine
+        )
+
+        mock_connection.execute.assert_has_calls(
+            [
+                call(
+                    mock_create_job_sql.return_value,
+                    [
+                        {
+                            "job_id": job_id,
+                            "granule_id": granule_id,
+                            "status_id": OrcaStatus.FAILED.value,
+                            "request_time": request_time,
+                            "completion_time": mock_datetime.now(datetime.timezone.utc)
+                            .isoformat().__str__(),
+                            "archive_destination": archive_destination,
+                        }
+                    ],
+                ),
+            ]
+        )
+        self.assertEqual(1, mock_connection.execute.call_count)
 
     @patch("post_to_database.create_file_sql")
     @patch("post_to_database.create_job_sql")

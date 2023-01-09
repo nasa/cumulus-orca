@@ -1,0 +1,16 @@
+uvicorn~=0.18.3
+strawberry-graphql[debug-server]==0.133.5
+fastapi==0.85.0
+pydantic==1.10.2
+SQLAlchemy==1.4.11
+../shared_libraries[database]
+psycopg2-binary
+
+## Additional validation libraries
+## ---------------------------------------------------------------------------
+bandit==1.7.0
+flake8==4.0.1
+black==21.12b0
+isort==5.10.1
+coverage==5.3
+pytest==6.2.5

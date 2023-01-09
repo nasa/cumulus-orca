@@ -10,12 +10,12 @@
           {
             "type": "object",
             "properties": {
+              "recoveryBucketOverride": {
+                "description": "The user specified recovery S3 bucket to store recovered files",
+                "type": ["string", "null"]
+              },
               "granuleId": {
                 "description": "The ID of the granule.",
-                "type": "string"
-              },
-              "version": {
-                "description": "The version of the granule.",
                 "type": "string"
               },
               "files": {
@@ -32,24 +32,11 @@
                       "key": {
                         "description": "S3 Key for archived file (full path and file name less the bucket name).",
                         "type": "string"
-                      },
-                      "bucket": {
-                        "description": "Name of the bucket where file is archived in S3.",
-                        "type": "string"
-                      },
-                      "source": {
-                        "description": "Source URI of the file from origin system (e.g. S3, FTP, HTTP).",
-                        "type": "string"
-                      },
-                      "type": {
-                        "description": "Type of file (e.g. data, metadata, browse).",
-                        "type": "string"
                       }
                     },
                     "required": [
                       "fileName",
-                      "key",
-                      "bucket"
+                      "key"
                     ]
                   }
                 ]

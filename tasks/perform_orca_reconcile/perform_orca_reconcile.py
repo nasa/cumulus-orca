@@ -14,7 +14,8 @@ from typing import Any, Callable, Dict, Union
 
 import boto3
 import fastjsonschema
-from cumulus_logger import CumulusLogger
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext  # noqa
 from orca_shared.database import shared_db
 from orca_shared.database.shared_db import RT
 from orca_shared.reconciliation import OrcaStatus, update_job
@@ -30,7 +31,9 @@ EVENT_MESSAGE_RECEIPT_HANDLE_KEY = "messageReceiptHandle"
 
 OUTPUT_JOB_ID_KEY = "jobId"
 
-LOGGER = CumulusLogger(name="ORCA")
+# Set AWS powertools logger
+LOGGER = Logger()
+
 # Generating schema validators can take time, so do it once and reuse.
 try:
     with open("schemas/input.json", "r") as raw_schema:
@@ -55,7 +58,7 @@ def task(
     for pulling manifest's data into sql.
     Args:
         job_id: The id of the job containing s3 inventory info.
-        orca_archive_location: The name of the glacier bucket the job targets.
+        orca_archive_location: The name of the archive bucket the job targets.
         internal_report_queue_url: The url of the queue containing the message.
         message_receipt_handle: The ReceiptHandle for the event in the queue.
         db_connect_info: See shared_db.py's get_configuration for further details.
@@ -210,7 +213,7 @@ def generate_orphan_reports_sql() -> text:  # pragma: no cover
     SQL for generating reports on files in S3, but not the Orca catalog.
     """
     return text(
-        f"""
+        """
         WITH
             orphan_reports AS
             (
@@ -247,7 +250,7 @@ def generate_orphan_reports_sql() -> text:  # pragma: no cover
                 size_in_bytes,
                 storage_class
             FROM
-                orphan_reports"""  # nosec  # noqa
+                orphan_reports"""  # noqa
     )
 
 
@@ -256,7 +259,7 @@ def generate_mismatch_reports_sql() -> text:  # pragma: no cover
     SQL for retrieving mismatches between entries in S3 and the Orca catalog.
     """
     return text(
-        f"""
+        """
         INSERT INTO orca.reconcile_catalog_mismatch_report
         (
             job_id,
@@ -333,7 +336,7 @@ def generate_mismatch_reports_sql() -> text:  # pragma: no cover
                 files.etag != reconcile_s3_object.etag OR
                 files.size_in_bytes != reconcile_s3_object.size_in_bytes OR
                 storage_class.value != reconcile_s3_object.storage_class
-            )"""  # nosec   # noqa
+            )"""  # noqa
     )
 
 
@@ -374,8 +377,7 @@ def retry_error(
                     if total_retries == max_retries:
                         # Log it and re-raise if we maxed our retries + initial attempt
                         LOGGER.error(
-                            "Encountered Errors {total_attempts} times. Reached max retry limit.",
-                            total_attempts=total_retries,
+                            f"Encountered Errors {total_retries} times. Reached max retry limit.",
                         )
                         raise
                     else:
@@ -417,15 +419,17 @@ def remove_job_from_queue(internal_report_queue_url: str, message_receipt_handle
     )
 
 
+@LOGGER.inject_lambda_context
 def handler(
-    event: Dict[str, Dict[str, Dict[str, Union[str, int]]]], context
+    event: Dict[str, Dict[str, Dict[str, Union[str, int]]]], context: LambdaContext
 ) -> Dict[str, Any]:
     """
     Lambda handler. Receives a list of s3 events from an SQS queue,
     and loads the s3 inventory specified into postgres.
     Args:
         event: See input.json for details.
-        context: An object passed through by AWS. Used for tracking.
+        context: This object provides information about the lambda invocation, function,
+            and execution env.
     Environment Vars:
         INTERNAL_REPORT_QUEUE_URL (string):
             The URL of the SQS queue the job came from.
@@ -434,8 +438,6 @@ def handler(
         See shared_db.py's get_configuration for further details.
     Returns: See output.json for details.
     """
-    LOGGER.setMetadata(event, context)
-
     _INPUT_VALIDATE(event)
 
     try:

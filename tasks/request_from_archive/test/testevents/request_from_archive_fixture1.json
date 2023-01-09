@@ -1,0 +1,101 @@
+{
+  "optionalValues": {
+    "config": {
+      "defaultRecoveryTypeOverride": "event.meta.collection.meta.orca.defaultRecoveryTypeOverride",
+      "defaultBucketOverride": "event.meta.collection.meta.orca.defaultBucketOverride",
+      "s3MultipartChunksizeMb": "event.meta.collection.meta.s3MultipartChunksizeMb",
+      "asyncOperationId": "event.cumulus_meta.asyncOperationId"
+    }
+  },
+  "input": {
+    "granules": [
+      {
+        "granuleId": "integrationGranuleId",
+        "version": "integrationGranuleVersion",
+        "files": [
+          {
+            "fileName": "MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
+            "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
+            "bucket": "rhrh-orca-primary"
+          }
+        ],
+        "keys": [
+          {
+            "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
+            "destBucket": "rhrh-public"
+          }
+        ]
+      }
+    ]
+  },
+  "event": {
+    "payload": {
+      "granules": [
+        {
+          "granuleId": "integrationGranuleId",
+          "version": "integrationGranuleVersion",
+          "files": [
+            {
+              "fileName": "MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
+              "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
+              "bucket": "rhrh-orca-primary"
+            }
+          ]
+        }
+      ]
+    },
+    "meta": {
+      "buckets": {
+        "protected": {
+          "name": "rhrh-protected",
+          "type": "protected"
+        },
+        "internal": {
+          "name": "rhrh-internal",
+          "type": "internal"
+        },
+        "private": {
+          "name": "rhrh-private",
+          "type": "private"
+        },
+        "public": {
+          "name": "rhrh-public",
+          "type": "public"
+        },
+        "orca_default": {
+          "name": "rhrh-orca-primary",
+          "type": "orca"
+        }
+      },
+      "collection": {
+        "meta": {
+          "orca": {
+            "excludedFileExtensions": [
+              ".xml"
+            ]
+          }
+        },
+        "files": [
+          {
+            "regex": ".*.tar.gz",
+            "sampleFileName": "blah.tar.gz",
+            "bucket": "public"
+          },
+          {
+            "regex": ".*.jpg",
+            "sampleFileName": "blah.tar.gz",
+            "bucket": "public"
+          },
+          {
+            "regex": ".*.hdf",
+            "sampleFileName": "blah.tar.gz",
+            "bucket": "public"
+          }
+        ]
+      }
+    },
+    "cumulus_meta": {
+      "system_bucket": "rhrh-internal"
+    }
+  }
+}

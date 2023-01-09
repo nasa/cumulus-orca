@@ -4,14 +4,16 @@ from http import HTTPStatus
 from typing import Any, Dict, List, Union
 
 import fastjsonschema as fastjsonschema
-from cumulus_logger import CumulusLogger
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext
 from fastjsonschema import JsonSchemaException
 from orca_shared.database import shared_db
 from orca_shared.database.shared_db import retry_operational_error
 from sqlalchemy import text
 from sqlalchemy.future import Engine
 
-LOGGER = CumulusLogger()
+# Set AWS powertools logger
+LOGGER = Logger()
 
 PAGE_SIZE = 100
 # Generating schema validators can take time, so do it once and reuse.
@@ -211,16 +213,17 @@ def create_http_error_dict(
     }
 
 
+@LOGGER.inject_lambda_context
 def handler(
-    event: Dict[str, Union[str, int]], context: Any
+    event: Dict[str, Union[str, int]], context: LambdaContext
 ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
     # noinspection SpellCheckingInspection
     """
     Entry point for the orca_catalog_reporting Lambda.
     Args:
         event: See schemas/input.json
-        context: An object provided by AWS Lambda. Used for context tracking.
-
+        context: This object provides information about the lambda invocation, function,
+            and execution env.
     Environment Vars:
         DB_CONNECT_INFO_SECRET_ARN (string):
             Secret ARN of the AWS secretsmanager secret for connecting to the database.
@@ -233,7 +236,6 @@ def handler(
             500 if an error occurs when querying the database.
     """
     try:
-        LOGGER.setMetadata(event, context)
 
         try:
             _INPUT_VALIDATE(event)

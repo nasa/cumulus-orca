@@ -7,7 +7,7 @@
 resource "aws_lambda_function" "post_to_queue_and_trigger_step_function" {
   ## REQUIRED
   function_name = "${var.prefix}_post_to_queue_and_trigger_step_function"
-  role          = var.restore_object_role_arn  # todo: Specialized roles. ORCA-316
+  role          = var.restore_object_role_arn # todo: Specialized roles. ORCA-316
 
   ## OPTIONAL
   description      = "Receives an events from an SQS queue, translates to get_current_archive_list's input format, sends it to another queue, then triggers the internal report step function."
@@ -26,9 +26,11 @@ resource "aws_lambda_function" "post_to_queue_and_trigger_step_function" {
 
   environment {
     variables = {
-      PREFIX = var.prefix
-      STEP_FUNCTION_ARN = var.orca_sfn_internal_reconciliation_workflow_arn,
-      TARGET_QUEUE_URL  = var.orca_sqs_internal_report_queue_id,
+      PREFIX                  = var.prefix
+      STEP_FUNCTION_ARN       = var.orca_sfn_internal_reconciliation_workflow_arn,
+      TARGET_QUEUE_URL        = var.orca_sqs_internal_report_queue_id,
+      POWERTOOLS_SERVICE_NAME = "orca.internal_reconciliation"
+      LOG_LEVEL               = var.log_level
     }
   }
 }
@@ -56,7 +58,7 @@ resource "aws_lambda_permission" "post_to_queue_and_trigger_step_function_allow_
 
 ## Local Variables
 locals {
-  orca_bucket_names  = [for k, v in var.buckets : v.name if v.type == "orca"]
+  orca_bucket_names = [for k, v in var.buckets : v.name if v.type == "orca"]
 }
 
 resource "aws_s3_bucket_inventory" "inventory-report" {
@@ -66,7 +68,7 @@ resource "aws_s3_bucket_inventory" "inventory-report" {
   name   = "${each.key}-inventory"
 
   included_object_versions = "All"
-  optional_fields = ["Size", "LastModifiedDate", "StorageClass", "ETag"]
+  optional_fields          = ["Size", "LastModifiedDate", "StorageClass", "ETag"]
 
   schedule {
     frequency = var.s3_report_frequency

@@ -6,7 +6,7 @@ description: Research notes on S3 best practices and some directions to take dev
 
 ## Overview
 
-Presently, our S3 buckets are only defined through [documentation](../deployment-guide/creating-orca-glacier-bucket.md) and there are changes we wish to make to support future development.
+Presently, our S3 buckets are only defined through [documentation](../deployment-guide/creating-orca-archive-bucket.md) and there are changes we wish to make to support future development.
 This document aims to document the desired final state of our S3 buckets.
 
 ## Universal Suggestions
@@ -48,21 +48,21 @@ Since Orca S3 buckets presently reside in a different account from the producers
 Note that objects already in an un-encrypted bucket will not be automatically encrypted if encryption is added.
 A [Jira task](https://bugs.earthdata.nasa.gov/browse/ORCA-453) has been created to implement this feature.
 
-## Versioned Glacier Bucket
+## Versioned Archive Bucket
 
 Suggested name: PREFIX-orca-archive-versioned
 
-Our [current Glacier bucket instructions](../deployment-guide/creating-orca-glacier-bucket.md) are well suited to storage.
+Our [current Archive bucket instructions](../deployment-guide/creating-orca-archive-bucket.md) are well suited to storage.
 There are a few changes we should consider.
 
 Presently, ORCA does not handle versioned data, but it also does not preclude that capability in its buckets.
-Setting versioning on Glacier allows for finer-grained data backup as users could recover from a specific version of a file being overwritten.
+Setting versioning on Archive allows for finer-grained data backup as users could recover from a specific version of a file being overwritten.
 To enable development towards this goal, we should either replace the existing bucket with a versioned bucket and move existing data over, or instruct users on how to [enable versioning on their buckets](https://docs.aws.amazon.com/AmazonS3/latest/userguide/manage-versioning-examples.html).
 
 We should also remove the ACL capabilities due to AWS potential deprecation.
 This will be detailed in a [future section](#acl-rule-replacement).
 
-## WORM Glacier Bucket
+## WORM Archive Bucket
 
 Note that this work depends on completing (ORCA-351)[https://bugs.earthdata.nasa.gov/browse/ORCA-351]
 
@@ -70,9 +70,9 @@ Suggested name: PREFIX-orca-archive-worm
 
 Some data will never have additional versions. This includes raw or near-raw satellite data. This data should be stored in a Read Once Write Many (WORM) model, and be protected from accidental deletion, as it is the foundation of all derived data.
 
-Permissions for this bucket will likely be identical to the [Versioned Glacier Bucket](#versioned-glacier-bucket)
+Permissions for this bucket will likely be identical to the [Versioned Archive Bucket](#versioned-archive-bucket)
 
-The naming dichotomy between this and the [Versioned Glacier Bucket](#versioned-glacier-bucket) is slightly deceptive, as this bucket will be versioned as well.
+The naming dichotomy between this and the [Versioned Archive Bucket](#versioned-archive-bucket) is slightly deceptive, as this bucket will be versioned as well.
 However, this is only to enable [Object Lock](https://aws.amazon.com/blogs/storage/protecting-data-with-amazon-s3-object-lock/)
 
 There are two modes of Object Lock:
@@ -176,7 +176,7 @@ Replace the number `000000000000` with your DR account number.
 
 The Resource value is the bucket and bucket paths that the Cumulus application
 can access. Replace `PREFIX-orca-archive-versioned` with the name
-of the Orca archive bucket created in the [Versioned Glacier Bucket](#versioned-glacier-bucket) section.
+of the Orca archive bucket created in the [Versioned Archive Bucket](#versioned-archive-bucket) section.
 
 It may be possible to combine the two `Inventory-PREFIX-orca-archive-*` rules, but this has not yet been tested.
 
@@ -202,7 +202,7 @@ A [Jira task](https://bugs.earthdata.nasa.gov/browse/ORCA-369) has been created 
 ## ACL Rule Replacement
 
 Due to AWS suggesting that they will deprecate ACL rules, we should research a replacement for current ACL functionality.
-Presently ACL is used primarily to allow ORCA full ownership over files uploaded to S3, via the addition of `"ACL": "bucket-owner-full-control"` when uploading via `copy_to_glacier`.
+Presently ACL is used primarily to allow ORCA full ownership over files uploaded to S3, via the addition of `"ACL": "bucket-owner-full-control"` when uploading via `copy_to_archive`.
 Buckets with ACL rules disabled default to objects being owned by the bucket, so this may be a clean switch.
 Additional research and testing should be conducted.
 A [Jira task](https://bugs.earthdata.nasa.gov/browse/ORCA-450) has been created to implement this switch.

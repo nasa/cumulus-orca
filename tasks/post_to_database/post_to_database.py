@@ -10,14 +10,15 @@ from typing import Any, Dict, List, Optional
 
 # noinspection SpellCheckingInspection
 import fastjsonschema as fastjsonschema
-from cumulus_logger import CumulusLogger
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.typing import LambdaContext
 from orca_shared.database import shared_db
 from orca_shared.recovery import shared_recovery
 from orca_shared.recovery.shared_recovery import OrcaStatus, RequestMethod
 from sqlalchemy import text
 from sqlalchemy.future import Engine
 
-LOGGER = CumulusLogger()
+LOGGER = Logger()
 # Generating schema validators can take time, so do it once and reuse.
 try:
     with open("schemas/new_job_input.json", "r") as raw_schema:
@@ -148,7 +149,13 @@ def create_status_for_job_and_files(
             }
         )
 
-    if found_pending:
+    if len(file_parameters) == 0:
+        LOGGER.info(f"No files given for job '{job_id}' granule '{granule_id}'. "
+                    "Creating error status entry.")
+        # No files given. Assume that this is in error.
+        job_status = OrcaStatus.FAILED
+        job_completion_time = datetime.datetime.now(datetime.timezone.utc).isoformat().__str__()
+    elif found_pending:
         # Most jobs will be this. Some files are still pending.
         job_status = OrcaStatus.PENDING
         job_completion_time = None
@@ -173,7 +180,8 @@ def create_status_for_job_and_files(
                     }
                 ],
             )
-            connection.execute(create_file_sql(), file_parameters)
+            if len(file_parameters) > 0:
+                connection.execute(create_file_sql(), file_parameters)
     except Exception as sql_ex:
         # Can't use f"" because of '{}' bug in CumulusLogger.
         LOGGER.error(
@@ -311,7 +319,8 @@ def update_job_sql() -> text:  # pragma: no cover
     )
 
 
-def handler(event: Dict[str, List], context) -> None:
+@LOGGER.inject_lambda_context
+def handler(event: Dict[str, List], context: LambdaContext) -> None:
     """
     Lambda handler. Receives a list of queue entries from an SQS queue,
     and posts them to a database.
@@ -327,14 +336,13 @@ def handler(event: Dict[str, List], context) -> None:
                 'messageAttributes' (Dict): A dict with the following keys
                     defined in the functions that write to queue.
                     'RequestMethod' (str): Matches to a shared_recovery.RequestMethod.
-        context: An object passed through by AWS. Used for tracking.
+        context: This object provides information about the lambda invocation, function,
+            and execution env.
     Environment Vars:
         DB_CONNECT_INFO_SECRET_ARN (string):
             Secret ARN of the AWS secretsmanager secret for connecting to the database.
         See shared_db.py's get_configuration for further details.
     """
-    LOGGER.setMetadata(event, context)
-
     # get the secret ARN from the env variable
     try:
         db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
