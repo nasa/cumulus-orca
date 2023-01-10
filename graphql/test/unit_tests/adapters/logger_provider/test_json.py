@@ -2,17 +2,17 @@ import logging
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 
-from src.adapters.logger_provider.basic import (
-    BasicLoggerProvider,
-    RequestIdLoggerAdapter,
+from src.adapters.logger_provider.json import (
+    JsonLoggerProvider,
+    JsonRequestIdLoggerAdapter,
 )
 
 
-class TestBasic(unittest.TestCase):
+class TestJson(unittest.TestCase):
 
-    @patch("src.adapters.logger_provider.basic.logger")
-    @patch("src.adapters.logger_provider.basic.RequestIdLoggerAdapter")
-    def test_BasicLoggerProvider_happy_path(
+    @patch("src.adapters.logger_provider.json.logger")
+    @patch("src.adapters.logger_provider.json.RequestIdLoggerAdapter")
+    def test_JsonLoggerProvider_happy_path(
         self,
         mock_request_id_logger_adapter: MagicMock,
         mock_logger: MagicMock,
@@ -21,7 +21,7 @@ class TestBasic(unittest.TestCase):
         Should init the adapter properly.
         """
         mock_request_id = Mock()
-        result = BasicLoggerProvider().get_logger(mock_request_id)
+        result = JsonLoggerProvider().get_logger(mock_request_id)
 
         self.assertEqual(mock_request_id_logger_adapter.return_value, result)
         mock_request_id_logger_adapter.assert_called_once_with(mock_logger, {
@@ -37,7 +37,7 @@ class TestBasic(unittest.TestCase):
         mock_request_id = Mock()
 
         mock_logger = MagicMock()
-        adapter = RequestIdLoggerAdapter(mock_logger, {"request_id": mock_request_id})
+        adapter = JsonRequestIdLoggerAdapter(mock_logger, {"request_id": mock_request_id})
 
         mock_message = Mock()
         adapter.error(mock_message)

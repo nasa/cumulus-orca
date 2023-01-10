@@ -6,7 +6,7 @@ from orca_shared.database.use_cases.validation import validate_config
 
 from src.adapters.api.fastapi import create_fastapi_app
 from src.adapters.graphql.adapters import AdaptersStorage
-from src.adapters.logger_provider.basic import BasicLoggerProvider
+from src.adapters.logger_provider.json import JsonLoggerProvider
 from src.adapters.storage.postgres import StorageAdapterPostgres
 from src.adapters.webserver.uvicorn_settings import UvicornSettings
 from src.adapters.word_generation.word_generation import UUIDWordGeneration
@@ -19,7 +19,7 @@ def get_application(uvicorn_settings: UvicornSettings):
     Args:
         uvicorn_settings: Contains settings required by application components.
     """
-    initialized_logger_provider = BasicLoggerProvider()
+    initialized_logger_provider = JsonLoggerProvider()
     logger = initialized_logger_provider.get_logger("Setup")
 
     # todo: Make the loads and init a separate function in shared_db

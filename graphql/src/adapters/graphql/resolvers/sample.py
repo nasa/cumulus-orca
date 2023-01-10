@@ -15,6 +15,8 @@ def get_echo(word: str, word_generation: WordGenerationInterface, logger: loggin
     try:
         return Test(word_generation).get_echo(word, logger)
     except BoringWordException as ex:
+        logger.exception(ex)  # todo: expand to production code.
         return BoringWordExceptionGraphqlType(ex)
     except Exception as ex:
+        logger.exception(ex)
         return InternalServerErrorGraphqlType(ex)
