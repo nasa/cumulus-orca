@@ -6,19 +6,28 @@ from src.use_cases.adapter_interfaces.logger_provider import LoggerProviderInter
 
 
 class JsonFormatter(logging.Formatter):
+    """
+    Formats messages to a json format. Must be used with JsonRequestIdLoggerAdapter.
+
+    Partially taken from
+    https://stackoverflow.com/questions/50144628/python-logging-into-file-as-a-dictionary-or-json
+    """
     def formatMessage(self, record) -> dict:
         """
         Overwritten to return a dictionary of the relevant LogRecord attributes instead of a
         string.
         KeyError is raised if an unknown attribute is provided in the fmt_dict.
         """
-        message_dict = json.loads(record.message)
+        # Convert the message from JsonRequestIdLoggerAdapter to get properties.
+        try:
+            message_dict = json.loads(record.message)
+        except json.JSONDecodeError:
+            message_dict = {"message": record.message}
         return {
-            "request_id": message_dict["request_id"],
+            "request_id": message_dict.get("request_id", "ERROR"),
             "level": record.levelname,
-            "message": message_dict["message"],
+            "message": message_dict.get("message", "ERROR"),
         }
-        return {fmt_key: record.__dict__[fmt_val] for fmt_key, fmt_val in self.fmt_dict.items()}
 
     def format(self, record) -> str:
         """
@@ -45,10 +54,10 @@ class JsonFormatter(logging.Formatter):
         return json.dumps(message_dict, default=str)
 
 
-logger = logging.Logger("graphql")
-stream_handler = logging.StreamHandler()
-logger.addHandler(stream_handler)
-stream_handler.setFormatter(JsonFormatter())
+_logger = logging.Logger("graphql")
+_stream_handler = logging.StreamHandler()
+_stream_handler.setFormatter(JsonFormatter())
+_logger.addHandler(_stream_handler)
 
 
 class JsonLoggerProvider(LoggerProviderInterface):
@@ -61,7 +70,10 @@ class JsonLoggerProvider(LoggerProviderInterface):
         """
 
         # noinspection PyTypeChecker
-        wrapped_logger = JsonRequestIdLoggerAdapter(logger, {"request_id": request_id})
+        wrapped_logger = JsonRequestIdLoggerAdapter(_logger, {"request_id": request_id})
+        # Technically not a logging.Logger, but implements much of the same interface.
+        # https://docs.python.org/3/library/logging.html#loggeradapter-objects
+        # Sadly, the logging library doesn't have great inheritance.
         return wrapped_logger
 
 
