@@ -10,6 +10,24 @@ export AWS_DEFAULT_REGION=$bamboo_CUMULUS_AWS_DEFAULT_REGION
 #remove old files from bamboo as they throw error
 rm *.tf
 
+if aws s3api head-bucket --bucket ${bamboo_PREFIX}-tf-state;then
+    echo "terraform state bucket already present. Using existing state file"
+else
+    echo "Something went wrong when checking terraform state bucket. Creating ..."
+    aws s3api create-bucket --bucket ${bamboo_PREFIX}-tf-state  --region ${bamboo_AWS_DEFAULT_REGION} --create-bucket-configuration LocationConstraint=${bamboo_AWS_DEFAULT_REGION}
+    
+    aws s3api put-bucket-versioning \
+    --bucket ${bamboo_PREFIX}-tf-state \
+    --versioning-configuration Status=Enabled
+
+    aws dynamodb create-table \
+      --table-name ${bamboo_PREFIX}-tf-locks \
+      --attribute-definitions AttributeName=LockID,AttributeType=S \
+      --key-schema AttributeName=LockID,KeyType=HASH \
+      --billing-mode PAY_PER_REQUEST \
+      --region ${bamboo_AWS_DEFAULT_REGION}
+fi
+
 git clone --branch ${bamboo_BRANCH_NAME} --single-branch https://github.com/nasa/cumulus-orca.git
 echo "Cloned Orca, branch ${bamboo_BRANCH_NAME}"
 
