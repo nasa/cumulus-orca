@@ -12,6 +12,7 @@ class JsonFormatter(logging.Formatter):
     Partially taken from
     https://stackoverflow.com/questions/50144628/python-logging-into-file-as-a-dictionary-or-json
     """
+
     def formatMessage(self, record) -> dict:
         """
         Overwritten to return a dictionary of the relevant attributes instead of a string.
@@ -52,10 +53,11 @@ class JsonFormatter(logging.Formatter):
 
 
 class JsonLoggerProvider(LoggerProviderInterface):
-    _logger = logging.Logger("graphql")
-    _stream_handler = logging.StreamHandler()
-    _stream_handler.setFormatter(JsonFormatter())
-    _logger.addHandler(_stream_handler)
+    def __init__(self):
+        self._logger = logging.Logger("graphql")
+        stream_handler = logging.StreamHandler()
+        stream_handler.setFormatter(JsonFormatter())
+        self._logger.addHandler(stream_handler)
 
     def get_logger(self, request_id: str) -> logging.Logger:
         """
@@ -78,6 +80,7 @@ class JsonRequestIdLoggerAdapter(logging.LoggerAdapter):
     An adapter that adds per-request specific information for use in JsonFormatter.
     Must output a string due to logger limitations.
     """
+
     def process(self, msg: Any, kwargs: MutableMapping[str, Any]) -> \
             tuple[Any, MutableMapping[str, Any]]:
         return json.dumps({
