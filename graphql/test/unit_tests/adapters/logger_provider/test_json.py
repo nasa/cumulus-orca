@@ -5,8 +5,9 @@ import uuid
 from unittest.mock import MagicMock, Mock, patch
 
 from src.adapters.logger_provider.json import (
+    JsonFormatter,
     JsonLoggerProvider,
-    JsonRequestIdLoggerAdapter, JsonFormatter,
+    JsonRequestIdLoggerAdapter,
 )
 
 
