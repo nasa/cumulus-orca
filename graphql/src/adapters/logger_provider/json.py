@@ -14,9 +14,7 @@ class JsonFormatter(logging.Formatter):
     """
     def formatMessage(self, record) -> dict:
         """
-        Overwritten to return a dictionary of the relevant LogRecord attributes instead of a
-        string.
-        KeyError is raised if an unknown attribute is provided in the fmt_dict.
+        Overwritten to return a dictionary of the relevant attributes instead of a string.
         """
         # Convert the message from JsonRequestIdLoggerAdapter to get properties.
         try:
@@ -32,8 +30,7 @@ class JsonFormatter(logging.Formatter):
     def format(self, record) -> str:
         """
         Mostly the same as the parent's class method, the difference being that a dict is
-        manipulated and dumped as JSON
-        instead of a string.
+        manipulated and dumped as JSON instead of a string.
         """
         record.message = record.getMessage()
 
@@ -54,13 +51,12 @@ class JsonFormatter(logging.Formatter):
         return json.dumps(message_dict, default=str)
 
 
-_logger = logging.Logger("graphql")
-_stream_handler = logging.StreamHandler()
-_stream_handler.setFormatter(JsonFormatter())
-_logger.addHandler(_stream_handler)
-
-
 class JsonLoggerProvider(LoggerProviderInterface):
+    _logger = logging.Logger("graphql")
+    _stream_handler = logging.StreamHandler()
+    _stream_handler.setFormatter(JsonFormatter())
+    _logger.addHandler(_stream_handler)
+
     def get_logger(self, request_id: str) -> logging.Logger:
         """
         Args:
@@ -70,7 +66,7 @@ class JsonLoggerProvider(LoggerProviderInterface):
         """
 
         # noinspection PyTypeChecker
-        wrapped_logger = JsonRequestIdLoggerAdapter(_logger, {"request_id": request_id})
+        wrapped_logger = JsonRequestIdLoggerAdapter(self._logger, {"request_id": request_id})
         # Technically not a logging.Logger, but implements much of the same interface.
         # https://docs.python.org/3/library/logging.html#loggeradapter-objects
         # Sadly, the logging library doesn't have great inheritance.
