@@ -64,7 +64,7 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 3. Run the following bash command, 
    replacing `i-00000000000000000` with your `PREFIX-CumulusECSCluster` ec2 instance ID.
    ```shell
-   aws ssm pytest==6.2.5 --target i-00000000000000000 --document-name AWS-StartPortForwardingSession --parameters portNumber=22,localPortNumber=6868
+   aws ssm start-session --target i-00000000000000000 --document-name AWS-StartPortForwardingSession --parameters portNumber=22,localPortNumber=6868
    ```
 4. In a separate bash, run the following command,
    replacing `/blah/prefix.pem` with the path to your local `.pem` file for your installation and
