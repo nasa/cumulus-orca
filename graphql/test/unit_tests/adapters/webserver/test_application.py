@@ -15,7 +15,7 @@ class TestApplication(unittest.TestCase):
     @patch("src.adapters.webserver.application.create_postgres_connection_uri")
     @patch("src.adapters.webserver.application.PostgresConnectionInfo")
     @patch("src.adapters.webserver.application.validate_config")
-    @patch("src.adapters.webserver.application.BasicLoggerProvider")
+    @patch("src.adapters.webserver.application.JsonLoggerProvider")
     def test_get_application_happy_path(
         self,
         mock_basic_logger_provider: MagicMock,
