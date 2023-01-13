@@ -30,7 +30,7 @@ cd website
 snyk test -d --severity-threshold=high || true
 cd -
 
-function run_snyk_tests() {
+function run_snyk_tests_lambda() {
   echo
   echo "Running snyk test in $1"
   echo
@@ -44,7 +44,7 @@ function run_snyk_tests() {
   # remove test files
   rm test-requirements*.txt
 }
-export -f run_snyk_tests
+export -f run_snyk_tests_lambda
 
 function run_snyk_tests_others() {
   echo
@@ -66,14 +66,12 @@ task_dir_graphql=$(ls -d graphql)
 lambda_task_dirs=$(ls -d tasks/*)
 
 # Run snyk for shared library dir
-echo "Running snyk for shared library dir"
 parallel --jobs 0 -n 1 -X --halt now,fail=1 run_snyk_tests_others ::: $task_dir_shared_lib
 
 # Run snyk for graphql dir
-echo "Running snyk for graphql"
 parallel --jobs 0 -n 1 -X --halt now,fail=1 run_snyk_tests_others ::: $task_dir_graphql
 
 # Call each task's snyk test suite
 echo "Running snyk for lambdas"
 echo $pwd
-parallel --jobs 0 -n 1 -X --halt now,fail=1 run_snyk_tests ::: $lambda_task_dirs
+parallel --jobs 0 -n 1 -X --halt now,fail=1 run_snyk_tests_lambda ::: $lambda_task_dirs
