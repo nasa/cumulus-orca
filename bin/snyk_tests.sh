@@ -61,15 +61,11 @@ function run_snyk_tests_others() {
 }
 export -f run_snyk_tests_others
 
-task_dir_shared_lib=$(ls -d shared_libraries)
-task_dir_graphql=$(ls -d graphql)
+other_dirs="shared_libraries graphql"
 lambda_task_dirs=$(ls -d tasks/*)
 
-# Run snyk for shared library dir
-parallel --jobs 0 -n 1 -X --halt now,fail=1 run_snyk_tests_others ::: $task_dir_shared_lib
-
-# Run snyk for graphql dir
-parallel --jobs 0 -n 1 -X --halt now,fail=1 run_snyk_tests_others ::: $task_dir_graphql
+# Run snyk for other directories
+parallel --jobs 0 -n 1 -X --halt now,fail=1 run_snyk_tests_others ::: $other_dirs
 
 # Call each task's snyk test suite
 echo "Running snyk for lambdas"
