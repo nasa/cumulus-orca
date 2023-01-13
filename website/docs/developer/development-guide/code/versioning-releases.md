@@ -238,5 +238,4 @@ Note that the jobs may need to be run multiple times to get past deployment erro
 
 `Clean up ORCA buckets and modules` and `Clean up DR ORCA buckets` can be run in sequence to remove most of the resources created by the deployment stages.
 State buckets and lock tables will be left intact to aid in any cleanup issues/debugging.
-Additionally, Cumulus's RDS module will automatically create a final-snapshot `PREFIX-cumulus-rds-serverless-default-cluster-final-snapshot` that must be manually deleted.
 To verify cleanup, check the stage logs for errors, and [check the AWS environment for additional resources](https://docs.aws.amazon.com/ARG/latest/userguide/find-resources-to-tag.html) with the tag `Deployment=PREFIX`.
