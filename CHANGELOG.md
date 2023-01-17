@@ -19,6 +19,8 @@ and includes an additional section for migration notes.
   - GraphQL image, service, and Load Balancer will now be deployed by TF.
   - *ORCA-420* Added Internal Reconcile Report Mismatch functionality to GraphQL.
   - *ORCA-592* GraphQL logs are json structures, and can thus be queried in CloudWatch.
+- *ORCA-597*
+  - Server access logging is now enabled for graphql application load balancer.
 
 ## [7.0.0]
 ### Changed
