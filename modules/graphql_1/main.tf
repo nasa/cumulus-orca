@@ -75,6 +75,11 @@ resource "aws_lb" "gql_app_lb" {
   name               = "${var.prefix}-gql-a" # Max 32 characters. Some prefixes are 25 characters long.
   internal           = true
   load_balancer_type = "application"
+  access_logs {
+    bucket  = "${var.prefix}-internal"
+    prefix  = "${var.prefix}-lb-logs"
+    enabled = true
+    }
   security_groups    = [aws_security_group.gql_security_group.id]
   subnets            = var.lambda_subnet_ids
   idle_timeout       = 30 # API Gateway locks us to 30 seconds.
