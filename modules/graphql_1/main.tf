@@ -76,8 +76,8 @@ resource "aws_lb" "gql_app_lb" {
   internal           = true
   load_balancer_type = "application"
   access_logs {
-    bucket  = "${var.prefix}-internal"
-    prefix  = "${var.prefix}-lb-logs"
+    bucket  = var.system_bucket
+    prefix  = "${var.prefix}-lb-gql-a-logs"
     enabled = true
     }
   security_groups    = [aws_security_group.gql_security_group.id]
