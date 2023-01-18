@@ -79,7 +79,7 @@ resource "aws_lb" "gql_app_lb" {
     bucket  = var.system_bucket
     prefix  = "${var.prefix}-lb-gql-a-logs"
     enabled = true
-    }
+  }
   security_groups    = [aws_security_group.gql_security_group.id]
   subnets            = var.lambda_subnet_ids
   idle_timeout       = 30 # API Gateway locks us to 30 seconds.

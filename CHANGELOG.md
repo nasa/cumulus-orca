@@ -22,6 +22,9 @@ and includes an additional section for migration notes.
 - *ORCA-597*
   - Server access logging is now enabled for graphql application load balancer.
 
+### Migration Notes
+- Update the bucket policy for your `system-bucket` to allow load balancer to post server access logs to the bucket. See the instructions [here](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-s3-bucket#bucket-policy-for-load-balancer-server-access-loging).
+
 ## [7.0.0]
 ### Changed
 - *ORCA-336*

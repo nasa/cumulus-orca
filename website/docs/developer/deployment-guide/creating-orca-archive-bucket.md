@@ -278,7 +278,7 @@ of the Orca reports bucket created in the previous section.
 
 ##### Bucket policy for load balancer server access loging:
 
-You must add the following S3 bucket policy to your `<PREFIX>-internal` or some other bucket to give the load balancer access to write logs to the S3 bucket. Otherwise, the deployment will throw an `Acess Denied` error. If successful, a test log message will be posted to the bucket under the provided prefix.
+You must add the following S3 bucket policy to your `system_bucket`, which will likely be named `<PREFIX>-internal`, to give the load balancer access to write logs to the S3 bucket. Otherwise, the deployment will throw an `Acess Denied` error. If successful, a test log message will be posted to the bucket under the provided prefix.
 
 ```json
 {
@@ -298,8 +298,12 @@ You must add the following S3 bucket policy to your `<PREFIX>-internal` or some 
 ```
 Replace `<LOAD_BALANCER_ACCOUNT_ID>` with the ID of the AWS account for Elastic Load Balancing for your Region which can be found [here](https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/enable-access-logs.html).
 
-Replace `<BUCKET_NAME>` with the S3 bucket where the access logs will be stored.
+:::note
+Note that `<LOAD_BALANCER_ACCOUNT_ID>` is different from your AWS account ID.
+:::
 
-Replace `<PREFIX>` with the prefix under the bucket where access logs will be stored.
+Replace `<BUCKET_NAME>` with your `system-bucket` name.
 
-Replace `<AWS_ACCOUNT_ID>` with your Cumulus OU account number.  
+Replace `<PREFIX>` with your prefix.
+
+Replace `<AWS_ACCOUNT_ID>` with your Cumulus OU account number.
