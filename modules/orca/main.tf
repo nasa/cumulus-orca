@@ -257,6 +257,7 @@ module "orca_graphql_1" {
   lambda_subnet_ids        = var.lambda_subnet_ids
   permissions_boundary_arn = var.permissions_boundary_arn
   prefix                   = var.prefix
+  system_bucket            = var.system_bucket
   vpc_id                   = var.vpc_id
 
   ## OPTIONAL

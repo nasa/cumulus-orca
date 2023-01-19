@@ -19,6 +19,11 @@ and includes an additional section for migration notes.
   - GraphQL image, service, and Load Balancer will now be deployed by TF.
   - *ORCA-420* Added Internal Reconcile Report Mismatch functionality to GraphQL.
   - *ORCA-592* GraphQL logs are json structures, and can thus be queried in CloudWatch.
+- *ORCA-597*
+  - Server access logging is now enabled for graphql application load balancer.
+
+### Migration Notes
+- Update the bucket policy for your `system-bucket` to allow load balancer to post server access logs to the bucket. See the instructions [here](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-s3-bucket#bucket-policy-for-load-balancer-server-access-loging).
 
 ## [7.0.0]
 ### Changed
