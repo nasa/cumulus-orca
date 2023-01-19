@@ -52,8 +52,8 @@ class Queries:
         self,
     ) -> GetStorageSchemaVersionStrawberryResponse:
         return get_storage_migration_version(
-            self.adapters_storage.storage,
-            self.adapters_storage.logger_provider.get_logger(
+            Queries.adapters_storage.storage,
+            Queries.adapters_storage.logger_provider.get_logger(
                 uuid.uuid4().__str__()
             )
         )
