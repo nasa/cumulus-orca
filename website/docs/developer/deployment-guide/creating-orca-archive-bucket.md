@@ -275,3 +275,35 @@ Replace the number `000000000000` with your DR account number.
 The Resource value is the bucket and bucket paths that the Cumulus application
 can access. Replace `PREFIX-orca-reports` with the name
 of the Orca reports bucket created in the previous section.
+
+##### Bucket policy for load balancer server access loging:
+
+You must add the following S3 bucket policy to your `system_bucket`, which will likely be named `<PREFIX>-internal`, to give the load balancer access to write logs to the S3 bucket. Otherwise, the deployment will throw an `Acess Denied` error. If successful, a test log message will be posted to the bucket under the provided prefix.
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": "arn:aws:iam::<LOAD_BALANCER_ACCOUNT_ID>:root"
+            },
+            "Action": "s3:PutObject",
+            "Resource": "arn:aws:s3:::<BUCKET_NAME>/<PREFIX>/AWSLogs/<AWS_ACCOUNT_ID>/*"
+        }
+    ]
+}
+
+```
+Replace `<LOAD_BALANCER_ACCOUNT_ID>` with the ID of the AWS account for Elastic Load Balancing for your Region which can be found [here](https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/enable-access-logs.html).
+
+:::note
+Note that `<LOAD_BALANCER_ACCOUNT_ID>` is different from your AWS account ID.
+:::
+
+Replace `<BUCKET_NAME>` with your `system-bucket` name.
+
+Replace `<PREFIX>` with your prefix.
+
+Replace `<AWS_ACCOUNT_ID>` with your Cumulus OU account number.

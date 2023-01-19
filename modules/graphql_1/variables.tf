@@ -16,6 +16,11 @@ variable "prefix" {
   description = "Prefix used to prepend to all object names and tags."
 }
 
+variable "system_bucket" {
+  type        = string
+  description = "Cumulus system bucket used to store internal files."
+}
+
 variable "vpc_id" {
   type        = string
   description = "Virtual Private Cloud AWS ID"
