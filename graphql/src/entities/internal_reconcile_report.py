@@ -11,13 +11,15 @@ import strawberry
 @dataclasses.dataclass
 class Phantom(pydantic.BaseModel):
     # IMPORTANT: Whenever properties are added/removed/modified/renamed, update constructor.
-    job_id: int
+    # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
+    job_id: float
     collection_id: str
     granule_id: str
     filename: str
     key_path: str
     orca_etag: str
-    orca_last_update: int
+    # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
+    orca_last_update: float
     orca_size_in_bytes: int
     orca_storage_class: str
 
@@ -66,7 +68,8 @@ class Phantom(pydantic.BaseModel):
 @dataclasses.dataclass
 class Mismatch(pydantic.BaseModel):
     # IMPORTANT: Whenever properties are added/removed/modified/renamed, update constructor.
-    job_id: int
+    # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
+    job_id: float
     collection_id: str
     granule_id: str
     filename: str
@@ -74,10 +77,14 @@ class Mismatch(pydantic.BaseModel):
     cumulus_archive_location: str
     orca_etag: str
     s3_etag: str
-    orca_last_update: int
-    s3_last_update: int
-    orca_size_in_bytes: int
-    s3_size_in_bytes: int
+    # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
+    orca_last_update: float
+    # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
+    s3_last_update: float
+    # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
+    orca_size_in_bytes: float
+    # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
+    s3_size_in_bytes: float
     orca_storage_class: str
     s3_storage_class: str
     discrepancy_type: str
