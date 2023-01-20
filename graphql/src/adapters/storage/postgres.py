@@ -25,6 +25,68 @@ WHERE
                     )
 
     @staticmethod
+    def get_phantom_page_sql(direction: DirectionEnum) -> text:  # pragma: no cover
+        """
+        SQL for retrieving a page of phantoms for a given job,
+        ordered by collection_id, granule_id, then key_path.
+        """
+        if direction == DirectionEnum.previous:
+            sign = "<"
+            order = "DESC"
+        else:
+            sign = ">"
+            order = "ASC"
+
+        return text(  # nosec
+            f"""
+    SELECT
+        job_id,
+        collection_id,
+        granule_id,
+        filename,
+        key_path,
+        orca_etag,
+        (EXTRACT(EPOCH FROM date_trunc('milliseconds', orca_last_update)
+         AT TIME ZONE 'UTC') * 1000)::bigint as orca_last_update,
+        orca_size as orca_size_in_bytes,
+        storage_class.value AS orca_storage_class
+        FROM reconcile_phantom_report
+        INNER JOIN reconcile_job ON
+        (
+            reconcile_job.id = reconcile_phantom_report.job_id
+        )
+        INNER JOIN storage_class ON
+        (
+            orca_storage_class_id=storage_class.id
+        )
+        WHERE
+            job_id = :job_id
+            AND
+                /* One check to see if no cursor is specified */
+                (:cursor_collection_id is NULL
+                OR
+                    (collection_id {sign}= :cursor_collection_id
+                    AND
+                        (collection_id {sign} :cursor_collection_id
+                        OR
+                            (granule_id {sign}= :cursor_granule_id
+                            AND
+                                (granule_id {sign} :cursor_granule_id
+                                OR
+                                    (key_path {sign} :cursor_key_path)
+                                )
+                            )
+                        )
+                    )
+                )
+        ORDER BY
+            collection_id {order},
+            granule_id {order},
+            key_path {order}
+        LIMIT :limit"""
+        )
+
+    @staticmethod
     def get_mismatch_page_sql(direction: DirectionEnum) -> text:  # pragma: no cover
         """
         SQL for retrieving a page of mismatches for a given job,
