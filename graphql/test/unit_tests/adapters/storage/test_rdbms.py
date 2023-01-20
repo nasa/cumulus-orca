@@ -5,10 +5,98 @@ from unittest.mock import MagicMock, Mock, patch
 
 from src.adapters.storage.rdbms import StorageAdapterRDBMS
 from src.entities.common import DirectionEnum
-from src.entities.internal_reconcile_report import Mismatch
+from src.entities.internal_reconcile_report import Mismatch, Phantom
 
 
 class TestRDBMS(unittest.TestCase):
+    @patch("src.adapters.storage.rdbms.StorageAdapterRDBMS.get_phantom_page_sql")
+    @patch("src.adapters.storage.rdbms.create_engine")
+    def test_get_phantom_page_next_page(
+        self,
+        mock_create_engine: MagicMock,
+        mock_get_phantom_page_sql: MagicMock,
+    ):
+        """
+        Happy path for getting the next or previous page of results.
+        """
+        for direction in [DirectionEnum.next, DirectionEnum.previous]:
+            with self.subTest(direction=direction):
+                mock_user_connection_uri = Mock()
+
+                mock_job_id = Mock()
+                mock_cursor_collection_id = Mock()
+                mock_cursor_granule_id = Mock()
+                mock_cursor_key_path = Mock()
+                mock_limit = Mock()
+                mock_logger = Mock()
+
+                phantoms = []
+                rows = []
+                for i in range(0, 3):
+                    phantom = Phantom(
+                        job_id=random.randint(0, 10000),  # nosec
+                        collection_id=uuid.uuid4().__str__(),
+                        granule_id=uuid.uuid4().__str__(),
+                        filename=uuid.uuid4().__str__(),
+                        key_path=uuid.uuid4().__str__(),
+                        orca_etag=uuid.uuid4().__str__(),
+                        orca_last_update=random.randint(0, 10000),  # nosec
+                        orca_size_in_bytes=random.randint(0, 10000),  # nosec
+                        orca_storage_class=uuid.uuid4().__str__(),
+                    )
+                    phantoms.append(phantom)
+                    rows.append(
+                        {
+                            "job_id": phantom.job_id,
+                            "collection_id": phantom.collection_id,
+                            "granule_id": phantom.granule_id,
+                            "filename": phantom.filename,
+                            "key_path": phantom.key_path,
+                            "orca_etag": phantom.orca_etag,
+                            "orca_last_update": phantom.orca_last_update,
+                            "orca_size_in_bytes": phantom.orca_size_in_bytes,
+                            "orca_storage_class": phantom.orca_storage_class,
+                        }
+                    )
+                if direction == DirectionEnum.previous:
+                    rows.reverse()
+                mock_execute = Mock(return_value=rows)
+                mock_connection = Mock()
+                mock_connection.execute = mock_execute
+                mock_exit = Mock(return_value=False)
+                mock_enter = Mock()
+                mock_enter.__enter__ = Mock(return_value=mock_connection)
+                mock_enter.__exit__ = mock_exit
+                mock_engine = Mock()
+                mock_engine.begin = Mock(return_value=mock_enter)
+                mock_create_engine.return_value = mock_engine
+
+                adapter = StorageAdapterRDBMS(mock_user_connection_uri)
+
+                result = adapter.get_phantom_page(
+                    mock_job_id, mock_cursor_collection_id, mock_cursor_granule_id,
+                    mock_cursor_key_path,
+                    direction, mock_limit, mock_logger
+                )
+                self.assertEqual(phantoms, result)
+
+                mock_create_engine.assert_called_once_with(mock_user_connection_uri, future=True)
+                mock_enter.__enter__.assert_called_once_with()
+                mock_execute.assert_called_once_with(
+                    mock_get_phantom_page_sql.return_value,
+                    [{
+                        "job_id": mock_job_id,
+                        "cursor_collection_id": mock_cursor_collection_id,
+                        "cursor_granule_id": mock_cursor_granule_id,
+                        "cursor_key_path": mock_cursor_key_path,
+                        "limit": mock_limit,
+                    }],
+                )
+                mock_exit.assert_called_once_with(None, None, None)
+                mock_get_phantom_page_sql.assert_called_once_with(direction)
+            mock_create_engine.reset_mock()
+            mock_get_phantom_page_sql.reset_mock()
+
     @patch("src.adapters.storage.rdbms.StorageAdapterRDBMS.get_mismatch_page_sql")
     @patch("src.adapters.storage.rdbms.create_engine")
     def test_get_mismatch_page_next_page(

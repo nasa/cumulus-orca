@@ -2,7 +2,8 @@ import logging
 
 from src.adapters.graphql.dataTypes.common import InternalServerErrorGraphqlType
 from src.adapters.graphql.dataTypes.internal_reconcile_report import (
-    GetMismatchPageStrawberryResponse, GetPhantomPageStrawberryResponse,
+    GetMismatchPageStrawberryResponse,
+    GetPhantomPageStrawberryResponse,
 )
 from src.entities.common import PageParameters
 from src.use_cases.adapter_interfaces.storage import (

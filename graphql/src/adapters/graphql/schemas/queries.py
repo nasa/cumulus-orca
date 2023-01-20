@@ -8,14 +8,17 @@ from strawberry import argument, field, type
 
 from src.adapters.graphql.adapters import AdaptersStorage
 from src.adapters.graphql.dataTypes.internal_reconcile_report import (
-    GetMismatchPageStrawberryResponse, GetPhantomPageStrawberryResponse,
+    GetMismatchPageStrawberryResponse,
+    GetPhantomPageStrawberryResponse,
 )
 from src.adapters.graphql.dataTypes.sample import GetEchoStrawberryResponse
 from src.adapters.graphql.dataTypes.storage_metadata import (
     GetStorageSchemaVersionStrawberryResponse,
 )
-from src.adapters.graphql.resolvers.internal_reconcile_report import get_mismatch_page, \
-    get_phantom_page
+from src.adapters.graphql.resolvers.internal_reconcile_report import (
+    get_mismatch_page,
+    get_phantom_page,
+)
 from src.adapters.graphql.resolvers.sample import get_echo
 from src.adapters.graphql.resolvers.storage_metadata import (
     get_storage_migration_version,
