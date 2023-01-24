@@ -356,9 +356,10 @@ The following table lists the fields in the output:
 
 The API returns status code 200 on success, 400 if `jobId` or `pageIndex` are missing and 500 if an error occurs.
 
-
-
 ## Internal Reconcile report phantom API
+
+
+## Internal Reconcile report phantom API (API Gateway, [Deprecated](#internal-reconcile-report-phantom-api))
 The `orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/phantoms` API call receives job id and page index from end user and returns reporting information of files that have records in the ORCA catalog but are missing from S3 bucket. Note that `{jobid}` is optional.
 Internal reconcile report phantom API input invoke URL example: `https://example.execute-api.us-west-2.amazonaws.com/orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/phantoms`
 
