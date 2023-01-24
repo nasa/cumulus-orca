@@ -8,7 +8,7 @@ from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.future import Engine
 
 from src.entities.common import DirectionEnum
-from src.entities.internal_reconcile_report import Mismatch
+from src.entities.internal_reconcile_report import Mismatch, Phantom
 from src.use_cases.adapter_interfaces.storage import (
     StorageInternalReconcileReportInterface,
     StorageMetadataInterface,
@@ -50,6 +50,66 @@ class StorageAdapterRDBMS(
             if ex.code == "f405":  # UndefinedTable
                 return 1
             raise
+
+    @shared_db.retry_operational_error()
+    def get_phantom_page(
+        self,
+        job_id: int,
+        cursor_collection_id: str,
+        cursor_granule_id: str,
+        cursor_key_path: str,
+        direction: DirectionEnum,
+        limit: int,
+        logger: logging.Logger
+    ) -> List[Phantom]:
+        """
+        Returns a page of phantoms,
+        ordered by collection_id, granule_id, then key_path.
+
+        Args:
+            job_id: The job to return reports for.
+            cursor_collection_id: Points to start/end of the page (non-inclusive).
+            cursor_granule_id: Points to start/end of the page (non-inclusive).
+            cursor_key_path: Points to start/end of the page (non-inclusive).
+            direction: If `next`, cursor is the start of the page. Otherwise, end.
+            limit: Limits the number of rows returned.
+            logger: The logger to use.
+
+        Returns:
+            A list of phantoms.
+        """
+        with self.user_engine.begin() as connection:
+            logger.info(f"Retrieving phantoms for job '{job_id}'.")
+            results = connection.execute(
+                self.get_phantom_page_sql(direction),
+                [{
+                    "job_id": job_id,
+                    "cursor_collection_id": cursor_collection_id,
+                    "cursor_granule_id": cursor_granule_id,
+                    "cursor_key_path": cursor_key_path,
+                    "limit": limit,
+                }]
+            )
+
+            phantoms = []
+            for result in results:
+                phantoms.append(
+                    Phantom(
+                        job_id=result["job_id"],
+                        collection_id=result["collection_id"],
+                        granule_id=result["granule_id"],
+                        filename=result["filename"],
+                        key_path=result["key_path"],
+                        orca_etag=result["orca_etag"],
+                        orca_last_update=result["orca_last_update"],
+                        orca_size_in_bytes=result["orca_size_in_bytes"],
+                        orca_storage_class=result["orca_storage_class"],
+                    )
+                )
+            if direction == DirectionEnum.previous:
+                # due to how previous pages are retrieved, order must be reversed to be consistent.
+                phantoms.reverse()
+            return phantoms
 
     @shared_db.retry_operational_error()
     def get_mismatch_page(
@@ -121,6 +181,12 @@ class StorageAdapterRDBMS(
     @staticmethod
     @abstractmethod
     def get_schema_version_sql() -> text:
+        # abstract to allow other sql formats
+        raise NotImplementedError()
+
+    @staticmethod
+    @abstractmethod
+    def get_phantom_page_sql(direction: DirectionEnum) -> text:
         # abstract to allow other sql formats
         raise NotImplementedError()
 
