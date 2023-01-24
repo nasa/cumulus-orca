@@ -38,8 +38,8 @@ data "aws_iam_policy_document" "gql_task_execution_policy_document" {
       "logs:PutLogEvents"
     ]
     resources = [
-      "arn:aws:logs:${local.region}:${local.account_id}:log-group:/aws/lambda/${var.prefix}-graphql-invoke:*",
-      "arn:aws:logs:*:${local.account_id}:log-group:*:log-stream:*"
+      "arn:aws:logs:${local.region}:${local.account_id}:log-group:${var.prefix}_orca_graph_ql:*",
+      "arn:aws:logs:${local.region}:${local.account_id}:log-group:${var.prefix}_orca_graph_ql:log-stream:ecs/orca-gql*"
     ]
   }
   statement {
