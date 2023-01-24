@@ -15,8 +15,9 @@ If an [Aurora Serverless](https://aws.amazon.com/rds/aurora/serverless/) databas
 and it has not been accessed in some time,
 then it may take 30-40 seconds for the database to become available.
 As AWS [limits](https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html#http-api-quotas)
-API invocations to 30 seconds, with no option of increase, this can cause API invocations to result in HTTP error code 504.
-Integrators should include appropriate handling/retry code.
+API Gateway invocations to 30 seconds, with no option of increase, this can cause API invocations to result in HTTP error code 504.
+Where available, make use of the GraphQL Load Balancer endpoints.
+Otherwise, include appropriate handling/retry code.
 :::
 
 ## Catalog reporting API
@@ -39,14 +40,14 @@ An example of the API input body is shown below:
 ```
 The following table lists the fields in the input:
 
-| Name            | Data Type   | Description                                                                                                   | Required |
-| ----------------| ------------|---------------------------------------------------------------------------------------------------------------|----------|
-| pageIndex       | `int`       | The 0-based index of the results page to return.                                                              | Yes |
-| endTimestamp   | `int`       | Cumulus granule createdAt end-time for date range to compare data, in milliseconds since 1 January 1970 UTC.  | Yes |
-| providerId      | `Array[str]` | The unique ID of the provider making the request.                                                             | No  |
-| collectionId    | `Array[str]` | The unique ID of collection to compare.                                                                       | No  |
-| granuleId       | `Array[str]` | The unique ID of granule to compare.                                                                          | No  |
-| startTimestamp  | `int`       | Cumulus granule createdAt start time for date range to compare data, in milliseconds since 1 January 1970 UTC.| No  |
+| Name           | Data Type    | Description                                                                                                    | Required |
+| ---------------| -------------|----------------------------------------------------------------------------------------------------------------|----------|
+| pageIndex      | `int`        | The 0-based index of the results page to return.                                                               | Yes |
+| endTimestamp   | `int`        | Cumulus granule createdAt end-time for date range to compare data, in milliseconds since 1 January 1970 UTC.   | Yes |
+| providerId     | `Array[str]` | The unique ID of the provider making the request.                                                              | No  |
+| collectionId   | `Array[str]` | The unique ID of collection to compare.                                                                        | No  |
+| granuleId      | `Array[str]` | The unique ID of granule to compare.                                                                           | No  |
+| startTimestamp | `int`        | Cumulus granule createdAt start time for date range to compare data, in milliseconds since 1 January 1970 UTC. | No  |
 
 ### Catalog reporting API output
 An example of the API output is shown below:
