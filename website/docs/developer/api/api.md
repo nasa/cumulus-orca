@@ -408,18 +408,33 @@ The following table lists the fields in the input:
 An example of the API output is shown below:
 ```json
 {
-  "statusCode": 200,
-  "body": "{\"data\": {\"getPhantomPage\": {\"startCursor\": \"eyJqb2JfaWQiOiAyNDQzLjAsICJjb2xsZWN0aW9uX2lkIjogImludGVncmF0aW9uQ29sbGVjdGlvbk5hbWVfX19pbnRlZ3JhdGlvbkNvbGxlY3Rpb25WZXJzaW9uIiwgImdyYW51bGVfaWQiOiAiaW50ZWdyYXRpb25DdW11bHVzR3JhbnVsZUlkIiwgImtleV9wYXRoIjogIk1PRDA5R1EvMDA2L01PRDA5R1EuQTIwMTcwMjUuaDIxdjAwLjAwNi4yMDE3MDM0MDY1MTA1X25kdmkuanBnIn0=\", \"endCursor\": \"eyJqb2JfaWQiOiAyNDQzLjAsICJjb2xsZWN0aW9uX2lkIjogImludGVncmF0aW9uQ29sbGVjdGlvbk5hbWVfX19pbnRlZ3JhdGlvbkNvbGxlY3Rpb25WZXJzaW9uIiwgImdyYW51bGVfaWQiOiAiaW50ZWdyYXRpb25DdW11bHVzR3JhbnVsZUlkIiwgImtleV9wYXRoIjogIk1PRDA5R1EvMDA2L01PRDA5R1EuQTIwMTcwMjUuaDIxdjAwLjAwNi4yMDE3MDM0MDY1MTA1X25kdmkuanBnIn0=\", \"items\": [{\"collectionId\": \"integrationCollectionName___integrationCollectionVersion\", \"filename\": \"MOD09GQ.A2017025.h21v00.006.2017034065105_ndvi.jpg\", \"jobId\": 2443.0, \"granuleId\": \"integrationCumulusGranuleId\", \"keyPath\": \"MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065105_ndvi.jpg\", \"orcaEtag\": \"\\\"81f4b6c158d25f1fe916ea52e99d1700\\\"\", \"orcaGranuleLastUpdate\": 1672417036578.0, \"orcaSizeInBytes\": 6, \"orcaStorageClass\": \"GLACIER\"}]}}}"
+  "data": {
+    "getPhantomPage": {
+      "startCursor": "eyJqb2JfaWQiOiAyNDQzLjAsICJjb2xsZWN0aW9uX2lkIjogImludGVncmF0aW9uQ29sbGVjdGlvbk5hbWVfX19pbnRlZ3JhdGlvbkNvbGxlY3Rpb25WZXJzaW9uIiwgImdyYW51bGVfaWQiOiAiaW50ZWdyYXRpb25DdW11bHVzR3JhbnVsZUlkIiwgImtleV9wYXRoIjogIk1PRDA5R1EvMDA2L01PRDA5R1EuQTIwMTcwMjUuaDIxdjAwLjAwNi4yMDE3MDM0MDY1MTA1X25kdmkuanBnIn0=",
+      "endCursor": "eyJqb2JfaWQiOiAyNDQzLjAsICJjb2xsZWN0aW9uX2lkIjogImludGVncmF0aW9uQ29sbGVjdGlvbk5hbWVfX19pbnRlZ3JhdGlvbkNvbGxlY3Rpb25WZXJzaW9uIiwgImdyYW51bGVfaWQiOiAiaW50ZWdyYXRpb25DdW11bHVzR3JhbnVsZUlkIiwgImtleV9wYXRoIjogIk1PRDA5R1EvMDA2L01PRDA5R1EuQTIwMTcwMjUuaDIxdjAwLjAwNi4yMDE3MDM0MDY1MTA1X25kdmkuanBnIn0=",
+      "items": [
+        {
+          "collectionId": "CollectionName",
+          "filename": "MOD09GQ.A2017025.h21v00.006.2017034065105_ndvi.jpg",
+          "jobId": 2443,
+          "granuleId": "CumulusGranuleId",
+          "keyPath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065105_ndvi.jpg",
+          "orcaEtag": "\"81f4b6c158d25f1fe916ea52e99d1700\"",
+          "orcaSizeInBytes": 6,
+          "orcaStorageClass": "GLACIER",
+          "orcaGranuleLastUpdate": 1672417036578
+        }
+      ]
+    }
+  }
 }
 ```
 The following table lists the fields in the output:
 
 | Name                  | Data Type       | Description                                                                                                       |
 |-----------------------|-----------------|-------------------------------------------------------------------------------------------------------------------|
-| statusCode            | `int`           | todo |
-| body                  | `str`           | todo |
-| startCursor           | `str`           | todo |
-| endCursor             | `str`           | todo |
+| startCursor           | `str`           | Cursor value for [paging](#pageparameters).                                                                       |
+| endCursor             | `str`           | Cursor value for [paging](#pageparameters).                                                                       |
 | items                 | `Array[Object]` | An array representing each phantom if available.                                                                  |
 | jobId                 | `int8`          | The unique ID of the reconciliation job.                                                                          |
 | collectionId          | `str`           | Cumulus Collection ID value from the ORCA catalog.                                                                |
@@ -431,7 +446,8 @@ The following table lists the fields in the output:
 | orcaSizeInBytes       | `int8`          | Size in bytes of the object as reported in the ORCA catalog.                                                      |
 | orcaStorageClass      | `str`           | AWS storage class the object is in the Orca catalog.                                                              |
 
-The API returns status code 200 on success, 400 if `jobId` or `pageIndex` are missing and 500 if an error occurs. TODO: Redefine errors.
+If an error occurs, error fields will be returned instead.
+Possible errors: [`InternalServerErrorGraphqlType`](#internalservererrorgraphqltype)
 
 ## Internal Reconcile report phantom API (API Gateway, [Deprecated](#internal-reconcile-report-phantom-api))
 The `orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/phantoms` API call receives job id and page index from end user and returns reporting information of files that have records in the ORCA catalog but are missing from S3 bucket.
@@ -567,8 +583,27 @@ The API returns status code 200 on success, 400 if `jobId` or `pageIndex` are mi
 
 ## Generic Types
 ### PageParameters
+When retrieving a page, `direction` will start you at either the start, or end of your dataset. Use `next` for the start, and `previous` for the end.
+
 | Name             | Data Type | Description                                                                                                                    | Required |
 |------------------|-----------|--------------------------------------------------------------------------------------------------------------------------------|----------|
 | limit            | `int`     | The 0-based index of the results page to return. Defaults to 100.                                                              | No       |
 | direction        | `str`     | 'next' or 'previous', depending on which direction to take. Defaults to 'next'.                                                | No       |
 | cursor           | `str`     | The cursor denoting the start of the page to retrieve (non-inclusive). Defaults to 'null', which will retrieve the first page. | No       |
+
+`startCursor` and `endCursor` values will be provided in the page output, excepting cases where the page contains no items.
+To retrieve a page that you have not yet retrieved, modify your query with the `endCursor` value from the last page you retrieved.
+
+### GraphQL Errors
+All errors returned from GraphQL will implement this interface. As such, you can count on the following properties:
+| Name                  | Data Type | Description                                                                                                       |
+|------------|-----------|--------------------------------------------------------------|
+| message    | `str`     | A string describing what happened to cause the error.        |
+| __typename | `str`     | The type of error returned. This will match a section below. |
+
+#### InternalServerErrorGraphqlType
+In addition to the [default fields](#graphql-errors), the following fields will be returned:
+| Name             | Data Type | Description                                                                                           |
+|------------------|-----------|-------------------------------------------------------------------------------------------------------|
+| exceptionMessage | `str`     | As this is a catch-all for unexpected errors, this will contain technical messages of unknown format. |
+| stackTrace       | `str`     | Technical information for use in debugging. Contact the ORCA team with any questions.                 |

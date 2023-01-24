@@ -101,7 +101,7 @@ class StorageAdapterRDBMS(
                         filename=result["filename"],
                         key_path=result["key_path"],
                         orca_etag=result["orca_etag"],
-                        orca_last_update=result["orca_last_update"],
+                        orca_granule_last_update=result["orca_last_update"],
                         orca_size_in_bytes=result["orca_size_in_bytes"],
                         orca_storage_class=result["orca_storage_class"],
                     )
