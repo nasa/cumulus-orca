@@ -304,7 +304,7 @@ The API returns status code 200 on success, 400 if `jobId` or `pageIndex` are mi
 
 
 ## Internal Reconcile report orphan API
-The `orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/orphans` API call receives job id and page index from end user and returns reporting information of files that have records in the S3 archive bucket but are missing in the ORCA catalog from the internal reconciliation job. Note that `{jobid}` is optional.
+The `orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/orphans` API call receives job id and page index from end user and returns reporting information of files that have records in the S3 archive bucket but are missing in the ORCA catalog from the internal reconciliation job.
 Internal reconcile report orphan API input invoke URL example: `https://example.execute-api.us-west-2.amazonaws.com/orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/orphans`
 
 ### Internal Reconcile report orphan API input
@@ -357,10 +357,84 @@ The following table lists the fields in the output:
 The API returns status code 200 on success, 400 if `jobId` or `pageIndex` are missing and 500 if an error occurs.
 
 ## Internal Reconcile report phantom API
+The `getPhantomPage` query receives job id and page parameters and returns reporting information of files that have records in the ORCA catalog but are missing from S3 bucket.
 
+### Internal Reconcile report phantom query example
+```
+query MyQuery {
+  getPhantomPage(jobId: 2443, pageParameters: {
+    limit: 2,
+    direction: next,
+    cursor: null
+  }) {
+    ... on PhantomPage {
+      startCursor
+      endCursor
+      items {
+        collectionId
+        filename
+        jobId
+        granuleId
+        keyPath
+        orcaEtag
+        orcaGranuleLastUpdate
+        orcaSizeInBytes
+        orcaStorageClass
+      }
+    }
+    ... on ErrorGraphqlTypeInterface {
+      __typename
+      message
+    }
+    ... on InternalServerErrorGraphqlType {
+      __typename
+      exceptionMessage
+      message
+      stackTrace
+    }
+  }
+}
+```
+
+The following table lists the fields in the input:
+
+| Name             | Data Type | Description                                     | Required |
+|------------------|-----------|-------------------------------------------------|----------|
+| jobId            | `int8`    | The unique job ID of the reconciliation job.    | Yes      |
+| pageParameters   | `dict`    | [Contains paging information.](#pageparameters) | No       |
+
+
+### Internal Reconcile report phantom API output
+An example of the API output is shown below:
+```json
+{
+  "statusCode": 200,
+  "body": "{\"data\": {\"getPhantomPage\": {\"startCursor\": \"eyJqb2JfaWQiOiAyNDQzLjAsICJjb2xsZWN0aW9uX2lkIjogImludGVncmF0aW9uQ29sbGVjdGlvbk5hbWVfX19pbnRlZ3JhdGlvbkNvbGxlY3Rpb25WZXJzaW9uIiwgImdyYW51bGVfaWQiOiAiaW50ZWdyYXRpb25DdW11bHVzR3JhbnVsZUlkIiwgImtleV9wYXRoIjogIk1PRDA5R1EvMDA2L01PRDA5R1EuQTIwMTcwMjUuaDIxdjAwLjAwNi4yMDE3MDM0MDY1MTA1X25kdmkuanBnIn0=\", \"endCursor\": \"eyJqb2JfaWQiOiAyNDQzLjAsICJjb2xsZWN0aW9uX2lkIjogImludGVncmF0aW9uQ29sbGVjdGlvbk5hbWVfX19pbnRlZ3JhdGlvbkNvbGxlY3Rpb25WZXJzaW9uIiwgImdyYW51bGVfaWQiOiAiaW50ZWdyYXRpb25DdW11bHVzR3JhbnVsZUlkIiwgImtleV9wYXRoIjogIk1PRDA5R1EvMDA2L01PRDA5R1EuQTIwMTcwMjUuaDIxdjAwLjAwNi4yMDE3MDM0MDY1MTA1X25kdmkuanBnIn0=\", \"items\": [{\"collectionId\": \"integrationCollectionName___integrationCollectionVersion\", \"filename\": \"MOD09GQ.A2017025.h21v00.006.2017034065105_ndvi.jpg\", \"jobId\": 2443.0, \"granuleId\": \"integrationCumulusGranuleId\", \"keyPath\": \"MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065105_ndvi.jpg\", \"orcaEtag\": \"\\\"81f4b6c158d25f1fe916ea52e99d1700\\\"\", \"orcaGranuleLastUpdate\": 1672417036578.0, \"orcaSizeInBytes\": 6, \"orcaStorageClass\": \"GLACIER\"}]}}}"
+}
+```
+The following table lists the fields in the output:
+
+| Name                  | Data Type       | Description                                                                                                       |
+|-----------------------|-----------------|-------------------------------------------------------------------------------------------------------------------|
+| statusCode            | `int`           | todo |
+| body                  | `str`           | todo |
+| startCursor           | `str`           | todo |
+| endCursor             | `str`           | todo |
+| items                 | `Array[Object]` | An array representing each phantom if available.                                                                  |
+| jobId                 | `int8`          | The unique ID of the reconciliation job.                                                                          |
+| collectionId          | `str`           | Cumulus Collection ID value from the ORCA catalog.                                                                |
+| granuleId             | `str`           | Cumulus granuleID value from the ORCA catalog.                                                                    |
+| filename              | `str`           | Filename of the object from the ORCA catalog.                                                                     |
+| keyPath               | `str`           | key path and filename of the object in the ORCA catalog.                                                          |  
+| orcaEtag              | `str`           | etag of the object as reported in the ORCA catalog.                                                               |
+| orcaGranuleLastUpdate | `int8`          | The time, in milliseconds since 1 January 1970 UTC, of last update of the object as reported in the ORCA catalog. |
+| orcaSizeInBytes       | `int8`          | Size in bytes of the object as reported in the ORCA catalog.                                                      |
+| orcaStorageClass      | `str`           | AWS storage class the object is in the Orca catalog.                                                              |
+
+The API returns status code 200 on success, 400 if `jobId` or `pageIndex` are missing and 500 if an error occurs. TODO: Redefine errors.
 
 ## Internal Reconcile report phantom API (API Gateway, [Deprecated](#internal-reconcile-report-phantom-api))
-The `orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/phantoms` API call receives job id and page index from end user and returns reporting information of files that have records in the ORCA catalog but are missing from S3 bucket. Note that `{jobid}` is optional.
+The `orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/phantoms` API call receives job id and page index from end user and returns reporting information of files that have records in the ORCA catalog but are missing from S3 bucket.
 Internal reconcile report phantom API input invoke URL example: `https://example.execute-api.us-west-2.amazonaws.com/orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/phantoms`
 
 ### Internal Reconcile report phantom API input
@@ -406,7 +480,7 @@ The following table lists the fields in the output:
 |-----------------------|-----------------|-------------------------------------------------------------------------------------------------------------------|
 | jobId                 | `str`           |The unique ID of the reconciliation job.                                                                           |
 | anotherPage           | `Boolean`       | Indicates if more results can be retrieved on another page.                                                       |       
-| phantoms              | `Array[Object]` | An array representing each phantoms if available.                                                                 |
+| phantoms              | `Array[Object]` | An array representing each phantom if available.                                                                  |
 | collectionId          | `str`           | Cumulus Collection ID value from the ORCA catalog.                                                                |
 | granuleId             | `str`           | Cumulus granuleID value from the ORCA catalog.                                                                    |
 | filename              | `str`           | Filename of the object from the ORCA catalog.                                                                     |
@@ -419,7 +493,7 @@ The following table lists the fields in the output:
 The API returns status code 200 on success, 400 if `jobId` or `pageIndex` are missing and 500 if an error occurs.
 
 ## Internal Reconcile report mismatch API
-The `orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/mismatches` API call receives job id and page index from end user and returns reporting information of files that are missing from ORCA S3 bucket or have different metadata values than what is expected. Note that `{jobid}` is optional.
+The `orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/mismatches` API call receives job id and page index from end user and returns reporting information of files that are missing from ORCA S3 bucket or have different metadata values than what is expected.
 Internal reconcile report mismatch API input invoke URL example: `https://example.execute-api.us-west-2.amazonaws.com/orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/mismatches`
 
 ### Internal Reconcile report mismatch API input
@@ -490,3 +564,11 @@ The following table lists the fields in the output:
 | comment                | `str`           | Any additional context for the mismatch.                                                                          |
 
 The API returns status code 200 on success, 400 if `jobId` or `pageIndex` are missing and 500 if an error occurs.
+
+## Generic Types
+### PageParameters
+| Name             | Data Type | Description                                                                                                                    | Required |
+|------------------|-----------|--------------------------------------------------------------------------------------------------------------------------------|----------|
+| limit            | `int`     | The 0-based index of the results page to return. Defaults to 100.                                                              | No       |
+| direction        | `str`     | 'next' or 'previous', depending on which direction to take. Defaults to 'next'.                                                | No       |
+| cursor           | `str`     | The cursor denoting the start of the page to retrieve (non-inclusive). Defaults to 'null', which will retrieve the first page. | No       |
