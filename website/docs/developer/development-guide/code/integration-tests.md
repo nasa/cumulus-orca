@@ -105,7 +105,7 @@ Further research should be done to identify how to perform these tests.
 ### Error Paths
 
 These tests verify that when an error is expected, a proper error is returned/raised.
-For example, several entries in our [API](../../../developer/api/api-gateway.md) should properly return a 404 error code if the entry does not exist in the database.
+For example, several entries in our [API](../../../developer/api/api.md) should properly return a 404 error code if the entry does not exist in the database.
 The test should fail if the API returns the error in a dictionary instead of an HTTP status code, or the API returns any other error code.
 
 ## What Not to Test
@@ -135,7 +135,7 @@ This is a list of tests that should be created for existing Orca architecture. T
      Prior to release or periodically, an S3 Inventory report should be generated through AWS mechanisms to validate the schema and style of the test report being used.
      :::
   1. Post a mocked-up manifest to the report bucket.
-  1. Retry calls to the [Internal Reconcile Report API](../../../developer/api/api-gateway.md/#internal-reconcile-report-jobs-api) until job is complete.
+  1. Retry calls to the [Internal Reconcile Report API](../../../developer/api/api.md/#internal-reconcile-report-jobs-api) until job is complete.
   1. Check that job is successful, and expected errors can be retrieved through the API.
      :::warning
      If the catalog is not reset prior to this test, or other tests run in parallel, other errors may be present.
@@ -168,7 +168,7 @@ This is a list of tests that should be created for existing Orca architecture. T
      Future work will allow us to target multiple buckets with ingest.
      :::
   1. Check the StepFunction status until status is completed.
-  1. Call the [Catalog API](../../../developer/api/api-gateway.md/#catalog-reporting-api) to make sure entries are found.
+  1. Call the [Catalog API](../../../developer/api/api.md/#catalog-reporting-api) to make sure entries are found.
   1. Verify that the files are present in the proper Orca bucket.
 - [Security](#security-paths):
   1. Follow the Happy test up to calling the workflow.
@@ -192,7 +192,7 @@ This is a list of tests that should be created for existing Orca architecture. T
      May require additional tests.
      Ignored files will not be listed in output.
      :::
-  1. Retry calls to the [Recovery Granules API](../../../developer/api/api-gateway.md/#recovery-granules-api) until entries are found, and status is `complete`.
+  1. Retry calls to the [Recovery Granules API](../../../developer/api/api.md/#recovery-granules-api) until entries are found, and status is `complete`.
      :::warning
      Recovery may take up to 4 hours.
      :::
