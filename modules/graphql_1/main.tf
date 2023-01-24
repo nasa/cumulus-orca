@@ -1,5 +1,11 @@
+data "aws_caller_identity" "current_account" {}
+
+data "aws_region" "current_region" {}
+
 # Local Variables
 locals {
+  account_id   = data.aws_caller_identity.current_account.account_id
+  region       = data.aws_region.current_region.name
   # Used for Load Balancer, EC2 Service, and Container ports. Specifies how GQL will be hosted.
   graphql_port = 5000
 }
@@ -31,7 +37,10 @@ data "aws_iam_policy_document" "gql_task_execution_policy_document" {
       "logs:DescribeLogStreams",
       "logs:PutLogEvents"
     ]
-    resources = ["*"]
+    resources = [
+      "arn:aws:logs:${local.region}:${local.account_id}:log-group:${var.prefix}_orca_graph_ql:*",
+      "arn:aws:logs:${local.region}:${local.account_id}:log-group:${var.prefix}_orca_graph_ql:log-stream:ecs/orca-gql*"
+    ]
   }
   statement {
     actions = [
