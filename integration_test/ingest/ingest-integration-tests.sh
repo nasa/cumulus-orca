@@ -1,6 +1,9 @@
 #!/bin/bash
-# Sets up TF files in a consistent manner.
-# todo: Is all this needed? Theoretically, should be able to delete everything referenced in the state.
 set -ex
+
+export AWS_ACCESS_KEY_ID=$bamboo_CUMULUS_AWS_ACCESS_KEY_ID
+export AWS_SECRET_ACCESS_KEY=$bamboo_CUMULUS_AWS_SECRET_ACCESS_KEY
+export AWS_DEFAULT_REGION=$bamboo_CUMULUS_AWS_DEFAULT_REGION
+
 
 aws s3 ls

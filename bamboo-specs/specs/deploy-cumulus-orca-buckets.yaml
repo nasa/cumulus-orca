@@ -8,7 +8,7 @@ plan:
   name: ORCA Deploy Plan Test
 stages:
 - Ingest Integration test:
-    manual: false
+    manual: true
     final: false
     jobs:
     - Ingest Integration tests
