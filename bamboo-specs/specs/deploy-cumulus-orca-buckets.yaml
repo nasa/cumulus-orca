@@ -178,18 +178,3 @@ branches:
     after-deleted-days: 7
     after-inactive-days: 30
   link-to-jira: true
----
-version: 2
-plan:
-  key: ORCA-ODPT
-plan-permissions:
-- groups:
-  - bamboo-orca-devs
-  permissions:
-  - view
-  - edit
-  - build
-  - clone
-  - admin
-  - viewConfiguration
-...

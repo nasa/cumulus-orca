@@ -91,18 +91,3 @@ dependencies:
   block-strategy: none
 other:
   concurrent-build-plugin: system-default
----
-version: 2
-plan:
-  key: ORCA-RODT
-plan-permissions:
-- groups:
-  - bamboo-orca-devs
-  permissions:
-  - view
-  - edit
-  - build
-  - clone
-  - admin
-  - viewConfiguration
-...
