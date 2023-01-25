@@ -578,6 +578,7 @@ accessed using terraform dot syntax in the format of `module.orca.variable_name`
 | Output Variable                                         | Description                                             |
 | --------------------------------------------------------|---------------------------------------------------------|
 | `orca_api_deployment_invoke_url`                        | The URL to invoke the ORCA Cumulus reconciliation API gateway. Excludes the resource path |
+| `orca_graphql_load_balancer_dns_name`                   | The DNS Name of the Application Load Balancer that handles access to ORCA GraphQL. |
 | `orca_lambda_copy_to_archive_arn`                       | AWS ARN of the ORCA copy_to_archive lambda. |
 | `orca_lambda_extract_filepaths_for_granule_arn`         | AWS ARN of the ORCA extract_filepaths_for_granule lambda. |
 | `orca_lambda_orca_catalog_reporting_arn`                | AWS ARN of the ORCA orca_catalog_reporting lambda. |

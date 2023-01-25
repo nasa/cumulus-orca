@@ -1,8 +1,3 @@
-locals {
-  # Used for Load Balancer, EC2 Service, and Container ports. Specifies how GQL will be hosted.
-  deploy_graphql = false
-}
-
 ## Referenced Modules
 
 ## orca_lambdas - lambdas module that calls iam and security_groups module
@@ -232,7 +227,6 @@ module "orca_sqs" {
 ## orca_ecs - ecs module that sets up ecs cluster
 ## =============================
 module "orca_ecs" {
-  count  = local.deploy_graphql ? 1 : 0
   source = "../ecs"
   ## --------------------------
   ## Cumulus Variables
@@ -247,7 +241,6 @@ module "orca_ecs" {
 ## orca_graphql_1 - graphql module that sets up centralized db code
 ## =============================
 module "orca_graphql_1" {
-  count      = local.deploy_graphql ? 1 : 0
   source     = "../graphql_1"
   depends_on = [module.orca_lambdas, module.orca_ecs, module.orca_graphql_0, module.orca_secretsmanager] ## secretsmanager sets up db connection secrets.
   ## --------------------------
@@ -268,7 +261,7 @@ module "orca_graphql_1" {
   ## --------------------------
   ## REQUIRED
   db_connect_info_secret_arn      = module.orca_secretsmanager.secretsmanager_arn
-  ecs_cluster_id                  = local.deploy_graphql ? module.orca_ecs[0].ecs_cluster_id : null
+  ecs_cluster_id                  = module.orca_ecs.ecs_cluster_id
   gql_ecs_task_execution_role_arn = module.orca_graphql_0.gql_ecs_task_execution_role_arn
   gql_ecs_task_execution_role_id  = module.orca_graphql_0.gql_ecs_task_execution_role_id
   gql_tasks_role_arn              = module.orca_graphql_0.gql_tasks_role_arn
