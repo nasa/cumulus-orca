@@ -91,7 +91,7 @@ output "orca_secretsmanager_arn" {
   value       = module.orca.orca_secretsmanager_arn
 }
 
-## API gateway Module Outputs (orca_api_gateway)
+## API gateway Module outputs
 ## =============================================================================
 output "orca_api_deployment_invoke_url" {
   value       = module.orca.orca_api_deployment_invoke_url
