@@ -303,7 +303,7 @@ The following table lists the fields in the output:
 | reportTotals          | `Object`        | The number of error reports of each type.                                                                     |
 | orphan                | `int`           | Number of files that have records in the S3 archive bucket but are missing in the ORCA catalog.               |
 | phantom               | `int`           | Number of files that have records in the ORCA catalog but are missing from S3 bucket.                         |
-| catalogMismatch       | `int`           | Number of files that are missing from ORCA S3 bucket or have different metadata values than what is expected. |
+| catalogMismatch       | `int`           | Number of files exist in the ORCA S3 bucket but have different metadata values in the ORCA catalog.           |
 
 The API returns status code 200 on success, 400 if `jobId` or `pageIndex` are missing and 500 if an error occurs.
 
@@ -378,10 +378,10 @@ query MyQuery {
       startCursor
       endCursor
       items {
-        collectionId
-        filename
         jobId
+        collectionId
         granuleId
+        filename
         keyPath
         orcaEtag
         orcaGranuleLastUpdate
@@ -516,7 +516,120 @@ The following table lists the fields in the output:
 The API returns status code 200 on success, 400 if `jobId` or `pageIndex` are missing and 500 if an error occurs.
 
 ## Internal Reconcile report mismatch API
-The `orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/mismatches` API call receives job id and page index from end user and returns reporting information of files that are missing from ORCA S3 bucket or have different metadata values than what is expected.
+The `getMismatchPage` query receives job id and page parameters and returns reporting information of files that exist in the ORCA S3 bucket but have different metadata values in the ORCA catalog.
+
+### Internal Reconcile report mismatch query example
+```
+query MyQuery {
+  getMismatchPage(jobId: 2443, pageParameters: {
+    limit: 2,
+    direction: next,
+    cursor: null
+  }) {
+    ... on MismatchPage {
+      startCursor
+      endCursor
+      items {
+        jobId
+        collectionId
+        granuleId
+        filename
+        keyPath
+        cumulusArchiveLocation
+        orcaEtag
+        s3Etag
+        orcaGranuleLastUpdate
+        s3FileLastUpdate
+        orcaSizeInBytes
+        s3SizeInBytes
+        orcaStorageClass
+        s3StorageClass
+        discrepancyType
+        comment
+      }
+    }
+    ... on ErrorGraphqlTypeInterface {
+      __typename
+      message
+    }
+    ... on InternalServerErrorGraphqlType {
+      __typename
+      exceptionMessage
+      message
+      stackTrace
+    }
+  }
+}
+```
+
+The following table lists the fields in the input:
+
+| Name             | Data Type | Description                                     | Required |
+|------------------|-----------|-------------------------------------------------|----------|
+| jobId            | `int8`    | The unique job ID of the reconciliation job.    | Yes      |
+| pageParameters   | `dict`    | [Contains paging information.](#pageparameters) | No       |
+
+
+### Internal Reconcile report mismatch API output
+An example of the API output is shown below:
+```json
+{
+  "data": {
+    "getMismatchPage": {
+      "startCursor": "eyJqb2JfaWQiOiAyNDQzLjAsICJjb2xsZWN0aW9uX2lkIjogImludGVncmF0aW9uQ29sbGVjdGlvbk5hbWVfX19pbnRlZ3JhdGlvbkNvbGxlY3Rpb25WZXJzaW9uIiwgImdyYW51bGVfaWQiOiAiaW50ZWdyYXRpb25DdW11bHVzR3JhbnVsZUlkIiwgImtleV9wYXRoIjogIk1PRDA5R1EvMDA2L01PRDA5R1EuQTIwMTcwMjUuaDIxdjAwLjAwNi4yMDE3MDM0MDY1MTA1X25kdmkuanBnIn0=",
+      "endCursor": "eyJqb2JfaWQiOiAyNDQzLjAsICJjb2xsZWN0aW9uX2lkIjogImludGVncmF0aW9uQ29sbGVjdGlvbk5hbWVfX19pbnRlZ3JhdGlvbkNvbGxlY3Rpb25WZXJzaW9uIiwgImdyYW51bGVfaWQiOiAiaW50ZWdyYXRpb25DdW11bHVzR3JhbnVsZUlkIiwgImtleV9wYXRoIjogIk1PRDA5R1EvMDA2L01PRDA5R1EuQTIwMTcwMjUuaDIxdjAwLjAwNi4yMDE3MDM0MDY1MTA1X25kdmkuanBnIn0=",
+      "items": [
+        {
+          "jobId": 2443,
+          "collectionId": "MOD09GQ___061",
+          "granuleId": "MOD09GQ.A2017025.h21v00.006.2017034065109",
+          "filename": "MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+          "keyPath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+          "cumulusArchiveLocation": "cumulus-public",
+          "orcaEtag": "d41d8cd98f00b204e9800998ecf8427",
+          "s3Etag": "1f78ve1d3f41vbhg4nbb4kjhong4x14",
+          "orcaGranuleLastUpdate": 1654878715868,
+          "s3FileLastUpdate": 1654878716000,
+          "orcaSizeInBytes": 6543277389,
+          "s3SizeInBytes": 1987618731,
+          "orcaStorageClass": "GLACIER",
+          "s3StorageClass": "GLACIER",
+          "discrepancyType": "etag, size_in_bytes",
+          "comment": null
+        }
+      ]
+    }
+  }
+}
+```
+The following table lists the fields in the output:
+
+| Name                  | Data Type       | Description                                                                                                       |
+|-----------------------|-----------------|-------------------------------------------------------------------------------------------------------------------|
+| startCursor           | `str`           | Cursor value for [paging](#pageparameters).                                                                       |
+| endCursor             | `str`           | Cursor value for [paging](#pageparameters).                                                                       |
+| items                 | `Array[Object]` | An array representing each mismatch if available.                                                                 |
+| jobId                 | `int8`          | The unique ID of the reconciliation job.                                                                          |
+| collectionId          | `str`           | Cumulus Collection ID value from the ORCA catalog.                                                                |
+| granuleId             | `str`           | Cumulus granuleID value from the ORCA catalog.                                                                    |
+| filename              | `str`           | Filename of the object from the ORCA catalog.                                                                     |
+| keyPath               | `str`           | key path and filename of the object in the ORCA catalog.                                                          |  
+| orcaEtag              | `str`           | etag of the object as reported in the ORCA catalog.                                                               |
+| s3Etag                | `str`           | etag of the object as reported in the S3 bucket                                                                   |
+| orcaGranuleLastUpdate | `int8`          | The time, in milliseconds since 1 January 1970 UTC, of last update of the object as reported in the ORCA catalog. |
+| s3FileLastUpdate      | `int8`          | The time, in milliseconds since 1 January 1970 UTC, that information was updated in the S3 bucket.                |
+| orcaSizeInBytes       | `int8`          | Size in bytes of the object as reported in the ORCA catalog.                                                      |
+| s3SizeInBytes         | `int8`          | Size in bytes of the object as reported in the S3 bucket.                                                         |
+| orcaStorageClass      | `str`           | AWS storage class the object is in the Orca catalog.                                                              |
+| s3StorageClass        | `str`           | AWS storage class the object is in the S3 bucket.                                                                 |
+| discrepancyType       | `str`           | Type of discrepancy found during reconciliation.                                                                  |
+| comment               | `str`           | Any additional context for the mismatch.                                                                          |
+
+If an error occurs, error fields will be returned instead.
+Possible errors: [`InternalServerErrorGraphqlType`](#internalservererrorgraphqltype)
+
+## Internal Reconcile report mismatch API (API Gateway, [Deprecated](#internal-reconcile-report-mismatch-api))
+The `orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/mismatches` API call receives job id and page index from end user and returns reporting information of files that exist in the ORCA S3 bucket but have different metadata values in the ORCA catalog.
 Internal reconcile report mismatch API input invoke URL example: `https://example.execute-api.us-west-2.amazonaws.com/orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/mismatches`
 
 ### Internal Reconcile report mismatch API input
@@ -558,7 +671,7 @@ An example of the API output is shown below:
       "orcaStorageClass": "GLACIER",
       "s3StorageClass": "GLACIER",
       "discrepancyType": "etag, size_in_bytes",
-      "comments": null
+      "comment": null
     }
   ]
 }
