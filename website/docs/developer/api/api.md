@@ -10,7 +10,8 @@ The purpose of this page is to give developers information on how to use the ORC
 All ORCA APIs use the `POST` method.
 All API endpoints use AWS IAM authorization.
 
-When using the Load Balancer endpoint for GraphQL, encode your query as a JSON string, and store it in the request body.
+When using the Load Balancer endpoint for GraphQL, encode your query as a string, and store it in the request body.
+Query examples will be shown in the appropriate sections.
 
 :::warning
 If an [Aurora Serverless](https://aws.amazon.com/rds/aurora/serverless/) database is used for data-storage,
