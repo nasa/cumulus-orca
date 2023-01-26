@@ -10,7 +10,11 @@ The purpose of this page is to give developers information on how to use the ORC
 All ORCA APIs use the `POST` method.
 All API endpoints use AWS IAM authorization.
 
-When using the Load Balancer endpoint for GraphQL, encode your query as a string, and store it in the request body.
+When using the Load Balancer endpoint for GraphQL, encode your query as a string, and store it in the request body under a `query` key.
+For example, if using the Python [requests]() library, the command would look like this:
+```python
+r = requests.post(f"http://{orca_graphql_load_balancer_dns_name}:5000/graphql/", json={"query": query}, headers={})
+```
 Query examples will be shown in the appropriate sections.
 
 :::warning
