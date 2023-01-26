@@ -17,6 +17,7 @@ and includes an additional section for migration notes.
 ### Added
 - *ORCA-554*, *ORCA-561*, *ORCA-579*, *ORCA-581*
   - GraphQL image, service, and Load Balancer will now be deployed by TF.
+  - *ORCA-557* Added `orca_graphql_load_balancer_dns_name` to output variables for GraphQL integration.
   - *ORCA-420* Added Internal Reconcile Report Mismatch functionality to GraphQL.
   - *ORCA-556* Added Internal Reconcile Report Phantom functionality to GraphQL.
   - *ORCA-592* GraphQL logs are json structures, and can thus be queried in CloudWatch.
@@ -25,6 +26,9 @@ and includes an additional section for migration notes.
 
 ### Migration Notes
 - Update the bucket policy for your `system-bucket` to allow load balancer to post server access logs to the bucket. See the instructions [here](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-s3-bucket#bucket-policy-for-load-balancer-server-access-loging).
+- InternalReconcileReport [Phantom](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#internal-reconcile-report-phantom-api) and [Mismatch](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#internal-reconcile-report-mismatch-api) reports are now available via GraphQL.
+  - API Gateway access is now deprecated, and will be removed in a future update.
+  - Use the `orca_graphql_load_balancer_dns_name` variable to send your queries to GraphQL as json strings in a POST request.
 
 ## [7.0.0]
 ### Changed

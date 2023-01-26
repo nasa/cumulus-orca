@@ -68,7 +68,7 @@ class Queries:
     def get_phantom_page(
         self,
         job_id: Annotated[
-            int,
+            float,
             argument(
                 description="""The unique job ID of the reconciliation job."""
             )
@@ -95,7 +95,7 @@ class Queries:
     def get_mismatch_page(
         self,
         job_id: Annotated[
-            int,
+            float,
             argument(
                 description="""The unique job ID of the reconciliation job."""
             )

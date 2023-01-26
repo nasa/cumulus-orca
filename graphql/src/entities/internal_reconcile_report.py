@@ -19,7 +19,7 @@ class Phantom(pydantic.BaseModel):
     key_path: str
     orca_etag: str
     # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
-    orca_last_update: float
+    orca_granule_last_update: float
     orca_size_in_bytes: int
     orca_storage_class: str
 
@@ -38,7 +38,7 @@ class Phantom(pydantic.BaseModel):
                  filename: str,
                  key_path: str,
                  orca_etag: str,
-                 orca_last_update: int,
+                 orca_granule_last_update: int,
                  orca_size_in_bytes: int,
                  orca_storage_class: str,
                  ):
@@ -50,7 +50,7 @@ class Phantom(pydantic.BaseModel):
             filename=filename,
             key_path=key_path,
             orca_etag=orca_etag,
-            orca_last_update=orca_last_update,
+            orca_granule_last_update=orca_granule_last_update,
             orca_size_in_bytes=orca_size_in_bytes,
             orca_storage_class=orca_storage_class,
         )

@@ -41,7 +41,7 @@ class TestInternalReconcileReport(unittest.TestCase):
         self.assertEqual(filename, result.filename)
         self.assertEqual(key_path, result.key_path)
         self.assertEqual(orca_etag, result.orca_etag)
-        self.assertEqual(orca_last_update, result.orca_last_update)
+        self.assertEqual(orca_last_update, result.orca_granule_last_update)
         self.assertEqual(orca_size_in_bytes, result.orca_size_in_bytes)
         self.assertEqual(orca_storage_class, result.orca_storage_class)
 

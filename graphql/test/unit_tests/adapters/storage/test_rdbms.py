@@ -40,7 +40,7 @@ class TestRDBMS(unittest.TestCase):
                         filename=uuid.uuid4().__str__(),
                         key_path=uuid.uuid4().__str__(),
                         orca_etag=uuid.uuid4().__str__(),
-                        orca_last_update=random.randint(0, 10000),  # nosec
+                        orca_granule_last_update=random.randint(0, 10000),  # nosec
                         orca_size_in_bytes=random.randint(0, 10000),  # nosec
                         orca_storage_class=uuid.uuid4().__str__(),
                     )
@@ -53,7 +53,7 @@ class TestRDBMS(unittest.TestCase):
                             "filename": phantom.filename,
                             "key_path": phantom.key_path,
                             "orca_etag": phantom.orca_etag,
-                            "orca_last_update": phantom.orca_last_update,
+                            "orca_last_update": phantom.orca_granule_last_update,
                             "orca_size_in_bytes": phantom.orca_size_in_bytes,
                             "orca_storage_class": phantom.orca_storage_class,
                         }

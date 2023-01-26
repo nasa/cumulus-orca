@@ -10,13 +10,21 @@ The purpose of this page is to give developers information on how to use the ORC
 All ORCA APIs use the `POST` method.
 All API endpoints use AWS IAM authorization.
 
+When using the Load Balancer endpoint for GraphQL, encode your query as a string, and store it in the request body under a `query` key.
+For example, if using the Python [requests]() library, the command would look like this:
+```python
+r = requests.post(f"http://{orca_graphql_load_balancer_dns_name}:5000/graphql/", json={"query": query}, headers={})
+```
+Query examples will be shown in the appropriate sections.
+
 :::warning
 If an [Aurora Serverless](https://aws.amazon.com/rds/aurora/serverless/) database is used for data-storage,
 and it has not been accessed in some time,
 then it may take 30-40 seconds for the database to become available.
 As AWS [limits](https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html#http-api-quotas)
-API invocations to 30 seconds, with no option of increase, this can cause API invocations to result in HTTP error code 504.
-Integrators should include appropriate handling/retry code.
+API Gateway invocations to 30 seconds, with no option of increase, this can cause API invocations to result in HTTP error code 504.
+Where available, make use of the GraphQL Load Balancer endpoints.
+Otherwise, include appropriate handling/retry code.
 :::
 
 ## Catalog reporting API
@@ -39,14 +47,14 @@ An example of the API input body is shown below:
 ```
 The following table lists the fields in the input:
 
-| Name            | Data Type   | Description                                                                                                   | Required |
-| ----------------| ------------|---------------------------------------------------------------------------------------------------------------|----------|
-| pageIndex       | `int`       | The 0-based index of the results page to return.                                                              | Yes |
-| endTimestamp   | `int`       | Cumulus granule createdAt end-time for date range to compare data, in milliseconds since 1 January 1970 UTC.  | Yes |
-| providerId      | `Array[str]` | The unique ID of the provider making the request.                                                             | No  |
-| collectionId    | `Array[str]` | The unique ID of collection to compare.                                                                       | No  |
-| granuleId       | `Array[str]` | The unique ID of granule to compare.                                                                          | No  |
-| startTimestamp  | `int`       | Cumulus granule createdAt start time for date range to compare data, in milliseconds since 1 January 1970 UTC.| No  |
+| Name           | Data Type    | Description                                                                                                    | Required |
+| ---------------| -------------|----------------------------------------------------------------------------------------------------------------|----------|
+| pageIndex      | `int`        | The 0-based index of the results page to return.                                                               | Yes |
+| endTimestamp   | `int`        | Cumulus granule createdAt end-time for date range to compare data, in milliseconds since 1 January 1970 UTC.   | Yes |
+| providerId     | `Array[str]` | The unique ID of the provider making the request.                                                              | No  |
+| collectionId   | `Array[str]` | The unique ID of collection to compare.                                                                        | No  |
+| granuleId      | `Array[str]` | The unique ID of granule to compare.                                                                           | No  |
+| startTimestamp | `int`        | Cumulus granule createdAt start time for date range to compare data, in milliseconds since 1 January 1970 UTC. | No  |
 
 ### Catalog reporting API output
 An example of the API output is shown below:
@@ -303,7 +311,7 @@ The API returns status code 200 on success, 400 if `jobId` or `pageIndex` are mi
 
 
 ## Internal Reconcile report orphan API
-The `orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/orphans` API call receives job id and page index from end user and returns reporting information of files that have records in the S3 archive bucket but are missing in the ORCA catalog from the internal reconciliation job. Note that `{jobid}` is optional.
+The `orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/orphans` API call receives job id and page index from end user and returns reporting information of files that have records in the S3 archive bucket but are missing in the ORCA catalog from the internal reconciliation job.
 Internal reconcile report orphan API input invoke URL example: `https://example.execute-api.us-west-2.amazonaws.com/orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/orphans`
 
 ### Internal Reconcile report orphan API input
@@ -355,10 +363,101 @@ The following table lists the fields in the output:
 
 The API returns status code 200 on success, 400 if `jobId` or `pageIndex` are missing and 500 if an error occurs.
 
-
-
 ## Internal Reconcile report phantom API
-The `orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/phantoms` API call receives job id and page index from end user and returns reporting information of files that have records in the ORCA catalog but are missing from S3 bucket. Note that `{jobid}` is optional.
+The `getPhantomPage` query receives job id and page parameters and returns reporting information of files that have records in the ORCA catalog but are missing from S3 bucket.
+
+### Internal Reconcile report phantom query example
+```
+query MyQuery {
+  getPhantomPage(jobId: 2443, pageParameters: {
+    limit: 2,
+    direction: next,
+    cursor: null
+  }) {
+    ... on PhantomPage {
+      startCursor
+      endCursor
+      items {
+        collectionId
+        filename
+        jobId
+        granuleId
+        keyPath
+        orcaEtag
+        orcaGranuleLastUpdate
+        orcaSizeInBytes
+        orcaStorageClass
+      }
+    }
+    ... on ErrorGraphqlTypeInterface {
+      __typename
+      message
+    }
+    ... on InternalServerErrorGraphqlType {
+      __typename
+      exceptionMessage
+      message
+      stackTrace
+    }
+  }
+}
+```
+
+The following table lists the fields in the input:
+
+| Name             | Data Type | Description                                     | Required |
+|------------------|-----------|-------------------------------------------------|----------|
+| jobId            | `int8`    | The unique job ID of the reconciliation job.    | Yes      |
+| pageParameters   | `dict`    | [Contains paging information.](#pageparameters) | No       |
+
+
+### Internal Reconcile report phantom API output
+An example of the API output is shown below:
+```json
+{
+  "data": {
+    "getPhantomPage": {
+      "startCursor": "eyJqb2JfaWQiOiAyNDQzLjAsICJjb2xsZWN0aW9uX2lkIjogImludGVncmF0aW9uQ29sbGVjdGlvbk5hbWVfX19pbnRlZ3JhdGlvbkNvbGxlY3Rpb25WZXJzaW9uIiwgImdyYW51bGVfaWQiOiAiaW50ZWdyYXRpb25DdW11bHVzR3JhbnVsZUlkIiwgImtleV9wYXRoIjogIk1PRDA5R1EvMDA2L01PRDA5R1EuQTIwMTcwMjUuaDIxdjAwLjAwNi4yMDE3MDM0MDY1MTA1X25kdmkuanBnIn0=",
+      "endCursor": "eyJqb2JfaWQiOiAyNDQzLjAsICJjb2xsZWN0aW9uX2lkIjogImludGVncmF0aW9uQ29sbGVjdGlvbk5hbWVfX19pbnRlZ3JhdGlvbkNvbGxlY3Rpb25WZXJzaW9uIiwgImdyYW51bGVfaWQiOiAiaW50ZWdyYXRpb25DdW11bHVzR3JhbnVsZUlkIiwgImtleV9wYXRoIjogIk1PRDA5R1EvMDA2L01PRDA5R1EuQTIwMTcwMjUuaDIxdjAwLjAwNi4yMDE3MDM0MDY1MTA1X25kdmkuanBnIn0=",
+      "items": [
+        {
+          "collectionId": "CollectionName",
+          "filename": "MOD09GQ.A2017025.h21v00.006.2017034065105_ndvi.jpg",
+          "jobId": 2443,
+          "granuleId": "CumulusGranuleId",
+          "keyPath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065105_ndvi.jpg",
+          "orcaEtag": "\"81f4b6c158d25f1fe916ea52e99d1700\"",
+          "orcaSizeInBytes": 6,
+          "orcaStorageClass": "GLACIER",
+          "orcaGranuleLastUpdate": 1672417036578
+        }
+      ]
+    }
+  }
+}
+```
+The following table lists the fields in the output:
+
+| Name                  | Data Type       | Description                                                                                                       |
+|-----------------------|-----------------|-------------------------------------------------------------------------------------------------------------------|
+| startCursor           | `str`           | Cursor value for [paging](#pageparameters).                                                                       |
+| endCursor             | `str`           | Cursor value for [paging](#pageparameters).                                                                       |
+| items                 | `Array[Object]` | An array representing each phantom if available.                                                                  |
+| jobId                 | `int8`          | The unique ID of the reconciliation job.                                                                          |
+| collectionId          | `str`           | Cumulus Collection ID value from the ORCA catalog.                                                                |
+| granuleId             | `str`           | Cumulus granuleID value from the ORCA catalog.                                                                    |
+| filename              | `str`           | Filename of the object from the ORCA catalog.                                                                     |
+| keyPath               | `str`           | key path and filename of the object in the ORCA catalog.                                                          |  
+| orcaEtag              | `str`           | etag of the object as reported in the ORCA catalog.                                                               |
+| orcaGranuleLastUpdate | `int8`          | The time, in milliseconds since 1 January 1970 UTC, of last update of the object as reported in the ORCA catalog. |
+| orcaSizeInBytes       | `int8`          | Size in bytes of the object as reported in the ORCA catalog.                                                      |
+| orcaStorageClass      | `str`           | AWS storage class the object is in the Orca catalog.                                                              |
+
+If an error occurs, error fields will be returned instead.
+Possible errors: [`InternalServerErrorGraphqlType`](#internalservererrorgraphqltype)
+
+## Internal Reconcile report phantom API (API Gateway, [Deprecated](#internal-reconcile-report-phantom-api))
+The `orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/phantoms` API call receives job id and page index from end user and returns reporting information of files that have records in the ORCA catalog but are missing from S3 bucket.
 Internal reconcile report phantom API input invoke URL example: `https://example.execute-api.us-west-2.amazonaws.com/orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/phantoms`
 
 ### Internal Reconcile report phantom API input
@@ -404,7 +503,7 @@ The following table lists the fields in the output:
 |-----------------------|-----------------|-------------------------------------------------------------------------------------------------------------------|
 | jobId                 | `str`           |The unique ID of the reconciliation job.                                                                           |
 | anotherPage           | `Boolean`       | Indicates if more results can be retrieved on another page.                                                       |       
-| phantoms              | `Array[Object]` | An array representing each phantoms if available.                                                                 |
+| phantoms              | `Array[Object]` | An array representing each phantom if available.                                                                  |
 | collectionId          | `str`           | Cumulus Collection ID value from the ORCA catalog.                                                                |
 | granuleId             | `str`           | Cumulus granuleID value from the ORCA catalog.                                                                    |
 | filename              | `str`           | Filename of the object from the ORCA catalog.                                                                     |
@@ -417,7 +516,7 @@ The following table lists the fields in the output:
 The API returns status code 200 on success, 400 if `jobId` or `pageIndex` are missing and 500 if an error occurs.
 
 ## Internal Reconcile report mismatch API
-The `orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/mismatches` API call receives job id and page index from end user and returns reporting information of files that are missing from ORCA S3 bucket or have different metadata values than what is expected. Note that `{jobid}` is optional.
+The `orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/mismatches` API call receives job id and page index from end user and returns reporting information of files that are missing from ORCA S3 bucket or have different metadata values than what is expected.
 Internal reconcile report mismatch API input invoke URL example: `https://example.execute-api.us-west-2.amazonaws.com/orca/datamanagement/reconciliation/internal/jobs/job/{jobid}/mismatches`
 
 ### Internal Reconcile report mismatch API input
@@ -488,3 +587,30 @@ The following table lists the fields in the output:
 | comment                | `str`           | Any additional context for the mismatch.                                                                          |
 
 The API returns status code 200 on success, 400 if `jobId` or `pageIndex` are missing and 500 if an error occurs.
+
+## Generic Types
+### PageParameters
+When retrieving a page, `direction` will start you at either the start, or end of your dataset. Use `next` for the start, and `previous` for the end.
+
+| Name             | Data Type | Description                                                                                                                    | Required |
+|------------------|-----------|--------------------------------------------------------------------------------------------------------------------------------|----------|
+| limit            | `int`     | The 0-based index of the results page to return. Defaults to 100.                                                              | No       |
+| direction        | `str`     | 'next' or 'previous', depending on which direction to take. Defaults to 'next'.                                                | No       |
+| cursor           | `str`     | The cursor denoting the start of the page to retrieve (non-inclusive). Defaults to 'null', which will retrieve the first page. | No       |
+
+`startCursor` and `endCursor` values will be provided in the page output, excepting cases where the page contains no items.
+To retrieve a page that you have not yet retrieved, modify your query with the `endCursor` value from the last page you retrieved.
+
+### GraphQL Errors
+All errors returned from GraphQL will implement this interface. As such, you can count on the following properties:
+| Name                  | Data Type | Description                                                                                                       |
+|------------|-----------|--------------------------------------------------------------|
+| message    | `str`     | A string describing what happened to cause the error.        |
+| __typename | `str`     | The type of error returned. This will match a section below. |
+
+#### InternalServerErrorGraphqlType
+In addition to the [default fields](#graphql-errors), the following fields will be returned:
+| Name             | Data Type | Description                                                                                           |
+|------------------|-----------|-------------------------------------------------------------------------------------------------------|
+| exceptionMessage | `str`     | As this is a catch-all for unexpected errors, this will contain technical messages of unknown format. |
+| stackTrace       | `str`     | Technical information for use in debugging. Contact the ORCA team with any questions.                 |
