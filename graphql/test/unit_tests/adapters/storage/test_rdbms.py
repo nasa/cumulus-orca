@@ -130,8 +130,8 @@ class TestRDBMS(unittest.TestCase):
                         cumulus_archive_location=uuid.uuid4().__str__(),
                         orca_etag=uuid.uuid4().__str__(),
                         s3_etag=uuid.uuid4().__str__(),
-                        orca_last_update=random.randint(0, 10000),  # nosec
-                        s3_last_update=random.randint(0, 10000),  # nosec
+                        orca_granule_last_update=random.randint(0, 10000),  # nosec
+                        s3_file_last_update=random.randint(0, 10000),  # nosec
                         orca_size_in_bytes=random.randint(0, 10000),  # nosec
                         s3_size_in_bytes=random.randint(0, 10000),  # nosec
                         orca_storage_class=uuid.uuid4().__str__(),
@@ -150,8 +150,8 @@ class TestRDBMS(unittest.TestCase):
                             "cumulus_archive_location": mismatch.cumulus_archive_location,
                             "orca_etag": mismatch.orca_etag,
                             "s3_etag": mismatch.s3_etag,
-                            "orca_last_update": mismatch.orca_last_update,
-                            "s3_last_update": mismatch.s3_last_update,
+                            "orca_last_update": mismatch.orca_granule_last_update,
+                            "s3_last_update": mismatch.s3_file_last_update,
                             "orca_size_in_bytes": mismatch.orca_size_in_bytes,
                             "s3_size_in_bytes": mismatch.s3_size_in_bytes,
                             "orca_storage_class": mismatch.orca_storage_class,

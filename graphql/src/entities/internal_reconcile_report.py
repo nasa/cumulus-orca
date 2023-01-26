@@ -78,9 +78,9 @@ class Mismatch(pydantic.BaseModel):
     orca_etag: str
     s3_etag: str
     # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
-    orca_last_update: float
+    orca_granule_last_update: float
     # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
-    s3_last_update: float
+    s3_file_last_update: float
     # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
     orca_size_in_bytes: float
     # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
@@ -107,8 +107,8 @@ class Mismatch(pydantic.BaseModel):
                  cumulus_archive_location: str,
                  orca_etag: str,
                  s3_etag: str,
-                 orca_last_update: int,
-                 s3_last_update: int,
+                 orca_granule_last_update: int,
+                 s3_file_last_update: int,
                  orca_size_in_bytes: int,
                  s3_size_in_bytes: int,
                  orca_storage_class: str,
@@ -126,8 +126,8 @@ class Mismatch(pydantic.BaseModel):
             cumulus_archive_location=cumulus_archive_location,
             orca_etag=orca_etag,
             s3_etag=s3_etag,
-            orca_last_update=orca_last_update,
-            s3_last_update=s3_last_update,
+            orca_granule_last_update=orca_granule_last_update,
+            s3_file_last_update=s3_file_last_update,
             orca_size_in_bytes=orca_size_in_bytes,
             s3_size_in_bytes=s3_size_in_bytes,
             orca_storage_class=orca_storage_class,
