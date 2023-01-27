@@ -3,6 +3,7 @@ Name: copy_to_archive.py
 Description: Lambda function that takes a Cumulus message, extracts a list of files,
 and copies those files from their current storage location into a staging/archive location.
 """
+import json
 import os
 import re
 from datetime import datetime, timezone
@@ -13,25 +14,46 @@ import boto3
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 from boto3.s3.transfer import MB, TransferConfig
-from run_cumulus_task import run_cumulus_task
+import fastjsonschema as fastjsonschema
+from fastjsonschema import JsonSchemaException
 
 import sqs_library
 
+# Set AWS powertools logger
+LOGGER = Logger()
+
 OS_ENVIRON_DEFAULT_STORAGE_CLASS_KEY = "DEFAULT_STORAGE_CLASS"
 OS_ENVIRON_ORCA_DEFAULT_BUCKET_KEY = "ORCA_DEFAULT_BUCKET"
+
+EVENT_CONFIG_KEY = "config"
+EVENT_INPUT_KEY = "input"
+EVENT_OPTIONAL_VALUES_KEY = "optionalValues"
 
 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
 CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY = "excludedFileExtensions"
 CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY = "defaultBucketOverride"
 CONFIG_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY = "defaultStorageClassOverride"
 
-# Set AWS powertools logger
-LOGGER = Logger()
 
 FILE_BUCKET_KEY = "bucket"
 FILE_FILEPATH_KEY = "key"
 FILE_HASH_KEY = "checksum"
 FILE_HASH_TYPE_KEY = "checksumType"
+
+# Generating schema validators can take time, so do it once and reuse.
+try:
+    with open("schemas/input.json", "r") as raw_schema:
+        input_schema = json.loads(raw_schema.read())
+        _VALIDATE_INPUT = fastjsonschema.compile(input_schema)
+    with open("schemas/config.json", "r") as raw_schema:
+        config_schema = json.loads(raw_schema.read())
+        _VALIDATE_CONFIG = fastjsonschema.compile(config_schema)
+    with open("schemas/output.json", "r") as raw_schema:
+        output_schema = json.loads(raw_schema.read())
+        _VALIDATE_OUTPUT = fastjsonschema.compile(output_schema)
+except Exception as ex:
+    LOGGER.error(f"Could not build schema validator: {ex}")
+    raise
 
 
 def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> bool:
@@ -130,9 +152,9 @@ def copy_granule_between_buckets(
 
 
 # noinspection PyUnusedLocal
-def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str, Any]:
+def task(task_input: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Copies the files in {event}['input']
+    Copies the files in input['files']
     to the ORCA archive bucket defined in ORCA_DEFAULT_BUCKET.
 
         Environment Variables:
@@ -146,17 +168,12 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
                 SQS URL of the metadata queue.
 
     Args:
-        event: Passed through from {handler}
-        context: An object required by AWS Lambda. Unused.
+        task_input: See schemas/input.json
+        config: See schemas/config.json
 
     Returns:
         A dict representing input and copied files. See schemas/output.json for more information.
     """
-    LOGGER.debug(event)
-    event_input = event["input"]
-    granules_list = event_input["granules"]
-    config = event["config"]
-
     exclude_file_types = config.get(CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY, None)
     if exclude_file_types is None:
         exclude_file_types = []
@@ -201,7 +218,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
         config["collectionShortname"] + "___" + config["collectionVersion"]
     )
     # Iterate through the input granules (>= 0 granules expected)
-    for granule in granules_list:
+    for granule in task_input["granules"]:
         # noinspection PyPep8Naming
         granuleId = granule["granuleId"]
         if granuleId not in granule_data.keys():
@@ -256,7 +273,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
         sqs_library.post_to_metadata_queue(sqs_body, metadata_queue_url)
 
     # Using "copied_to_orca" instead of "copied_to_archive" until we decouple from Cumulus.
-    return {"granules": granules_list, "copied_to_orca": copied_file_urls}
+    return {"granules": task_input["granules"], "copied_to_orca": copied_file_urls}
 
 
 def get_destination_bucket_name(config: Dict[str, Any]) -> str:
@@ -351,10 +368,58 @@ def get_storage_class(config: Dict[str, Any]) -> str:
     return storage_class
 
 
+# Copied from request_from_archive.py
+def set_optional_event_property(event: Dict[str, Any], target_path_cursor: Dict,
+                                target_path_segments: List) -> None:
+    """Sets the optional variable value from event if present, otherwise sets to None.
+    Args:
+        event: See schemas/input.json.
+        target_path_cursor: Cursor of the current section to check.
+        target_path_segments: The path to the current cursor.
+    Returns:
+        None
+    """
+    for optionalValueTargetPath in target_path_cursor:
+        temp_target_path_segments = target_path_segments.copy()
+        temp_target_path_segments.append(optionalValueTargetPath)
+        if isinstance(target_path_cursor[optionalValueTargetPath], dict):
+            set_optional_event_property(
+                event,
+                target_path_cursor[optionalValueTargetPath],
+                temp_target_path_segments
+            )
+        elif isinstance(target_path_cursor[optionalValueTargetPath], str):
+            source_path = target_path_cursor[optionalValueTargetPath]
+            source_path_segments = source_path.split(".")
+
+            # ensure that the path up to the target_path exists
+            event_cursor = event
+            for target_path_segment in temp_target_path_segments[:-1]:
+                event_cursor[target_path_segment] =\
+                    event_cursor.get(target_path_segment, {})
+                event_cursor = event_cursor[target_path_segment]
+            event_cursor[temp_target_path_segments[-1]] = None
+
+            # get the value for the optional element
+            source_path_cursor = event
+            for source_path_segment in source_path_segments:
+                source_path_cursor = source_path_cursor.get(source_path_segment, None)
+                if source_path_cursor is None:
+                    LOGGER.info(f"When retrieving '{'.'.join(temp_target_path_segments)}', "
+                                f"no value found in '{source_path}' at key {source_path_segment}. "
+                                f"Defaulting to null.")
+                    break
+            event_cursor[temp_target_path_segments[-1]] = source_path_cursor
+        else:
+            raise Exception(f"Illegal type {type(target_path_cursor[optionalValueTargetPath])} "
+                            f"found at {'.'.join(temp_target_path_segments)}")
+
+
+# noinspection PyUnusedLocal
 @LOGGER.inject_lambda_context
 def handler(event: Dict[str, Union[List[str], Dict]], context: LambdaContext) -> Any:
     """Lambda handler. Runs a cumulus task that
-    Copies the files in {event}['input']
+    Copies the files in event['input']['files']
     to the default ORCA bucket. Environment variables must be set to
     provide a default ORCA bucket to store the files in.
 
@@ -375,11 +440,38 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: LambdaContext) ->
         event: Event passed into the step from the aws workflow.
             See schemas/input.json and schemas/config.json for more information.
 
-
         context: This object provides information about the lambda invocation, function,
             and execution env.
 
     Returns:
-        The result of the cumulus task. See schemas/output.json for more information.
+        See schemas/output.json for more information.
     """
-    return run_cumulus_task(task, event, context)
+    LOGGER.debug(f"event: {event}")
+
+    # set the optional variables to None if not configured
+    try:
+        set_optional_event_property(event, event.get(EVENT_OPTIONAL_VALUES_KEY, {}), [])
+    except Exception as ex:
+        LOGGER.error(ex)
+        raise ex
+    try:
+        _VALIDATE_INPUT(event[EVENT_INPUT_KEY])
+    except JsonSchemaException as json_schema_exception:
+        LOGGER.error(json_schema_exception)
+        raise
+
+    try:
+        _VALIDATE_CONFIG(event[EVENT_CONFIG_KEY])
+    except JsonSchemaException as json_schema_exception:
+        LOGGER.error(json_schema_exception)
+        raise
+
+    result = task(event[EVENT_INPUT_KEY], event[EVENT_CONFIG_KEY])
+
+    try:
+        _VALIDATE_OUTPUT(result)
+    except JsonSchemaException as json_schema_exception:
+        LOGGER.error(json_schema_exception)
+        raise
+
+    return result

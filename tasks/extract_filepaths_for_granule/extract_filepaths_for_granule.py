@@ -189,6 +189,7 @@ def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> b
     return False
 
 
+# noinspection PyUnusedLocal
 @LOGGER.inject_lambda_context
 def handler(event: Dict[str, Dict[str, Any]],
             context: LambdaContext):  # pylint: disable-msg=unused-argument

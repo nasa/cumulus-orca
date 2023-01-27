@@ -4,18 +4,20 @@
   "States": {
     "CopyToArchive": {
       "Parameters": {
-        "cma": {
-          "event.$": "$",
-          "task_config": {
-            "excludedFileExtensions": "{$.meta.collection.meta.orca.excludedFileExtensions}",
-            "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
-            "providerId": "{$.meta.provider.id}",
-            "providerName": "{$.meta.provider.name}",
-            "executionId": "{$.cumulus_meta.execution_name}",
-            "collectionShortname": "{$.meta.collection.name}",
-            "collectionVersion": "{$.meta.collection.version}",
-            "defaultBucketOverride": "{$.meta.collection.meta.orca.defaultBucketOverride}",
-            "defaultStorageClassOverride": "{$.meta.collection.meta.orca.defaultStorageClassOverride}"
+        "input.$": "$.payload",
+        "config": {
+          "providerId": "{$.meta.provider.id}",
+          "executionId": "{$.cumulus_meta.execution_name}",
+          "collectionShortname": "{$.meta.collection.name}",
+          "collectionVersion": "{$.meta.collection.version}"
+        },
+        "optionalValues": {
+          "config": {
+            "excludedFileExtensions": "event.meta.collection.meta.orca.excludedFileExtensions",
+            "s3MultipartChunksizeMb": "event.meta.collection.meta.s3MultipartChunksizeMb",
+            "providerName": "event.meta.provider.name}",
+            "defaultBucketOverride": "event.meta.collection.meta.orca.defaultBucketOverride",
+            "defaultStorageClassOverride": "event.meta.collection.meta.orca.defaultStorageClassOverride"
           }
         }
       },
