@@ -37,14 +37,18 @@ As tests are run in parallel, it is generally good practice to have one test-per
 3. Set the following environment variables:
    1. `orca_API_DEPLOYMENT_INVOKE_URL` Output from the ORCA TF module. ex: `https://0000000000.execute-api.us-west-2.amazonaws.com`
    2. `orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN` ARN of the copy_to_archive step function. ex: `arn:aws:states:us-west-2:000000000000:stateMachine:PREFIX-OrcaCopyToArchiveWorkflow`
-4. Run the following bash command, 
+4. 
+   Get your Cumulus EC2 instance ID using the following AWS CLI command using your `<PREFIX>`.
+   ```shell
+   aws ec2 describe-instances --filters Name=instance-state-name,Values=running Name=tag:Name,Values={PREFIX}-CumulusECSCluster --query "Reservations[*].Instances[*].InstanceId" --output text
+   ```
+   Then run the following bash command, 
    replacing `i-00000000000000000` with your `PREFIX-CumulusECSCluster` ec2 instance ID, 
    and `0000000000.execute-api.us-west-2.amazonaws.com` with your API Gateway identifier:
 
    ```shell
    aws ssm start-session --target i-00000000000000000 --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters '{"host":["0000000000.execute-api.us-west-2.amazonaws.com"],"portNumber":["443"], "localPortNumber":["8000"]}'
    ```
-
 5. In the root folder `workflow_tests`, run the following command:
    ```shell
    bin/run_tests.sh
