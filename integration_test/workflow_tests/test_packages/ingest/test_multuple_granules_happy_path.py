@@ -9,10 +9,10 @@ import boto3
 import helpers
 
 
-class TestMultipleGranules(TestCase):
-    def test_multiple_granules_passes(self):
+class TestMultipleGranulesHappyPath(TestCase):
+    def test_multiple_granules_happy_path(self):
         """
-        If multiple granules are provided, should store them in DB.
+        If multiple granules are provided, should store them in DB as well as in recovery bucket.
         """
         try:
             # Set up Orca API resources
@@ -25,7 +25,11 @@ class TestMultipleGranules(TestCase):
 
             collection_name = uuid.uuid4().__str__()
             collection_version = uuid.uuid4().__str__()
-
+            bucket_name = "orca-sandbox-s3-provider"  # standard bucket where initial file exists
+            recovery_bucket_name = "rhrh-orca-primary"
+            excluded_filetype = []
+            key_name_1 = "PODAAC/SWOT/ancillary_data_input_forcing_ECCO_V4r4.tar.gz"
+            key_name_2 = "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf"
             execution_id = uuid.uuid4().__str__()
 
             copy_to_archive_input = {
@@ -36,8 +40,8 @@ class TestMultipleGranules(TestCase):
                         "createdAt": 628021800000,
                         "files": [
                         {
-                            "bucket": "rhrh-orca-primary",
-                            "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065105_ndvi.jpg"
+                            "bucket": bucket_name,
+                            "key": key_name_1
                         }
                         ]
                     },
@@ -46,8 +50,8 @@ class TestMultipleGranules(TestCase):
                         "createdAt": 628021800001,
                         "files": [
                         {
-                            "bucket": "rhrh-orca-primary",
-                            "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065105_ndvi.jpg"
+                            "bucket": bucket_name,
+                            "key": key_name_2
                         }
                         ]
                     }
@@ -61,9 +65,8 @@ class TestMultipleGranules(TestCase):
                     "collection": {
                         "meta": {
                             "orca": {
-                            "excludedFileExtensions": [
-                                # ".tar.gz"
-                            ]
+                            "excludedFileExtensions":
+                                excluded_filetype
                             }
                         },
                         "name": collection_name,
@@ -83,25 +86,25 @@ class TestMultipleGranules(TestCase):
                         "createdAt": 628021800000,
                         "files": [
                         {
-                            "bucket": "rhrh-orca-primary",
-                            "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065105_ndvi.jpg",
+                            "bucket": bucket_name,
+                            "key": key_name_1,
                         }
                         ]
                     },
                     {
                         "granuleId": granule_id_2,
-                        "createdAt": 628021800000,
+                        "createdAt": 628021800001,
                         "files": [
                         {
-                            "bucket": "rhrh-orca-primary",
-                            "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065105_ndvi.jpg",
+                            "bucket": bucket_name,
+                            "key": key_name_2,
                         }
                         ]
                     }
                     ],
                     "copied_to_orca": [
-                    "s3://rhrh-orca-primary/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065105_ndvi.jpg",
-                    "s3://rhrh-orca-primary/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065105_ndvi.jpg"
+                    "s3://" + bucket_name + "/" + key_name_1,
+                    "s3://" + bucket_name + "/" + key_name_2
                     ]
                 },
                 "meta": {
@@ -112,9 +115,8 @@ class TestMultipleGranules(TestCase):
                     "collection": {
                         "meta": {
                             "orca": {
-                                "excludedFileExtensions": [
-                                    # ".tar.gz"
-                                ]
+                                "excludedFileExtensions":
+                                    excluded_filetype
                             }
                         },
                         "name": collection_name,
@@ -157,6 +159,17 @@ class TestMultipleGranules(TestCase):
                 json.loads(step_function_results["output"]),
                 "Expected step function output not returned.",
             )
+            # verify that the objects exist in recovery bucket
+            try:
+                for keys in [key_name_1, key_name_2]:
+                    output = boto3.client("s3").head_object(Bucket=recovery_bucket_name, Key=keys)
+                    self.assertEqual(
+                        200,
+                        output["ResponseMetadata"]["HTTPStatusCode"],
+                        f"object {keys} does not exist in the {recovery_bucket_name}",
+                    )            
+            except Exception as ex:
+                return  ex
 
             # catalog_output = helpers.post_to_api(
             #     my_session,
@@ -165,6 +178,7 @@ class TestMultipleGranules(TestCase):
             #         {
             #             "pageIndex": 0,
             #             "providerId": [provider_id],
+            #             "granuleId": [granule_id_1, granule_id_2],
             #             "endTimestamp": int((time.time() + 5) * 1000),
             #         }
             #     ),
@@ -174,7 +188,7 @@ class TestMultipleGranules(TestCase):
             #     200, catalog_output.status_code, "Error occurred while contacting API."
             # )
             # self.assertEqual(
-            #     {"granules": [], "anotherPage": False},
+            #     {"granules": [granule_id_1, granule_id_2], "anotherPage": False},
             #     catalog_output.json(),
             #     "Expected empty granule list not returned.",
             # )

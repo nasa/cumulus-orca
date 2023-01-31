@@ -20,7 +20,6 @@ API_LOCAL_HOST = "127.0.0.1"
 API_LOCAL_PORT = "8000"
 
 # os.env keys
-# "https://s2jmh2r60k.execute-api.us-west-2.amazonaws.com"
 orca_api_deployment_invoke_url = os.environ["orca_API_DEPLOYMENT_INVOKE_URL"]
 orca_copy_to_archive_step_function_arn = os.environ[
     "orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN"
@@ -108,7 +107,7 @@ def create_session() -> Session:
 
 
 def get_state_machine_execution_results(
-    execution_arn, retry_interval_seconds=5, maximum_duration_seconds=60
+    execution_arn, retry_interval_seconds=5, maximum_duration_seconds=600
 ):
     start = datetime.datetime.utcnow()
     while True:
