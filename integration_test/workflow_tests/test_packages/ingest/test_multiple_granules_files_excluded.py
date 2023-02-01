@@ -156,20 +156,6 @@ class TestMultipleGranules(TestCase):
                 json.loads(step_function_results["output"]),
                 "Expected step function output not returned.",
             )
-            api_info = boto3.client("apigateway").test_invoke_method(
-                restApiId='2ihf83z7de',
-                resourceId='9ob7af',
-                httpMethod='POST',
-                body=json.dumps(
-                                {
-                                "pageIndex": 0,
-                                "granuleId": [
-                                    "9d53185b-d687-475d-8968-dc640e7bea23",
-                                    "681c3165-c412-4c58-936f-c325367d4f43"
-                                ],
-                                "endTimestamp": 628021900000
-                                }),
-                )
             catalog_output = helpers.post_to_api(
                 my_session,
                 helpers.api_url + "/catalog/reconcile/",
