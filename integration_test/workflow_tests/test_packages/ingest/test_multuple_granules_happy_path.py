@@ -171,27 +171,27 @@ class TestMultipleGranulesHappyPath(TestCase):
             except Exception as ex:
                 return  ex
 
-            # catalog_output = helpers.post_to_api(
-            #     my_session,
-            #     helpers.api_url + "/catalog/reconcile/",
-            #     data=json.dumps(
-            #         {
-            #             "pageIndex": 0,
-            #             "providerId": [provider_id],
-            #             "granuleId": [granule_id_1, granule_id_2],
-            #             "endTimestamp": int((time.time() + 5) * 1000),
-            #         }
-            #     ),
-            #     headers={"Host": helpers.aws_api_name},
-            # )
-            # self.assertEqual(
-            #     200, catalog_output.status_code, "Error occurred while contacting API."
-            # )
-            # self.assertEqual(
-            #     {"granules": [granule_id_1, granule_id_2], "anotherPage": False},
-            #     catalog_output.json(),
-            #     "Expected empty granule list not returned.",
-            # )
+            catalog_output = helpers.post_to_api(
+                my_session,
+                helpers.api_url + "/catalog/reconcile/",
+                data=json.dumps(
+                    {
+                        "pageIndex": 0,
+                        "providerId": [provider_id],
+                        "granuleId": [granule_id_1, granule_id_2],
+                        "endTimestamp": int((time.time() + 5) * 1000),
+                    }
+                ),
+                headers={"Host": helpers.aws_api_name},
+            )
+            self.assertEqual(
+                200, catalog_output.status_code, "Error occurred while contacting API."
+            )
+            self.assertEqual(
+                {"granules": [granule_id_1, granule_id_2], "anotherPage": False},
+                catalog_output.json(),
+                "Expected empty granule list not returned.",
+            )
         except Exception as ex:
             logging.error(ex)
             raise

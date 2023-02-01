@@ -156,27 +156,49 @@ class TestMultipleGranules(TestCase):
                 json.loads(step_function_results["output"]),
                 "Expected step function output not returned.",
             )
-
-            # catalog_output = helpers.post_to_api(
-            #     my_session,
-            #     helpers.api_url + "/catalog/reconcile/",
-            #     data=json.dumps(
-            #         {
-            #             "pageIndex": 0,
-            #             "providerId": [provider_id],
-            #             "granuleId": [granule_id_1, granule_id_2],
-            #             "endTimestamp": int((time.time() + 5) * 1000),
-            #         }
-            #     ),
-            #     headers={"Host": helpers.aws_api_name},
-            # )
+            api_info = boto3.client("apigateway").test_invoke_method(
+                restApiId='2ihf83z7de',
+                resourceId='9ob7af',
+                httpMethod='POST',
+                body=json.dumps(
+                                {
+                                "pageIndex": 0,
+                                "granuleId": [
+                                    "9d53185b-d687-475d-8968-dc640e7bea23",
+                                    "681c3165-c412-4c58-936f-c325367d4f43"
+                                ],
+                                "endTimestamp": 628021900000
+                                }),
+                )
+            catalog_output = helpers.post_to_api(
+                my_session,
+                helpers.api_url + "/catalog/reconcile/",
+                data=json.dumps(
+                    {
+                        "pageIndex": 0,
+                        "providerId": [provider_id],
+                        "granuleId": [granule_id_1, granule_id_2],
+                        "endTimestamp": int((time.time() + 5) * 1000),
+                    }
+                ),
+                headers={"Host": helpers.aws_api_name},
+            )
+            self.assertEqual(
+                200, catalog_output.status_code, "Error occurred while contacting API."
+            )
+            self.assertEqual(
+                # granules list is empty since due to including excluded_filetype
+                {"granules": [], "anotherPage": False},
+                catalog_output.json(),
+                "Expected empty granule list not returned.",
+            )
             # self.assertEqual(
-            #     200, catalog_output.status_code, "Error occurred while contacting API."
+            #     200, api_info["status"], "Error occurred while contacting API."
             # )
             # self.assertEqual(
             #     # granules list is empty since due to including excluded_filetype
-            #     {"granules": [], "anotherPage": False},
-            #     catalog_output.json(),
+            #     {"anotherPage":false,"granules":[]},
+            #     api_info["body"],
             #     "Expected empty granule list not returned.",
             # )
         except Exception as ex:
