@@ -178,15 +178,6 @@ class TestMultipleGranules(TestCase):
                 catalog_output.json(),
                 "Expected empty granule list not returned.",
             )
-            # self.assertEqual(
-            #     200, api_info["status"], "Error occurred while contacting API."
-            # )
-            # self.assertEqual(
-            #     # granules list is empty since due to including excluded_filetype
-            #     {"anotherPage":false,"granules":[]},
-            #     api_info["body"],
-            #     "Expected empty granule list not returned.",
-            # )
         except Exception as ex:
             logging.error(ex)
             raise
