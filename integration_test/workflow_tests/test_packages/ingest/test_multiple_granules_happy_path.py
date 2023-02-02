@@ -2,7 +2,7 @@ import json
 import logging
 import time
 import uuid
-from unittest import TestCase
+from unittest import TestCase, mock
 
 import boto3
 
@@ -10,7 +10,9 @@ import helpers
 
 
 class TestMultipleGranulesHappyPath(TestCase):
+    
     def test_multiple_granules_happy_path(self):
+        self.maxDiff = None
         """
         If multiple granules are provided, should store them in DB as well as in recovery bucket.
         """
@@ -22,11 +24,11 @@ class TestMultipleGranulesHappyPath(TestCase):
             granule_id_2 = uuid.uuid4().__str__()
             provider_id = uuid.uuid4().__str__()
             provider_name = uuid.uuid4().__str__()
-
+            createdAt_time = int((time.time() + 5) * 1000)
             collection_name = uuid.uuid4().__str__()
             collection_version = uuid.uuid4().__str__()
             bucket_name = "orca-sandbox-s3-provider"  # standard bucket where initial file exists
-            recovery_bucket_name = "rhrh-orca-primary"
+            recovery_bucket_name = "doctest-orca-primary"  # replace with yours
             excluded_filetype = []
             key_name_1 = "PODAAC/SWOT/ancillary_data_input_forcing_ECCO_V4r4.tar.gz"
             key_name_2 = "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf"
@@ -37,7 +39,7 @@ class TestMultipleGranulesHappyPath(TestCase):
                     "granules": [
                     {
                         "granuleId": granule_id_1,
-                        "createdAt": 628021800000,
+                        "createdAt": createdAt_time,
                         "files": [
                         {
                             "bucket": bucket_name,
@@ -47,7 +49,7 @@ class TestMultipleGranulesHappyPath(TestCase):
                     },
                     {
                         "granuleId": granule_id_2,
-                        "createdAt": 628021800001,
+                        "createdAt": createdAt_time,
                         "files": [
                         {
                             "bucket": bucket_name,
@@ -63,27 +65,26 @@ class TestMultipleGranulesHappyPath(TestCase):
                     "name": provider_name
                     },
                     "collection": {
-                        "meta": {
-                            "orca": {
-                            "excludedFileExtensions":
-                                excluded_filetype
-                            }
-                        },
-                        "name": collection_name,
-                        "version": collection_version
+                    "meta": {
+                        "orca": {
+                        "excludedFileExtensions": excluded_filetype
+                        }
+                    },
+                    "name": collection_name,
+                    "version": collection_version
                     }
                 },
                 "cumulus_meta": {
                     "execution_name": execution_id
                 }
-            }
+                }
 
             expected_output = {
                 "payload": {
                     "granules": [
                     {
                         "granuleId": granule_id_1,
-                        "createdAt": 628021800000,
+                        "createdAt": createdAt_time,
                         "files": [
                         {
                             "bucket": bucket_name,
@@ -93,7 +94,7 @@ class TestMultipleGranulesHappyPath(TestCase):
                     },
                     {
                         "granuleId": granule_id_2,
-                        "createdAt": 628021800001,
+                        "createdAt": createdAt_time,
                         "files": [
                         {
                             "bucket": bucket_name,
@@ -161,12 +162,12 @@ class TestMultipleGranulesHappyPath(TestCase):
             )
             # verify that the objects exist in recovery bucket
             try:
-                for keys in [key_name_1, key_name_2]:
-                    output = boto3.client("s3").head_object(Bucket=recovery_bucket_name, Key=keys)
+                for key in [key_name_1, key_name_2]:
+                    head_object_output = boto3.client("s3").head_object(Bucket=recovery_bucket_name, Key=key)
                     self.assertEqual(
                         200,
-                        output["ResponseMetadata"]["HTTPStatusCode"],
-                        f"object {keys} does not exist in the {recovery_bucket_name}",
+                        head_object_output["ResponseMetadata"]["HTTPStatusCode"],
+                        f" Error searching for object {key} in the {recovery_bucket_name}",
                     )            
             except Exception as ex:
                 return  ex
@@ -177,7 +178,6 @@ class TestMultipleGranulesHappyPath(TestCase):
                 data=json.dumps(
                     {
                         "pageIndex": 0,
-                        "providerId": [provider_id],
                         "granuleId": [granule_id_1, granule_id_2],
                         "endTimestamp": int((time.time() + 5) * 1000),
                     }
@@ -188,9 +188,31 @@ class TestMultipleGranulesHappyPath(TestCase):
                 200, catalog_output.status_code, "Error occurred while contacting API."
             )
             self.assertEqual(
-                {"granules": [granule_id_1, granule_id_2], "anotherPage": False},
+                {
+                    "anotherPage": False,
+                    "granules": [
+                        {   "id": granule_id_1,
+                            "collectionId": collection_name + "___" + collection_version,
+                            "createdAt": createdAt_time,
+                            "executionId": execution_id,
+                            "providerId": provider_id,
+                            "files": [],
+                            "ingestDate": mock.ANY,
+                            "lastUpdate": mock.ANY
+                        },
+                        {   "id": granule_id_2,
+                            "collectionId": collection_name + "___" + collection_version,
+                            "createdAt": createdAt_time,
+                            "executionId": execution_id,
+                            "providerId": provider_id,
+                            "files": [],
+                            "ingestDate": mock.ANY,
+                            "lastUpdate": mock.ANY
+                        }
+                    ]
+                },
                 catalog_output.json(),
-                "Expected empty granule list not returned.",
+                "Expected API output not returned.",
             )
         except Exception as ex:
             logging.error(ex)
