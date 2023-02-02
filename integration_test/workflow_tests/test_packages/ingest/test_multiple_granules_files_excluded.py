@@ -143,7 +143,7 @@ class TestMultipleGranules(TestCase):
                         404,
                         head_object_output["ResponseMetadata"]["HTTPStatusCode"],
                         f"Object {key_name} already exists in the {recovery_bucket_name}",
-                    )            
+                    )
             except Exception as ex:
                 return  ex
 
