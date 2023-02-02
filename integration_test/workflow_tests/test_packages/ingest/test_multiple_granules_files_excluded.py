@@ -6,6 +6,9 @@ from unittest import TestCase, mock
 
 import boto3
 
+# noinspection PyPackageRequirements
+from botocore.exceptions import ClientError
+
 import helpers
 
 
@@ -136,17 +139,17 @@ class TestMultipleGranules(TestCase):
                 "Expected step function output not returned.",
             )
 
-            # verify that the object does not exist in recovery bucket
+            # verify that the object does NOT exist in recovery bucket
             try:
-                head_object_output = boto3.client("s3").head_object(Bucket=recovery_bucket_name, Key=key_name)
+                head_object_output = boto3.client("s3").head_object(
+                    Bucket=recovery_bucket_name, Key=key_name)
+                if head_object_output["ResponseMetadata"]["HTTPStatusCode"] == 200:
+                    raise Exception(f"{key_name} already exists in {recovery_bucket_name}")
+            except ClientError as err:
                 self.assertEqual(
-                        404,
-                        head_object_output["ResponseMetadata"]["HTTPStatusCode"],
-                        f"Object {key_name} already exists in the {recovery_bucket_name}",
+                        "404",
+                        err.response["Error"]["Code"]
                     )
-            except Exception as ex:
-                return  ex
-
             catalog_output = helpers.post_to_api(
                 my_session,
                 helpers.api_url + "/catalog/reconcile/",
