@@ -37,6 +37,7 @@ As tests are run in parallel, it is generally good practice to have one test-per
 3. Set the following environment variables:
    1. `orca_API_DEPLOYMENT_INVOKE_URL` Output from the ORCA TF module. ex: `https://0000000000.execute-api.us-west-2.amazonaws.com`
    2. `orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN` ARN of the copy_to_archive step function. ex: `arn:aws:states:us-west-2:000000000000:stateMachine:PREFIX-OrcaCopyToArchiveWorkflow`
+   3. `orca_RECOVERY_BUCKET_NAME` S3 bucket name where the recovered files will be archived. ex: `test-orca-primary`
 4. 
    Get your Cumulus EC2 instance ID using the following AWS CLI command using your `<PREFIX>`.
    ```shell
@@ -83,6 +84,7 @@ Documentation below assumes that the following are applied.
   :::
 - Initially, automated validation will not include checking Cloudwatch logs. Logs will be available for 7 days to help manually identify any errors and troubleshoot problems. In the future, automating searches for key phrases in Cloudwatch logs as validation may be used for identifying point-of-failure in processes.
 - Integration tests should be run on a regular cadence. Initial suggestion is once every 1-2 weeks.
+- Ingest test assumes the files being recovered are already present in the source bucket. Random files will be generated in the future task and copied to the source bucket.
 
 Some broad categories of tests are shown below.
 

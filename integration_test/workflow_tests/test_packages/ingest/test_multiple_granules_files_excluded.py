@@ -25,6 +25,7 @@ class TestMultipleGranules(TestCase):
             createdAt_time = int((time.time() + 5) * 1000)
             collection_name = uuid.uuid4().__str__()
             collection_version = uuid.uuid4().__str__()
+            recovery_bucket_name = helpers.recovery_bucket_name
             bucket_name = "orca-sandbox-s3-provider"    # standard bucket where initial file exists
             excluded_filetype = [".tar.gz"]
             key_name = "PODAAC/SWOT/ancillary_data_input_forcing_ECCO_V4r4.tar.gz"
@@ -134,6 +135,18 @@ class TestMultipleGranules(TestCase):
                 json.loads(step_function_results["output"]),
                 "Expected step function output not returned.",
             )
+
+            # verify that the object does not exist in recovery bucket
+            try:
+                head_object_output = boto3.client("s3").head_object(Bucket=recovery_bucket_name, Key=key_name)
+                self.assertEqual(
+                        404,
+                        head_object_output["ResponseMetadata"]["HTTPStatusCode"],
+                        f"Object {key_name} already exists in the {recovery_bucket_name}",
+                    )            
+            except Exception as ex:
+                return  ex
+
             catalog_output = helpers.post_to_api(
                 my_session,
                 helpers.api_url + "/catalog/reconcile/",

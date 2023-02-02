@@ -38,26 +38,26 @@ class TestMultipleGranulesHappyPath(TestCase):
             copy_to_archive_input = {
                 "payload": {
                     "granules": [
-                    {
-                        "granuleId": granule_id_1,
-                        "createdAt": createdAt_time,
-                        "files": [
                         {
-                            "bucket": bucket_name,
-                            "key": key_name_1
-                        }
-                        ]
-                    },
-                    {
-                        "granuleId": granule_id_2,
-                        "createdAt": createdAt_time,
-                        "files": [
+                            "granuleId": granule_id_1,
+                            "createdAt": createdAt_time,
+                            "files": [
+                                {
+                                    "bucket": bucket_name,
+                                    "key": key_name_1
+                                }
+                            ]
+                        },
                         {
-                            "bucket": bucket_name,
-                            "key": key_name_2
+                            "granuleId": granule_id_2,
+                            "createdAt": createdAt_time,
+                            "files": [
+                                {
+                                    "bucket": bucket_name,
+                                    "key": key_name_2
+                                }
+                            ]
                         }
-                        ]
-                    }
                     ]
                 },
                 "meta": {
@@ -66,11 +66,11 @@ class TestMultipleGranulesHappyPath(TestCase):
                     "name": provider_name
                     },
                     "collection": {
-                    "meta": {
-                        "orca": {
-                        "excludedFileExtensions": excluded_filetype
-                        }
-                    },
+                        "meta": {
+                            "orca": {
+                                "excludedFileExtensions": excluded_filetype
+                            }
+                        },
                     "name": collection_name,
                     "version": collection_version
                     }
@@ -78,7 +78,7 @@ class TestMultipleGranulesHappyPath(TestCase):
                 "cumulus_meta": {
                     "execution_name": execution_id
                 }
-                }
+            }
 
             expected_output = {
                 "payload": {
@@ -168,7 +168,7 @@ class TestMultipleGranulesHappyPath(TestCase):
                     self.assertEqual(
                         200,
                         head_object_output["ResponseMetadata"]["HTTPStatusCode"],
-                        f" Error searching for object {key} in the {recovery_bucket_name}",
+                        f"Error searching for object {key} in the {recovery_bucket_name}",
                     )            
             except Exception as ex:
                 return  ex
