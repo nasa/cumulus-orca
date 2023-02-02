@@ -24,6 +24,7 @@ orca_api_deployment_invoke_url = os.environ["orca_API_DEPLOYMENT_INVOKE_URL"]
 orca_copy_to_archive_step_function_arn = os.environ[
     "orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN"
 ]
+recovery_bucket_name = os.environ["orca_RECOVERY_BUCKET_NAME"]
 
 # helpful pre-constructed values
 aws_api_name = orca_api_deployment_invoke_url.replace("https://", "")
