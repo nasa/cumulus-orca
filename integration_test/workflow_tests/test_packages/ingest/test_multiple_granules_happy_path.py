@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import time
 import uuid
 from unittest import TestCase, mock
@@ -28,7 +29,7 @@ class TestMultipleGranulesHappyPath(TestCase):
             collection_name = uuid.uuid4().__str__()
             collection_version = uuid.uuid4().__str__()
             bucket_name = "orca-sandbox-s3-provider"  # standard bucket where initial file exists
-            recovery_bucket_name = "doctest-orca-primary"  # replace with yours
+            recovery_bucket_name = os.environ["orca_RECOVERY_BUCKET_NAME"]
             excluded_filetype = []
             key_name_1 = "PODAAC/SWOT/ancillary_data_input_forcing_ECCO_V4r4.tar.gz"
             key_name_2 = "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf"
