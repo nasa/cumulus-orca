@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 import time
 import uuid
 from unittest import TestCase, mock
@@ -11,7 +10,7 @@ import helpers
 
 
 class TestMultipleGranulesHappyPath(TestCase):
-    
+
     def test_multiple_granules_happy_path(self):
         self.maxDiff = None
         """
@@ -62,8 +61,8 @@ class TestMultipleGranulesHappyPath(TestCase):
                 },
                 "meta": {
                     "provider": {
-                    "id": provider_id,
-                    "name": provider_name
+                        "id": provider_id,
+                        "name": provider_name
                     },
                     "collection": {
                         "meta": {
@@ -71,8 +70,8 @@ class TestMultipleGranulesHappyPath(TestCase):
                                 "excludedFileExtensions": excluded_filetype
                             }
                         },
-                    "name": collection_name,
-                    "version": collection_version
+                        "name": collection_name,
+                        "version": collection_version
                     }
                 },
                 "cumulus_meta": {
@@ -83,36 +82,36 @@ class TestMultipleGranulesHappyPath(TestCase):
             expected_output = {
                 "payload": {
                     "granules": [
-                    {
-                        "granuleId": granule_id_1,
-                        "createdAt": createdAt_time,
-                        "files": [
                         {
-                            "bucket": bucket_name,
-                            "key": key_name_1,
-                        }
-                        ]
-                    },
-                    {
-                        "granuleId": granule_id_2,
-                        "createdAt": createdAt_time,
-                        "files": [
+                            "granuleId": granule_id_1,
+                            "createdAt": createdAt_time,
+                            "files": [
+                                {
+                                    "bucket": bucket_name,
+                                    "key": key_name_1,
+                                }
+                            ]
+                        },
                         {
-                            "bucket": bucket_name,
-                            "key": key_name_2,
+                            "granuleId": granule_id_2,
+                            "createdAt": createdAt_time,
+                            "files": [
+                                {
+                                    "bucket": bucket_name,
+                                    "key": key_name_2,
+                                }
+                            ]
                         }
-                        ]
-                    }
                     ],
                     "copied_to_orca": [
-                    "s3://" + bucket_name + "/" + key_name_1,
-                    "s3://" + bucket_name + "/" + key_name_2
+                        "s3://" + bucket_name + "/" + key_name_1,
+                        "s3://" + bucket_name + "/" + key_name_2
                     ]
                 },
                 "meta": {
                     "provider": {
-                    "id": provider_id,
-                    "name": provider_name
+                        "id": provider_id,
+                        "name": provider_name
                     },
                     "collection": {
                         "meta": {
@@ -123,13 +122,14 @@ class TestMultipleGranulesHappyPath(TestCase):
                         },
                         "name": collection_name,
                         "version": collection_version
-                        }
+                    }
                 },
                 "cumulus_meta": {
                     "execution_name": execution_id
                 },
                 "task_config": {
-                    "excludedFileExtensions": "{$.meta.collection.meta.orca.excludedFileExtensions}",
+                    "excludedFileExtensions":
+                        "{$.meta.collection.meta.orca.excludedFileExtensions}",
                     "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
                     "providerId": "{$.meta.provider.id}",
                     "providerName": "{$.meta.provider.name}",
@@ -137,10 +137,11 @@ class TestMultipleGranulesHappyPath(TestCase):
                     "collectionShortname": "{$.meta.collection.name}",
                     "collectionVersion": "{$.meta.collection.version}",
                     "defaultBucketOverride": "{$.meta.collection.meta.orca.defaultBucketOverride}",
-                    "defaultStorageClassOverride": "{$.meta.collection.meta.orca.defaultStorageClassOverride}"
+                    "defaultStorageClassOverride":
+                        "{$.meta.collection.meta.orca.defaultStorageClassOverride}"
                 },
                 "exception": "None"
-                }
+            }
 
             execution_info = boto3.client("stepfunctions").start_execution(
                 stateMachineArn=helpers.orca_copy_to_archive_step_function_arn,
@@ -164,14 +165,15 @@ class TestMultipleGranulesHappyPath(TestCase):
             # verify that the objects exist in recovery bucket
             try:
                 for key in [key_name_1, key_name_2]:
-                    head_object_output = boto3.client("s3").head_object(Bucket=recovery_bucket_name, Key=key)
+                    head_object_output = boto3.client("s3").head_object(
+                        Bucket=recovery_bucket_name, Key=key)
                     self.assertEqual(
                         200,
                         head_object_output["ResponseMetadata"]["HTTPStatusCode"],
                         f"Error searching for object {key} in the {recovery_bucket_name}",
-                    )            
+                    )
             except Exception as ex:
-                return  ex
+                return ex
 
             catalog_output = helpers.post_to_api(
                 my_session,
@@ -192,7 +194,8 @@ class TestMultipleGranulesHappyPath(TestCase):
                 {
                     "anotherPage": False,
                     "granules": [
-                        {   "id": granule_id_1,
+                        {
+                            "id": granule_id_1,
                             "collectionId": collection_name + "___" + collection_version,
                             "createdAt": createdAt_time,
                             "executionId": execution_id,
@@ -201,7 +204,8 @@ class TestMultipleGranulesHappyPath(TestCase):
                             "ingestDate": mock.ANY,
                             "lastUpdate": mock.ANY
                         },
-                        {   "id": granule_id_2,
+                        {
+                            "id": granule_id_2,
                             "collectionId": collection_name + "___" + collection_version,
                             "createdAt": createdAt_time,
                             "executionId": execution_id,

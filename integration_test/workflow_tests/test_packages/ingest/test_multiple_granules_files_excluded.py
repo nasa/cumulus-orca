@@ -29,7 +29,7 @@ class TestMultipleGranules(TestCase):
             collection_name = uuid.uuid4().__str__()
             collection_version = uuid.uuid4().__str__()
             recovery_bucket_name = helpers.recovery_bucket_name
-            bucket_name = "orca-sandbox-s3-provider"    # standard bucket where initial file exists
+            bucket_name = "orca-sandbox-s3-provider"  # standard bucket where initial file exists
             excluded_filetype = [".hdf"]
             key_name = "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf"  # file size 6B
             execution_id = uuid.uuid4().__str__()
@@ -37,28 +37,28 @@ class TestMultipleGranules(TestCase):
             copy_to_archive_input = {
                 "payload": {
                     "granules": [
-                    {
-                        "granuleId": granule_id,
-                        "createdAt": createdAt_time,
-                        "files": [
                         {
-                            "bucket": bucket_name,
-                            "key": key_name
+                            "granuleId": granule_id,
+                            "createdAt": createdAt_time,
+                            "files": [
+                                {
+                                    "bucket": bucket_name,
+                                    "key": key_name
+                                }
+                            ]
                         }
-                        ]
-                    }
                     ]
                 },
                 "meta": {
                     "provider": {
-                    "id": provider_id,
-                    "name": provider_name
+                        "id": provider_id,
+                        "name": provider_name
                     },
                     "collection": {
                         "meta": {
                             "orca": {
-                            "excludedFileExtensions":
-                                excluded_filetype
+                                "excludedFileExtensions":
+                                    excluded_filetype
                             }
                         },
                         "name": collection_name,
@@ -73,23 +73,23 @@ class TestMultipleGranules(TestCase):
             expected_output = {
                 "payload": {
                     "granules": [
-                    {
-                        "granuleId": granule_id,
-                        "createdAt": createdAt_time,
-                        "files": [
                         {
-                            "bucket": bucket_name,
-                            "key": key_name
+                            "granuleId": granule_id,
+                            "createdAt": createdAt_time,
+                            "files": [
+                                {
+                                    "bucket": bucket_name,
+                                    "key": key_name
+                                }
+                            ]
                         }
-                        ]
-                    }
                     ],
                     "copied_to_orca": []
                 },
                 "meta": {
                     "provider": {
-                    "id": provider_id,
-                    "name": provider_name
+                        "id": provider_id,
+                        "name": provider_name
                     },
                     "collection": {
                         "meta": {
@@ -100,13 +100,14 @@ class TestMultipleGranules(TestCase):
                         },
                         "name": collection_name,
                         "version": collection_version
-                        }
+                    }
                 },
                 "cumulus_meta": {
                     "execution_name": execution_id
                 },
                 "task_config": {
-                    "excludedFileExtensions": "{$.meta.collection.meta.orca.excludedFileExtensions}",
+                    "excludedFileExtensions":
+                        "{$.meta.collection.meta.orca.excludedFileExtensions}",
                     "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
                     "providerId": "{$.meta.provider.id}",
                     "providerName": "{$.meta.provider.name}",
@@ -114,10 +115,11 @@ class TestMultipleGranules(TestCase):
                     "collectionShortname": "{$.meta.collection.name}",
                     "collectionVersion": "{$.meta.collection.version}",
                     "defaultBucketOverride": "{$.meta.collection.meta.orca.defaultBucketOverride}",
-                    "defaultStorageClassOverride": "{$.meta.collection.meta.orca.defaultStorageClassOverride}"
+                    "defaultStorageClassOverride":
+                        "{$.meta.collection.meta.orca.defaultStorageClassOverride}"
                 },
                 "exception": "None"
-                }
+            }
 
             execution_info = boto3.client("stepfunctions").start_execution(
                 stateMachineArn=helpers.orca_copy_to_archive_step_function_arn,
@@ -145,12 +147,12 @@ class TestMultipleGranules(TestCase):
                     Bucket=recovery_bucket_name, Key=key_name)
                 if head_object_output["ResponseMetadata"]["HTTPStatusCode"] == 200:
                     raise Exception(f"{key_name} already exists"
-                        f" or was incorrectly ingested to {recovery_bucket_name}")
+                                    f" or was incorrectly ingested to {recovery_bucket_name}")
             except ClientError as err:
                 self.assertEqual(
-                        "404",
-                        err.response["Error"]["Code"]
-                    )
+                    "404",
+                    err.response["Error"]["Code"]
+                )
             catalog_output = helpers.post_to_api(
                 my_session,
                 helpers.api_url + "/catalog/reconcile/",
@@ -170,7 +172,8 @@ class TestMultipleGranules(TestCase):
                 {
                     "anotherPage": False,
                     "granules": [
-                        {   "id": granule_id,
+                        {
+                            "id": granule_id,
                             "collectionId": collection_name + "___" + collection_version,
                             "createdAt": createdAt_time,
                             "executionId": execution_id,
