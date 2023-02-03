@@ -27,11 +27,16 @@ class TestMultipleGranulesHappyPath(TestCase):
             createdAt_time = int((time.time() + 5) * 1000)
             collection_name = uuid.uuid4().__str__()
             collection_version = uuid.uuid4().__str__()
-            bucket_name = "orca-sandbox-s3-provider"  # standard bucket where initial file exists
+            # standard bucket where initial file exists
+            cumulus_bucket_name = "orca-sandbox-s3-provider"
             recovery_bucket_name = helpers.recovery_bucket_name
             excluded_filetype = []
-            key_name_1 = "PODAAC/SWOT/ancillary_data_input_forcing_ECCO_V4r4.tar.gz"
-            key_name_2 = "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf"
+            name_1 = "ancillary_data_input_forcing_ECCO_V4r4.tar.gz"
+            key_name_1 = "PODAAC/SWOT/" + name_1
+            file_1_hash = uuid.uuid4().__str__()
+            file_1_hash_type = uuid.uuid4().__str__()
+            name_2 = "MOD09GQ.A2017025.h21v00.006.2017034065104.hdf"
+            key_name_2 = "MOD09GQ/006/" + name_2
             execution_id = uuid.uuid4().__str__()
 
             copy_to_archive_input = {
@@ -42,8 +47,10 @@ class TestMultipleGranulesHappyPath(TestCase):
                             "createdAt": createdAt_time,
                             "files": [
                                 {
-                                    "bucket": bucket_name,
-                                    "key": key_name_1
+                                    "bucket": cumulus_bucket_name,
+                                    "key": key_name_1,
+                                    "checksum": file_1_hash,
+                                    "checksumType": file_1_hash_type,
                                 }
                             ]
                         },
@@ -52,7 +59,7 @@ class TestMultipleGranulesHappyPath(TestCase):
                             "createdAt": createdAt_time,
                             "files": [
                                 {
-                                    "bucket": bucket_name,
+                                    "bucket": cumulus_bucket_name,
                                     "key": key_name_2
                                 }
                             ]
@@ -87,8 +94,10 @@ class TestMultipleGranulesHappyPath(TestCase):
                             "createdAt": createdAt_time,
                             "files": [
                                 {
-                                    "bucket": bucket_name,
+                                    "bucket": cumulus_bucket_name,
                                     "key": key_name_1,
+                                    "checksum": file_1_hash,
+                                    "checksumType": file_1_hash_type
                                 }
                             ]
                         },
@@ -97,15 +106,15 @@ class TestMultipleGranulesHappyPath(TestCase):
                             "createdAt": createdAt_time,
                             "files": [
                                 {
-                                    "bucket": bucket_name,
+                                    "bucket": cumulus_bucket_name,
                                     "key": key_name_2,
                                 }
                             ]
                         }
                     ],
                     "copied_to_orca": [
-                        "s3://" + bucket_name + "/" + key_name_1,
-                        "s3://" + bucket_name + "/" + key_name_2
+                        "s3://" + cumulus_bucket_name + "/" + key_name_1,
+                        "s3://" + cumulus_bucket_name + "/" + key_name_2
                     ]
                 },
                 "meta": {
@@ -162,9 +171,13 @@ class TestMultipleGranulesHappyPath(TestCase):
                 json.loads(step_function_results["output"]),
                 "Expected step function output not returned.",
             )
+            s3_versions = []
             # verify that the objects exist in recovery bucket
             try:
-                for key in [key_name_1, key_name_2]:
+                for key in [
+                    key_name_1,
+                    key_name_2,
+                ]:
                     head_object_output = boto3.client("s3").head_object(
                         Bucket=recovery_bucket_name, Key=key)
                     self.assertEqual(
@@ -172,6 +185,7 @@ class TestMultipleGranulesHappyPath(TestCase):
                         head_object_output["ResponseMetadata"]["HTTPStatusCode"],
                         f"Error searching for object {key} in the {recovery_bucket_name}",
                     )
+                    s3_versions.append(head_object_output["VersionId"])
             except Exception as ex:
                 return ex
 
@@ -181,7 +195,10 @@ class TestMultipleGranulesHappyPath(TestCase):
                 data=json.dumps(
                     {
                         "pageIndex": 0,
-                        "granuleId": [granule_id_1, granule_id_2],
+                        "granuleId": [
+                            granule_id_1,
+                            granule_id_2,
+                        ],
                         "endTimestamp": int((time.time() + 5) * 1000),
                     }
                 ),
@@ -190,33 +207,57 @@ class TestMultipleGranulesHappyPath(TestCase):
             self.assertEqual(
                 200, catalog_output.status_code, "Error occurred while contacting API."
             )
-            self.assertEqual(
-                {
+            expected_catalog_output = {
                     "anotherPage": False,
                     "granules": [
                         {
-                            "id": granule_id_1,
+                            "providerId": provider_id,
                             "collectionId": collection_name + "___" + collection_version,
+                            "id": granule_id_1,
                             "createdAt": createdAt_time,
                             "executionId": execution_id,
-                            "providerId": provider_id,
-                            "files": [],
+                            "files": [
+                                {
+                                    "name": name_1,
+                                    "cumulusArchiveLocation": cumulus_bucket_name,
+                                    "orcaArchiveLocation": recovery_bucket_name,
+                                    "keyPath": key_name_1,
+                                    "sizeBytes": 205640819682,
+                                    "hash": file_1_hash, "hashType": file_1_hash_type,
+                                    "storageClass": "GLACIER",
+                                    "version": s3_versions[0],
+                                }
+                            ],
                             "ingestDate": mock.ANY,
                             "lastUpdate": mock.ANY
                         },
                         {
-                            "id": granule_id_2,
+                            "providerId": provider_id,
                             "collectionId": collection_name + "___" + collection_version,
+                            "id": granule_id_2,
                             "createdAt": createdAt_time,
                             "executionId": execution_id,
-                            "providerId": provider_id,
-                            "files": [],
+                            "files": [
+                                {
+                                    "name": name_2,
+                                    "cumulusArchiveLocation": cumulus_bucket_name,
+                                    "orcaArchiveLocation": recovery_bucket_name,
+                                    "keyPath": key_name_2,
+                                    "sizeBytes": 6,
+                                    "hash": None, "hashType": None,
+                                    "storageClass": "GLACIER",
+                                    "version": s3_versions[1],
+                                }
+                            ],
                             "ingestDate": mock.ANY,
                             "lastUpdate": mock.ANY
                         }
                     ]
-                },
-                catalog_output.json(),
+                }
+            catalog_output_json = catalog_output.json()
+            self.assertEqual(
+                expected_catalog_output,
+                catalog_output_json,
                 "Expected API output not returned.",
             )
         except Exception as ex:
