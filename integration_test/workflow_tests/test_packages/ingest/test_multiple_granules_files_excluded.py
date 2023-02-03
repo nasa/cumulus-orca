@@ -31,7 +31,7 @@ class TestMultipleGranules(TestCase):
             recovery_bucket_name = helpers.recovery_bucket_name
             bucket_name = "orca-sandbox-s3-provider"    # standard bucket where initial file exists
             excluded_filetype = [".hdf"]
-            key_name = "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf"
+            key_name = "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf"  # file size 6B
             execution_id = uuid.uuid4().__str__()
 
             copy_to_archive_input = {
