@@ -144,7 +144,8 @@ class TestMultipleGranules(TestCase):
                 head_object_output = boto3.client("s3").head_object(
                     Bucket=recovery_bucket_name, Key=key_name)
                 if head_object_output["ResponseMetadata"]["HTTPStatusCode"] == 200:
-                    raise Exception(f"{key_name} already exists in {recovery_bucket_name}")
+                    raise Exception(f"{key_name} already exists"
+                        f" or was incorrectly ingested to {recovery_bucket_name}")
             except ClientError as err:
                 self.assertEqual(
                         "404",
