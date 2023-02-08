@@ -14,7 +14,7 @@ with open("schemas/output.json", "r") as raw_schema:
     _OUTPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
 
 
-class TestCopyToArchive(TestCase):
+class TestCopyToArchiveAdapter(TestCase):
     """
     Test copy_to_archive_adapter functionality and business logic.
     """
@@ -53,7 +53,7 @@ class TestCopyToArchive(TestCase):
             "granules": [
                 {
                     "granuleId": uuid.uuid4().__str__(),
-                    "createdAt": random.randint(0, 999999999),
+                    "createdAt": random.randint(0, 999999999),  # nosec
                     "files": [
                         {
                             "bucket": uuid.uuid4().__str__(),
@@ -106,7 +106,7 @@ class TestCopyToArchive(TestCase):
             "granules": [
                 {
                     "granuleId": uuid.uuid4().__str__(),
-                    "createdAt": random.randint(0, 999999999),
+                    "createdAt": random.randint(0, 999999999),  # nosec
                 },
             ],
             "copied_to_orca": [uuid.uuid4().__str__()],
