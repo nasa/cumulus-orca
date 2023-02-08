@@ -24,6 +24,13 @@ and includes an additional section for migration notes.
 - *ORCA-597*
   - Server access logging is now enabled for graphql application load balancer.
 
+### Changed
+- *ORCA-520* Removed `run_cumulus_task` function from copy_to_archive to decouple ORCA from Cumulus.
+
+### Migration Notes
+- Cumulus is not currently compatible with the changes to copy_to_archive.
+  - This section will be updated when a compatible version is created.
+
 ### Migration Notes
 - Update the bucket policy for your `system-bucket` to allow load balancer to post server access logs to the bucket. See the instructions [here](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-s3-bucket#bucket-policy-for-load-balancer-server-access-loging).
 - InternalReconcileReport [Phantom](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#internal-reconcile-report-phantom-api) and [Mismatch](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#internal-reconcile-report-mismatch-api) reports are now available via GraphQL.
