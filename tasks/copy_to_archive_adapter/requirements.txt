@@ -1,0 +1,2 @@
+cumulus-process==0.8.0
+aws_lambda_powertools==1.31.0
