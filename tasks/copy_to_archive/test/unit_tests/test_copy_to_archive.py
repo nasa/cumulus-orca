@@ -9,8 +9,10 @@ from unittest import TestCase
 from unittest.mock import ANY, MagicMock, Mock, call, patch
 
 import boto3
+# noinspection PyPackageRequirements
 import fastjsonschema as fastjsonschema
 from boto3.s3.transfer import MB
+# noinspection PyPackageRequirements
 from moto import mock_sqs
 
 import copy_to_archive
@@ -135,8 +137,8 @@ class TestCopyToArchive(TestCase):
         ]
 
         handler_input_event = {
-            "payload": {"granules": granules},
-            "task_config": {
+            copy_to_archive.EVENT_INPUT_KEY: {"granules": granules},
+            copy_to_archive.EVENT_CONFIG_KEY: {
                 CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY: [".png"],
                 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: 15,
                 "providerId": uuid.uuid4().__str__(),
@@ -148,10 +150,6 @@ class TestCopyToArchive(TestCase):
         }
         handler_input_context = Mock()
 
-        expected_task_input = {
-            "input": handler_input_event["payload"],
-            "config": handler_input_event["task_config"],
-        }
         mock_task.return_value = {
             "granules": [
                 {
@@ -168,9 +166,11 @@ class TestCopyToArchive(TestCase):
         }
 
         result = copy_to_archive.handler(handler_input_event, handler_input_context)
-        mock_task.assert_called_once_with(expected_task_input, handler_input_context)
+        mock_task.assert_called_once_with(
+            handler_input_event[copy_to_archive.EVENT_INPUT_KEY],
+            handler_input_event[copy_to_archive.EVENT_CONFIG_KEY])
 
-        self.assertEqual(mock_task.return_value, result["payload"])
+        self.assertEqual(mock_task.return_value, result)
 
     def test_exclude_file_types_excluded(self):
         """
@@ -242,27 +242,24 @@ class TestCopyToArchive(TestCase):
             ]
         }
         s3_cli.list_object_versions = Mock(return_value=file_return_value)
-        providerName = uuid.uuid4().__str__()
-        config = {
+        provider_name = uuid.uuid4().__str__()
+        event_config = {
             "providerId": "test",
-            "providerName": providerName,
+            "providerName": provider_name,
             "executionId": "test-execution-id",
             "collectionShortname": "MOD09GQ",
             "collectionVersion": uuid.uuid4().__str__(),
         }
-        event = {
-            "input": copy.deepcopy(self.event_granules),
-            "config": config,
-        }
 
-        result = task(copy.deepcopy(event), None)
+        event_input = copy.deepcopy(self.event_granules)
+        result = task(copy.deepcopy(event_input), copy.deepcopy(event_config))
 
-        mock_get_destination_bucket_name.assert_called_once_with(config)
-        mock_get_storage_class.assert_called_once_with(config)
+        mock_get_destination_bucket_name.assert_called_once_with(event_config)
+        mock_get_storage_class.assert_called_once_with(event_config)
 
         _OUTPUT_VALIDATE(result)
 
-        expected_granules = copy.deepcopy(event["input"]["granules"])
+        expected_granules = copy.deepcopy(event_input["granules"])
         self.assertEqual(expected_granules, result["granules"])
 
         head_object_calls = []
@@ -291,111 +288,111 @@ class TestCopyToArchive(TestCase):
         s3_cli.copy.assert_has_calls(copy_calls)
         sqs_body = {
             "provider": {
-                "name": providerName,
-                "providerId": event["config"]["providerId"],
+                "name": provider_name,
+                "providerId": event_config["providerId"],
             },
             "collection": {
-                "shortname": event["config"]["collectionShortname"],
-                "version": event["config"]["collectionVersion"],
-                "collectionId": event["config"]["collectionShortname"]
+                "shortname": event_config["collectionShortname"],
+                "version": event_config["collectionVersion"],
+                "collectionId": event_config["collectionShortname"]
                 + "___"
-                + event["config"]["collectionVersion"],
+                + event_config["collectionVersion"],
             },
             "granule": {
-                "cumulusGranuleId": event["input"]["granules"][0]["granuleId"],
+                "cumulusGranuleId": event_input["granules"][0]["granuleId"],
                 "cumulusCreateTime": "1989-11-25T18:30:00+00:00",
-                "executionId": event["config"]["executionId"],
+                "executionId": event_config["executionId"],
                 "ingestTime": ANY,
                 "lastUpdate": ANY,
                 "files": [
                     {
-                        "cumulusArchiveLocation": event["input"]["granules"][0][
+                        "cumulusArchiveLocation": event_input["granules"][0][
                             "files"
                         ][0]["bucket"],
                         "orcaArchiveLocation": mock_get_destination_bucket_name.return_value,
-                        "keyPath": event["input"]["granules"][0]["files"][0][
+                        "keyPath": event_input["granules"][0]["files"][0][
                             copy_to_archive.FILE_FILEPATH_KEY
                         ],
                         "sizeInBytes": ANY,
                         "version": ANY,
                         "ingestTime": ANY,
                         "etag": ANY,
-                        "name": event["input"]["granules"][0]["files"][0][
+                        "name": event_input["granules"][0]["files"][0][
                             copy_to_archive.FILE_FILEPATH_KEY
                         ].split("/")[-1],
-                        "hash": event["input"]["granules"][0]["files"][0][
+                        "hash": event_input["granules"][0]["files"][0][
                             copy_to_archive.FILE_HASH_KEY
                         ],
-                        "hashType": event["input"]["granules"][0]["files"][0][
+                        "hashType": event_input["granules"][0]["files"][0][
                             copy_to_archive.FILE_HASH_TYPE_KEY
                         ],
                         "storageClass": mock_get_storage_class.return_value,
                     },
                     {
-                        "cumulusArchiveLocation": event["input"]["granules"][0][
+                        "cumulusArchiveLocation": event_input["granules"][0][
                             "files"
                         ][1]["bucket"],
                         "orcaArchiveLocation": mock_get_destination_bucket_name.return_value,
-                        "keyPath": event["input"]["granules"][0]["files"][1][
+                        "keyPath": event_input["granules"][0]["files"][1][
                             copy_to_archive.FILE_FILEPATH_KEY
                         ],
                         "sizeInBytes": ANY,
                         "version": ANY,
                         "ingestTime": ANY,
                         "etag": ANY,
-                        "name": event["input"]["granules"][0]["files"][1][
+                        "name": event_input["granules"][0]["files"][1][
                             copy_to_archive.FILE_FILEPATH_KEY
                         ].split("/")[-1],
-                        "hash": event["input"]["granules"][0]["files"][1][
+                        "hash": event_input["granules"][0]["files"][1][
                             copy_to_archive.FILE_HASH_KEY
                         ],
-                        "hashType": event["input"]["granules"][0]["files"][1][
+                        "hashType": event_input["granules"][0]["files"][1][
                             copy_to_archive.FILE_HASH_TYPE_KEY
                         ],
                         "storageClass": mock_get_storage_class.return_value,
                     },
                     {
-                        "cumulusArchiveLocation": event["input"]["granules"][0][
+                        "cumulusArchiveLocation": event_input["granules"][0][
                             "files"
                         ][2]["bucket"],
                         "orcaArchiveLocation": mock_get_destination_bucket_name.return_value,
-                        "keyPath": event["input"]["granules"][0]["files"][2][
+                        "keyPath": event_input["granules"][0]["files"][2][
                             copy_to_archive.FILE_FILEPATH_KEY
                         ],
                         "sizeInBytes": ANY,
                         "version": ANY,
                         "ingestTime": ANY,
                         "etag": ANY,
-                        "name": event["input"]["granules"][0]["files"][2][
+                        "name": event_input["granules"][0]["files"][2][
                             copy_to_archive.FILE_FILEPATH_KEY
                         ].split("/")[-1],
-                        "hash": event["input"]["granules"][0]["files"][2][
+                        "hash": event_input["granules"][0]["files"][2][
                             copy_to_archive.FILE_HASH_KEY
                         ],
-                        "hashType": event["input"]["granules"][0]["files"][2][
+                        "hashType": event_input["granules"][0]["files"][2][
                             copy_to_archive.FILE_HASH_TYPE_KEY
                         ],
                         "storageClass": mock_get_storage_class.return_value,
                     },
                     {
-                        "cumulusArchiveLocation": event["input"]["granules"][0][
+                        "cumulusArchiveLocation": event_input["granules"][0][
                             "files"
                         ][3]["bucket"],
                         "orcaArchiveLocation": mock_get_destination_bucket_name.return_value,
-                        "keyPath": event["input"]["granules"][0]["files"][3][
+                        "keyPath": event_input["granules"][0]["files"][3][
                             copy_to_archive.FILE_FILEPATH_KEY
                         ],
                         "sizeInBytes": ANY,
                         "version": ANY,
                         "ingestTime": ANY,
                         "etag": ANY,
-                        "name": event["input"]["granules"][0]["files"][0][
+                        "name": event_input["granules"][0]["files"][0][
                             copy_to_archive.FILE_FILEPATH_KEY
                         ].split("/")[-1],
-                        "hash": event["input"]["granules"][0]["files"][3][
+                        "hash": event_input["granules"][0]["files"][3][
                             copy_to_archive.FILE_HASH_KEY
                         ],
-                        "hashType": event["input"]["granules"][0]["files"][3][
+                        "hashType": event_input["granules"][0]["files"][3][
                             copy_to_archive.FILE_HASH_TYPE_KEY
                         ],
                         "storageClass": mock_get_storage_class.return_value,
@@ -418,7 +415,7 @@ class TestCopyToArchive(TestCase):
             for file in self.event_granules["granules"][0]["files"]
         ]
         self.assertEqual(expected_copied_file_urls, result["copied_to_orca"])
-        expected_granules = copy.deepcopy(event["input"]["granules"])
+        expected_granules = copy.deepcopy(event_input["granules"])
         self.assertEqual(expected_granules, result["granules"])
         self.assertIsNone(config_check.bad_config)
 
@@ -518,25 +515,22 @@ class TestCopyToArchive(TestCase):
             ]
         }
         s3_cli.list_object_versions = Mock(return_value=file_return_value)
-        config = {
+        event_config = {
             "providerId": "test",
             "executionId": "test-execution-id",
             "collectionShortname": "MOD09GQ",
             "collectionVersion": uuid.uuid4().__str__(),
         }
-        event = {
-            "input": copy.deepcopy(multiple_event_granules),
-            "config": config,
-        }
+        event_input = copy.deepcopy(multiple_event_granules)
 
-        result = task(event, None)
+        result = task(copy.deepcopy(event_input), copy.deepcopy(event_config))
 
-        mock_get_destination_bucket_name.assert_called_once_with(config)
-        mock_get_storage_class.assert_called_once_with(config)
+        mock_get_destination_bucket_name.assert_called_once_with(event_config)
+        mock_get_storage_class.assert_called_once_with(event_config)
 
         _OUTPUT_VALIDATE(result)
 
-        expected_granules = copy.deepcopy(event["input"]["granules"])
+        expected_granules = copy.deepcopy(event_input["granules"])
         self.assertEqual(expected_granules, result["granules"])
 
         head_object_calls = []
@@ -563,7 +557,7 @@ class TestCopyToArchive(TestCase):
 
         s3_cli.head_object.assert_has_calls(head_object_calls)
         s3_cli.copy.assert_has_calls(copy_calls)
-        self.assertEqual(mock_post_to_queue.call_count, 2)
+        self.assertEqual(mock_post_to_queue.call_count, 2)  # todo: Add proper checks.
         self.assertEqual(s3_cli.head_object.call_count, 2)
         self.assertEqual(s3_cli.copy.call_count, 2)
         self.assertEqual(s3_cli.list_object_versions.call_count, 2)
@@ -583,7 +577,7 @@ class TestCopyToArchive(TestCase):
     )
     def test_task_overridden_multipart_chunksize(
         self,
-        mock_post_to_queue: MagicMock,
+        mock_post_to_queue: MagicMock,  # todo: Add proper checks
         mock_get_destination_bucket_name: MagicMock,
         mock_get_storage_class: MagicMock,
     ):
@@ -622,26 +616,23 @@ class TestCopyToArchive(TestCase):
             ]
         }
         s3_cli.list_object_versions = Mock(return_value=file_return_value)
-        config = {
+        event_config = {
             CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: str(overridden_multipart_chunksize_mb),
             "providerId": "test",
             "executionId": "test-execution-id",
             "collectionShortname": "MOD09GQ",
             "collectionVersion": uuid.uuid4().__str__(),
         }
-        event = {
-            "input": copy.deepcopy(self.event_granules),
-            "config": config,
-        }
+        event_input = copy.deepcopy(self.event_granules)
 
-        result = task(copy.deepcopy(event), None)
+        result = task(copy.deepcopy(event_input), event_config)
 
-        mock_get_destination_bucket_name.assert_called_once_with(config)
-        mock_get_storage_class.assert_called_once_with(config)
+        mock_get_destination_bucket_name.assert_called_once_with(event_config)
+        mock_get_storage_class.assert_called_once_with(event_config)
 
         _OUTPUT_VALIDATE(result)
 
-        expected_granules = copy.deepcopy(event["input"]["granules"])
+        expected_granules = copy.deepcopy(event_input["granules"])
         self.assertEqual(expected_granules, result["granules"])
 
         head_object_calls = []
@@ -678,7 +669,7 @@ class TestCopyToArchive(TestCase):
             for file in self.event_granules["granules"][0]["files"]
         ]
         self.assertEqual(expected_copied_file_urls, result["copied_to_orca"])
-        expected_granules = copy.deepcopy(event["input"]["granules"])
+        expected_granules = copy.deepcopy(event_input["granules"])
         self.assertEqual(expected_granules, result["granules"])
         self.assertIsNone(config_check.bad_config)
 
@@ -710,12 +701,8 @@ class TestCopyToArchive(TestCase):
             "collectionShortname": "MOD09GQ",
             "collectionVersion": uuid.uuid4().__str__(),
         }
-        event = {
-            "input": {"granules": []},
-            "config": config,
-        }
 
-        result = task(copy.deepcopy(event), None)
+        result = task({"granules": []}, copy.deepcopy(config))
 
         mock_get_destination_bucket_name.assert_called_once_with(config)
         mock_get_storage_class.assert_called_once_with(config)
@@ -832,7 +819,7 @@ class TestCopyToArchive(TestCase):
         is same as the message received from SQS.
         """
         sqs_body = {
-            "provider": {"providerId": "1234", "name": "LPCUmumulus"},
+            "provider": {"providerId": "1234", "name": "LPCumulus"},
             "collection": {
                 "collectionId": "MOD14A1__061",
                 "shortname": "MOD14A1",
@@ -873,6 +860,8 @@ class TestCopyToArchive(TestCase):
         # Testing required fields
         self.assertEqual(queue_output_body, sqs_body)
 
+        mock_sleep.assert_not_called()
+
     # Todo: since sleep is not called in function under test,
     # this violates good unit test practices. Fix in ORCA-406
     @patch("time.sleep")
@@ -883,7 +872,7 @@ class TestCopyToArchive(TestCase):
         """
         sqs_body = {
             "provider": {
-                "providerId": "1234", "name": "LPCUmumulus"
+                "providerId": "1234", "name": "LPCumulus"
                 },
             "collection": {
                 "collectionId": "MOD14A1__061",
