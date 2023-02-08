@@ -11,10 +11,10 @@ from typing import Any, Dict, List, Union
 
 # Third party libraries
 import boto3
+import fastjsonschema as fastjsonschema
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 from boto3.s3.transfer import MB, TransferConfig
-import fastjsonschema as fastjsonschema
 from fastjsonschema import JsonSchemaException
 
 import sqs_library

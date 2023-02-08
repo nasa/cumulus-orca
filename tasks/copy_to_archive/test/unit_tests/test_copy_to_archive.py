@@ -9,9 +9,11 @@ from unittest import TestCase
 from unittest.mock import ANY, MagicMock, Mock, call, patch
 
 import boto3
+
 # noinspection PyPackageRequirements
 import fastjsonschema as fastjsonschema
 from boto3.s3.transfer import MB
+
 # noinspection PyPackageRequirements
 from moto import mock_sqs
 
