@@ -42,7 +42,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     """
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/lambda.html
     # 600s for copy_to_archive operation
-    config = Config(read_timeout=600, retries={'max_attempts': 0})
+    config = Config(read_timeout=600, retries={'total_max_attempts': 1})
     client = boto3.client("lambda", config=config)
     response = client.invoke(
         FunctionName=os.environ[OS_ENVIRON_COPY_TO_ARCHIVE_ARN_KEY],
