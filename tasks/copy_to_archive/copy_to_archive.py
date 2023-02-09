@@ -24,16 +24,22 @@ LOGGER = Logger()
 
 OS_ENVIRON_DEFAULT_STORAGE_CLASS_KEY = "DEFAULT_STORAGE_CLASS"
 OS_ENVIRON_ORCA_DEFAULT_BUCKET_KEY = "ORCA_DEFAULT_BUCKET"
+OS_ENVIRON_DEFAULT_MULTIPART_CHUNKSIZE_MB_KEY = "DEFAULT_MULTIPART_CHUNKSIZE_MB"
+OS_ENVIRON_METADATA_DB_QUEUE_URL_KEY = "METADATA_DB_QUEUE_URL"
 
 EVENT_CONFIG_KEY = "config"
 EVENT_INPUT_KEY = "input"
 EVENT_OPTIONAL_VALUES_KEY = "optionalValues"
 
+CONFIG_PROVIDER_NAME_KEY = "providerName"
 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
 CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY = "excludedFileExtensions"
 CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY = "defaultBucketOverride"
 CONFIG_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY = "defaultStorageClassOverride"
-
+CONFIG_PROVIDER_ID_KEY = "providerId"
+CONFIG_COLLECTION_SHORT_NAME_KEY = "collectionShortname"
+CONFIG_COLLECTION_VERSION_KEY = "collectionVersion"
+CONFIG_EXECUTION_ID_KEY = "executionId"
 
 FILE_BUCKET_KEY = "bucket"
 FILE_FILEPATH_KEY = "key"
@@ -183,7 +189,7 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
 
     multipart_chunksize_mb_str = config.get(CONFIG_MULTIPART_CHUNKSIZE_MB_KEY, None)
     if multipart_chunksize_mb_str is None:
-        multipart_chunksize_mb = int(os.environ["DEFAULT_MULTIPART_CHUNKSIZE_MB"])
+        multipart_chunksize_mb = int(os.environ[OS_ENVIRON_DEFAULT_MULTIPART_CHUNKSIZE_MB_KEY])
         LOGGER.debug(
             "{CONFIG_MULTIPART_CHUNKSIZE_MB_KEY} is not set for config."
             "Using default value of {multipart_chunksize_mb}.",
@@ -194,11 +200,11 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
         multipart_chunksize_mb = int(multipart_chunksize_mb_str)
 
     try:
-        metadata_queue_url = os.environ.get("METADATA_DB_QUEUE_URL")
+        metadata_queue_url = os.environ.get(OS_ENVIRON_METADATA_DB_QUEUE_URL_KEY)
         if metadata_queue_url is None or len(metadata_queue_url) == 0:
-            raise KeyError("METADATA_DB_QUEUE_URL environment variable is not set.")
+            raise KeyError(f"{OS_ENVIRON_METADATA_DB_QUEUE_URL_KEY} environment variable is not set.")
     except KeyError:
-        LOGGER.error("METADATA_DB_QUEUE_URL environment variable is not set.")
+        LOGGER.error(f"{OS_ENVIRON_METADATA_DB_QUEUE_URL_KEY} environment variable is not set.")
         raise
 
     granule_data = {}
@@ -206,16 +212,16 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
 
     # initiate empty SQS body dict
     sqs_body = {"provider": {}, "collection": {}, "granule": {}}
-    sqs_body["provider"]["name"] = config.get("providerName", None)
-    sqs_body["provider"]["providerId"] = config["providerId"]
-    sqs_body["collection"]["shortname"] = config["collectionShortname"]
-    sqs_body["collection"]["version"] = config["collectionVersion"]
+    sqs_body["provider"]["name"] = config.get(CONFIG_PROVIDER_NAME_KEY, None)
+    sqs_body["provider"]["providerId"] = CONFIG_PROVIDER_ID_KEY
+    sqs_body["collection"]["shortname"] = CONFIG_COLLECTION_SHORT_NAME_KEY
+    sqs_body["collection"]["version"] = CONFIG_COLLECTION_VERSION_KEY
     # Cumulus currently creates collectionId by concatenating
     # shortname + ___ + version
     # See https://github.com/nasa/cumulus-dashboard/blob/
     # 18a278ee5a1ac5181ec035b3df0665ef5acadcb0/app/src/js/utils/format.js#L342
     sqs_body["collection"]["collectionId"] = (
-        config["collectionShortname"] + "___" + config["collectionVersion"]
+        config[CONFIG_COLLECTION_SHORT_NAME_KEY] + "___" + config[CONFIG_COLLECTION_VERSION_KEY]
     )
     # Iterate through the input granules (>= 0 granules expected)
     for granule in task_input["granules"]:
@@ -228,7 +234,7 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
         sqs_body["granule"]["cumulusCreateTime"] = datetime.fromtimestamp(
             granule["createdAt"] / 1000, timezone.utc
         ).isoformat()
-        sqs_body["granule"]["executionId"] = config["executionId"]
+        sqs_body["granule"]["executionId"] = config[CONFIG_EXECUTION_ID_KEY]
         sqs_body["granule"]["ingestTime"] = datetime.now(timezone.utc).isoformat()
         sqs_body["granule"]["lastUpdate"] = datetime.now(timezone.utc).isoformat()
         sqs_body["granule"]["files"] = []
