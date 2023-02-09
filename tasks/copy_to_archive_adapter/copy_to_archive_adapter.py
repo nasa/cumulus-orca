@@ -3,17 +3,20 @@ Name: copy_to_archive.py
 Description: Lambda function that takes a Cumulus message, extracts a list of files,
 and copies those files from their current storage location into a staging/archive location.
 """
+import json
+import os
 from typing import Any, Dict, List, Union
 
 # Third party libraries
+import boto3
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 from run_cumulus_task import run_cumulus_task
 
-CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
-CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY = "excludedFileExtensions"
-CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY = "defaultBucketOverride"
-CONFIG_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY = "defaultStorageClassOverride"
+OS_ENVIRON_COPY_TO_ARCHIVE_ARN_KEY = "COPY_TO_ARCHIVE_ARN"
+
+ORCA_INPUT_KEY = "input"
+ORCA_CONFIG_KEY = "config"
 
 # Set AWS powertools logger
 LOGGER = Logger()
@@ -29,10 +32,29 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
         event: Passed through from {handler}
         context: An object required by AWS Lambda. Unused.
 
+    Environment Variables:
+        COPY_TO_ARCHIVE_ARN (string, required):
+            ARN of ORCA's copy_to_archive lambda.
+
     Returns:
-        A dict representing files to copy. See schemas/output.json for more information.
+        A dict representing input and copied files. See schemas/output.json for more information.
     """
-    return event["input"]
+    # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/lambda.html
+    client = boto3.client("lambda")
+    response = client.invoke(
+        FunctionName=os.environ[OS_ENVIRON_COPY_TO_ARCHIVE_ARN_KEY],
+        InvocationType="RequestResponse",  # Synchronous
+        Payload=
+        {
+            ORCA_INPUT_KEY: event["input"],
+            ORCA_CONFIG_KEY: event["config"]
+        }  # todo: convert to bytes?
+    )
+
+    if response["StatusCode"] != 200:
+        raise Exception(response["FunctionError"])
+
+    return json.loads(response["Payload"].read())
 
 
 @LOGGER.inject_lambda_context
@@ -46,9 +68,12 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: LambdaContext) ->
         event: Event passed into the step from the aws workflow.
             See schemas/input.json and schemas/config.json for more information.
 
-
         context: This object provides information about the lambda invocation, function,
             and execution env.
+
+    Environment Variables:
+        COPY_TO_ARCHIVE_ARN (string, required):
+            ARN of ORCA's copy_to_archive lambda.
 
     Returns:
         The result of the cumulus task. See schemas/output.json for more information.
