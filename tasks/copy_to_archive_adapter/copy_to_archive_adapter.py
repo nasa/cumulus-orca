@@ -11,6 +11,7 @@ from typing import Any, Dict, List, Union
 import boto3
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
+from botocore.client import Config
 from run_cumulus_task import run_cumulus_task
 
 OS_ENVIRON_COPY_TO_ARCHIVE_ARN_KEY = "COPY_TO_ARCHIVE_ARN"
@@ -40,21 +41,24 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
         A dict representing input and copied files. See schemas/output.json for more information.
     """
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/lambda.html
-    client = boto3.client("lambda")
+    # 600s for copy_to_archive operation
+    config = Config(read_timeout=600, retries={'max_attempts': 0})
+    client = boto3.client("lambda", config=config)
     response = client.invoke(
         FunctionName=os.environ[OS_ENVIRON_COPY_TO_ARCHIVE_ARN_KEY],
         InvocationType="RequestResponse",  # Synchronous
         Payload=
-        {
+        json.dumps({
             ORCA_INPUT_KEY: event["input"],
             ORCA_CONFIG_KEY: event["config"]
-        }  # todo: convert to bytes?
+        }, indent=4).encode("utf-8")
     )
 
     if response["StatusCode"] != 200:
         raise Exception(response["FunctionError"])
 
-    return json.loads(response["Payload"].read())
+    result = json.loads(response["Payload"].read())
+    return result
 
 
 @LOGGER.inject_lambda_context

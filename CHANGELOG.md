@@ -81,7 +81,8 @@ and includes an additional section for migration notes.
   rename to new key `copied_to_orca`.
 - If utilizing the `orca_lambda_copy_to_glacier_arn` [output of Terraform](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/outputs.tf#L8), likely as a means of pulling the lambda into your workflows, 
   rename to new key `orca_lambda_copy_to_archive_arn`
-- Use the optional `recoveryBucketOverride` property in `extract_filepaths_for_granule` input schema to specify a recovery bucket. See example below.
+- If utilizing the `orca_lambda_request_files_arn` [output of Terraform](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/outputs.tf#L28), likely as a means of pulling the lambda into your workflows, rename to new key `orca_lambda_request_from_archive_arn`
+- If desired, use the optional `recoveryBucketOverride` property in `extract_filepaths_for_granule` input schema to to override the default recovery bucket. See example below.
 
 ```json
 
