@@ -1,24 +1,20 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive_adapter/schemas/output.json",
-  "title": "copy_to_archive_adapter Lambda Output",
-  "description": "The output for the copy_to_archive Lambda. Matches the input for ORCA's copy_to_archive Lambda.",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive/schemas/output.json",
+  "title": "copy_to_archive Lambda Output",
+  "description": "The output for the copy_to_archive Lambda.",
   "type": "object",
-  "required": ["granules"],
+  "required": ["granules", "copied_to_orca"],
   "properties": {
     "granules": {
-      "description": "A list of objects representing individual files to copy.",
+      "description": "The 'granules' property from the input.",
       "type": "array",
       "items": {
-        "required": ["granuleId", "createdAt", "files"],
+        "required": ["granuleId", "files"],
         "properties": {
           "granuleId": {
             "description": "The granule's ID.",
             "type": "string"
-          },
-          "createdAt": {
-            "description": "The time, in milliseconds since 1 January 1970 UTC, data was originally ingested into Cumulus.",
-            "type": "integer"
           },
           "files": {
             "description": "The files to copy.",
@@ -26,6 +22,10 @@
             "items": {
               "required": ["bucket", "key"],
               "properties": {
+                "fileName": {
+                  "type": "string",
+                  "description": "Name of file (e.g. file.txt)."
+                },
                 "bucket": {
                   "type": "string",
                   "description": "Name of the Bucket where file is archived in S3."
@@ -34,18 +34,21 @@
                   "type": "string",
                   "description": "S3 Key for archived file."
                 },
-                "checksum": {
-                  "type": ["string", "null"],
-                  "description": "Hash of the object from Cumulus"
-                },
-                "checksumType": {
-                  "type": ["string", "null"],
-                  "description": "Hash type used to hash the object. Supplied by Cumulus."
+                "source": {
+                  "type": "string",
+                  "description": "Source URI of the file from origin system (e.g. S3, FTP, HTTP)."
                 }
               }
             }
           }
         }
+      }
+    },
+    "copied_to_orca": {
+      "description": "Source URI of the file from origin s3 bucket.",
+      "type": "array",
+      "items": {
+        "type": "string"
       }
     }
   }

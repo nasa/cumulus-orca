@@ -13,13 +13,13 @@ It also sends additional metadata attributes to metadata SQS queue needed for Cu
 You are able to specify a list of file types (extensions) that you'd like to exclude from the backup/copy_to_archive functionality. This is done on a per-collection basis, configured in the Cumulus collection configuration under the `meta.orca.excludedFileExtensions` key:
 
 ```json
-      "collection": {
-        "meta": {
-            "orca":{
-                "excludedFileExtensions": [".xml", ".cmr", ".cmr.xml"]
-            }
+"collection": {
+    "meta": {
+        "orca": {
+            "excludedFileExtensions": [".xml", ".cmr", ".cmr.xml"]
         }
-
+    }
+}
 ```
 
 Note that this must be done for _each_ collection configured. If this list is empty or not included in the meta configuration, the `copy_to_archive` function will include files with all extensions in the backup.
@@ -228,7 +228,9 @@ The `providerId`, `executionId`, `collectionShortname`, and `collectionVersion` 
 `config` object as seen below, 
 while the `excludedFileExtensions`, `s3MultipartChunksizeMb`, `providerName`, `defaultBucketOverride`, and `defaultStorageClassOverride` are stored as paths, and will be retrieved in-code.
 Per the [config schema](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive/schemas/config.json), 
-the values of the keys are used the following ways. The `provider` key should contain an `id` key that returns the provider id from Cumulus. The `cumulus_meta` key should contain an `execution_name` key that returns the step function execution ID from AWS. 
+the values of the keys are used the following ways. 
+The `provider` key should contain an `id` key that returns the provider id from Cumulus. 
+The `cumulus_meta` key should contain an `execution_name` key that returns the step function execution ID from AWS. 
 The `collection` key value should contain a `name` key and a `version` key that return the required collection shortname and collection version from Cumulus respectively.
 The `collection` key value should also contain a `meta` key that includes an `orca` key having an optional `excludedFileExtensions` key that is used to determine file patterns that should not be 
 sent to ORCA.
