@@ -44,15 +44,22 @@ if [[ ! $bamboo_RELEASE_FLAG == true ]]; then
   exit 0
 fi
 
-# todo: The following check raises an error if the TAG exists, not a release. ORCA-606
-## Check if the code has already been released.
-# export url="https://github.com/nasa/cumulus-orca/releases/tag/"v$bamboo_ORCA_VERSION""
-# if curl --output /null --silent --fail "$url"; then
-#   echo "Release URL already exists: $url. Exiting."
-#   exit 1
-# else
-#   echo "$url does not exist. Proceeding with release..."
-# fi
+export url="https://github.com/nasa/cumulus-orca/releases/download/v$bamboo_ORCA_VERSION/cumulus-orca-terraform.zip"
+curl_result=$(curl -Is "$url" | head -1)
+# Remove the ' ^M' that curl tacks on to the results.
+curl_result=${curl_result::${#curl_result}-2}
+# debug step for showing hidden characters.
+# echo $curl_result | cat -v
+# 302 is found, 404 for not found
+if [ "$curl_result" == "HTTP/2 302" ]; then
+  echo "$url already exists. Exiting."
+  exit 1
+elif [ "$curl_result" == "HTTP/2 404" ]; then
+  echo "$url has not been released. Proceeding."
+else
+  echo "Unexpected response from $url: $curl_result"
+  exit 1
+fi
 
 ## Release the Code
 cd dist
