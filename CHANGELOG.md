@@ -17,6 +17,10 @@ and includes an additional section for migration notes.
 ### Added
 - *ORCA-554*, *ORCA-561*, *ORCA-579*, *ORCA-581* GraphQL image, service, and Load Balancer will now be deployed by TF.
 
+## [7.0.1]
+### Changed
+- *ORCA-632* Fixed a bug where `excludedFileExtensions` was a required property in collection config. Restored default behavior of defaulting to an empty list.
+
 ## [7.0.0]
 ### Changed
 - *ORCA-336*

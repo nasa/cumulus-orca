@@ -1966,6 +1966,11 @@ class TestRequestFromArchive(unittest.TestCase):
         }
         context = Mock()
         result = request_from_archive.handler(input_event, context)
+
+        mock_task.assert_called_once_with(
+            input_event["input"], input_event["config"]
+        )
+        mock_optional_property.assert_called_once_with(input_event, {}, [])
         self.assertEqual(mock_task.return_value, result)
 
     @patch("request_from_archive.task")
