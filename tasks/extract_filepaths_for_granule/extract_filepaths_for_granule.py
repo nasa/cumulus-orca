@@ -16,6 +16,8 @@ from fastjsonschema import JsonSchemaException
 # Set AWS powertools logger
 LOGGER = Logger()
 
+EVENT_OPTIONAL_VALUES_KEY = "optionalValues"
+
 CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY = "excludedFileExtensions"
 CONFIG_FILE_BUCKETS_KEY = "fileBucketMaps"
 CONFIG_BUCKETS_KEY = "buckets"
@@ -189,6 +191,52 @@ def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> b
     return False
 
 
+def set_optional_event_property(event: Dict[str, Any], target_path_cursor: Dict,
+                                target_path_segments: List) -> None:
+    """Sets the optional variable value from event if present, otherwise sets to None.
+    Args:
+        event: See schemas/input.json.
+        target_path_cursor: Cursor of the current section to check.
+        target_path_segments: The path to the current cursor.
+    Returns:
+        None
+    """
+    for optionalValueTargetPath in target_path_cursor:
+        temp_target_path_segments = target_path_segments.copy()
+        temp_target_path_segments.append(optionalValueTargetPath)
+        if isinstance(target_path_cursor[optionalValueTargetPath], dict):
+            set_optional_event_property(
+                event,
+                target_path_cursor[optionalValueTargetPath],
+                temp_target_path_segments
+            )
+        elif isinstance(target_path_cursor[optionalValueTargetPath], str):
+            source_path = target_path_cursor[optionalValueTargetPath]
+            source_path_segments = source_path.split(".")
+
+            # ensure that the path up to the target_path exists
+            event_cursor = event
+            for target_path_segment in temp_target_path_segments[:-1]:
+                event_cursor[target_path_segment] =\
+                    event_cursor.get(target_path_segment, {})
+                event_cursor = event_cursor[target_path_segment]
+            event_cursor[temp_target_path_segments[-1]] = None
+
+            # get the value for the optional element
+            source_path_cursor = event
+            for source_path_segment in source_path_segments:
+                source_path_cursor = source_path_cursor.get(source_path_segment, None)
+                if source_path_cursor is None:
+                    LOGGER.info(f"When retrieving '{'.'.join(temp_target_path_segments)}', "
+                                f"no value found in '{source_path}' at key {source_path_segment}. "
+                                f"Defaulting to null.")
+                    break
+            event_cursor[temp_target_path_segments[-1]] = source_path_cursor
+        else:
+            raise Exception(f"Illegal type {type(target_path_cursor[optionalValueTargetPath])} "
+                            f"found at {'.'.join(temp_target_path_segments)}")
+
+
 @LOGGER.inject_lambda_context
 def handler(event: Dict[str, Dict[str, Any]],
             context: LambdaContext):  # pylint: disable-msg=unused-argument
@@ -242,6 +290,13 @@ def handler(event: Dict[str, Dict[str, Any]],
         ExtractFilePathsError: An error occurred parsing the input.
     """
     LOGGER.debug(f"event: {event}")
+    # set the optional variables to None if not configured
+    try:
+        set_optional_event_property(event, event.get(EVENT_OPTIONAL_VALUES_KEY, {}), [])
+    except Exception as ex:
+        LOGGER.error(ex)
+        raise ex
+
     task_input = event["input"]
     try:
         _VALIDATE_INPUT(task_input)

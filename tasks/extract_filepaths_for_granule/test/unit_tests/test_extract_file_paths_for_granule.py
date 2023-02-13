@@ -31,7 +31,8 @@ class TestExtractFilePaths(unittest.TestCase):
         self.task_input_event = create_task_event()
 
     @patch("extract_filepaths_for_granule.task")
-    def test_handler_happy_path(self, mock_task: MagicMock):
+    @patch("extract_filepaths_for_granule.set_optional_event_property")
+    def test_handler_happy_path(self, mock_optional_property: MagicMock, mock_task: MagicMock):
         """
         Tests happy path for lambda handler.
         """
@@ -80,10 +81,18 @@ class TestExtractFilePaths(unittest.TestCase):
         }
         context = Mock()
         result = extract_filepaths_for_granule.handler(handler_input_event, context)
+
+        mock_task.assert_called_once_with(
+            handler_input_event["input"], handler_input_event["config"]
+        )
+        mock_optional_property.assert_called_once_with(handler_input_event, {}, [])
         self.assertEqual(mock_task.return_value, result)
 
     @patch("extract_filepaths_for_granule.task")
-    def test_handler_raises_error_bad_config(self, mock_task: MagicMock):
+    @patch("extract_filepaths_for_granule.set_optional_event_property")
+    def test_handler_raises_error_bad_config(self,
+                                             _: MagicMock,
+                                             mock_task: MagicMock):
         """
         Tests that expected error is raised on bad config such as missing regex key.
         """
@@ -124,7 +133,10 @@ class TestExtractFilePaths(unittest.TestCase):
         mock_task.assert_not_called()
 
     @patch("extract_filepaths_for_granule.task")
-    def test_handler_raises_error_bad_input(self, mock_task: MagicMock):
+    @patch("extract_filepaths_for_granule.set_optional_event_property")
+    def test_handler_raises_error_bad_input(self,
+                                            _: MagicMock,
+                                            mock_task: MagicMock):
         """
         Tests that expected error is raised on bad input such as missing granuleId.
         """
@@ -156,7 +168,10 @@ class TestExtractFilePaths(unittest.TestCase):
         mock_task.assert_not_called()
 
     @patch("extract_filepaths_for_granule.task")
-    def test_handler_raises_error_bad_output(self, mock_task: MagicMock):
+    @patch("extract_filepaths_for_granule.set_optional_event_property")
+    def test_handler_raises_error_bad_output(self,
+                                             _: MagicMock,
+                                             mock_task: MagicMock):
         """
         Tests that expected error is raised on bad output such as missing granuleId.
         """
@@ -438,6 +453,58 @@ class TestExtractFilePaths(unittest.TestCase):
         )
         self.assertEqual(True, result_true)
         self.assertEqual(False, result_false)
+
+    @patch("extract_filepaths_for_granule.LOGGER.info")
+    def test_set_optional_event_property(
+        self, mock_logger: MagicMock,
+    ):
+        """
+        Tests that set_optional_event_property sets asyncOperationId as the value
+        present in event and sets null value for other keys that are not present in event.
+        """
+        key0 = uuid.uuid4().__str__()  # no value, default to None
+        key1 = uuid.uuid4().__str__()  # value present, set value in event
+        key1_value = uuid.uuid4().__str__()
+        key2 = uuid.uuid4().__str__()  # value present, override value in event
+        key2_value = uuid.uuid4().__str__()
+        mock_event = {
+            "event": {
+                "cumulus_meta": {
+                    "asyncOperationId": key2_value
+                },
+                "meta": {
+                    "collection": {
+                        "meta": {
+                            "orca": {
+                                "defaultBucketOverride": key1_value
+                            }
+                        }
+                    }
+                }
+            },
+            "config1": {
+                key2: uuid.uuid4().__str__()
+            }
+        }
+        mock_target_path_cursor = {
+            "config0": {
+                key0:
+                    "event.meta.collection.meta.orca.defaultRecoveryTypeOverride",
+                key1:
+                    "event.meta.collection.meta.orca.defaultBucketOverride"
+            },
+            "config1": {
+                key2:
+                    "event.cumulus_meta.asyncOperationId"
+            }
+        }
+        extract_filepaths_for_granule\
+            .set_optional_event_property(mock_event, mock_target_path_cursor, [])
+
+        # set asyncOperationId to non-null value
+        self.assertEqual(None, mock_event["config0"][key0])
+        self.assertEqual(key1_value, mock_event["config0"][key1])
+        self.assertEqual(key2_value, mock_event["config1"][key2])
 
 
 if __name__ == "__main__":

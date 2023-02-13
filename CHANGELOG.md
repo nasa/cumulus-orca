@@ -30,6 +30,10 @@ and includes an additional section for migration notes.
   - API Gateway access is now deprecated, and will be removed in a future update.
   - Use the `orca_graphql_load_balancer_dns_name` variable to send your queries to GraphQL as json strings in a POST request.
 
+## [7.0.1]
+### Changed
+- *ORCA-632* Fixed a bug where `excludedFileExtensions` was a required property in collection config. Restored default behavior of defaulting to an empty list.
+
 ## [7.0.0]
 ### Changed
 - *ORCA-336*
