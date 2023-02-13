@@ -31,6 +31,7 @@ and includes an additional section for migration notes.
 - Cumulus is not currently compatible with the changes to copy_to_archive.
   - This section will be updated when a compatible version is created.
   - deployment-with-cumulus.md will also be updated.
+  - copy_to_archive_adapter/README.md will also be updated.
 
 ### Migration Notes
 - Update the bucket policy for your `system-bucket` to allow load balancer to post server access logs to the bucket. See the instructions [here](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-s3-bucket#bucket-policy-for-load-balancer-server-access-loging).

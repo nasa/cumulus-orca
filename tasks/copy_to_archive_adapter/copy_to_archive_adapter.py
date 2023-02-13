@@ -11,6 +11,8 @@ from typing import Any, Dict, List, Union
 import boto3
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
+
+# noinspection PyPackageRequirements
 from botocore.client import Config
 from run_cumulus_task import run_cumulus_task
 
@@ -47,15 +49,14 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     response = client.invoke(
         FunctionName=os.environ[OS_ENVIRON_COPY_TO_ARCHIVE_ARN_KEY],
         InvocationType="RequestResponse",  # Synchronous
-        Payload=
-        json.dumps({
+        Payload=json.dumps({
             ORCA_INPUT_KEY: event["input"],
             ORCA_CONFIG_KEY: event["config"]
         }, indent=4).encode("utf-8")
     )
 
     if response["StatusCode"] != 200:
-        raise Exception(response["FunctionError"])
+        raise Exception(response.get("FunctionError", None))
 
     result = json.loads(response["Payload"].read())
     return result

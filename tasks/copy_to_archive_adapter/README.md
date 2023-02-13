@@ -7,6 +7,8 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 The `copy_to_archive` module is meant to be deployed as a lambda function that takes a Cumulus message, extracts a list of files, and copies those files from their current storage location into an ORCA archive bucket. 
 It also sends additional metadata attributes to metadata SQS queue needed for Cumulus reconciliation.
 
+This lambda calls copy_to_archive synchronously, returning results and raising errors as appropriate.
+This provides an injection seam to contact the ORCA managed copy_to_archive lambda with ORCA's formatting.
 
 ## Exclude files by extension.
 
@@ -158,7 +160,7 @@ The `copy_to_archive_adapter` lambda function expects that the input payload has
 ```
 From the json file, the `filepath` shows the current S3 location of files that need to be copied over to archive bucket such as `"filename": "s3://orca-sandbox-protected/MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf"`.
 **Note:** We suggest that the `copy_to_archive_adapter` task be placed any time after the `MoveGranulesStep`. It will propagate the input `granules` object as output, so it can be used as the last task in the workflow.
-See the schema [input file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive/schemas/input.json) for more information.
+See the schema [input file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive_adapter/schemas/input.json) for more information.
 
 
 ## Output
@@ -166,7 +168,7 @@ See the schema [input file](https://github.com/nasa/cumulus-orca/blob/master/tas
 The `copy_to_archive` lambda will, as the name suggests, copy a file from its current source destination. The destination location is defined as 
 `${archive_bucket}/${filepath}`, where `${archive_bucket}` is pulled from the environment variable `ORCA_DEFAULT_BUCKET` and `${filepath}` is pulled from the Cumulus granule object input.
 
-The output of this lambda is a dictionary with a `granules` and `copied_to_orca` attributes.  See the schema [output file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive/schemas/output.json) for more information. Below is an example of the output:
+The output of this lambda is a dictionary with a `granules` and `copied_to_orca` attributes.  See the schema [output file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive_adapter/schemas/output.json) for more information. Below is an example of the output:
 
 ```json
 {
@@ -228,7 +230,7 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_orca`
 As part of the [Cumulus Message Adapter configuration](https://nasa.github.io/cumulus/docs/workflows/input_output#cma-configuration) 
 for `copy_to_archive`, the `excludedFileExtensions`, `s3MultipartChunksizeMb`, `providerId`, `executionId`, `collectionShortname`, `collectionVersion`, `defaultBucketOverride`, and `defaultStorageClassOverride` keys must be present under the 
 `task_config` object as seen below. 
-Per the [config schema](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive/schemas/config.json), 
+Per the [config schema](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive_adapter/schemas/config.json), 
 the values of the keys are used the following ways. 
 The `provider` key should contain an `id` key that returns the provider id from Cumulus. 
 The `cumulus_meta` key should contain an `execution_name` key that returns the step function execution ID from AWS. 
@@ -284,7 +286,7 @@ These settings can often be derived from the collection configuration in Cumulus
   }
 }
 ```
-See the schema [configuration file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive/schemas/config.json) for more information.
+See the schema [configuration file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive_adapter/schemas/config.json) for more information.
 
 ## pydoc copy_to_archive_adapter
 [See the API documentation for more details.](API.md)
