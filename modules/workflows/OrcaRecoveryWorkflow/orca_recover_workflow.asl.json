@@ -5,6 +5,7 @@
   "States": {
     "ExtractFilepaths": {
       "Parameters": {
+        "event.$": "$",
         "input.$": "$.payload",
         "config": {
           "buckets.$": "$.meta.buckets",

@@ -5,7 +5,8 @@
     "type": "object",
     "required": [
       "buckets",
-      "fileBucketMaps"
+      "fileBucketMaps",
+      "excludedFileExtensions"
     ],
     "properties": {
       "buckets": {
