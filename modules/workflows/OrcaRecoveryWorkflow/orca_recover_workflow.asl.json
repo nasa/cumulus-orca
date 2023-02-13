@@ -5,11 +5,16 @@
   "States": {
     "ExtractFilepaths": {
       "Parameters": {
+        "event.$": "$",
         "input.$": "$.payload",
         "config": {
           "buckets.$": "$.meta.buckets",
-          "fileBucketMaps.$": "$.meta.collection.files",
-          "excludedFileExtensions.$": "$.meta.collection.meta.orca.excludedFileExtensions"
+          "fileBucketMaps.$": "$.meta.collection.files"
+        },
+        "optionalValues": {
+          "config": {
+            "excludedFileExtensions": "event.meta.collection.meta.orca.excludedFileExtensions"
+          }
         }
       },
       "Type": "Task",
