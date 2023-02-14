@@ -27,6 +27,18 @@ def _validate_password(password: str, context: str, logger: logging.Logger) -> N
         msg = f"{context} password must be at least 12 characters long."
         logger.critical(msg)
         raise Exception(msg)
+    elif re.search('[0-9]', password) is None:
+        msg = f"{context} password must contain a digit between 0 and 9"
+        logger.critical(msg)
+        raise Exception(msg)
+    elif re.search('[A-Z]', password) is None:
+        msg = f"{context} password must contain an Upper case letter"
+        logger.critical(msg)
+        raise Exception(msg)
+    elif re.search('[$&%+,:;=?.*^@#]', password) is None:
+        msg = f"{context} password must contain a special character"
+        logger.critical(msg)
+        raise Exception(msg)
 
 
 def validate_postgres_name(name: str, context: str, logger: logging.Logger) -> None:
