@@ -4,6 +4,7 @@
   "States": {
     "CopyToArchive": {
       "Parameters": {
+        "event.$": "$",
         "input.$": "$.payload",
         "config": {
           "providerId": "{$.meta.provider.id}",

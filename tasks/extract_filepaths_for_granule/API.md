@@ -133,38 +133,8 @@ Lambda handler. Extracts the key's for a granule from an input dict.
 
 **Arguments**:
 
-- `event` - A dict with the following keys:
-  granules (list(dict)): A list of dict with the following keys:
-- `granuleId` _string_ - The id of a granule.
-  files (list(dict)): list of dict with the following keys:
-- `key` _string_ - The key of the file to be returned.
-  other dictionary keys may be included, but are not used.
-  other dictionary keys may be included, but are not used.
-  
-
-**Example**:
-
-  {
-- `"event"` - {
-- `"granules"` - [
-  {
-- `"granuleId"` - "granxyz",
-- `"recoveryBucketOverride"` - "test-recovery-bucket",
-- `"version"` - "006",
-- `"files"` - [
-  {
-- `"fileName"` - "file1",
-- `"key"` - "key1",
-- `"source"` - "s3://dr-test-sandbox-protected/file1",
-- `"type"` - "metadata"
-  }
-  ]
-  }
-  ]
-  }
-  }
-- `context` - This object provides information about the lambda invocation, function,
-  and execution env.
+- `event` - Event passed into the step from the aws workflow.
+  See schemas/input.json and schemas/config.json for more information.
   
 
 **Returns**:

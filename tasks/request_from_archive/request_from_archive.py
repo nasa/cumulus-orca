@@ -704,7 +704,8 @@ def handler(event: Dict[str, Any], context: LambdaContext):  # pylint: disable-m
             ORCA_DEFAULT_BUCKET
                 The bucket to use if destBucket is not set.
         Args:
-            event: See schemas/input.json.
+            event: Event passed into the step from the aws workflow.
+                See schemas/input.json and schemas/config.json for more information.
             context: This object provides information about the lambda invocation, function,
                 and execution env.
         Returns:
