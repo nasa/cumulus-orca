@@ -222,7 +222,7 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_orca`
 }
 ```
 
-## Workflow Configuration
+## Step Function Configuration
 
 The `providerId`, `executionId`, `collectionShortname`, and `collectionVersion` keys must be present under the 
 `config` object as seen below.

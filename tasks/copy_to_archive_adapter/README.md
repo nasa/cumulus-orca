@@ -225,7 +225,7 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_orca`
 }
 ```
 
-## Workflow Configuration
+## Step Function Configuration
 
 As part of the [Cumulus Message Adapter configuration](https://nasa.github.io/cumulus/docs/workflows/input_output#cma-configuration) 
 for `copy_to_archive`, the `excludedFileExtensions`, `s3MultipartChunksizeMb`, `providerId`, `executionId`, `collectionShortname`, `collectionVersion`, `defaultBucketOverride`, and `defaultStorageClassOverride` keys must be present under the 
