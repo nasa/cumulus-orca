@@ -224,7 +224,7 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_orca`
 
 ## Configuration
 
-The `providerId`, `executionId`, `collectionShortname`, and `collectionVersion` and keys must be present under the 
+The `providerId`, `executionId`, `collectionShortname`, and `collectionVersion` keys must be present under the 
 `config` object as seen below, 
 while the `excludedFileExtensions`, `s3MultipartChunksizeMb`, `providerName`, `defaultBucketOverride`, and `defaultStorageClassOverride` are stored as paths, and will be retrieved in-code.
 Per the [config schema](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive/schemas/config.json), 
