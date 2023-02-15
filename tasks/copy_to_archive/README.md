@@ -246,10 +246,10 @@ These settings can often be derived from the collection configuration in Cumulus
       "Parameters": {
         "input.$": "$.payload",
         "config": {
-          "providerId": "{$.meta.provider.id}",
-          "executionId": "{$.cumulus_meta.execution_name}",
-          "collectionShortname": "{$.meta.collection.name}",
-          "collectionVersion": "{$.meta.collection.version}"
+          "providerId": "$.meta.provider.id",
+          "executionId": "$.cumulus_meta.execution_name",
+          "collectionShortname": "$.meta.collection.name",
+          "collectionVersion": "$.meta.collection.version"
         },
         "optionalValues": {
           "config": {
