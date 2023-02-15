@@ -27,6 +27,9 @@
     * [test\_validate\_config\_happy\_path](#orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_config_happy_path)
     * [test\_validate\_password\_happy\_path](#orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_password_happy_path)
     * [test\_validate\_password\_short\_raises\_error](#orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_password_short_raises_error)
+    * [test\_validate\_password\_number\_missing\_raises\_error](#orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_password_number_missing_raises_error)
+    * [test\_validate\_password\_upper\_string\_missing\_raises\_error](#orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_password_upper_string_missing_raises_error)
+    * [test\_validate\_password\_special\_character\_missing\_raises\_error](#orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_password_special_character_missing_raises_error)
     * [test\_validate\_postgres\_name\_happy\_path](#orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_postgres_name_happy_path)
     * [test\_validate\_postgres\_name\_short\_raises\_error](#orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_postgres_name_short_raises_error)
     * [test\_validate\_postgres\_name\_long\_raises\_error](#orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_postgres_name_long_raises_error)
@@ -372,6 +375,36 @@ def test_validate_password_short_raises_error()
 ```
 
 A password of `None` or length < 12 should be rejected.
+
+<a id="orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_password_number_missing_raises_error"></a>
+
+#### test\_validate\_password\_number\_missing\_raises\_error
+
+```python
+def test_validate_password_number_missing_raises_error()
+```
+
+A password without at least a number should be rejected.
+
+<a id="orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_password_upper_string_missing_raises_error"></a>
+
+#### test\_validate\_password\_upper\_string\_missing\_raises\_error
+
+```python
+def test_validate_password_upper_string_missing_raises_error()
+```
+
+A password without at least an upper case should be rejected.
+
+<a id="orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_password_special_character_missing_raises_error"></a>
+
+#### test\_validate\_password\_special\_character\_missing\_raises\_error
+
+```python
+def test_validate_password_special_character_missing_raises_error()
+```
+
+A password without a special character should be rejected.
 
 <a id="orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_postgres_name_happy_path"></a>
 
@@ -859,7 +892,7 @@ def validate_postgres_name(name: str, context: str,
 ```
 
 Validates the given name against documented Postgres restrictions.
-https://www.postgresql.org/docs/7.0/syntax525.htm
+https://www.postgresql.org/docs/14/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS
 
 **Raises**:
 

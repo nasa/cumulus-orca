@@ -10,7 +10,6 @@ def validate_config(config: PostgresConnectionInfo, logger: logging.Logger) -> N
     validate_postgres_name(config.admin_username, "Admin username", logger)
 
     _validate_password(config.user_password, "User", logger)
-    # todo: More validations? These were just pulled from db_deploy
 
     validate_postgres_name(config.user_database_name, "User database name", logger)
     validate_postgres_name(config.admin_database_name, "Admin database name", logger)
