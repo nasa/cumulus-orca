@@ -246,7 +246,7 @@ def handler(event: Dict[str, Dict[str, Any]],
     Args:
         event: Event passed into the step from the aws workflow.
             See schemas/input.json and schemas/config.json for more information.
-            
+
         context: This object provides information about the lambda invocation, function,
             and execution env.
 
