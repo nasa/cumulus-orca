@@ -202,7 +202,8 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
     try:
         metadata_queue_url = os.environ.get(OS_ENVIRON_METADATA_DB_QUEUE_URL_KEY)
         if metadata_queue_url is None or len(metadata_queue_url) == 0:
-            raise KeyError(f"{OS_ENVIRON_METADATA_DB_QUEUE_URL_KEY} environment variable is not set.")
+            raise KeyError(
+                f"{OS_ENVIRON_METADATA_DB_QUEUE_URL_KEY} environment variable is not set.")
     except KeyError:
         LOGGER.error(f"{OS_ENVIRON_METADATA_DB_QUEUE_URL_KEY} environment variable is not set.")
         raise
@@ -213,9 +214,9 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
     # initiate empty SQS body dict
     sqs_body = {"provider": {}, "collection": {}, "granule": {}}
     sqs_body["provider"]["name"] = config.get(CONFIG_PROVIDER_NAME_KEY, None)
-    sqs_body["provider"]["providerId"] = CONFIG_PROVIDER_ID_KEY
-    sqs_body["collection"]["shortname"] = CONFIG_COLLECTION_SHORT_NAME_KEY
-    sqs_body["collection"]["version"] = CONFIG_COLLECTION_VERSION_KEY
+    sqs_body["provider"]["providerId"] = config[CONFIG_PROVIDER_ID_KEY]
+    sqs_body["collection"]["shortname"] = config[CONFIG_COLLECTION_SHORT_NAME_KEY]
+    sqs_body["collection"]["version"] = config[CONFIG_COLLECTION_VERSION_KEY]
     # Cumulus currently creates collectionId by concatenating
     # shortname + ___ + version
     # See https://github.com/nasa/cumulus-dashboard/blob/
@@ -345,9 +346,6 @@ def get_storage_class(config: Dict[str, Any]) -> str:
         The name of the storage class to use.
     """
     try:
-        # run_cumulus_task checked config against config.json,
-        # so the number of values this can be is limited.
-        storage_class = config[CONFIG_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY]
         # run_cumulus_task checked config against config.json,
         # so the number of values this can be is limited.
         storage_class = config[CONFIG_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY]

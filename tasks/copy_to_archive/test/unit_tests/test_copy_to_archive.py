@@ -119,6 +119,58 @@ class TestCopyToArchive(TestCase):
         """
         self.mock_sqs.stop()
 
+    @patch("copy_to_archive.LOGGER.info")
+    def test_set_optional_event_property(
+        self, mock_logger: MagicMock,
+    ):
+        """
+        Tests that set_optional_event_property sets asyncOperationId as the value
+        present in event and sets null value for other keys that are not present in event.
+        """
+        key0 = uuid.uuid4().__str__()  # no value, default to None
+        key1 = uuid.uuid4().__str__()  # value present, set value in event
+        key1_value = uuid.uuid4().__str__()
+        key2 = uuid.uuid4().__str__()  # value present, override value in event
+        key2_value = uuid.uuid4().__str__()
+        mock_event = {
+            "event": {
+                "cumulus_meta": {
+                    "asyncOperationId": key2_value
+                },
+                "meta": {
+                    "collection": {
+                        "meta": {
+                            "orca": {
+                                "defaultBucketOverride": key1_value
+                            }
+                        }
+                    }
+                }
+            },
+            "config1": {
+                key2: uuid.uuid4().__str__()
+            }
+        }
+        mock_target_path_cursor = {
+            "config0": {
+                key0:
+                    "event.meta.collection.meta.orca.defaultRecoveryTypeOverride",
+                key1:
+                    "event.meta.collection.meta.orca.defaultBucketOverride"
+            },
+            "config1": {
+                key2:
+                    "event.cumulus_meta.asyncOperationId"
+            }
+        }
+        copy_to_archive \
+            .set_optional_event_property(mock_event, mock_target_path_cursor, [])
+
+        # set asyncOperationId to non-null value
+        self.assertEqual(None, mock_event["config0"][key0])
+        self.assertEqual(key1_value, mock_event["config0"][key1])
+        self.assertEqual(key2_value, mock_event["config1"][key2])
+
     @patch("copy_to_archive.task")
     def test_handler_happy_path(self, mock_task: MagicMock):
         granules = [
@@ -191,7 +243,8 @@ class TestCopyToArchive(TestCase):
         )
         self.assertEqual(not_excluded_flag, False)
 
-    # todo: patch copy_granules_between_buckets here and elsewhere.
+    # todo: patch copy_granule_between_buckets here and elsewhere.
+    # todo: Remove mock.ANY where possible. Currently used to ignore differences between files.
     @patch("copy_to_archive.get_storage_class")
     @patch("copy_to_archive.get_destination_bucket_name")
     @patch("copy_to_archive.sqs_library.post_to_metadata_queue")
@@ -244,9 +297,10 @@ class TestCopyToArchive(TestCase):
             ]
         }
         s3_cli.list_object_versions = Mock(return_value=file_return_value)
+        provider_id = uuid.uuid4().__str__()
         provider_name = uuid.uuid4().__str__()
         event_config = {
-            "providerId": "test",
+            "providerId": provider_id,
             "providerName": provider_name,
             "executionId": "test-execution-id",
             "collectionShortname": "MOD09GQ",
@@ -516,9 +570,10 @@ class TestCopyToArchive(TestCase):
                 }
             ]
         }
+        provider_id = uuid.uuid4().__str__()
         s3_cli.list_object_versions = Mock(return_value=file_return_value)
         event_config = {
-            "providerId": "test",
+            "providerId": provider_id,
             "executionId": "test-execution-id",
             "collectionShortname": "MOD09GQ",
             "collectionVersion": uuid.uuid4().__str__(),
@@ -618,9 +673,10 @@ class TestCopyToArchive(TestCase):
             ]
         }
         s3_cli.list_object_versions = Mock(return_value=file_return_value)
+        provider_id = uuid.uuid4().__str__()
         event_config = {
             CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: str(overridden_multipart_chunksize_mb),
-            "providerId": "test",
+            "providerId": provider_id,
             "executionId": "test-execution-id",
             "collectionShortname": "MOD09GQ",
             "collectionVersion": uuid.uuid4().__str__(),
@@ -697,8 +753,9 @@ class TestCopyToArchive(TestCase):
         s3_cli.copy = Mock()
         s3_cli.head_object = Mock()
 
+        provider_id = uuid.uuid4().__str__()
         config = {
-            "providerId": "test",
+            "providerId": provider_id,
             "executionId": "test-execution-id",
             "collectionShortname": "MOD09GQ",
             "collectionVersion": uuid.uuid4().__str__(),
