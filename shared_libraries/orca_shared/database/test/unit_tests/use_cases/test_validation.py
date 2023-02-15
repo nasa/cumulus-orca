@@ -80,7 +80,7 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
 
     def test_validate_password_number_missing_raises_error(self):
         """
-        A password without at least a number should be rejected.
+        A password without a number should be rejected.
         """
         password = "abcdefghijkl"  # nosec
         context = Mock()
@@ -89,12 +89,12 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
             _validate_password(password, context, logger)
         self.assertEqual(
             str(cm.exception),
-            f"{context} password must contain a digit between 0 and 9"
+            f"{context} password must contain a digit between 0 and 9."
         )
 
     def test_validate_password_upper_string_missing_raises_error(self):
         """
-        A password without at least an upper case should be rejected.
+        A password without an upper case letter should be rejected.
         """
         password = "abcdfghijkl123"  # nosec
         context = Mock()
@@ -103,7 +103,7 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
             _validate_password(password, context, logger)
         self.assertEqual(
             str(cm.exception),
-            f"{context} password must contain an Upper case letter"
+            f"{context} password must contain an upper case letter."
         )
 
     def test_validate_password_special_character_missing_raises_error(self):
@@ -117,7 +117,7 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
             _validate_password(password, context, logger)
         self.assertEqual(
             str(cm.exception),
-            f"{context} password must contain a special character"
+            f"{context} password must contain a special character."
         )
 
     def test_validate_postgres_name_happy_path(

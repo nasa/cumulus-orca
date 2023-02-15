@@ -384,7 +384,7 @@ A password of `None` or length < 12 should be rejected.
 def test_validate_password_number_missing_raises_error()
 ```
 
-A password without at least a number should be rejected.
+A password without a number should be rejected.
 
 <a id="orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_password_upper_string_missing_raises_error"></a>
 
@@ -394,7 +394,7 @@ A password without at least a number should be rejected.
 def test_validate_password_upper_string_missing_raises_error()
 ```
 
-A password without at least an upper case should be rejected.
+A password without an upper case letter should be rejected.
 
 <a id="orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_password_special_character_missing_raises_error"></a>
 

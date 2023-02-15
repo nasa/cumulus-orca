@@ -27,15 +27,15 @@ def _validate_password(password: str, context: str, logger: logging.Logger) -> N
         logger.critical(msg)
         raise Exception(msg)
     elif re.search('[0-9]', password) is None:
-        msg = f"{context} password must contain a digit between 0 and 9"
+        msg = f"{context} password must contain a digit between 0 and 9."
         logger.critical(msg)
         raise Exception(msg)
     elif re.search('[A-Z]', password) is None:
-        msg = f"{context} password must contain an Upper case letter"
+        msg = f"{context} password must contain an upper case letter."
         logger.critical(msg)
         raise Exception(msg)
     elif re.search('[$&%+,:;=?.*^@#]', password) is None:
-        msg = f"{context} password must contain a special character"
+        msg = f"{context} password must contain a special character."
         logger.critical(msg)
         raise Exception(msg)
 
