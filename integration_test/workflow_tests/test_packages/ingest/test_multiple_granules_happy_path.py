@@ -87,69 +87,34 @@ class TestMultipleGranulesHappyPath(TestCase):
             }
 
             expected_output = {
-                "payload": {
-                    "granules": [
-                        {
-                            "granuleId": granule_id_1,
-                            "createdAt": createdAt_time,
-                            "files": [
-                                {
-                                    "bucket": cumulus_bucket_name,
-                                    "key": key_name_1,
-                                    "checksum": file_1_hash,
-                                    "checksumType": file_1_hash_type
-                                }
-                            ]
-                        },
-                        {
-                            "granuleId": granule_id_2,
-                            "createdAt": createdAt_time,
-                            "files": [
-                                {
-                                    "bucket": cumulus_bucket_name,
-                                    "key": key_name_2,
-                                }
-                            ]
-                        }
-                    ],
-                    "copied_to_orca": [
-                        "s3://" + cumulus_bucket_name + "/" + key_name_1,
-                        "s3://" + cumulus_bucket_name + "/" + key_name_2
-                    ]
-                },
-                "meta": {
-                    "provider": {
-                        "id": provider_id,
-                        "name": provider_name
-                    },
-                    "collection": {
-                        "meta": {
-                            "orca": {
-                                "excludedFileExtensions":
-                                    excluded_filetype
+                "granules": [
+                    {
+                        "granuleId": granule_id_1,
+                        "createdAt": createdAt_time,
+                        "files": [
+                            {
+                                "bucket": cumulus_bucket_name,
+                                "key": key_name_1,
+                                "checksum": file_1_hash,
+                                "checksumType": file_1_hash_type
                             }
-                        },
-                        "name": collection_name,
-                        "version": collection_version
+                        ]
+                    },
+                    {
+                        "granuleId": granule_id_2,
+                        "createdAt": createdAt_time,
+                        "files": [
+                            {
+                                "bucket": cumulus_bucket_name,
+                                "key": key_name_2,
+                            }
+                        ]
                     }
-                },
-                "cumulus_meta": {
-                    "execution_name": execution_id
-                },
-                "task_config": {
-                    "excludedFileExtensions":
-                        "{$.meta.collection.meta.orca.excludedFileExtensions}",
-                    "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
-                    "providerId": "{$.meta.provider.id}",
-                    "providerName": "{$.meta.provider.name}",
-                    "executionId": "{$.cumulus_meta.execution_name}",
-                    "collectionShortname": "{$.meta.collection.name}",
-                    "collectionVersion": "{$.meta.collection.version}",
-                    "defaultBucketOverride": "{$.meta.collection.meta.orca.defaultBucketOverride}",
-                    "defaultStorageClassOverride":
-                        "{$.meta.collection.meta.orca.defaultStorageClassOverride}"
-                },
-                "exception": "None"
+                ],
+                "copied_to_orca": [
+                    "s3://" + cumulus_bucket_name + "/" + key_name_1,
+                    "s3://" + cumulus_bucket_name + "/" + key_name_2
+                ]
             }
 
             execution_info = boto3.client("stepfunctions").start_execution(
@@ -207,58 +172,63 @@ class TestMultipleGranulesHappyPath(TestCase):
             self.assertEqual(
                 200, catalog_output.status_code, "Error occurred while contacting API."
             )
-            expected_catalog_output = {
-                    "anotherPage": False,
-                    "granules": [
+            expected_catalog_output_granules = [{
+                "providerId": provider_id,
+                "collectionId": collection_name + "___" + collection_version,
+                "id": granule_id_1,
+                "createdAt": createdAt_time,
+                "executionId": execution_id,
+                "files": [
+                    {
+                        "name": name_1,
+                        "cumulusArchiveLocation": cumulus_bucket_name,
+                        "orcaArchiveLocation": recovery_bucket_name,
+                        "keyPath": key_name_1,
+                        "sizeBytes": 205640819682,
+                        "hash": file_1_hash, "hashType": file_1_hash_type,
+                        "storageClass": "GLACIER",
+                        "version": s3_versions[0],
+                    }
+                ],
+                "ingestDate": mock.ANY,
+                "lastUpdate": mock.ANY
+            },
+                {
+                    "providerId": provider_id,
+                    "collectionId": collection_name + "___" + collection_version,
+                    "id": granule_id_2,
+                    "createdAt": createdAt_time,
+                    "executionId": execution_id,
+                    "files": [
                         {
-                            "providerId": provider_id,
-                            "collectionId": collection_name + "___" + collection_version,
-                            "id": granule_id_1,
-                            "createdAt": createdAt_time,
-                            "executionId": execution_id,
-                            "files": [
-                                {
-                                    "name": name_1,
-                                    "cumulusArchiveLocation": cumulus_bucket_name,
-                                    "orcaArchiveLocation": recovery_bucket_name,
-                                    "keyPath": key_name_1,
-                                    "sizeBytes": 205640819682,
-                                    "hash": file_1_hash, "hashType": file_1_hash_type,
-                                    "storageClass": "GLACIER",
-                                    "version": s3_versions[0],
-                                }
-                            ],
-                            "ingestDate": mock.ANY,
-                            "lastUpdate": mock.ANY
-                        },
-                        {
-                            "providerId": provider_id,
-                            "collectionId": collection_name + "___" + collection_version,
-                            "id": granule_id_2,
-                            "createdAt": createdAt_time,
-                            "executionId": execution_id,
-                            "files": [
-                                {
-                                    "name": name_2,
-                                    "cumulusArchiveLocation": cumulus_bucket_name,
-                                    "orcaArchiveLocation": recovery_bucket_name,
-                                    "keyPath": key_name_2,
-                                    "sizeBytes": 6,
-                                    "hash": None, "hashType": None,
-                                    "storageClass": "GLACIER",
-                                    "version": s3_versions[1],
-                                }
-                            ],
-                            "ingestDate": mock.ANY,
-                            "lastUpdate": mock.ANY
+                            "name": name_2,
+                            "cumulusArchiveLocation": cumulus_bucket_name,
+                            "orcaArchiveLocation": recovery_bucket_name,
+                            "keyPath": key_name_2,
+                            "sizeBytes": 6,
+                            "hash": None, "hashType": None,
+                            "storageClass": "GLACIER",
+                            "version": s3_versions[1],
                         }
-                    ]
-                }
+                    ],
+                    "ingestDate": mock.ANY,
+                    "lastUpdate": mock.ANY
+                }]
+            expected_catalog_output = {
+                "anotherPage": False,
+                "granules": mock.ANY
+            }
             catalog_output_json = catalog_output.json()
             self.assertEqual(
                 expected_catalog_output,
                 catalog_output_json,
                 "Expected API output not returned.",
+            )
+            # Make sure all given granules are present without checking order.
+            self.assertCountEqual(
+                expected_catalog_output_granules,
+                catalog_output_json["granules"],
+                "Expected API output not returned."
             )
         except Exception as ex:
             logging.error(ex)

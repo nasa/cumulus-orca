@@ -71,54 +71,19 @@ class TestMultipleGranules(TestCase):
             }
 
             expected_output = {
-                "payload": {
-                    "granules": [
-                        {
-                            "granuleId": granule_id,
-                            "createdAt": createdAt_time,
-                            "files": [
-                                {
-                                    "bucket": bucket_name,
-                                    "key": key_name
-                                }
-                            ]
-                        }
-                    ],
-                    "copied_to_orca": []
-                },
-                "meta": {
-                    "provider": {
-                        "id": provider_id,
-                        "name": provider_name
-                    },
-                    "collection": {
-                        "meta": {
-                            "orca": {
-                                "excludedFileExtensions":
-                                    excluded_filetype
+                "granules": [
+                    {
+                        "granuleId": granule_id,
+                        "createdAt": createdAt_time,
+                        "files": [
+                            {
+                                "bucket": bucket_name,
+                                "key": key_name
                             }
-                        },
-                        "name": collection_name,
-                        "version": collection_version
+                        ]
                     }
-                },
-                "cumulus_meta": {
-                    "execution_name": execution_id
-                },
-                "task_config": {
-                    "excludedFileExtensions":
-                        "{$.meta.collection.meta.orca.excludedFileExtensions}",
-                    "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
-                    "providerId": "{$.meta.provider.id}",
-                    "providerName": "{$.meta.provider.name}",
-                    "executionId": "{$.cumulus_meta.execution_name}",
-                    "collectionShortname": "{$.meta.collection.name}",
-                    "collectionVersion": "{$.meta.collection.version}",
-                    "defaultBucketOverride": "{$.meta.collection.meta.orca.defaultBucketOverride}",
-                    "defaultStorageClassOverride":
-                        "{$.meta.collection.meta.orca.defaultStorageClassOverride}"
-                },
-                "exception": "None"
+                ],
+                "copied_to_orca": []
             }
 
             execution_info = boto3.client("stepfunctions").start_execution(
@@ -135,9 +100,10 @@ class TestMultipleGranules(TestCase):
                 step_function_results["status"],
                 "Error occurred while starting step function.",
             )
+            actual_output = json.loads(step_function_results["output"])
             self.assertEqual(
                 expected_output,
-                json.loads(step_function_results["output"]),
+                actual_output,
                 "Expected step function output not returned.",
             )
 
