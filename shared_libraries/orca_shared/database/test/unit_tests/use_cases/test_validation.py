@@ -57,9 +57,9 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
         self
     ):
         """
-        A password must have lower case and upeer case letters,
+        A password must have lower case and upper case letters,
         a number between 0 and 9, a special character and
-        of length 12.
+        length of 12.
         """
         password = "%12345678901aA"  # nosec
         context = Mock()

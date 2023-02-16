@@ -365,9 +365,9 @@ Should call proper validation functions for various properties.
 def test_validate_password_happy_path()
 ```
 
-A password must have lower case and upeer case letters,
+A password must have lower case and upper case letters,
 a number between 0 and 9, a special character and
-of length 12.
+length of 12.
 
 <a id="orca_shared.database.test.unit_tests.use_cases.test_validation.TestCreatePostgresConnectionUri.test_validate_password_short_raises_error"></a>
 
