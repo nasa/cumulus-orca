@@ -34,6 +34,10 @@ def _validate_password(password: str, context: str, logger: logging.Logger) -> N
         msg = f"{context} password must contain an upper case letter."
         logger.critical(msg)
         raise Exception(msg)
+    elif re.search('[a-z]', password) is None:
+        msg = f"{context} password must contain a lower case letter."
+        logger.critical(msg)
+        raise Exception(msg)
     elif re.search('[$&%+,:;=?.*^@#]', password) is None:
         msg = f"{context} password must contain a special character."
         logger.critical(msg)
