@@ -15,7 +15,6 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 ### Added
-
 - *ORCA-554*, *ORCA-561*, *ORCA-579*, *ORCA-581*
   - GraphQL image, service, and Load Balancer will now be deployed by TF.
   - *ORCA-557* Added `orca_graphql_load_balancer_dns_name` to output variables for GraphQL integration.
@@ -27,9 +26,14 @@ and includes an additional section for migration notes.
 
 ### Changed
 - *ORCA-573* Updated ORCA DB user password to now have a stronger password requirement. See migration notes for details.
-
+- *ORCA-520* Removed `run_cumulus_task` function from copy_to_archive to decouple ORCA from Cumulus.
 
 ### Migration Notes
+- The output format of `copy_to_archive` lambda and step-function has been simplified. If accessing these resources outside of a Cumulus perspective, instead of accessing `output["payload"]["granules"]` you now use `output["granules"]`.
+- Cumulus is not currently compatible with the changes to copy_to_archive.
+  - This section will be updated when a compatible version is created.
+  - deployment-with-cumulus.md will also be updated.
+  - copy_to_archive_adapter/README.md will also be updated.
 - Update the bucket policy for your `system-bucket` to allow load balancer to post server access logs to the bucket. See the instructions [here](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-s3-bucket#bucket-policy-for-load-balancer-server-access-loging).
 - InternalReconcileReport [Phantom](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#internal-reconcile-report-phantom-api) and [Mismatch](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#internal-reconcile-report-mismatch-api) reports are now available via GraphQL.
   - API Gateway access is now deprecated, and will be removed in a future update.
@@ -90,7 +94,8 @@ and includes an additional section for migration notes.
   rename to new key `copied_to_orca`.
 - If utilizing the `orca_lambda_copy_to_glacier_arn` [output of Terraform](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/outputs.tf#L8), likely as a means of pulling the lambda into your workflows, 
   rename to new key `orca_lambda_copy_to_archive_arn`
-- Use the optional `recoveryBucketOverride` property in `extract_filepaths_for_granule` input schema to specify a recovery bucket. See example below.
+- If utilizing the `orca_lambda_request_files_arn` [output of Terraform](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/outputs.tf#L28), likely as a means of pulling the lambda into your workflows, rename to new key `orca_lambda_request_from_archive_arn`
+- If desired, use the optional `recoveryBucketOverride` property in `extract_filepaths_for_granule` input schema to to override the default recovery bucket. See example below.
 
 ```json
 
