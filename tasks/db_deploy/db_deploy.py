@@ -168,7 +168,7 @@ def app_db_exists(connection: Connection, db_name: str) -> bool:
 
 @retry_operational_error(MAX_RETRIES)
 def reset_user_password(connection: Connection, config: PostgresConnectionInfo,
-                        user_name: str) -> bool:
+                        user_name: str):
     """
     Resets the ORCA user password.
 

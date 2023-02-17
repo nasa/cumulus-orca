@@ -187,7 +187,7 @@ Checks to see if the ORCA application database exists.
 
 ```python
 @retry_operational_error(MAX_RETRIES)
-reset_user_password(connection: Connection, config: PostgresConnectionInfo, user_name: str) -> bool
+reset_user_password(connection: Connection, config: PostgresConnectionInfo, user_name: str)
 ```
 
 Resets the ORCA user password.
