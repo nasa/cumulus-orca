@@ -61,7 +61,7 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
         a number between 0 and 9, a special character and
         length of 12.
         """
-        password = "%12345678901aA"  # nosec
+        password = "%123456789aA"  # nosec
         context = Mock()
         logger = Mock()
         _validate_password(password, context, logger)

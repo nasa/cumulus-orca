@@ -148,6 +148,7 @@ class TestDbDeployFunctions(unittest.TestCase):
         mock_db_exists: MagicMock,
         mock_schema_exists: MagicMock,
         mock_fresh_install: MagicMock,
+        # todo: mock_create_admin_uri and mock_create_engine calls not asserted.
         mock_create_admin_uri: MagicMock,
         mock_create_engine: MagicMock,
     ):
@@ -167,6 +168,9 @@ class TestDbDeployFunctions(unittest.TestCase):
 
         db_deploy.task(config, orca_buckets)
         mock_fresh_install.assert_called_with(config, orca_buckets)
+        mock_reset_user_password.assert_called_once_with(
+            mock_create_engine.return_value.connect.return_value.__enter__.return_value,
+            config, config.user_username)
 
     @patch("db_deploy.create_engine")
     @patch("db_deploy.create_admin_uri")
@@ -182,6 +186,7 @@ class TestDbDeployFunctions(unittest.TestCase):
         mock_schema_exists: MagicMock,
         mock_migration_version: MagicMock,
         mock_perform_migration: MagicMock,
+        # todo: mock_create_admin_uri and mock_create_engine calls not asserted.
         mock_create_admin_uri: MagicMock,
         mock_create_engine: MagicMock,
     ):
@@ -202,6 +207,9 @@ class TestDbDeployFunctions(unittest.TestCase):
 
         db_deploy.task(config, orca_buckets)
         mock_perform_migration.assert_called_with(1, config, orca_buckets)
+        mock_reset_user_password.assert_called_once_with(
+            mock_create_engine.return_value.connect.return_value.__enter__.return_value,
+            config, config.user_username)
 
     @patch("db_deploy.create_engine")
     @patch("db_deploy.create_admin_uri")
@@ -217,6 +225,7 @@ class TestDbDeployFunctions(unittest.TestCase):
         mock_schema_exists: MagicMock,
         mock_migration_version: MagicMock,
         mock_logger_info: MagicMock,
+        # todo: mock_create_admin_uri and mock_create_engine calls not asserted.
         mock_create_admin_uri: MagicMock,
         mock_create_engine: MagicMock,
     ):
@@ -238,6 +247,9 @@ class TestDbDeployFunctions(unittest.TestCase):
 
         db_deploy.task(config, orca_buckets)
         mock_logger_info.assert_called_with(message)
+        mock_reset_user_password.assert_called_once_with(
+            mock_create_engine.return_value.connect.return_value.__enter__.return_value,
+            config, config.user_username)
 
     def test_app_db_exists_happy_path(self):
         """
