@@ -25,6 +25,7 @@ and includes an additional section for migration notes.
   - Server access logging is now enabled for graphql application load balancer.
 
 ### Changed
+- *ORCA-573* Updated ORCA DB user password to now have a stronger password requirement. See migration notes for details.
 - *ORCA-520* Removed `run_cumulus_task` function from copy_to_archive to decouple ORCA from Cumulus.
 
 ### Migration Notes
@@ -33,12 +34,18 @@ and includes an additional section for migration notes.
   - This section will be updated when a compatible version is created.
   - deployment-with-cumulus.md will also be updated.
   - copy_to_archive_adapter/README.md will also be updated.
-
-### Migration Notes
 - Update the bucket policy for your `system-bucket` to allow load balancer to post server access logs to the bucket. See the instructions [here](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-s3-bucket#bucket-policy-for-load-balancer-server-access-loging).
 - InternalReconcileReport [Phantom](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#internal-reconcile-report-phantom-api) and [Mismatch](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#internal-reconcile-report-mismatch-api) reports are now available via GraphQL.
   - API Gateway access is now deprecated, and will be removed in a future update.
   - Use the `orca_graphql_load_balancer_dns_name` variable to send your queries to GraphQL as json strings in a POST request.
+- Users will need to update their orca-user password. The password must have the following requirements otherwise the `db_deploy` lambda will fail during deployment.
+  - one upper case letter
+  - one lower case letter
+  - one digit
+  - one special character
+  - minimum length of 12
+
+  Update `db_user_password` variable in your `cumulus-tf/terraform.tfvars` file to match the new password requirement and then run terraform. `db_deploy` lambda will automatically update your new password.
 
 ## [7.0.1]
 ### Changed
