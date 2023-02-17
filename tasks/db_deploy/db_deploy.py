@@ -189,7 +189,7 @@ def reset_user_password(connection: Connection, config: PostgresConnectionInfo,
         reset_user_password_sql, {"user_password": config.user_password}
         )
     # for debugging purpose only
-    LOGGER.debug(result)
+    LOGGER.info(result)
 
     LOGGER.info(f"Password for {config.user_username} has been reset")
 
