@@ -522,7 +522,7 @@ Full SQL for resetting ORCA user password.
 
 **Returns**:
 
-  SQL for creating PREFIX_orcauser user.
+  SQL for resetting orca user password.
 
 <a name="install/orca_sql.create_extension"></a>
 #### create\_extension

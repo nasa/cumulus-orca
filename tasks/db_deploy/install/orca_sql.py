@@ -214,7 +214,7 @@ def reset_user_password_sql(user_name: str) -> text:
         user_name: Username for the application user
 
     Returns:
-        SQL for creating PREFIX_orcauser user.
+        SQL for resetting orca user password.
     """
     return text(
         f"""
