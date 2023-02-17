@@ -45,7 +45,7 @@ and includes an additional section for migration notes.
   - one special character
   - minimum length of 12
 
-  Update `db_user_password` variable in your `cumulus-tf/terraform.tfvars` file to match the new password requirement and then run terraform.
+  Update `db_user_password` variable in your `cumulus-tf/terraform.tfvars` file to match the new password requirement and then run terraform. `db_deploy` lambda will automatically update your new password.
 
 ## [7.0.1]
 ### Changed

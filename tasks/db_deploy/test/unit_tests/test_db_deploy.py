@@ -141,8 +141,10 @@ class TestDbDeployFunctions(unittest.TestCase):
     @patch("db_deploy.create_fresh_orca_install")
     @patch("db_deploy.app_schema_exists")
     @patch("db_deploy.app_db_exists")
+    @patch("db_deploy.reset_user_password")
     def test_task_no_schema(
         self,
+        mock_reset_user_password: MagicMock,
         mock_db_exists: MagicMock,
         mock_schema_exists: MagicMock,
         mock_fresh_install: MagicMock,
@@ -172,8 +174,10 @@ class TestDbDeployFunctions(unittest.TestCase):
     @patch("db_deploy.get_migration_version")
     @patch("db_deploy.app_schema_exists")
     @patch("db_deploy.app_db_exists")
+    @patch("db_deploy.reset_user_password")
     def test_task_schema_old_version(
         self,
+        mock_reset_user_password: MagicMock,
         mock_db_exists: MagicMock,
         mock_schema_exists: MagicMock,
         mock_migration_version: MagicMock,
@@ -205,8 +209,10 @@ class TestDbDeployFunctions(unittest.TestCase):
     @patch("db_deploy.get_migration_version")
     @patch("db_deploy.app_schema_exists")
     @patch("db_deploy.app_db_exists")
+    @patch("db_deploy.reset_user_password")
     def test_task_schema_current_version(
         self,
+        mock_reset_user_password: MagicMock,
         mock_db_exists: MagicMock,
         mock_schema_exists: MagicMock,
         mock_migration_version: MagicMock,
