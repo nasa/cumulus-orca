@@ -127,13 +127,14 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
         A password without a special character should be rejected.
         """
         password = "Abcdfghijkl123"  # nosec
+        special_characters = "‘~!@#$%^&*()_-+={}[]\\/<>,.;?':| "
         context = Mock()
         logger = Mock()
         with self.assertRaises(Exception) as cm:
             _validate_password(password, context, logger)
         self.assertEqual(
             str(cm.exception),
-            f"{context} password must contain a special character."
+            f"{context} password must contain a special character from {special_characters}"
         )
 
     def test_validate_postgres_name_happy_path(
