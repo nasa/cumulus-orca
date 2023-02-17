@@ -221,6 +221,10 @@ resource "aws_ecs_task_definition" "gql_task" {
       {
         "name": "DB_CONNECT_INFO",
         "valueFrom": "${var.db_connect_info_secret_arn}"
+      },
+      {
+        "name": "S3_ACCESS_CREDENTIALS",
+        "valueFrom": "${var.s3_access_credentials_secret_arn}"
       }
     ],
     "logConfiguration": {

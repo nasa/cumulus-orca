@@ -11,16 +11,24 @@ from src.entities.common import DirectionEnum
 from src.entities.internal_reconcile_report import Mismatch, Phantom
 from src.use_cases.adapter_interfaces.storage import (
     StorageInternalReconcileReportInterface,
-    StorageMetadataInterface,
+    StorageMetadataInterface, StorageInternalReconcileGenerationInterface,
 )
 
 
 class StorageAdapterRDBMS(
     StorageMetadataInterface,
-    StorageInternalReconcileReportInterface
+    StorageInternalReconcileReportInterface,
+    StorageInternalReconcileGenerationInterface,
 ):
-    def __init__(self, user_connection_uri: str):
+    def __init__(
+        self,
+        user_connection_uri: str,
+        s3_access_key: str,
+        s3_secret_key: str,
+    ):
         self.user_engine: Engine = create_engine(user_connection_uri, future=True)
+        self.s3_access_key = s3_access_key
+        self.s3_secret_key = s3_secret_key
 
     @shared_db.retry_operational_error()
     def get_schema_version(

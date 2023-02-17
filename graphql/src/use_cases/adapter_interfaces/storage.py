@@ -23,10 +23,18 @@ class StorageMetadataInterface:
         ...
 
 
+class StorageInternalReconcileGenerationInterface:
+    """
+    Generic storage class with methods that need to be implemented by database adapter.
+    """
+    pass
+
+
 class StorageInternalReconcileReportInterface:
     """
     Generic storage class with methods that need to be implemented by database adapter.
     """
+
     def get_phantom_page(
         self,
         job_id: int,

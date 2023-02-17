@@ -6,8 +6,16 @@ from src.entities.common import DirectionEnum
 
 class StorageAdapterPostgres(StorageAdapterRDBMS):
 
-    def __init__(self, user_connection_uri: str):
-        super(StorageAdapterPostgres, self).__init__(user_connection_uri)
+    def __init__(
+        self,
+        user_connection_uri: str,
+        s3_access_key: str,
+        s3_secret_key: str,
+    ):
+        super(StorageAdapterPostgres, self).__init__(
+            user_connection_uri,
+            s3_access_key,
+            s3_secret_key)
 
     @staticmethod
     def get_schema_version_sql() -> text:  # pragma: no cover
