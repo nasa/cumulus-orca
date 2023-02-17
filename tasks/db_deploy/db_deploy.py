@@ -104,7 +104,6 @@ def task(config: PostgresConnectionInfo, orca_buckets: List[str]) -> None:
     with user_admin_engine.connect() as connection:
         # reset user password
         reset_user_password(connection, config, config.user_username)
-        LOGGER.info("ORCA user password has been reset")
         # Determine if we need a fresh install or need a migration based on if
         # the orca schemas exist or not.
         if app_schema_exists(connection):
@@ -187,7 +186,7 @@ def reset_user_password(connection: Connection, config: PostgresConnectionInfo,
 
     # Run the query
     connection.execute(
-        reset_user_password_sql, {"user_password": config.user_passwords}
+        reset_user_password_sql, {"user_password": config.user_password}
         )
     LOGGER.info(f"Password for {config.user_username} has been reset")
 
