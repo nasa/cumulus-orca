@@ -180,16 +180,15 @@ def reset_user_password(connection: Connection, config: PostgresConnectionInfo,
     # SQL for resetting user password
     reset_user_password_sql = text(
         f"""
-            ALTER ROLE "{user_name}" WITH ENCRYPTED PASSWORD :user_password;
+            ALTER ROLE "{user_name}" WITH ENCRYPTED PASSWORD :user_password
         """
     )
 
     # Run the query
-    result = connection.execute(
+    connection.execute(
         reset_user_password_sql, {"user_password": config.user_password}
-        )
-    # for debugging purpose only
-    LOGGER.info(result)
+    )
+    connection.commit()
 
     LOGGER.info(f"Password for {config.user_username} has been reset")
 

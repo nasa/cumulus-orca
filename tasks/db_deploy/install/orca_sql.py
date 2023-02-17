@@ -206,24 +206,6 @@ def app_user_sql(user_name: str) -> text:
     )
 
 
-def reset_user_password_sql(user_name: str) -> text:
-    """
-    Full SQL for resetting ORCA user password.
-
-    Args:
-        user_name: Username for the application user
-
-    Returns:
-        SQL for resetting orca user password.
-    """
-    return text(
-        f"""
-            -- Alter the orca user role with new password.
-            ALTER ROLE "{user_name}" WITH ENCRYPTED PASSWORD :user_password;
-        """
-    )
-
-
 def create_extension() -> text:  # pragma: no cover
     """
     Full SQL for creating the aws_s3 extension used for COPYING S3 reporting data
