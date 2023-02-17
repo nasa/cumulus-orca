@@ -7,6 +7,8 @@ from orca_shared.database.use_cases.validation import validate_config
 from src.adapters.api.fastapi import create_fastapi_app
 from src.adapters.graphql.adapters import AdaptersStorage
 from src.adapters.logger_provider.json import JsonLoggerProvider
+from src.adapters.storage.internal_reconciliation_postgres import \
+    StorageAdapterInternalReconciliationPostgres
 from src.adapters.storage.postgres import StorageAdapterPostgres
 from src.adapters.webserver.uvicorn_settings import UvicornSettings
 from src.adapters.word_generation.word_generation import UUIDWordGeneration
@@ -55,7 +57,9 @@ def get_application(uvicorn_settings: UvicornSettings):
 
     adapters_storage = AdaptersStorage(
         UUIDWordGeneration(),
-        StorageAdapterPostgres(user_connection_uri, s3_access_key, s3_secret_key),
+        StorageAdapterPostgres(user_connection_uri),
+        StorageAdapterInternalReconciliationPostgres(
+            user_connection_uri, s3_access_key, s3_secret_key),
         initialized_logger_provider
     )
 
