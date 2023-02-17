@@ -17,6 +17,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.future import Connection
 
 from install.create_db import create_database, create_fresh_orca_install
+from install.orca_sql import reset_user_password_sql
 from migrations.migrate_db import perform_migration
 
 # Globals
@@ -102,6 +103,9 @@ def task(config: PostgresConnectionInfo, orca_buckets: List[str]) -> None:
 
     # Connect as admin user to config["user_database"] database.
     with user_admin_engine.connect() as connection:
+        # reset user password
+        reset_user_password_sql(config.user_username)
+        LOGGER.info("ORCA user password has been reset")
         # Determine if we need a fresh install or need a migration based on if
         # the orca schemas exist or not.
         if app_schema_exists(connection):

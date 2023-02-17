@@ -24,6 +24,7 @@
   * [app\_role\_sql](#install/orca_sql.app_role_sql)
   * [orca\_schema\_sql](#install/orca_sql.orca_schema_sql)
   * [app\_user\_sql](#install/orca_sql.app_user_sql)
+  * [reset\_user\_password\_sql](#install/orca_sql.reset_user_password_sql)
   * [create\_extension](#install/orca_sql.create_extension)
   * [schema\_versions\_table\_sql](#install/orca_sql.schema_versions_table_sql)
   * [schema\_versions\_data\_sql](#install/orca_sql.schema_versions_data_sql)
@@ -495,6 +496,24 @@ app_user_sql(user_name: str) -> text
 
 Full SQL for creating the ORCA application database user. Must be created
 after the app_role_sql and orca_schema_sql.
+
+**Arguments**:
+
+- `user_name` - Username for the application user
+  
+
+**Returns**:
+
+  SQL for creating PREFIX_orcauser user.
+
+<a name="install/orca_sql.reset_user_password_sql"></a>
+#### reset\_user\_password\_sql
+
+```python
+reset_user_password_sql(user_name: str) -> text
+```
+
+Full SQL for resetting ORCA user password.
 
 **Arguments**:
 

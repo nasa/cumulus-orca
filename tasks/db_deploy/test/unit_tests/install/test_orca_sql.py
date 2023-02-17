@@ -67,6 +67,7 @@ class TestOrcaSqlLogic(unittest.TestCase):
                         "app_database_comment_sql",
                         "app_role_sql",
                         "app_user_sql",
+                        "reset_user_password_sql",
                         "drop_dr_role_sql",
                         "drop_dbo_user_sql",
                         "drop_drdbo_role_sql",
