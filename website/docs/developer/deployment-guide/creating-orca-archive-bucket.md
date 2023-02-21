@@ -256,7 +256,7 @@ modifications, which will be detailed below.
       	  "aws:SourceAccount": "000000000000"
         },
       	"ArnLike": {
-      	  "aws:SourceArn": "arn:aws:s3:::PREFIX-orca-archive"
+      	  "aws:SourceArn": ["arn:aws:s3:::PREFIX-orca-archive"]
       	}
       }
     }
@@ -277,7 +277,12 @@ can access. Replace `PREFIX-orca-reports` with the name
 of the Orca reports bucket created in the previous section.
 
 Replace `PREFIX-orca-primary` with the name of your [ORCA archive bucket](#archive-bucket).
-If you have multiple ORCA buckets, duplicate the 'Inventory-PREFIX-orca-primary-reports' statement for each additional bucket.
+If you have multiple ORCA buckets, expand the `SourceArn` array with the following format:
+```json
+"ArnLike": {
+   "aws:SourceArn": ["arn:aws:s3:::BUCKET-NAME", "arn:aws:s3:::BUCKET-NAME"]
+}
+```
 
 ##### Bucket policy for load balancer server access logging:
 
