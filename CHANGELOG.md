@@ -96,29 +96,55 @@ and includes an additional section for migration notes.
   rename to new key `orca_lambda_copy_to_archive_arn`
 - If utilizing the `orca_lambda_request_files_arn` [output of Terraform](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/outputs.tf#L28), likely as a means of pulling the lambda into your workflows, rename to new key `orca_lambda_request_from_archive_arn`
 - If desired, use the optional `recoveryBucketOverride` property in `extract_filepaths_for_granule` input schema to to override the default recovery bucket. See example below.
-
-```json
-
-{
-  "input":
-    {
-      "granules": [
-        {
-          "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-          "recoveryBucketOverride": "<YOUR_RECOVERY_BUCKET>",
-          "files": [
-            {
-              "key": "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5",
-              "bucket": "cumulus-test-sandbox-protected",
-              "fileName": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5",
-            }
-          ]
-        }
-      ]
+  ```json
+  {
+    "input":
+      {
+        "granules": [
+          {
+            "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
+            "recoveryBucketOverride": "<YOUR_RECOVERY_BUCKET>",
+            "files": [
+              {
+                "key": "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.  0656338553321.h5",
+                "bucket": "cumulus-test-sandbox-protected",
+                "fileName": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5",
+              }
+            ]
+          }
+        ]
+    }
   }
-}
-
-```
+  ```
+- If utilizing the output of the OrcaRecoveryWorkflow, adjust to the   simplified output schema. See example below:
+  ```json
+  {
+      "granules": [
+      {
+        "granuleId": "integrationGranuleId",
+        "keys": [
+          {
+            "key": "PODAAC/SWOT/ancillary_data_input_forcing_ECCO_V4r4.tar.gz",
+            "destBucket": "PREFIX-public"
+          }
+        ],
+        "recoverFiles": [
+          {
+            "success": true,
+            "filename": "ancillary_data_input_forcing_ECCO_V4r4.tar.gz",
+            "keyPath": "PODAAC/SWOT/ancillary_data_input_forcing_ECCO_V4r4.tar.  gz",
+            "restoreDestination": "PREFIX-public",
+            "s3MultipartChunksizeMb": null,
+            "statusId": 1,
+            "requestTime": "2023-02-10T21:06:13.071287+00:00",
+            "lastUpdate": "2023-02-10T21:06:13.071287+00:00"
+          }
+        ]
+      }
+    ],
+    "asyncOperationId": "770a85f2-f933-4440-90b5-1a8039557538"
+  }
+  ```
 
 ## [6.0.2]
 ### Changed
