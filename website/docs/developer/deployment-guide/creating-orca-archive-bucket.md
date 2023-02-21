@@ -243,7 +243,7 @@ modifications, which will be detailed below.
       ]
     },
     {
-      "Sid": "Inventory-PREFIX-orca-reports",
+      "Sid": "Inventory-PREFIX-orca-archive-reports",
       "Effect": "Allow",
       "Principal": {
         "Service": "s3.amazonaws.com"
@@ -256,7 +256,7 @@ modifications, which will be detailed below.
       	  "aws:SourceAccount": "000000000000"
         },
       	"ArnLike": {
-      	  "aws:SourceArn": "arn:aws:s3:::PREFIX-orca-reports"
+      	  "aws:SourceArn": ["arn:aws:s3:::PREFIX-orca-archive"]
       	}
       }
     }
@@ -275,6 +275,22 @@ Replace the number `000000000000` with your DR account number.
 The Resource value is the bucket and bucket paths that the Cumulus application
 can access. Replace `PREFIX-orca-reports` with the name
 of the Orca reports bucket created in the previous section.
+
+Replace `PREFIX-orca-archive` with the name of your [ORCA archive bucket](#archive-bucket).
+If you have multiple ORCA buckets, expand the `SourceArn` array with the following format:
+```json
+"ArnLike": {
+   "aws:SourceArn": ["arn:aws:s3:::BUCKET-NAME", "arn:aws:s3:::BUCKET-NAME"]
+}
+```
+
+Replace `PREFIX-orca-archive` with the name of your [ORCA archive bucket](#archive-bucket).
+If you have multiple ORCA buckets, expand the `SourceArn` array with the following format:
+```json
+"ArnLike": {
+   "aws:SourceArn": ["arn:aws:s3:::BUCKET-NAME", "arn:aws:s3:::BUCKET-NAME"]
+}
+```
 
 ##### Bucket policy for load balancer server access logging:
 
