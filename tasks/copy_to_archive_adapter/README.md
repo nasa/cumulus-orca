@@ -85,6 +85,9 @@ bash-4.2# bin/run_tests.sh
 Note that Bamboo will run this same script via the `bin/run_tests.sh` script found
 in the cumulus-orca base of the repo.
 
+To run integration test for **copy_to_archive_adapter**, run `python3 integration-test/test_copy_to_archive_adapter_integration.py` command from the
+`tasks/copy_to_archive_adapter` directory. 
+
 ## Deployment
 
 The `copy_to_archive_adapter` lambda function can be deployed using terraform using the example shown in TODO
