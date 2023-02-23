@@ -1,18 +1,18 @@
 #!/bin/bash
 ## =============================================================================
-## NAME: run_tests.sh
+## NAME: run_integration_tests.sh
 ##
 ##
 ## DESCRIPTION
 ## -----------------------------------------------------------------------------
-## Tests the runs the integration tests.
+## Runs the integration test for copy_to_archive_adapter lambda
 ##
 ##
 ## USAGE
 ## -----------------------------------------------------------------------------
-## bin/run_tests.sh
+## bin/run_integration_tests.sh
 ##
-## This must be called from the (root) directory /workflow_tests
+## This must be called from the (root) directory tasks/copy_to_archive_adapter
 ## =============================================================================
 
 ## Set this for Debugging only
@@ -21,7 +21,7 @@
 ## Make sure we are calling the script the correct way.
 BASEDIR=$(dirname $0)
 if [ "$BASEDIR" != "bin" ]; then
-  >&2 echo "ERROR: This script must be called from the root directory of workflow_tests[bin/run_tests.sh]."
+  >&2 echo "ERROR: This script must be called from the root directory of copy_to_archive_adapter[bin/run_integration_tests.sh]."
   exit 1
 fi
 
@@ -72,6 +72,5 @@ check_returncode $? "ERROR: Potential security or code issues found."
 
 ## Run tests
 echo "INFO: Running integration tests ..."
-
 python test/integration_tests/test_copy_to_archive_adapter_integration.py
 check_returncode $? "ERROR: Unit tests encountered failures."
