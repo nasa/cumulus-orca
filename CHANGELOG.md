@@ -164,7 +164,7 @@ and includes an additional section for migration notes.
   Both lambdas will return proper HTTP error codes for bad inputs of internal server errors.
   Additionally, corrected error in [API Reference](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api) 
   where the `error` status for these lambdas was incorrectly listed as `failed`.
-- *ORCA-320* Requests to API Gateway now use IAM permissions, restricting anonymous access.
+- *ORCA-437* Requests to API Gateway now use IAM permissions, restricting anonymous access.
 - *ORCA-496* Mitigated SQS security issue. All SQS queues now use default encryption.
 
 ### Migration Notes
