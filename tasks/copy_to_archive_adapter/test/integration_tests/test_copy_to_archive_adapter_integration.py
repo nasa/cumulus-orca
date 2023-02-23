@@ -1,6 +1,4 @@
 import json
-
-# import logging
 import os
 import time
 import unittest
@@ -42,10 +40,6 @@ class TestCopyToArchiveAdapter(unittest.TestCase):
                 ]
               }
             ]
-          },
-          "cumulus_meta": {
-            "execution_name": execution_id,
-
           },
           "task_config": {
             "providerId": provider_id,
