@@ -86,7 +86,7 @@ Note that Bamboo will run this same script via the `bin/run_tests.sh` script fou
 in the cumulus-orca base of the repo.
 
 To run integration test for **copy_to_archive_adapter**, run `bin/run_integration_tests.sh` script from the
-`tasks/copy_to_archive_adapter` directory. 
+`tasks/copy_to_archive_adapter` directory. Make sure the object to be copied exists in the source bucket first before running the test.
 
 ## Deployment
 

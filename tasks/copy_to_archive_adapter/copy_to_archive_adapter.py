@@ -1,5 +1,5 @@
 """
-Name: copy_to_archive.py
+Name: copy_to_archive_adapter.py
 Description: Lambda function that takes a Cumulus message, extracts a list of files,
 and copies those files from their current storage location into a staging/archive location.
 """
@@ -54,7 +54,6 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
             ORCA_CONFIG_KEY: event["config"]
         }, indent=4).encode("utf-8")
     )
-
     if response["StatusCode"] != 200:
         raise Exception(response.get("FunctionError", None))
 
