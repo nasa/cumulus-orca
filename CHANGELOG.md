@@ -89,6 +89,14 @@ and includes an additional section for migration notes.
 
 ```
 
+## [6.0.3]
+### Changed
+- *ORCA-643* Reverted ORCA-437, which introduced IAM authentication for API Gateway endpoints.
+
+### Migration Notes
+- If you installed 6.x without an ORCA base or updated from an ORCA version earlier than 5.1.0, you may be seeing `Missing Authentication Token` errors when contacting the ORCA API for recovery and reconciliation information. After deploying this version, open your API Gateway in AWS and click `Actions` -> `Deploy API` -> `Deployment stage` = `orca` -> `Deploy`.
+  - If you do not see these errors when requesting recovery status, then no action is required.
+
 ## [6.0.2]
 ### Changed
 - *ORCA-570* Fixed an error that could prevent deployment of the database on fresh installations.
