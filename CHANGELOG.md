@@ -146,6 +146,14 @@ and includes an additional section for migration notes.
   }
   ```
 
+## [6.0.3]
+### Changed
+- *ORCA-643* Reverted ORCA-437, which introduced IAM authentication for API Gateway endpoints.
+
+### Migration Notes
+- If you installed 6.x without an ORCA base or updated from an ORCA version earlier than 5.1.0, you may be seeing `Missing Authentication Token` errors when contacting the ORCA API for recovery and reconciliation information. After deploying this version, open your API Gateway in AWS and click `Actions` -> `Deploy API` -> `Deployment stage` = `orca` -> `Deploy`.
+  - If you do not see these errors when requesting recovery status, then no action is required.
+
 ## [6.0.2]
 ### Changed
 - *ORCA-570* Fixed an error that could prevent deployment of the database on fresh installations.
@@ -164,7 +172,7 @@ and includes an additional section for migration notes.
   Both lambdas will return proper HTTP error codes for bad inputs of internal server errors.
   Additionally, corrected error in [API Reference](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api) 
   where the `error` status for these lambdas was incorrectly listed as `failed`.
-- *ORCA-320* Requests to API Gateway now use IAM permissions, restricting anonymous access.
+- *ORCA-437* Requests to API Gateway now use IAM permissions, restricting anonymous access.
 - *ORCA-496* Mitigated SQS security issue. All SQS queues now use default encryption.
 
 ### Migration Notes
