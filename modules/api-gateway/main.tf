@@ -21,6 +21,39 @@ resource "aws_api_gateway_rest_api" "orca_api" {
   }
 }
 
+resource "aws_api_gateway_rest_api_policy" "orca_api_resource_policy" {
+  rest_api_id = aws_api_gateway_rest_api.orca_api.id
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "*"
+      },
+      "Action": "execute-api:Invoke",
+      "Resource": "${aws_api_gateway_rest_api.orca_api.execution_arn}"
+    },
+    {
+      "Effect": "Deny",
+      "Principal": {
+        "AWS": "*"
+      },
+      "Action": "execute-api:Invoke",
+      "Resource": "${aws_api_gateway_rest_api.orca_api.execution_arn}",
+      "Condition": {
+        "StringNotEquals": {
+          "aws:SourceVpc": "${var.vpc_id}"
+        }
+      }
+    }
+  ]
+}
+EOF
+}
+
 #API details for orca_catalog_reporting lambda
 resource "aws_api_gateway_resource" "orca_catalog_reporting_api_resource_catalog" {
   path_part   = "catalog"
@@ -38,7 +71,7 @@ resource "aws_api_gateway_method" "orca_catalog_reporting_api_method" {
   rest_api_id   = aws_api_gateway_rest_api.orca_api.id
   resource_id   = aws_api_gateway_resource.orca_catalog_reporting_api_resource_catalog_reconcile.id
   http_method   = "POST"
-  authorization = "NONE"
+  authorization = "AWS_IAM"
 }
 
 resource "aws_api_gateway_integration" "orca_catalog_reporting_api_integration" {
@@ -102,7 +135,7 @@ resource "aws_api_gateway_method" "request_status_for_granule_api_method" {
   rest_api_id   = aws_api_gateway_rest_api.orca_api.id
   resource_id   = aws_api_gateway_resource.request_status_for_granule_api_resource_recovery_granules.id
   http_method   = "POST"
-  authorization = "NONE"
+  authorization = "AWS_IAM"
 }
 
 resource "aws_api_gateway_integration" "request_status_for_granule_api_integration" {
@@ -160,7 +193,7 @@ resource "aws_api_gateway_method" "request_status_for_job_api_method" {
   rest_api_id   = aws_api_gateway_rest_api.orca_api.id
   resource_id   = aws_api_gateway_resource.request_status_for_job_api_resource_recovery_jobs.id
   http_method   = "POST"
-  authorization = "NONE"
+  authorization = "AWS_IAM"
 }
 
 resource "aws_api_gateway_integration" "request_status_for_job_api_integration" {
@@ -265,7 +298,7 @@ resource "aws_api_gateway_method" "internal_reconcile_report_job_api_method" {
   rest_api_id   = aws_api_gateway_rest_api.orca_api.id
   resource_id   = aws_api_gateway_resource.orca_internal_reconciliation_jobs_api_resource.id
   http_method   = "POST"
-  authorization = "NONE"
+  authorization = "AWS_IAM"
 }
 
 resource "aws_api_gateway_integration" "internal_reconcile_report_job_api_integration" {
@@ -326,7 +359,7 @@ resource "aws_api_gateway_method" "internal_reconcile_report_orphan_api_method" 
   rest_api_id   = aws_api_gateway_rest_api.orca_api.id
   resource_id   = aws_api_gateway_resource.orca_internal_reconcile_report_orphans_api_resource.id
   http_method   = "POST"
-  authorization = "NONE"
+  authorization = "AWS_IAM"
 }
 
 resource "aws_api_gateway_integration" "internal_reconcile_report_orphan_api_integration" {
@@ -387,7 +420,7 @@ resource "aws_api_gateway_method" "internal_reconcile_report_phantom_api_method"
   rest_api_id   = aws_api_gateway_rest_api.orca_api.id
   resource_id   = aws_api_gateway_resource.orca_internal_reconcile_report_phantom_api_resource.id
   http_method   = "POST"
-  authorization = "NONE"
+  authorization = "AWS_IAM"
 }
 
 resource "aws_api_gateway_integration" "internal_reconcile_report_phantom_api_integration" {
@@ -447,7 +480,7 @@ resource "aws_api_gateway_method" "internal_reconcile_report_mismatch_api_method
   rest_api_id   = aws_api_gateway_rest_api.orca_api.id
   resource_id   = aws_api_gateway_resource.orca_internal_reconcile_report_mismatch_api_resource.id
   http_method   = "POST"
-  authorization = "NONE"
+  authorization = "AWS_IAM"
 }
 
 resource "aws_api_gateway_integration" "internal_reconcile_report_mismatch_api_integration" {
