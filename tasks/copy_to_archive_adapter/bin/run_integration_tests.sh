@@ -37,10 +37,10 @@ trap 'deactivate_and_delete_venv' EXIT
 run_and_check_returncode "pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org"
 
 ## Install the requirements
-pip install -q -r requirements.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
+pip install -q -r requirements-dev.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
 check_returncode $? "ERROR: pip install encountered an error."
 
 ## Run tests
 echo "INFO: Running integration tests ..."
-python integration_test_copy_to_archive_adapter.py
+python -m pytest test/integration_tests/integration_test_copy_to_archive_adapter.py
 check_returncode $? "ERROR: Unit tests encountered failures."
