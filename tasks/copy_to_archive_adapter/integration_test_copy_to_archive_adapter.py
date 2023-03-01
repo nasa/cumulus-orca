@@ -13,14 +13,14 @@ class TestCopyToArchiveAdapter(unittest.TestCase):
     def test_copy_to_archive_adapter_happy_path(self):
 
         orca_recovery_bucket = os.environ["ORCA_RECOVERY_BUCKET"]
+        cumulus_bucket_name = os.environ["CUMULUS_BUCKET_NAME"]
+        key_name = os.environ["OBJECT_KEY_NAME"]
         granule_id = uuid.uuid4().__str__()
         provider_id = uuid.uuid4().__str__()
         createdAt_time = int((time.time() + 5) * 1000)
         collection_shortname = uuid.uuid4().__str__()
         collection_version = uuid.uuid4().__str__()
-        cumulus_bucket_name = "orca-sandbox-s3-provider"
         execution_id = uuid.uuid4().__str__()
-        key_name = "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf"
 
         copy_to_archive_adapter_input_event = {
           "payload": {
