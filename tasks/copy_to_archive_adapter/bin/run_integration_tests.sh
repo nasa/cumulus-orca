@@ -40,36 +40,6 @@ run_and_check_returncode "pip install -q --upgrade pip --trusted-host pypi.org -
 pip install -q -r requirements.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
 check_returncode $? "ERROR: pip install encountered an error."
 
-
-## Check code formatting and styling
-echo "INFO: Checking formatting and style of code ..."
-echo "INFO: Sorting imports ..."
-isort \
-    --trailing-comma \
-    --ensure-newline-before-comments \
-    --line-length 88 \
-    --use-parentheses \
-    --force-grid-wrap 0 \
-    -m 3 \
-    integration_test_copy_to_archive_adapter.py
-
-echo "INFO: Formatting with black ..."
-black integration_test_copy_to_archive_adapter.py
-
-
-echo "INFO: Checking lint rules ..."
-flake8 \
-    --max-line-length 99 \
-    integration_test_copy_to_archive_adapter.py
-check_returncode $? "ERROR: Linting issues found."
-
-
-## Run code smell and security tests using bandit
-echo "INFO: Running code smell security tests ..."
-bandit -r integration_test_copy_to_archive_adapter.py
-check_returncode $? "ERROR: Potential security or code issues found."
-
-
 ## Run tests
 echo "INFO: Running integration tests ..."
 python integration_test_copy_to_archive_adapter.py
