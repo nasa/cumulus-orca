@@ -237,40 +237,16 @@ def set_optional_event_property(event: Dict[str, Any], target_path_cursor: Dict,
                             f"found at {'.'.join(temp_target_path_segments)}")
 
 
+# noinspection PyUnusedLocal
 @LOGGER.inject_lambda_context
 def handler(event: Dict[str, Dict[str, Any]],
             context: LambdaContext):  # pylint: disable-msg=unused-argument
     """Lambda handler. Extracts the key's for a granule from an input dict.
 
     Args:
-        event: A dict with the following keys:
-            granules (list(dict)): A list of dict with the following keys:
-                granuleId (string): The id of a granule.
-                files (list(dict)): list of dict with the following keys:
-                    key (string): The key of the file to be returned.
-                    other dictionary keys may be included, but are not used.
-                other dictionary keys may be included, but are not used.
+        event: Event passed into the step from the aws workflow.
+            See schemas/input.json and schemas/config.json for more information.
 
-            Example:
-                    {
-                        "event": {
-                            "granules": [
-                                {
-                                    "granuleId": "granxyz",
-                                    "recoveryBucketOverride": "test-recovery-bucket",
-                                    "version": "006",
-                                    "files": [
-                                    {
-                                        "fileName": "file1",
-                                        "key": "key1",
-                                        "source": "s3://dr-test-sandbox-protected/file1",
-                                        "type": "metadata"
-                                    }
-                                    ]
-                                }
-                            ]
-                        }
-                    }
         context: This object provides information about the lambda invocation, function,
             and execution env.
 

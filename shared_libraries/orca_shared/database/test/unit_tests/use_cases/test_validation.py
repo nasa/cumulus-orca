@@ -61,7 +61,7 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
         a number between 0 and 9, a special character and
         length of 12.
         """
-        password = "%12345678901aA"  # nosec
+        password = "%123456789aA"  # nosec
         context = Mock()
         logger = Mock()
         _validate_password(password, context, logger)
@@ -127,13 +127,14 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
         A password without a special character should be rejected.
         """
         password = "Abcdfghijkl123"  # nosec
+        special_characters = "‘~!@#$%^&*()_-+={}[]\\/<>,.;?':| "
         context = Mock()
         logger = Mock()
         with self.assertRaises(Exception) as cm:
             _validate_password(password, context, logger)
         self.assertEqual(
             str(cm.exception),
-            f"{context} password must contain a special character."
+            f"{context} password must contain a special character from {special_characters}"
         )
 
     def test_validate_postgres_name_happy_path(

@@ -15,7 +15,6 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 ### Added
-
 - *ORCA-554*, *ORCA-561*, *ORCA-579*, *ORCA-581*
   - GraphQL image, service, and Load Balancer will now be deployed by TF.
   - *ORCA-557* Added `orca_graphql_load_balancer_dns_name` to output variables for GraphQL integration.
@@ -27,9 +26,14 @@ and includes an additional section for migration notes.
 
 ### Changed
 - *ORCA-573* Updated ORCA DB user password to now have a stronger password requirement. See migration notes for details.
-
+- *ORCA-520* Removed `run_cumulus_task` function from copy_to_archive to decouple ORCA from Cumulus.
 
 ### Migration Notes
+- The output format of `copy_to_archive` lambda and step-function has been simplified. If accessing these resources outside of a Cumulus perspective, instead of accessing `output["payload"]["granules"]` you now use `output["granules"]`.
+- Cumulus is not currently compatible with the changes to copy_to_archive.
+  - This section will be updated when a compatible version is created.
+  - deployment-with-cumulus.md will also be updated.
+  - copy_to_archive_adapter/README.md will also be updated.
 - Update the bucket policy for your `system-bucket` to allow load balancer to post server access logs to the bucket. See the instructions [here](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-s3-bucket#bucket-policy-for-load-balancer-server-access-loging).
 - InternalReconcileReport [Phantom](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#internal-reconcile-report-phantom-api) and [Mismatch](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#internal-reconcile-report-mismatch-api) reports are now available via GraphQL.
   - API Gateway access is now deprecated, and will be removed in a future update.
@@ -41,7 +45,7 @@ and includes an additional section for migration notes.
   - one special character
   - minimum length of 12
 
-  Update `db_user_password` variable in your `cumulus-tf/terraform.tfvars` file to match the new password requirement and then run terraform.
+  Update `db_user_password` variable in your `cumulus-tf/terraform.tfvars` file to match the new password requirement and then run terraform. `db_deploy` lambda will automatically update your new password.
 
 ## [7.0.1]
 ### Changed
@@ -90,30 +94,65 @@ and includes an additional section for migration notes.
   rename to new key `copied_to_orca`.
 - If utilizing the `orca_lambda_copy_to_glacier_arn` [output of Terraform](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/outputs.tf#L8), likely as a means of pulling the lambda into your workflows, 
   rename to new key `orca_lambda_copy_to_archive_arn`
-- Use the optional `recoveryBucketOverride` property in `extract_filepaths_for_granule` input schema to specify a recovery bucket. See example below.
-
-```json
-
-{
-  "input":
-    {
-      "granules": [
-        {
-          "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
-          "recoveryBucketOverride": "<YOUR_RECOVERY_BUCKET>",
-          "files": [
-            {
-              "key": "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5",
-              "bucket": "cumulus-test-sandbox-protected",
-              "fileName": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5",
-            }
-          ]
-        }
-      ]
+- If utilizing the `orca_lambda_request_files_arn` [output of Terraform](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/outputs.tf#L28), likely as a means of pulling the lambda into your workflows, rename to new key `orca_lambda_request_from_archive_arn`
+- If desired, use the optional `recoveryBucketOverride` property in `extract_filepaths_for_granule` input schema to to override the default recovery bucket. See example below.
+  ```json
+  {
+    "input":
+      {
+        "granules": [
+          {
+            "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
+            "recoveryBucketOverride": "<YOUR_RECOVERY_BUCKET>",
+            "files": [
+              {
+                "key": "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.  0656338553321.h5",
+                "bucket": "cumulus-test-sandbox-protected",
+                "fileName": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5",
+              }
+            ]
+          }
+        ]
+    }
   }
-}
+  ```
+- If utilizing the output of the OrcaRecoveryWorkflow, adjust to the   simplified output schema. See example below:
+  ```json
+  {
+      "granules": [
+      {
+        "granuleId": "integrationGranuleId",
+        "keys": [
+          {
+            "key": "PODAAC/SWOT/ancillary_data_input_forcing_ECCO_V4r4.tar.gz",
+            "destBucket": "PREFIX-public"
+          }
+        ],
+        "recoverFiles": [
+          {
+            "success": true,
+            "filename": "ancillary_data_input_forcing_ECCO_V4r4.tar.gz",
+            "keyPath": "PODAAC/SWOT/ancillary_data_input_forcing_ECCO_V4r4.tar.  gz",
+            "restoreDestination": "PREFIX-public",
+            "s3MultipartChunksizeMb": null,
+            "statusId": 1,
+            "requestTime": "2023-02-10T21:06:13.071287+00:00",
+            "lastUpdate": "2023-02-10T21:06:13.071287+00:00"
+          }
+        ]
+      }
+    ],
+    "asyncOperationId": "770a85f2-f933-4440-90b5-1a8039557538"
+  }
+  ```
 
-```
+## [6.0.3]
+### Changed
+- *ORCA-643* Reverted ORCA-437, which introduced IAM authentication for API Gateway endpoints.
+
+### Migration Notes
+- If you installed 6.x without an ORCA base or updated from an ORCA version earlier than 5.1.0, you may be seeing `Missing Authentication Token` errors when contacting the ORCA API for recovery and reconciliation information. After deploying this version, open your API Gateway in AWS and click `Actions` -> `Deploy API` -> `Deployment stage` = `orca` -> `Deploy`.
+  - If you do not see these errors when requesting recovery status, then no action is required.
 
 ## [6.0.2]
 ### Changed
@@ -133,7 +172,7 @@ and includes an additional section for migration notes.
   Both lambdas will return proper HTTP error codes for bad inputs of internal server errors.
   Additionally, corrected error in [API Reference](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api) 
   where the `error` status for these lambdas was incorrectly listed as `failed`.
-- *ORCA-320* Requests to API Gateway now use IAM permissions, restricting anonymous access.
+- *ORCA-437* Requests to API Gateway now use IAM permissions, restricting anonymous access.
 - *ORCA-496* Mitigated SQS security issue. All SQS queues now use default encryption.
 
 ### Migration Notes

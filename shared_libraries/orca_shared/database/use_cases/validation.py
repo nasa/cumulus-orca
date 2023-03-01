@@ -22,6 +22,7 @@ def _validate_password(password: str, context: str, logger: logging.Logger) -> N
     Raises:
         Exception: If value is empty or less than 12 characters.
     """
+    special_characters = "‘~!@#$%^&*()_-+={}[]\\/<>,.;?':| "
     if password is None or len(password) < 12:
         msg = f"{context} password must be at least 12 characters long."
         logger.critical(msg)
@@ -38,8 +39,8 @@ def _validate_password(password: str, context: str, logger: logging.Logger) -> N
         msg = f"{context} password must contain a lower case letter."
         logger.critical(msg)
         raise Exception(msg)
-    elif re.search('[$&%+,:;=?.*^@#]', password) is None:
-        msg = f"{context} password must contain a special character."
+    elif re.search(f"[{re.escape(special_characters)}]", password) is None:
+        msg = f"{context} password must contain a special character from {special_characters}"
         logger.critical(msg)
         raise Exception(msg)
 

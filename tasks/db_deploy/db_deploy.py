@@ -102,6 +102,8 @@ def task(config: PostgresConnectionInfo, orca_buckets: List[str]) -> None:
 
     # Connect as admin user to config["user_database"] database.
     with user_admin_engine.connect() as connection:
+        # reset user password
+        reset_user_password(connection, config, config.user_username)
         # Determine if we need a fresh install or need a migration based on if
         # the orca schemas exist or not.
         if app_schema_exists(connection):
@@ -162,6 +164,33 @@ def app_db_exists(connection: Connection, db_name: str) -> bool:
         db_exists = row[0]
 
     return db_exists
+
+
+@retry_operational_error(MAX_RETRIES)
+def reset_user_password(connection: Connection, config: PostgresConnectionInfo,
+                        user_name: str):
+    """
+    Resets the ORCA user password.
+
+    Args:
+        connection (sqlalchemy.future.Connection): Database connection object.
+        config: Dictionary of connection information.
+        user_name: Username for the application user
+    """
+    # SQL for resetting user password
+    reset_user_password_sql = text(
+        f"""
+            ALTER ROLE "{user_name}" WITH ENCRYPTED PASSWORD :user_password
+        """
+    )
+
+    # Run the query
+    connection.execute(
+        reset_user_password_sql, {"user_password": config.user_password}
+    )
+    connection.commit()
+
+    LOGGER.info(f"Password for {config.user_username} has been reset")
 
 
 def app_schema_exists(connection: Connection) -> bool:
