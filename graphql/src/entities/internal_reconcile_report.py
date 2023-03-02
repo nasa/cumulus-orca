@@ -9,6 +9,31 @@ import strawberry
 
 @strawberry.type  # Not strictly clean, but alternative is duplicating classes in graphql adapter.
 @dataclasses.dataclass
+class InternalReconcileReportCursor(pydantic.BaseModel):
+    # IMPORTANT: Whenever properties are added/removed/modified/renamed, update constructor.
+    # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
+    job_id: float
+    orca_archive_location: str
+
+    @dataclasses.dataclass
+    class Cursor:
+        job_id: int = None
+        orca_archive_location: str = None
+
+    # Overriding constructor to give us type/name hints for Pydantic class.
+    def __init__(self,
+                 job_id: int,
+                 orca_archive_location: str,
+                 ):
+        # This call to __init__ will NOT automatically update when performing renames.
+        super().__init__(
+            job_id=job_id,
+            orca_archive_location=orca_archive_location,
+        )
+
+
+@strawberry.type  # Not strictly clean, but alternative is duplicating classes in graphql adapter.
+@dataclasses.dataclass
 class Phantom(pydantic.BaseModel):
     # IMPORTANT: Whenever properties are added/removed/modified/renamed, update constructor.
     # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.

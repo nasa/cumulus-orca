@@ -1,5 +1,8 @@
 import logging
-from typing import List
+from datetime import datetime
+from typing import List, Optional
+
+from orca_shared.reconciliation import OrcaStatus
 
 from src.entities.common import DirectionEnum
 from src.entities.internal_reconcile_report import Mismatch, Phantom
@@ -23,11 +26,81 @@ class StorageMetadataInterface:
         ...
 
 
-class StorageInternalReconcileGenerationInterface:
+class InternalReconcileGenerationStorageInterface:
     """
     Generic storage class with methods that need to be implemented by database adapter.
     """
-    pass
+
+    def create_job(
+        self,
+        orca_archive_location: str,
+        inventory_creation_time: datetime,
+        logger: logging.Logger
+    ):
+        """
+        Creates the initial status entry for a job.
+
+        Args:
+            orca_archive_location: The name of the bucket to generate the reports for.
+            inventory_creation_time: The time the s3 Inventory report was created.
+            logger: The logger to use.
+
+        Returns: The auto-incremented job_id from the database.
+        """
+        ...
+
+    def truncate_s3_partition(
+        self,
+        orca_archive_location: str,
+        logger: logging.Logger,
+    ):
+        """
+        Truncates the partition for the given orca_archive_location, removing its data.
+
+        Args:
+            orca_archive_location: The name of the bucket to generate the reports for.
+            logger: The logger to use.
+        """
+        ...
+
+    def update_job(
+        self,
+        job_id: int,
+        status: OrcaStatus,
+        error_message: Optional[str],
+    ) -> None:
+        """
+        Updates the status entry for a job.
+
+        Args:
+            job_id: The id of the job to associate info with.
+            status: The status to update the job with.
+            error_message: The error to post to the job, if any.
+        """
+        ...
+
+    def update_job_with_s3_inventory(
+        self,
+        report_bucket_name: str,
+        report_bucket_region: str,
+        csv_key_paths: List[str],
+        manifest_file_schema: str,
+        job_id: int,
+        logger: logging.Logger,
+    ):
+        """
+        Constructs a temporary table capable of holding full data from s3 inventory report,
+        triggers load into that table, then moves that data into the proper partition.
+
+        Args:
+            report_bucket_name: The name of the bucket the csv is located in.
+            report_bucket_region: The name of the region the report bucket resides in.
+            csv_key_paths: The paths of the csvs within the report bucket.
+            manifest_file_schema: The string representing columns present in the csv.
+            job_id: The id of the job to associate info with.
+            logger: The logger to use.
+        """
+        ...
 
 
 class StorageInternalReconcileReportInterface:

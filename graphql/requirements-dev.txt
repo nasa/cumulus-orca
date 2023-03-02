@@ -5,6 +5,7 @@ pydantic==1.10.2
 SQLAlchemy==1.4.11
 ../shared_libraries[database]
 psycopg2-binary
+boto3~=1.18.65
 
 ## Additional validation libraries
 ## ---------------------------------------------------------------------------

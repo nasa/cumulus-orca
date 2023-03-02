@@ -8,14 +8,14 @@ from sqlalchemy.future import Engine
 
 from src.use_cases.adapter_interfaces.storage import (
     StorageInternalReconcileReportInterface,
-    StorageMetadataInterface, StorageInternalReconcileGenerationInterface,
+    StorageMetadataInterface, InternalReconcileGenerationStorageInterface,
 )
 
 
 class StorageAdapterRDBMS(
     StorageMetadataInterface,
     StorageInternalReconcileReportInterface,
-    StorageInternalReconcileGenerationInterface,
+    InternalReconcileGenerationStorageInterface,
 ):
     def __init__(
         self,

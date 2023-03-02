@@ -1,32 +1,232 @@
 import logging
 from abc import abstractmethod
-from typing import List
+from typing import List, Optional
 
+import orca_shared
 from orca_shared.database import shared_db
+from orca_shared.reconciliation import OrcaStatus, get_partition_name_from_bucket_name
 from sqlalchemy import create_engine, text
 from sqlalchemy.future import Engine
+from datetime import datetime, timezone
 
 from src.entities.common import DirectionEnum
 from src.entities.internal_reconcile_report import Mismatch, Phantom
 from src.use_cases.adapter_interfaces.storage import (
     StorageInternalReconcileReportInterface,
-    StorageInternalReconcileGenerationInterface,
+    InternalReconcileGenerationStorageInterface,
 )
 
 
-class StorageAdapterInternalReconciliationRDBMS(
+class InternalReconciliationStorageAdapterRDBMS(
     StorageInternalReconcileReportInterface,
-    StorageInternalReconcileGenerationInterface,
+    InternalReconcileGenerationStorageInterface,
 ):
     def __init__(
         self,
         user_connection_uri: str,
+        admin_connection_uri: str,
         s3_access_key: str,
         s3_secret_key: str,
     ):
         self.user_engine: Engine = create_engine(user_connection_uri, future=True)
+        self.admin_engine: Engine = create_engine(admin_connection_uri, future=True)
         self.s3_access_key = s3_access_key
         self.s3_secret_key = s3_secret_key
+
+    def create_job(
+        self,
+        orca_archive_location: str,
+        inventory_creation_time: datetime,
+        logger: logging.Logger,
+    ):
+        """
+        Creates the initial status entry for a job.
+
+        Args:
+            orca_archive_location: The name of the bucket to generate the reports for.
+            inventory_creation_time: The time the s3 Inventory report was created.
+            logger: The logger to use.
+
+        Returns: The auto-incremented job_id from the database.
+        """
+        logger.debug("Creating status for job.")
+        try:
+            with self.user_engine.begin() as connection:
+                # Within this transaction import the csv and update the job status
+                now = datetime.now(timezone.utc)
+                rows = connection.execute(
+                    self.create_job_sql(),
+                    [
+                        {
+                            "orca_archive_location": orca_archive_location,
+                            "inventory_creation_time": inventory_creation_time,
+                            "status_id": OrcaStatus.GETTING_S3_LIST.value,
+                            "start_time": now,
+                            "last_update": now,
+                            "end_time": None,
+                            "error_message": None,
+                        }
+                    ],
+                )
+        except Exception as sql_ex:
+            logger.error(f"Error while creating job: {sql_ex}")
+            raise
+
+        return rows.fetchone()["id"]
+
+    def truncate_s3_partition(
+        self,
+        orca_archive_location: str,
+        logger: logging.Logger,
+    ):
+        """
+        Truncates the partition for the given orca_archive_location, removing its data.
+
+        Args:
+            orca_archive_location: The name of the bucket to generate the reports for.
+            logger: The logger to use.
+        """
+        try:
+            logger.debug(f"Truncating old s3 data for bucket {orca_archive_location}.")
+            partition_name = get_partition_name_from_bucket_name(orca_archive_location)
+            with self.admin_engine.begin() as connection:
+                connection.execute(
+                    self.truncate_s3_partition_sql(partition_name),
+                    [{}],
+                )
+        except Exception as sql_ex:
+            logger.error(
+                f"Error while truncating bucket '{orca_archive_location}': {sql_ex}"
+            )
+            raise
+
+    def update_job(
+        self,
+        job_id: int,
+        status: OrcaStatus,
+        error_message: Optional[str],
+    ) -> None:
+        """
+        Updates the status entry for a job.
+
+        Args:
+            job_id: The id of the job to associate info with.
+            status: The status to update the job with.
+            error_message: The error to post to the job, if any.
+        """
+        orca_shared.reconciliation.update_job(
+            job_id,
+            status,
+            error_message,
+            self.user_engine
+        )
+
+    def update_job_with_s3_inventory(
+        self,
+        report_bucket_name: str,
+        report_bucket_region: str,
+        csv_key_paths: List[str],
+        manifest_file_schema: str,
+        job_id: int,
+        logger: logging.Logger,
+    ):
+        """
+        Constructs a temporary table capable of holding full data from s3 inventory report,
+        triggers load into that table, then moves that data into the proper partition.
+
+        Args:
+            report_bucket_name: The name of the bucket the csv is located in.
+            report_bucket_region: The name of the region the report bucket resides in.
+            csv_key_paths: The paths of the csvs within the report bucket.
+            manifest_file_schema: The string representing columns present in the csv.
+            job_id: The id of the job to associate info with.
+            logger: The logger to use.
+        """
+        try:
+            logger.debug(f"Pulling in s3 inventory records for job {job_id}.")
+            temporary_s3_column_list = self.generate_temporary_s3_column_list(
+                manifest_file_schema
+            )
+            with self.admin_engine.begin() as connection:
+                # Within this transaction import the csv and update the job status
+                connection.execute(
+                    self.create_temporary_table_sql(temporary_s3_column_list),
+                    [{}],
+                )
+                for csv_key_path in csv_key_paths:
+                    # Have postgres load the csv
+                    logger.debug(f"Loading CSV {csv_key_path} for job {job_id}.")
+                    connection.execute(
+                        self.trigger_csv_load_from_s3_sql(),
+                        [
+                            {
+                                "report_bucket_name": report_bucket_name,
+                                "csv_key_path": csv_key_path,
+                                "report_bucket_region": report_bucket_region,
+                                "s3_access_key": self.s3_access_key,
+                                "s3_secret_key": self.s3_secret_key,
+                            }
+                        ],
+                    )
+                # Now that all csvs are loaded, pull them into main db from temporary table
+                logger.debug(f"Translating data to Orca format for job {job_id}.")
+                connection.execute(
+                    self.translate_s3_import_to_partitioned_data_sql(),
+                    [
+                        {
+                            "job_id": job_id,
+                        }
+                    ],
+                )
+                # Update job status
+                logger.debug(f"Posting successful status for job {job_id}.")
+                orca_shared.reconciliation.shared_reconciliation.update_job(
+                    job_id,
+                    OrcaStatus.STAGED,
+                    None,
+                    self.user_engine,
+                )
+        except Exception as sql_ex:
+            logger.error(f"Error while processing job '{job_id}': {sql_ex}")
+            raise
+
+    @staticmethod
+    def generate_temporary_s3_column_list(manifest_file_schema: str) -> str:
+        """
+        Creates a list of columns that matches the order of columns in the manifest.
+        Columns used by our database are given standardized names.
+        Args:
+            manifest_file_schema: An ordered CSV representing columns
+            in the CSV the manifest points to.
+
+        Returns: A string representing SQL columns to create.
+            Columns required for import but unused by orca will be filled in with `junk` values.
+            For example, 'orca_archive_location text, key_path text, size_in_bytes bigint,
+            last_update timestamptz, etag text,storage_class text, junk7 text, junk8 text,
+            junk9 text, junk10 text, junk11 text, junk12 text, junk13 text'
+
+        """
+        # Keys indicate columns in the s3 inventory csv.
+        # Values indicate the corresponding column in orca.reconcile_s3_object
+        column_mappings = {
+            "Bucket": "orca_archive_location text",
+            "Key": "key_path text",
+            "Size": "size_in_bytes bigint",
+            "LastModifiedDate": "last_update timestamptz",
+            "ETag": "etag text",
+            "StorageClass": "storage_class text",
+            "IsDeleteMarker": "delete_marker bool",
+            "IsLatest": "is_latest bool",
+        }
+        manifest_file_schema = manifest_file_schema.replace(" ", "")
+        columns_in_csv = manifest_file_schema.split(",")
+        columns_in_postgres = []
+        for column_index, column_in_csv in enumerate(columns_in_csv):
+            postgres_column_name = column_mappings.get(
+                column_in_csv, "junk" + str(column_index) + " text"
+            )
+            columns_in_postgres.append(postgres_column_name)
+        return ", ".join(columns_in_postgres)
 
     @shared_db.retry_operational_error()
     def get_phantom_page(
@@ -157,12 +357,38 @@ class StorageAdapterInternalReconciliationRDBMS(
 
     @staticmethod
     @abstractmethod
-    def get_phantom_page_sql(direction: DirectionEnum) -> text:
+    def create_job_sql() -> text:  # pragma: no cover
         # abstract to allow other sql formats
         raise NotImplementedError()
 
     @staticmethod
     @abstractmethod
-    def get_mismatch_page_sql(direction: DirectionEnum) -> text:
+    def truncate_s3_partition_sql(partition_name: str) -> text:  # pragma: no cover
+        raise NotImplementedError()
+
+    @staticmethod
+    @abstractmethod
+    def create_temporary_table_sql(temporary_s3_column_list: str) -> text:  # pragma: no cover
+        raise NotImplementedError()
+
+    @staticmethod
+    @abstractmethod
+    def trigger_csv_load_from_s3_sql() -> text:  # pragma: no cover
+        raise NotImplementedError()
+
+    @staticmethod
+    @abstractmethod
+    def translate_s3_import_to_partitioned_data_sql() -> text:  # pragma: no cover
+        raise NotImplementedError()
+
+    @staticmethod
+    @abstractmethod
+    def get_phantom_page_sql(direction: DirectionEnum) -> text:  # pragma: no cover
+        # abstract to allow other sql formats
+        raise NotImplementedError()
+
+    @staticmethod
+    @abstractmethod
+    def get_mismatch_page_sql(direction: DirectionEnum) -> text:  # pragma: no cover
         # abstract to allow other sql formats
         raise NotImplementedError()
