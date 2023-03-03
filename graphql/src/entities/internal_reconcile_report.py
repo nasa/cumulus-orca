@@ -25,9 +25,6 @@ class ReconciliationStatus(Enum):
 # Not strictly clean, but alternative is duplicating classes in graphql adapter.
 @dataclasses.dataclass
 class InternalReconcileReportCursor(pydantic.BaseModel):
-    """
-    A page contains multiple records plus string cursor values for the first and last elements.
-    """
     # IMPORTANT: Whenever properties are added/removed/modified/renamed, update constructor.
     # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
     job_id: float
