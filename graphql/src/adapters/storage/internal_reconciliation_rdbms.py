@@ -76,19 +76,19 @@ class InternalReconciliationStorageAdapterRDBMS(
 
     def truncate_s3_partition(
         self,
-        orca_archive_location: str,
+        report_source: str,
         logger: logging.Logger,
     ):
         """
         Truncates the partition for the given orca_archive_location, removing its data.
 
         Args:
-            orca_archive_location: The name of the bucket to generate the reports for.
+            report_source: The name of the bucket to generate the reports for.
             logger: The logger to use.
         """
         try:
-            logger.debug(f"Truncating old s3 data for bucket {orca_archive_location}.")
-            partition_name = get_partition_name_from_bucket_name(orca_archive_location)
+            logger.debug(f"Truncating old s3 data for bucket {report_source}.")
+            partition_name = get_partition_name_from_bucket_name(report_source)
             with self.admin_engine.begin() as connection:
                 connection.execute(
                     self.truncate_s3_partition_sql(partition_name),
@@ -96,7 +96,7 @@ class InternalReconciliationStorageAdapterRDBMS(
                 )
         except Exception as sql_ex:
             logger.error(
-                f"Error while truncating bucket '{orca_archive_location}': {sql_ex}"
+                f"Error while truncating bucket '{report_source}': {sql_ex}"
             )
             raise
 

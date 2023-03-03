@@ -5,7 +5,8 @@ from typing import List, Optional
 from orca_shared.reconciliation import OrcaStatus
 
 from src.entities.common import DirectionEnum
-from src.entities.internal_reconcile_report import Mismatch, Phantom
+from src.entities.files import FileLocation
+from src.entities.internal_reconcile_report import Mismatch, Phantom, InternalReconcileReportCursor
 
 
 class StorageMetadataInterface:
@@ -33,7 +34,7 @@ class InternalReconcileGenerationStorageInterface:
 
     def create_job(
         self,
-        orca_archive_location: str,
+        report_source: str,
         inventory_creation_time: datetime,
         logger: logging.Logger
     ):
@@ -41,7 +42,7 @@ class InternalReconcileGenerationStorageInterface:
         Creates the initial status entry for a job.
 
         Args:
-            orca_archive_location: The name of the bucket to generate the reports for.
+            report_source: The region covered by the report.
             inventory_creation_time: The time the s3 Inventory report was created.
             logger: The logger to use.
 
@@ -51,21 +52,21 @@ class InternalReconcileGenerationStorageInterface:
 
     def truncate_s3_partition(
         self,
-        orca_archive_location: str,
+        report_cursor: InternalReconcileReportCursor,
         logger: logging.Logger,
     ):
         """
         Truncates the partition for the given orca_archive_location, removing its data.
 
         Args:
-            orca_archive_location: The name of the bucket to generate the reports for.
+            report_cursor: Cursor to the report to update.
             logger: The logger to use.
         """
         ...
 
     def update_job(
         self,
-        job_id: int,
+        report_cursor: InternalReconcileReportCursor,
         status: OrcaStatus,
         error_message: Optional[str],
     ) -> None:
@@ -73,7 +74,7 @@ class InternalReconcileGenerationStorageInterface:
         Updates the status entry for a job.
 
         Args:
-            job_id: The id of the job to associate info with.
+            report_cursor: Cursor to the report to update.
             status: The status to update the job with.
             error_message: The error to post to the job, if any.
         """
@@ -83,7 +84,8 @@ class InternalReconcileGenerationStorageInterface:
         self,
         report_bucket_name: str,
         report_bucket_region: str,
-        csv_key_paths: List[str],
+        csv_file_locations: List[FileLocation],
+        columns_in_csv: List[str],
         manifest_file_schema: str,
         job_id: int,
         logger: logging.Logger,
