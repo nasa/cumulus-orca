@@ -214,7 +214,7 @@ class InternalReconciliationStorageAdapterRDBMS(
                 # Update job status
                 logger.debug(f"Posting successful status for job {report_cursor.job_id}.")
                 orca_shared.reconciliation.shared_reconciliation.update_job(
-                    report_cursor,
+                    int(report_cursor.job_id),
                     OrcaStatus.STAGED,
                     None,
                     self.user_engine,
