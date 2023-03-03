@@ -8,7 +8,10 @@ import strawberry
 from strawberry import argument, field, type
 
 from src.adapters.graphql.adapters import AdaptersStorage
-from src.adapters.graphql.dataTypes.internal_reconcile_report import CreateJobStrawberryResponse
+from src.adapters.graphql.dataTypes.internal_reconcile_report \
+    import CreateInternalReconciliationJobStrawberryResponse, \
+    UpdateInternalReconciliationJobStrawberryResponse, \
+    ImportCurrentArchiveListInternalReconciliationJobStrawberryResponse
 from src.adapters.graphql.resolvers.internal_reconcile_report import create_job, update_job, \
     get_current_archive_list
 from src.adapters.storage.internal_reconciliation_s3 import AWSS3FileLocation
@@ -38,8 +41,8 @@ class Mutations:
                 description="""Seconds since UTC origin that the report was created."""
             )
         ],
-    ) -> CreateJobStrawberryResponse:
-        return create_job(
+    ) -> CreateInternalReconciliationJobStrawberryResponse:
+        result = create_job(
             report_source,
             int(creation_timestamp),
             Mutations.adapters_storage.storage_internal_reconciliation,
@@ -47,6 +50,7 @@ class Mutations:
                 uuid.uuid4().__str__()
             )
             )
+        return result
 
     @field(
         description="""Updates the status entry for a job.""")
@@ -70,7 +74,7 @@ class Mutations:
                 description="""The error to post to the job, if any."""
             )
         ] = None,  # Default value actually MAKES it optional
-    ) -> CreateJobStrawberryResponse:
+    ) -> UpdateInternalReconciliationJobStrawberryResponse:
         return update_job(
             report_cursor,
             status,
@@ -112,7 +116,7 @@ class Mutations:
                 description="""Required by current Postgres driver."""
             )
         ],
-    ) -> CreateJobStrawberryResponse:
+    ) -> ImportCurrentArchiveListInternalReconciliationJobStrawberryResponse:
         return get_current_archive_list(
             report_source,
             report_cursor,

@@ -53,7 +53,9 @@ class InternalReconcileReportCursorInput(InternalReconcileReportCursor):
 # It also can't handle input and output objects having the same name.
 @strawberry.type
 class InternalReconcileReportCursorOutput(InternalReconcileReportCursor):
-    pass
+    def __init__(self, internal_reconcile_report_cursor):
+        super(InternalReconcileReportCursorOutput, self)\
+            .__init__(internal_reconcile_report_cursor.job_id)
 
 
 @strawberry.type  # Not strictly clean, but alternative is duplicating classes in graphql adapter.

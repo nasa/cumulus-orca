@@ -6,11 +6,14 @@ from orca_shared.reconciliation import OrcaStatus
 from src.adapters.graphql.dataTypes.common import InternalServerErrorGraphqlType
 from src.adapters.graphql.dataTypes.internal_reconcile_report import (
     GetMismatchPageStrawberryResponse,
-    GetPhantomPageStrawberryResponse, CreateJobStrawberryResponse,
+    GetPhantomPageStrawberryResponse,
+    ImportCurrentArchiveListInternalReconciliationJobStrawberryResponse,
+    CreateInternalReconciliationJobStrawberryResponse,
 )
 from src.entities.common import PageParameters
 from src.entities.files import FileLocation
-from src.entities.internal_reconcile_report import InternalReconcileReportCursor
+from src.entities.internal_reconcile_report import InternalReconcileReportCursor, \
+    InternalReconcileReportCursorOutput
 from src.use_cases.adapter_interfaces.storage import (
     StorageInternalReconcileReportInterface, InternalReconcileGenerationStorageInterface,
 )
@@ -23,10 +26,11 @@ def create_job(
     creation_timestamp: int,
     storage_irr: InternalReconcileGenerationStorageInterface,
     logger: logging.Logger,
-) -> CreateJobStrawberryResponse:
+) -> CreateInternalReconciliationJobStrawberryResponse:
     try:
-        return InternalReconcileGeneration(storage_irr) \
+        result = InternalReconcileGeneration(storage_irr) \
             .create_job(report_source, creation_timestamp, logger)
+        return InternalReconcileReportCursorOutput(result)
     except Exception as ex:
         return InternalServerErrorGraphqlType(ex)
 
@@ -53,9 +57,9 @@ def get_current_archive_list(
     report_bucket_region: str,
     storage_irr: InternalReconcileGenerationStorageInterface,
     logger: logging.Logger,
-) -> None:
+) -> ImportCurrentArchiveListInternalReconciliationJobStrawberryResponse:
     try:
-        return InternalReconcileGeneration(storage_irr) \
+        InternalReconcileGeneration(storage_irr) \
             .get_current_archive_list(
             report_source,
             report_cursor,
@@ -64,6 +68,7 @@ def get_current_archive_list(
             report_bucket_region,
             logger,
         )
+        return
     except Exception as ex:
         return InternalServerErrorGraphqlType(ex)
 
