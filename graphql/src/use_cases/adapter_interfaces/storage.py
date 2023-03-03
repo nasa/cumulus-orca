@@ -50,16 +50,24 @@ class InternalReconcileGenerationStorageInterface:
         """
         ...
 
-    def truncate_s3_partition(
+    def pull_in_inventory_report(
         self,
+        report_source: str,
         report_cursor: InternalReconcileReportCursor,
+        columns_in_csv: List[str],
+        csv_file_locations: List[FileLocation],
+        report_bucket_region: str,
         logger: logging.Logger,
     ):
         """
-        Truncates the partition for the given orca_archive_location, removing its data.
+        Pulls the given inventory report into storage for the given report.
 
         Args:
+            report_source: str,
             report_cursor: Cursor to the report to update.
+            columns_in_csv: Columns in the csv files.
+            csv_file_locations: Locations of the csv files in the report.
+            report_bucket_region: Required by current Postgres driver.
             logger: The logger to use.
         """
         ...
@@ -77,30 +85,6 @@ class InternalReconcileGenerationStorageInterface:
             report_cursor: Cursor to the report to update.
             status: The status to update the job with.
             error_message: The error to post to the job, if any.
-        """
-        ...
-
-    def update_job_with_s3_inventory(
-        self,
-        report_bucket_name: str,
-        report_bucket_region: str,
-        csv_file_locations: List[FileLocation],
-        columns_in_csv: List[str],
-        manifest_file_schema: str,
-        job_id: int,
-        logger: logging.Logger,
-    ):
-        """
-        Constructs a temporary table capable of holding full data from s3 inventory report,
-        triggers load into that table, then moves that data into the proper partition.
-
-        Args:
-            report_bucket_name: The name of the bucket the csv is located in.
-            report_bucket_region: The name of the region the report bucket resides in.
-            csv_key_paths: The paths of the csvs within the report bucket.
-            manifest_file_schema: The string representing columns present in the csv.
-            job_id: The id of the job to associate info with.
-            logger: The logger to use.
         """
         ...
 

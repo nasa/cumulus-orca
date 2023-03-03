@@ -14,10 +14,6 @@ class InternalReconcileReportCursor(pydantic.BaseModel):
     # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
     job_id: float
 
-    @dataclasses.dataclass
-    class Cursor:
-        job_id: int = None
-
     # Overriding constructor to give us type/name hints for Pydantic class.
     def __init__(self,
                  job_id: int,

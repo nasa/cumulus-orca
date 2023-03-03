@@ -9,8 +9,9 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.future import Engine
 from datetime import datetime, timezone
 
+from src.adapters.storage.internal_reconciliation_s3 import AWSS3FileLocation
 from src.entities.common import DirectionEnum
-from src.entities.internal_reconcile_report import Mismatch, Phantom
+from src.entities.internal_reconcile_report import Mismatch, Phantom, InternalReconcileReportCursor
 from src.use_cases.adapter_interfaces.storage import (
     StorageInternalReconcileReportInterface,
     InternalReconcileGenerationStorageInterface,
@@ -74,6 +75,39 @@ class InternalReconciliationStorageAdapterRDBMS(
 
         return rows.fetchone()["id"]
 
+    def pull_in_inventory_report(
+        self,
+        report_source: str,
+        report_cursor: InternalReconcileReportCursor,
+        columns_in_csv: List[str],
+        csv_file_locations: List[AWSS3FileLocation],
+        report_bucket_region: str,
+        logger: logging.Logger,
+    ):
+        """
+        Pulls the given inventory report into storage for the given report.
+
+        Args:
+            report_source: The region covered by the report.
+            report_cursor: Cursor to the report to update.
+            columns_in_csv: Columns in the csv files.
+            csv_file_locations: Locations of the csv files in the report.
+            report_bucket_region: Required by current Postgres driver.
+            logger: The logger to use.
+        """
+        self.truncate_s3_partition(
+            report_source,
+            logger,
+        )
+
+        self.update_job_with_s3_inventory(
+            report_cursor,
+            columns_in_csv,
+            csv_file_locations,
+            report_bucket_region,
+            logger,
+        )
+
     def truncate_s3_partition(
         self,
         report_source: str,
@@ -83,11 +117,11 @@ class InternalReconciliationStorageAdapterRDBMS(
         Truncates the partition for the given orca_archive_location, removing its data.
 
         Args:
-            report_source: The name of the bucket to generate the reports for.
+            report_source: The region covered by the report.
             logger: The logger to use.
         """
         try:
-            logger.debug(f"Truncating old s3 data for bucket {report_source}.")
+            logger.debug(f"Truncating old s3 data blocking report {report_source}.")
             partition_name = get_partition_name_from_bucket_name(report_source)
             with self.admin_engine.begin() as connection:
                 connection.execute(
@@ -123,11 +157,10 @@ class InternalReconciliationStorageAdapterRDBMS(
 
     def update_job_with_s3_inventory(
         self,
-        report_bucket_name: str,
+        report_cursor: InternalReconcileReportCursor,
+        columns_in_csv: List[str],
+        csv_file_locations: List[AWSS3FileLocation],
         report_bucket_region: str,
-        csv_key_paths: List[str],
-        manifest_file_schema: str,
-        job_id: int,
         logger: logging.Logger,
     ):
         """
@@ -135,17 +168,16 @@ class InternalReconciliationStorageAdapterRDBMS(
         triggers load into that table, then moves that data into the proper partition.
 
         Args:
-            report_bucket_name: The name of the bucket the csv is located in.
-            report_bucket_region: The name of the region the report bucket resides in.
-            csv_key_paths: The paths of the csvs within the report bucket.
-            manifest_file_schema: The string representing columns present in the csv.
-            job_id: The id of the job to associate info with.
+            report_cursor: Cursor to the report to update.
+            columns_in_csv: Columns in the csv files.
+            csv_file_locations: Locations of the csv files in the report.
+            report_bucket_region: Required by current Postgres driver.
             logger: The logger to use.
         """
         try:
-            logger.debug(f"Pulling in s3 inventory records for job {job_id}.")
+            logger.debug(f"Pulling in s3 inventory records for job {report_cursor.job_id}.")
             temporary_s3_column_list = self.generate_temporary_s3_column_list(
-                manifest_file_schema
+                columns_in_csv
             )
             with self.admin_engine.begin() as connection:
                 # Within this transaction import the csv and update the job status
@@ -153,15 +185,16 @@ class InternalReconciliationStorageAdapterRDBMS(
                     self.create_temporary_table_sql(temporary_s3_column_list),
                     [{}],
                 )
-                for csv_key_path in csv_key_paths:
+                for csv_file_location in csv_file_locations:
                     # Have postgres load the csv
-                    logger.debug(f"Loading CSV {csv_key_path} for job {job_id}.")
+                    logger.debug(
+                        f"Loading CSV {csv_file_location.key} for job {report_cursor.job_id}.")
                     connection.execute(
                         self.trigger_csv_load_from_s3_sql(),
                         [
                             {
-                                "report_bucket_name": report_bucket_name,
-                                "csv_key_path": csv_key_path,
+                                "report_bucket_name": csv_file_location.bucket_name,
+                                "csv_key_path": csv_file_location.key,
                                 "report_bucket_region": report_bucket_region,
                                 "s3_access_key": self.s3_access_key,
                                 "s3_secret_key": self.s3_secret_key,
@@ -169,35 +202,34 @@ class InternalReconciliationStorageAdapterRDBMS(
                         ],
                     )
                 # Now that all csvs are loaded, pull them into main db from temporary table
-                logger.debug(f"Translating data to Orca format for job {job_id}.")
+                logger.debug(f"Translating data to Orca format for job {report_cursor.job_id}.")
                 connection.execute(
                     self.translate_s3_import_to_partitioned_data_sql(),
                     [
                         {
-                            "job_id": job_id,
+                            "job_id": report_cursor.job_id,
                         }
                     ],
                 )
                 # Update job status
-                logger.debug(f"Posting successful status for job {job_id}.")
+                logger.debug(f"Posting successful status for job {report_cursor.job_id}.")
                 orca_shared.reconciliation.shared_reconciliation.update_job(
-                    job_id,
+                    int(report_cursor.job_id),
                     OrcaStatus.STAGED,
                     None,
                     self.user_engine,
                 )
         except Exception as sql_ex:
-            logger.error(f"Error while processing job '{job_id}': {sql_ex}")
+            logger.error(f"Error while processing job '{report_cursor.job_id}': {sql_ex}")
             raise
 
     @staticmethod
-    def generate_temporary_s3_column_list(manifest_file_schema: str) -> str:
+    def generate_temporary_s3_column_list(columns_in_csv: List[str]) -> str:
         """
         Creates a list of columns that matches the order of columns in the manifest.
         Columns used by our database are given standardized names.
         Args:
-            manifest_file_schema: An ordered CSV representing columns
-            in the CSV the manifest points to.
+            columns_in_csv: Columns in the csv files.
 
         Returns: A string representing SQL columns to create.
             Columns required for import but unused by orca will be filled in with `junk` values.
@@ -218,8 +250,6 @@ class InternalReconciliationStorageAdapterRDBMS(
             "IsDeleteMarker": "delete_marker bool",
             "IsLatest": "is_latest bool",
         }
-        manifest_file_schema = manifest_file_schema.replace(" ", "")
-        columns_in_csv = manifest_file_schema.split(",")
         columns_in_postgres = []
         for column_index, column_in_csv in enumerate(columns_in_csv):
             postgres_column_name = column_mappings.get(
