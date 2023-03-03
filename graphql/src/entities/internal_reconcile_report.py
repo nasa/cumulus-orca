@@ -1,10 +1,27 @@
 import dataclasses
+from enum import Enum
 from typing import Optional
 
 import pydantic
 
 # noinspection PyPackageRequirements
 import strawberry
+
+
+# Copied from shared_libraries/reconciliation
+@strawberry.enum  # Not strictly clean, but alternative is duplicating classes in graphql adapter.
+class Status(Enum):
+    """
+    An enumeration.
+    Defines the status value used in the ORCA Reconciliation database
+    for use by the reconciliation functions.
+    """
+
+    GETTING_S3_LIST = 1
+    STAGED = 2
+    GENERATING_REPORTS = 3
+    ERROR = 4
+    SUCCESS = 5
 
 
 @strawberry.type  # Not strictly clean, but alternative is duplicating classes in graphql adapter.

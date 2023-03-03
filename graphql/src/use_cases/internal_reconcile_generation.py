@@ -26,7 +26,7 @@ class InternalReconcileGeneration:
 
         Args:
             report_source: The region covered by the report.
-            creation_timestamp:
+            creation_timestamp: Seconds since UTC origin that the report was created.
             logger: The logger to use.
 
         Returns:

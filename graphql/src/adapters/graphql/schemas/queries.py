@@ -4,6 +4,7 @@ from typing import Annotated
 
 # noinspection PyPackageRequirements
 import strawberry
+# noinspection PyPackageRequirements
 from strawberry import argument, field, type
 
 from src.adapters.graphql.adapters import AdaptersStorage
