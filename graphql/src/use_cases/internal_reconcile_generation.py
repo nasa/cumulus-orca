@@ -53,6 +53,14 @@ class InternalReconcileGeneration:
         status: OrcaStatus,
         error_message: Optional[str],
     ):
+        """
+        Updates the status entry for a job.
+
+        Args:
+            report_cursor: Cursor to the report to update.
+            status: The status to update the job with.
+            error_message: The error to post to the job, if any.
+        """
         self.storage.update_job(
             report_cursor,
             status,

@@ -136,7 +136,7 @@ class InternalReconciliationStorageAdapterRDBMS(
 
     def update_job(
         self,
-        job_id: int,
+        report_cursor: InternalReconcileReportCursor,
         status: OrcaStatus,
         error_message: Optional[str],
     ) -> None:
@@ -144,12 +144,12 @@ class InternalReconciliationStorageAdapterRDBMS(
         Updates the status entry for a job.
 
         Args:
-            job_id: The id of the job to associate info with.
+            report_cursor: Cursor to the report to update.
             status: The status to update the job with.
             error_message: The error to post to the job, if any.
         """
         orca_shared.reconciliation.update_job(
-            job_id,
+            int(report_cursor.job_id),
             status,
             error_message,
             self.user_engine
@@ -214,7 +214,7 @@ class InternalReconciliationStorageAdapterRDBMS(
                 # Update job status
                 logger.debug(f"Posting successful status for job {report_cursor.job_id}.")
                 orca_shared.reconciliation.shared_reconciliation.update_job(
-                    int(report_cursor.job_id),
+                    report_cursor,
                     OrcaStatus.STAGED,
                     None,
                     self.user_engine,
