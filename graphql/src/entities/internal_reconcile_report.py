@@ -1,6 +1,8 @@
 import dataclasses
+import typing
 from enum import Enum
 from typing import Optional
+from dataclasses import dataclass
 
 import pydantic
 
@@ -10,13 +12,12 @@ import strawberry
 
 # Copied from shared_libraries/reconciliation
 @strawberry.enum  # Not strictly clean, but alternative is duplicating classes in graphql adapter.
-class Status(Enum):
+class ReconciliationStatus(Enum):
     """
     An enumeration.
     Defines the status value used in the ORCA Reconciliation database
     for use by the reconciliation functions.
     """
-
     GETTING_S3_LIST = 1
     STAGED = 2
     GENERATING_REPORTS = 3
@@ -24,9 +25,12 @@ class Status(Enum):
     SUCCESS = 5
 
 
-@strawberry.type  # Not strictly clean, but alternative is duplicating classes in graphql adapter.
+# Not strictly clean, but alternative is duplicating classes in graphql adapter.
 @dataclasses.dataclass
 class InternalReconcileReportCursor(pydantic.BaseModel):
+    """
+    A page contains multiple records plus string cursor values for the first and last elements.
+    """
     # IMPORTANT: Whenever properties are added/removed/modified/renamed, update constructor.
     # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
     job_id: float
@@ -39,6 +43,18 @@ class InternalReconcileReportCursor(pydantic.BaseModel):
         super().__init__(
             job_id=job_id,
         )
+
+
+# Strawberry can't handle @strawberry.input and @strawberry.type on the same class.
+@strawberry.input
+class InternalReconcileReportCursorInput(InternalReconcileReportCursor):
+    pass
+
+
+# Strawberry can't handle @strawberry.input and @strawberry.type on the same class.
+@strawberry.type
+class InternalReconcileReportCursorOutput(InternalReconcileReportCursor):
+    pass
 
 
 @strawberry.type  # Not strictly clean, but alternative is duplicating classes in graphql adapter.

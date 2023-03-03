@@ -9,10 +9,10 @@ from strawberry import argument, field, type
 
 from src.adapters.graphql.adapters import AdaptersStorage
 from src.adapters.graphql.dataTypes.internal_reconcile_report import CreateJobStrawberryResponse
-from src.adapters.graphql.resolvers.internal_reconcile_report import create_job, update_job, \
-    get_current_archive_list
+from src.adapters.graphql.resolvers.internal_reconcile_report import create_job, update_job
 from src.adapters.storage.internal_reconciliation_s3 import AWSS3FileLocation
-from src.entities.internal_reconcile_report import InternalReconcileReportCursor, Status
+from src.entities.internal_reconcile_report import ReconciliationStatus, \
+    InternalReconcileReportCursorInput
 
 
 @type
@@ -51,14 +51,14 @@ class Mutations:
         description="""Updates the status entry for a job.""")
     def update_internal_reconciliation_job(
         self,
-        # report_cursor: Annotated[
-        #     InternalReconcileReportCursor,
-        #     argument(
-        #         description="""Cursor to the report to update."""
-        #     )
-        # ],
+        report_cursor: Annotated[
+            InternalReconcileReportCursorInput,
+            argument(
+                description="""Cursor to the report to update."""
+            )
+        ],
         status: Annotated[
-            Status,
+            ReconciliationStatus,
             argument(
                 description="""The status to update the job with."""
             )
@@ -77,49 +77,49 @@ class Mutations:
             Mutations.adapters_storage.storage_internal_reconciliation,
         )
 
-    # @field(
-    #     description="""Updates the status entry for a job.""")
-    # def import_current_archive_list_for_reconciliation_job(
-    #     self,
-    #     report_source: Annotated[
-    #         str,
-    #         argument(
-    #             description="""The region covered by the report."""
-    #         )
-    #     ],
-    #     report_cursor: Annotated[
-    #         InternalReconcileReportCursor,
-    #         argument(
-    #             description="""Cursor to the report to update."""
-    #         )
-    #     ],
-    #     columns_in_csv: Annotated[
-    #         typing.List[str],
-    #         argument(
-    #             description="""Columns in the csv files."""
-    #         )
-    #     ],
-    #     csv_file_locations: Annotated[
-    #         typing.List[AWSS3FileLocation],
-    #         argument(
-    #             description="""Locations of the csv files in the report."""
-    #         )
-    #     ],
-    #     report_bucket_region: Annotated[
-    #         str,
-    #         argument(
-    #             description="""Required by current Postgres driver."""
-    #         )
-    #     ],
-    # ) -> CreateJobStrawberryResponse:
-    #     return get_current_archive_list(
-    #         report_source,
-    #         report_cursor,
-    #         columns_in_csv,
-    #         csv_file_locations,
-    #         report_bucket_region,
-    #         Mutations.adapters_storage.storage_internal_reconciliation,
-    #         Mutations.adapters_storage.logger_provider.get_logger(
-    #             uuid.uuid4().__str__()
-    #         )
-    #     )
+    @field(
+        description="""Updates the status entry for a job.""")
+    def import_current_archive_list_for_reconciliation_job(
+        self,
+        report_source: Annotated[
+            str,
+            argument(
+                description="""The region covered by the report."""
+            )
+        ],
+        report_cursor: Annotated[
+            InternalReconcileReportCursorInput,
+            argument(
+                description="""Cursor to the report to update."""
+            )
+        ],
+        columns_in_csv: Annotated[
+            typing.List[str],
+            argument(
+                description="""Columns in the csv files."""
+            )
+        ],
+        csv_file_locations: Annotated[
+            typing.List[AWSS3FileLocation],
+            argument(
+                description="""Locations of the csv files in the report."""
+            )
+        ],
+        report_bucket_region: Annotated[
+            str,
+            argument(
+                description="""Required by current Postgres driver."""
+            )
+        ],
+    ) -> CreateJobStrawberryResponse:
+        return get_current_archive_list(
+            report_source,
+            report_cursor,
+            columns_in_csv,
+            csv_file_locations,
+            report_bucket_region,
+            Mutations.adapters_storage.storage_internal_reconciliation,
+            Mutations.adapters_storage.logger_provider.get_logger(
+                uuid.uuid4().__str__()
+            )
+        )

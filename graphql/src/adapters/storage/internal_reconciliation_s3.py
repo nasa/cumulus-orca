@@ -10,7 +10,7 @@ MANIFEST_FILES_KEY = "files"
 FILES_KEY_KEY = "key"
 
 
-@strawberry.type  # Not strictly clean, but alternative is duplicating classes in graphql adapter.
+@strawberry.input  # Not strictly clean, but alternative is duplicating classes in graphql adapter.
 @dataclasses.dataclass
 class AWSS3FileLocation(pydantic.BaseModel, FileLocation):
     # IMPORTANT: Whenever properties are added/removed/modified/renamed, update constructor.
