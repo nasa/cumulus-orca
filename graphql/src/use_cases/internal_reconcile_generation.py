@@ -8,10 +8,6 @@ from src.entities.files import FileLocation
 from src.entities.internal_reconcile_report import InternalReconcileReportCursor
 from src.use_cases.adapter_interfaces.storage import InternalReconcileGenerationStorageInterface
 
-MANIFEST_SOURCE_BUCKET_KEY = "sourceBucket"
-MANIFEST_FILE_SCHEMA_KEY = "fileSchema"
-MANIFEST_CREATION_TIMESTAMP_KEY = "creationTimestamp"
-
 
 class InternalReconcileGeneration:
     def __init__(
