@@ -1,11 +1,8 @@
 import dataclasses
-import typing
 from enum import Enum
 from typing import Optional
-from dataclasses import dataclass
 
 import pydantic
-
 # noinspection PyPackageRequirements
 import strawberry
 
@@ -46,12 +43,14 @@ class InternalReconcileReportCursor(pydantic.BaseModel):
 
 
 # Strawberry can't handle @strawberry.input and @strawberry.type on the same class.
+# It also can't handle input and output objects having the same name.
 @strawberry.input
 class InternalReconcileReportCursorInput(InternalReconcileReportCursor):
     pass
 
 
 # Strawberry can't handle @strawberry.input and @strawberry.type on the same class.
+# It also can't handle input and output objects having the same name.
 @strawberry.type
 class InternalReconcileReportCursorOutput(InternalReconcileReportCursor):
     pass

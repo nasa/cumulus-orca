@@ -9,7 +9,8 @@ from strawberry import argument, field, type
 
 from src.adapters.graphql.adapters import AdaptersStorage
 from src.adapters.graphql.dataTypes.internal_reconcile_report import CreateJobStrawberryResponse
-from src.adapters.graphql.resolvers.internal_reconcile_report import create_job, update_job
+from src.adapters.graphql.resolvers.internal_reconcile_report import create_job, update_job, \
+    get_current_archive_list
 from src.adapters.storage.internal_reconciliation_s3 import AWSS3FileLocation
 from src.entities.internal_reconcile_report import ReconciliationStatus, \
     InternalReconcileReportCursorInput
