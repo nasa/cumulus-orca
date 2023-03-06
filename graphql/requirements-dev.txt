@@ -2,7 +2,7 @@ uvicorn~=0.18.3
 strawberry-graphql[debug-server]==0.133.5
 fastapi==0.85.0
 pydantic==1.10.2
-SQLAlchemy==1.4.11
+SQLAlchemy==2.0.5
 ../shared_libraries[database]
 psycopg2-binary
 

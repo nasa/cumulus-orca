@@ -35,10 +35,10 @@ aws_lambda_powertools==1.31.0
 
 ## Libraries used by database package
 boto3~=1.18.40
-SQLAlchemy==1.4.11
+SQLAlchemy==2.0.0
 
 ## Libraries used by recovery package
 # boto3~=1.18.40
 
 ## Libraries used by reconciliation package
-# SQLAlchemy==1.4.11
+# SQLAlchemy==2.0.5

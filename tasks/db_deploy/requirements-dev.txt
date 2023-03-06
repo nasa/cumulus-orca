@@ -25,5 +25,5 @@ psycopg2-binary==2.8.6
 ## Libraries needed by application
 ## ---------------------------------------------------------------------------
 aws_lambda_powertools==1.31.0
-SQLAlchemy==1.4.11
+SQLAlchemy==2.0.5
 ../../shared_libraries[database, reconciliation]
