@@ -79,6 +79,4 @@ def _create_connection_uri(logger: logging.Logger, **kwargs: Any) -> str:
         URI for connecting to the database.
     """
     logger.debug("Creating URL object to connect to the database.")
-    result = URL.create(drivername="postgresql", **kwargs).__str__()
-    logging.info(result)
-    return result
+    return URL.create(drivername="postgresql", **kwargs).__str__()
