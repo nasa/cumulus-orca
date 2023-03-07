@@ -12,8 +12,7 @@ from src.adapters.graphql.dataTypes.internal_reconcile_report import (
 )
 from src.entities.common import PageParameters
 from src.entities.files import FileLocation
-from src.entities.internal_reconcile_report import InternalReconcileReportCursor, \
-    InternalReconcileReportCursorOutput
+from src.entities.internal_reconcile_report import InternalReconcileReportCursor
 from src.use_cases.adapter_interfaces.storage import (
     StorageInternalReconcileReportInterface, InternalReconcileGenerationStorageInterface,
 )
@@ -30,7 +29,7 @@ def create_job(
     try:
         result = InternalReconcileGeneration(storage_irr) \
             .create_job(report_source, creation_timestamp, logger)
-        return InternalReconcileReportCursorOutput(result)
+        return result
     except Exception as ex:
         return InternalServerErrorGraphqlType(ex)
 

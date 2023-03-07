@@ -39,7 +39,7 @@ class InternalReconciliationStorageAdapterRDBMS(
         orca_archive_location: str,
         inventory_creation_time: datetime,
         logger: logging.Logger,
-    ):
+    ) -> InternalReconcileReportCursor:
         """
         Creates the initial status entry for a job.
 
@@ -73,7 +73,7 @@ class InternalReconciliationStorageAdapterRDBMS(
             logger.error(f"Error while creating job: {sql_ex}")
             raise
 
-        return rows.fetchone()["id"]
+        return InternalReconcileReportCursor(rows.fetchone()["id"])
 
     def pull_in_inventory_report(
         self,

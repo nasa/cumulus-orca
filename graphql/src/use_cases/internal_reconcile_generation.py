@@ -5,7 +5,8 @@ from typing import List, Optional
 from orca_shared.reconciliation import OrcaStatus
 
 from src.entities.files import FileLocation
-from src.entities.internal_reconcile_report import InternalReconcileReportCursor
+from src.entities.internal_reconcile_report import InternalReconcileReportCursor, \
+    InternalReconcileReportCreationRecord
 from src.use_cases.adapter_interfaces.storage import InternalReconcileGenerationStorageInterface
 
 
@@ -32,16 +33,14 @@ class InternalReconcileGeneration:
         Returns:
 
         """
-        job_id = self.storage.create_job(
+        cursor = self.storage.create_job(
             report_source,
             datetime.utcfromtimestamp(
                 creation_timestamp
             ).replace(tzinfo=timezone.utc),
             logger,
         )
-        return InternalReconcileReportCursor(
-            job_id=job_id
-        )
+        return InternalReconcileReportCreationRecord(cursor)
 
     def update_job(
         self,

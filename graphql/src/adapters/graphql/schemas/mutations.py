@@ -5,6 +5,7 @@ from typing import Annotated
 # noinspection PyPackageRequirements
 import strawberry
 # noinspection PyPackageRequirements
+from orca_shared.reconciliation import OrcaStatus
 from strawberry import argument, field, type
 
 from src.adapters.graphql.adapters import AdaptersStorage
@@ -16,7 +17,8 @@ from src.adapters.graphql.resolvers.internal_reconcile_report import create_job,
     get_current_archive_list
 from src.adapters.storage.internal_reconciliation_s3 import AWSS3FileLocation
 from src.entities.internal_reconcile_report import ReconciliationStatus, \
-    InternalReconcileReportCursorInput
+    InternalReconcileReportCursor
+from src.use_cases.helpers.edge_cursor import EdgeCursor
 
 
 @type
@@ -57,7 +59,7 @@ class Mutations:
     def update_internal_reconciliation_job(
         self,
         report_cursor: Annotated[
-            InternalReconcileReportCursorInput,
+            str,
             argument(
                 description="""Cursor to the report to update."""
             )
@@ -76,8 +78,8 @@ class Mutations:
         ] = None,  # Default value actually MAKES it optional
     ) -> UpdateInternalReconciliationJobStrawberryResponse:
         return update_job(
-            report_cursor,
-            status,
+            EdgeCursor.decode_cursor(report_cursor, InternalReconcileReportCursor),
+            OrcaStatus(status.value),
             error_message,
             Mutations.adapters_storage.storage_internal_reconciliation,
         )
@@ -93,7 +95,7 @@ class Mutations:
             )
         ],
         report_cursor: Annotated[
-            InternalReconcileReportCursorInput,
+            str,
             argument(
                 description="""Cursor to the report to update."""
             )
@@ -119,7 +121,7 @@ class Mutations:
     ) -> ImportCurrentArchiveListInternalReconciliationJobStrawberryResponse:
         return get_current_archive_list(
             report_source,
-            report_cursor,
+            EdgeCursor.decode_cursor(report_cursor, InternalReconcileReportCursor),
             columns_in_csv,
             csv_file_locations,
             report_bucket_region,

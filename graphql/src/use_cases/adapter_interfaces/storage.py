@@ -37,7 +37,7 @@ class InternalReconcileGenerationStorageInterface:
         report_source: str,
         inventory_creation_time: datetime,
         logger: logging.Logger
-    ):
+    ) -> InternalReconcileReportCursor:
         """
         Creates the initial status entry for a job.
 

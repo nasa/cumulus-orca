@@ -6,16 +6,17 @@ import strawberry
 from src.adapters.graphql.dataTypes.common import InternalServerErrorGraphqlType
 from src.entities.common import Page
 from src.entities.internal_reconcile_report import Mismatch, Phantom, \
-    InternalReconcileReportCursorOutput
+    InternalReconcileReportCreationRecord
 
 CreateInternalReconciliationJobStrawberryResponse = strawberry.union(
     "CreateInternalReconciliationJobStrawberryResponse",
-    [InternalReconcileReportCursorOutput, InternalServerErrorGraphqlType]
+    [InternalReconcileReportCreationRecord, InternalServerErrorGraphqlType]
 )
 
 UpdateInternalReconciliationJobStrawberryResponse = typing.Optional[InternalServerErrorGraphqlType]
 
-ImportCurrentArchiveListInternalReconciliationJobStrawberryResponse = typing.Optional[InternalServerErrorGraphqlType]
+ImportCurrentArchiveListInternalReconciliationJobStrawberryResponse = \
+    typing.Optional[InternalServerErrorGraphqlType]
 
 GetPhantomPageStrawberryResponse = strawberry.union(
     "GetPhantomPageStrawberryResponse",

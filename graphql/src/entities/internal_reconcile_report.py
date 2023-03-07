@@ -8,6 +8,9 @@ import strawberry
 
 
 # Copied from shared_libraries/reconciliation
+from src.use_cases.helpers.edge_cursor import EdgeCursor
+
+
 @strawberry.enum  # Not strictly clean, but alternative is duplicating classes in graphql adapter.
 class ReconciliationStatus(Enum):
     """
@@ -22,7 +25,6 @@ class ReconciliationStatus(Enum):
     SUCCESS = 5
 
 
-# Not strictly clean, but alternative is duplicating classes in graphql adapter.
 @dataclasses.dataclass
 class InternalReconcileReportCursor(pydantic.BaseModel):
     # IMPORTANT: Whenever properties are added/removed/modified/renamed, update constructor.
@@ -39,20 +41,19 @@ class InternalReconcileReportCursor(pydantic.BaseModel):
         )
 
 
-# Strawberry can't handle @strawberry.input and @strawberry.type on the same class.
-# It also can't handle input and output objects having the same name.
-@strawberry.input
-class InternalReconcileReportCursorInput(InternalReconcileReportCursor):
-    pass
-
-
-# Strawberry can't handle @strawberry.input and @strawberry.type on the same class.
-# It also can't handle input and output objects having the same name.
+# Not strictly clean, but alternative is duplicating classes in graphql adapter.
 @strawberry.type
-class InternalReconcileReportCursorOutput(InternalReconcileReportCursor):
-    def __init__(self, internal_reconcile_report_cursor):
-        super(InternalReconcileReportCursorOutput, self)\
-            .__init__(internal_reconcile_report_cursor.job_id)
+@dataclasses.dataclass
+class InternalReconcileReportCreationRecord(pydantic.BaseModel):
+    # IMPORTANT: Whenever properties are added/removed/modified/renamed, update constructor.
+    cursor: str
+
+    # Overriding constructor to give us type/name hints for Pydantic class.
+    def __init__(self, cursor: InternalReconcileReportCursor):
+        # This call to __init__ will NOT automatically update when performing renames.
+        super().__init__(
+            cursor=EdgeCursor.encode_cursor(**dataclasses.asdict(cursor)),
+        )
 
 
 @strawberry.type  # Not strictly clean, but alternative is duplicating classes in graphql adapter.
