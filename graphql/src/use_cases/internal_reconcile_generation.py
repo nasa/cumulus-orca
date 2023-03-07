@@ -82,11 +82,45 @@ class InternalReconcileGeneration:
             report_bucket_region: Required by current Postgres driver.
             logger: The logger to use.
         """
-        self.storage.pull_in_inventory_report(
-            report_source,
-            report_cursor,
-            columns_in_csv,
-            csv_file_locations,
-            report_bucket_region,
-            logger
-        )
+        try:
+            self.storage.pull_in_inventory_report(
+                report_source,
+                report_cursor,
+                columns_in_csv,
+                csv_file_locations,
+                report_bucket_region,
+                logger
+            )
+        except Exception as fatal_exception:
+            # On error, set job status to failure.
+            logger.error(f"Encountered a fatal error: {fatal_exception}")
+            # noinspection PyArgumentList
+            self.update_job(
+                report_cursor,
+                OrcaStatus.ERROR,
+                str(fatal_exception),
+            )
+            raise
+
+    def perform_orca_reconcile(
+        self,
+        report_source: str,
+        report_cursor: InternalReconcileReportCursor,
+        logger: logging.Logger,
+    ):
+        try:
+            self.storage.perform_orca_reconcile(
+                report_source,
+                report_cursor,
+                logger,
+            )
+        except Exception as fatal_exception:
+            # On error, set job status to failure.
+            logger.error(f"Encountered a fatal error: {fatal_exception}")
+            # noinspection PyArgumentList
+            self.update_job(
+                report_cursor,
+                OrcaStatus.ERROR,
+                str(fatal_exception),
+            )
+            raise

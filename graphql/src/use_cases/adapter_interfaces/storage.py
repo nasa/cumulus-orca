@@ -88,6 +88,22 @@ class InternalReconcileGenerationStorageInterface:
         """
         ...
 
+    def perform_orca_reconcile(
+        self,
+        report_source: str,
+        report_cursor: InternalReconcileReportCursor,
+        logger: logging.Logger,
+    ) -> None:
+        """
+        Generates and posts phantom, orphan, and mismatch reports within the same transaction.
+
+        Args:
+            report_source: The region covered by the report.
+            report_cursor: Cursor to the report to update.
+            logger: The logger to use.
+        """
+        ...
+
 
 class StorageInternalReconcileReportInterface:
     """

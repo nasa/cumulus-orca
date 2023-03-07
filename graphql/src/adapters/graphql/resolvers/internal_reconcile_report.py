@@ -8,7 +8,7 @@ from src.adapters.graphql.dataTypes.internal_reconcile_report import (
     GetMismatchPageStrawberryResponse,
     GetPhantomPageStrawberryResponse,
     ImportCurrentArchiveListInternalReconciliationJobStrawberryResponse,
-    CreateInternalReconciliationJobStrawberryResponse,
+    CreateInternalReconciliationJobStrawberryResponse, PerformOrcaReconcileStrawberryResponse,
 )
 from src.entities.common import PageParameters
 from src.entities.files import FileLocation
@@ -65,6 +65,24 @@ def get_current_archive_list(
             columns_in_csv,
             csv_file_locations,
             report_bucket_region,
+            logger,
+        )
+        return
+    except Exception as ex:
+        return InternalServerErrorGraphqlType(ex)
+
+
+def perform_orca_reconcile(
+    report_source: str,
+    report_cursor: InternalReconcileReportCursor,
+    storage_irr: InternalReconcileGenerationStorageInterface,
+    logger: logging.Logger,
+) -> PerformOrcaReconcileStrawberryResponse:
+    try:
+        InternalReconcileGeneration(storage_irr) \
+            .perform_orca_reconcile(
+            report_source,
+            report_cursor,
             logger,
         )
         return

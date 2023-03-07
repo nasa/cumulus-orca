@@ -130,3 +130,29 @@ class Mutations:
                 uuid.uuid4().__str__()
             )
         )
+
+    @field(
+        description="""Generates reports for a given job.""")
+    def perform_orca_reconcile_for_reconciliation_job(
+        self,
+        report_source: Annotated[
+            str,
+            argument(
+                description="""The region covered by the report."""
+            )
+        ],
+        report_cursor: Annotated[
+            str,
+            argument(
+                description="""Cursor to the report to update."""
+            )
+        ],
+    ) -> ImportCurrentArchiveListInternalReconciliationJobStrawberryResponse:
+        return perform_orca_reconcile(
+            report_source,
+            EdgeCursor.decode_cursor(report_cursor, InternalReconcileReportCursor),
+            Mutations.adapters_storage.storage_internal_reconciliation,
+            Mutations.adapters_storage.logger_provider.get_logger(
+                uuid.uuid4().__str__()
+            )
+        )

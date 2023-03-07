@@ -18,6 +18,9 @@ UpdateInternalReconciliationJobStrawberryResponse = typing.Optional[InternalServ
 ImportCurrentArchiveListInternalReconciliationJobStrawberryResponse = \
     typing.Optional[InternalServerErrorGraphqlType]
 
+PerformOrcaReconcileStrawberryResponse = \
+    typing.Optional[InternalServerErrorGraphqlType]
+
 GetPhantomPageStrawberryResponse = strawberry.union(
     "GetPhantomPageStrawberryResponse",
     [Page[Phantom], InternalServerErrorGraphqlType]

@@ -34,6 +34,7 @@ class InternalReconciliationStorageAdapterRDBMS(
         self.s3_access_key = s3_access_key
         self.s3_secret_key = s3_secret_key
 
+    @shared_db.retry_operational_error()
     def create_job(
         self,
         orca_archive_location: str,
@@ -108,6 +109,7 @@ class InternalReconciliationStorageAdapterRDBMS(
             logger,
         )
 
+    @shared_db.retry_operational_error()
     def truncate_s3_partition(
         self,
         report_source: str,
@@ -155,6 +157,7 @@ class InternalReconciliationStorageAdapterRDBMS(
             self.user_engine
         )
 
+    @shared_db.retry_operational_error()
     def update_job_with_s3_inventory(
         self,
         report_cursor: InternalReconcileReportCursor,
@@ -257,6 +260,45 @@ class InternalReconciliationStorageAdapterRDBMS(
             )
             columns_in_postgres.append(postgres_column_name)
         return ", ".join(columns_in_postgres)
+
+    @shared_db.retry_operational_error()
+    def perform_orca_reconcile(
+        self,
+        report_source: str,
+        report_cursor: InternalReconcileReportCursor,
+        logger: logging.Logger,
+    ) -> None:
+        """
+        Generates and posts phantom, orphan, and mismatch reports within the same transaction.
+
+        Args:
+            report_source: The region covered by the report.
+            report_cursor: Cursor to the report to update.
+            logger: The logger to use.
+        """
+        logger.debug(f"Generating reports for job id {report_cursor.job_id}.")
+        with self.user_engine.begin() as connection:
+            logger.debug(f"Generating phantom reports for job id {report_cursor.job_id}.")
+            connection.execute(
+                # populate reconcile_phantom_report with files in orca.files
+                # but NOT reconcile_s3_object
+                self.generate_phantom_reports_sql(),
+                [{"job_id": report_cursor.job_id, "orca_archive_location": report_source}],
+            )
+            logger.debug(f"Generating orphan reports for job id {report_cursor.job_id}.")
+            connection.execute(
+                # populate reconcile_orphan_report with files in reconcile_s3_object
+                # but NOT orca.files
+                self.generate_orphan_reports_sql(),
+                [{"job_id": report_cursor.job_id, "orca_archive_location": report_source}],
+            )
+            logger.debug(f"Generating mismatch reports for job id {report_cursor.job_id}.")
+            connection.execute(
+                # populate reconcile_orphan_report with files in reconcile_s3_object and orca.files
+                # but with differences.
+                self.generate_mismatch_reports_sql(),
+                [{"job_id": report_cursor.job_id, "orca_archive_location": report_source}],
+            )
 
     @shared_db.retry_operational_error()
     def get_phantom_page(
@@ -409,6 +451,21 @@ class InternalReconciliationStorageAdapterRDBMS(
     @staticmethod
     @abstractmethod
     def translate_s3_import_to_partitioned_data_sql() -> text:  # pragma: no cover
+        raise NotImplementedError()
+
+    @staticmethod
+    @abstractmethod
+    def generate_phantom_reports_sql() -> text:  # pragma: no cover
+        raise NotImplementedError()
+
+    @staticmethod
+    @abstractmethod
+    def generate_orphan_reports_sql() -> text:  # pragma: no cover
+        raise NotImplementedError()
+
+    @staticmethod
+    @abstractmethod
+    def generate_mismatch_reports_sql() -> text:  # pragma: no cover
         raise NotImplementedError()
 
     @staticmethod

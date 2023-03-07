@@ -117,6 +117,211 @@ class InternalReconciliationStorageAdapterPostgres(InternalReconciliationStorage
         )
 
     @staticmethod
+    def generate_phantom_reports_sql() -> text:  # pragma: no cover
+        """
+        SQL for generating reports on files in the Orca catalog, but not S3.
+        """
+        return text(
+            """
+            WITH
+                phantom_files AS
+                (
+                    SELECT
+                        files.granule_id,
+                        files.name,
+                        files.key_path,
+                        files.etag,
+                        files.size_in_bytes,
+                        files.storage_class_id
+
+                    FROM
+                        files
+                    LEFT OUTER JOIN reconcile_s3_object USING
+                    (
+                        orca_archive_location, key_path
+                    )
+                    WHERE
+                        files.orca_archive_location = :orca_archive_location AND
+                        reconcile_s3_object.key_path IS NULL
+                ),
+                phantom_reports AS
+                (
+                    SELECT
+                        granule_id,
+                        collection_id,
+                        name,
+                        key_path,
+                        etag,
+                        last_update,
+                        size_in_bytes,
+                        cumulus_granule_id,
+                        storage_class_id
+                    FROM
+                        phantom_files
+                    INNER JOIN granules ON
+                    (
+                        phantom_files.granule_id=granules.id
+                    )
+                )
+            INSERT INTO reconcile_phantom_report
+            (
+                job_id,
+                collection_id,
+                granule_id,
+                filename,
+                key_path,
+                orca_etag,
+                orca_last_update,
+                orca_size,
+                orca_storage_class_id
+            )
+            SELECT
+                :job_id,
+                collection_id,
+                cumulus_granule_id,
+                name,
+                key_path,
+                etag,
+                last_update,
+                size_in_bytes,
+                storage_class_id
+            FROM
+                phantom_reports"""
+        )
+
+    @staticmethod
+    def generate_orphan_reports_sql() -> text:  # pragma: no cover
+        """
+        SQL for generating reports on files in S3, but not the Orca catalog.
+        """
+        return text(
+            """
+            WITH
+                orphan_reports AS
+                (
+                    SELECT
+                        reconcile_s3_object.key_path,
+                        reconcile_s3_object.etag,
+                        reconcile_s3_object.last_update,
+                        reconcile_s3_object.size_in_bytes,
+                        reconcile_s3_object.storage_class
+                    FROM
+                        reconcile_s3_object
+                    LEFT OUTER JOIN files USING
+                    (
+                        orca_archive_location, key_path
+                    )
+                    WHERE
+                        reconcile_s3_object.orca_archive_location = :orca_archive_location AND
+                        files.key_path IS NULL
+                )
+            INSERT INTO reconcile_orphan_report
+            (
+                job_id,
+                key_path,
+                etag,
+                last_update,
+                size_in_bytes,
+                storage_class
+            )
+                SELECT
+                    :job_id,
+                    key_path,
+                    etag,
+                    last_update,
+                    size_in_bytes,
+                    storage_class
+                FROM
+                    orphan_reports"""  # noqa
+        )
+
+    @staticmethod
+    def generate_mismatch_reports_sql() -> text:  # pragma: no cover
+        """
+        SQL for retrieving mismatches between entries in S3 and the Orca catalog.
+        """
+        return text(
+            """
+            INSERT INTO orca.reconcile_catalog_mismatch_report
+            (
+                job_id,
+                collection_id,
+                granule_id,
+                filename,
+                key_path,
+                cumulus_archive_location,
+                orca_etag,
+                s3_etag,
+                orca_last_update,
+                s3_last_update,
+                orca_size_in_bytes,
+                s3_size_in_bytes,
+                orca_storage_class_id,
+                s3_storage_class,
+                discrepancy_type
+            )
+            SELECT
+                :job_id,
+                granules.collection_id,
+                granules.cumulus_granule_id AS granule_id,
+                files.name AS filename,
+                files.key_path,
+                files.cumulus_archive_location,
+                files.etag AS orca_etag,
+                reconcile_s3_object.etag AS s3_etag,
+                granules.last_update AS orca_last_update,
+                reconcile_s3_object.last_update AS s3_last_update,
+                files.size_in_bytes AS orca_size_in_bytes,
+                reconcile_s3_object.size_in_bytes AS s3_size_in_bytes,
+                files.storage_class_id AS orca_storage_class_id,
+                reconcile_s3_object.storage_class AS s3_storage_class,
+                CASE
+                    WHEN (files.etag != reconcile_s3_object.etag AND
+                        files.size_in_bytes != reconcile_s3_object.size_in_bytes AND
+                        storage_class.value != reconcile_s3_object.storage_class)
+                        THEN 'etag, size_in_bytes, storage_class'
+                    WHEN (files.etag != reconcile_s3_object.etag AND
+                        files.size_in_bytes != reconcile_s3_object.size_in_bytes)
+                        THEN 'etag, size_in_bytes'
+                    WHEN files.etag != reconcile_s3_object.etag AND
+                        storage_class.value != reconcile_s3_object.storage_class
+                        THEN 'etag, storage_class'
+                    WHEN files.size_in_bytes != reconcile_s3_object.size_in_bytes AND
+                        storage_class.value != reconcile_s3_object.storage_class
+                        THEN 'size_in_bytes, storage_class'
+                    WHEN files.etag != reconcile_s3_object.etag
+                        THEN 'etag'
+                    WHEN files.size_in_bytes != reconcile_s3_object.size_in_bytes
+                        THEN 'size_in_bytes'
+                    WHEN storage_class.value != reconcile_s3_object.storage_class
+                        THEN 'storage_class'
+                    ELSE 'UNKNOWN'
+                END AS discrepancy_type
+            FROM
+                reconcile_s3_object
+            INNER JOIN files USING
+            (
+                orca_archive_location, key_path
+            )
+            INNER JOIN granules ON
+            (
+                files.granule_id=granules.id
+            )
+            INNER JOIN storage_class ON
+            (
+                storage_class_id=storage_class.id
+            )
+            WHERE
+                reconcile_s3_object.orca_archive_location = :orca_archive_location
+                AND
+                (
+                    files.etag != reconcile_s3_object.etag OR
+                    files.size_in_bytes != reconcile_s3_object.size_in_bytes OR
+                    storage_class.value != reconcile_s3_object.storage_class
+                )"""  # noqa
+        )
+
+    @staticmethod
     def get_phantom_page_sql(direction: DirectionEnum) -> text:  # pragma: no cover
         """
         SQL for retrieving a page of phantoms for a given job,
