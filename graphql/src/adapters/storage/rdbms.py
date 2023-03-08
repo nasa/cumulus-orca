@@ -14,8 +14,6 @@ from src.use_cases.adapter_interfaces.storage import (
 
 class StorageAdapterRDBMS(
     StorageMetadataInterface,
-    StorageInternalReconcileReportInterface,
-    InternalReconcileGenerationStorageInterface,
 ):
     def __init__(
         self,

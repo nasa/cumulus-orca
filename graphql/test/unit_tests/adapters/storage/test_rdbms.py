@@ -1,16 +1,18 @@
 import random
 import unittest
 import uuid
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock, patch, call
 
-from src.adapters.storage.rdbms import StorageAdapterRDBMS
+from src.adapters.storage.internal_reconciliation_rdbms import \
+    InternalReconciliationStorageAdapterRDBMS
 from src.entities.common import DirectionEnum
 from src.entities.internal_reconcile_report import Mismatch, Phantom
 
 
 class TestRDBMS(unittest.TestCase):
-    @patch("src.adapters.storage.rdbms.StorageAdapterRDBMS.get_phantom_page_sql")
-    @patch("src.adapters.storage.rdbms.create_engine")
+    @patch("src.adapters.storage.internal_reconciliation_rdbms."
+           "InternalReconciliationStorageAdapterRDBMS.get_phantom_page_sql")
+    @patch("src.adapters.storage.internal_reconciliation_rdbms.create_engine")
     def test_get_phantom_page_next_page(
         self,
         mock_create_engine: MagicMock,
@@ -22,6 +24,9 @@ class TestRDBMS(unittest.TestCase):
         for direction in [DirectionEnum.next, DirectionEnum.previous]:
             with self.subTest(direction=direction):
                 mock_user_connection_uri = Mock()
+                mock_admin_connection_uri = Mock()
+                mock_s3_access_key = Mock()
+                mock_s3_secret_key = Mock()
 
                 mock_job_id = Mock()
                 mock_cursor_collection_id = Mock()
@@ -71,7 +76,12 @@ class TestRDBMS(unittest.TestCase):
                 mock_engine.begin = Mock(return_value=mock_enter)
                 mock_create_engine.return_value = mock_engine
 
-                adapter = StorageAdapterRDBMS(mock_user_connection_uri)
+                adapter = InternalReconciliationStorageAdapterRDBMS(
+                    mock_user_connection_uri,
+                    mock_admin_connection_uri,
+                    mock_s3_access_key,
+                    mock_s3_secret_key,
+                )
 
                 result = adapter.get_phantom_page(
                     mock_job_id, mock_cursor_collection_id, mock_cursor_granule_id,
@@ -80,7 +90,11 @@ class TestRDBMS(unittest.TestCase):
                 )
                 self.assertEqual(phantoms, result)
 
-                mock_create_engine.assert_called_once_with(mock_user_connection_uri, future=True)
+                mock_create_engine.assert_has_calls([
+                    call(mock_user_connection_uri, future=True),
+                    call(mock_admin_connection_uri, future=True)
+                ])
+                self.assertEqual(2, mock_create_engine.call_count)
                 mock_enter.__enter__.assert_called_once_with()
                 mock_execute.assert_called_once_with(
                     mock_get_phantom_page_sql.return_value,
@@ -97,8 +111,9 @@ class TestRDBMS(unittest.TestCase):
             mock_create_engine.reset_mock()
             mock_get_phantom_page_sql.reset_mock()
 
-    @patch("src.adapters.storage.rdbms.StorageAdapterRDBMS.get_mismatch_page_sql")
-    @patch("src.adapters.storage.rdbms.create_engine")
+    @patch("src.adapters.storage.internal_reconciliation_rdbms."
+           "InternalReconciliationStorageAdapterRDBMS.get_mismatch_page_sql")
+    @patch("src.adapters.storage.internal_reconciliation_rdbms.create_engine")
     def test_get_mismatch_page_next_page(
         self,
         mock_create_engine: MagicMock,
@@ -110,6 +125,9 @@ class TestRDBMS(unittest.TestCase):
         for direction in [DirectionEnum.next, DirectionEnum.previous]:
             with self.subTest(direction=direction):
                 mock_user_connection_uri = Mock()
+                mock_admin_connection_uri = Mock()
+                mock_s3_access_key = Mock()
+                mock_s3_secret_key = Mock()
 
                 mock_job_id = Mock()
                 mock_cursor_collection_id = Mock()
@@ -173,7 +191,12 @@ class TestRDBMS(unittest.TestCase):
                 mock_engine.begin = Mock(return_value=mock_enter)
                 mock_create_engine.return_value = mock_engine
 
-                adapter = StorageAdapterRDBMS(mock_user_connection_uri)
+                adapter = InternalReconciliationStorageAdapterRDBMS(
+                    mock_user_connection_uri,
+                    mock_admin_connection_uri,
+                    mock_s3_access_key,
+                    mock_s3_secret_key,
+                )
 
                 result = adapter.get_mismatch_page(
                     mock_job_id, mock_cursor_collection_id, mock_cursor_granule_id,
@@ -182,7 +205,11 @@ class TestRDBMS(unittest.TestCase):
                 )
                 self.assertEqual(mismatches, result)
 
-                mock_create_engine.assert_called_once_with(mock_user_connection_uri, future=True)
+                mock_create_engine.assert_has_calls([
+                    call(mock_user_connection_uri, future=True),
+                    call(mock_admin_connection_uri, future=True)
+                ])
+                self.assertEqual(2, mock_create_engine.call_count)
                 mock_enter.__enter__.assert_called_once_with()
                 mock_execute.assert_called_once_with(
                     mock_get_mismatch_page_sql.return_value,
