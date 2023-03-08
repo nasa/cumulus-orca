@@ -136,6 +136,8 @@ class InternalReconciliationStorageAdapterRDBMS(
             )
             raise
 
+    # todo: Pull code out of shared_reconciliation once old lambdas are gone.
+    # todo: When pulling out code, add logger parameter and bubble up.
     def update_job(
         self,
         report_cursor: InternalReconcileReportCursor,
