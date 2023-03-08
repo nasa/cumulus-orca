@@ -3,13 +3,331 @@ import unittest
 import uuid
 from unittest.mock import MagicMock, Mock, patch, call
 
+from orca_shared.reconciliation import OrcaStatus
+
 from src.adapters.storage.internal_reconciliation_rdbms import \
     InternalReconciliationStorageAdapterRDBMS
 from src.entities.common import DirectionEnum
-from src.entities.internal_reconcile_report import Mismatch, Phantom
+from src.entities.internal_reconcile_report import Mismatch, Phantom, InternalReconcileReportCursor
 
 
 class TestRDBMS(unittest.TestCase):
+    @patch("src.adapters.storage.internal_reconciliation_rdbms."
+           "InternalReconciliationStorageAdapterRDBMS.create_job_sql")
+    @patch("src.adapters.storage.internal_reconciliation_rdbms.create_engine")
+    def test_create_job_happy_path(
+        self,
+        mock_create_engine: MagicMock,
+        mock_create_job_sql: MagicMock,
+    ):
+        """
+        Happy path for creating job.
+        """
+        mock_logger = Mock()
+
+        mock_user_connection_uri = Mock()
+        mock_admin_connection_uri = Mock()
+        mock_s3_access_key = Mock()
+        mock_s3_secret_key = Mock()
+
+        mock_orca_archive_location = Mock()
+        mock_inventory_creation_time = Mock()
+        mock_job_id = random.randint(0, 9999999)  # nosec
+        returned_rows = Mock()
+        returned_rows.fetchone = Mock(return_value={"id": mock_job_id})
+        mock_execute = Mock(return_value=returned_rows)
+        mock_connection = Mock()
+        mock_connection.execute = mock_execute
+        mock_exit = Mock(return_value=False)
+        mock_enter = Mock()
+        mock_enter.__enter__ = Mock(return_value=mock_connection)
+        mock_enter.__exit__ = mock_exit
+        mock_engine = Mock()
+        mock_engine.begin = Mock(return_value=mock_enter)
+        mock_create_engine.return_value = mock_engine
+
+        adapter = InternalReconciliationStorageAdapterRDBMS(
+            mock_user_connection_uri,
+            mock_admin_connection_uri,
+            mock_s3_access_key,
+            mock_s3_secret_key,
+        )
+
+        result = adapter.create_job(
+            mock_orca_archive_location, mock_inventory_creation_time, mock_logger
+        )
+        self.assertEqual(mock_job_id, result.job_id)
+
+        mock_create_engine.assert_has_calls([
+            call(mock_user_connection_uri, future=True),
+            call(mock_admin_connection_uri, future=True)
+        ])
+        self.assertEqual(2, mock_create_engine.call_count)
+
+        mock_enter.__enter__.assert_called_once_with()
+        mock_execute.assert_called_once_with(
+            mock_create_job_sql.return_value,
+            [
+                {
+                    "orca_archive_location": mock_orca_archive_location,
+                    "inventory_creation_time": mock_inventory_creation_time,
+                    "status_id": OrcaStatus.GETTING_S3_LIST.value,
+                    "start_time": unittest.mock.ANY,
+                    "last_update": unittest.mock.ANY,
+                    "end_time": None,
+                    "error_message": None,
+                }
+            ],
+        )
+        mock_exit.assert_called_once_with(None, None, None)
+        mock_create_job_sql.assert_called_once_with()
+
+    @patch("src.adapters.storage.internal_reconciliation_rdbms."
+           "InternalReconciliationStorageAdapterRDBMS.update_job_with_s3_inventory")
+    @patch("src.adapters.storage.internal_reconciliation_rdbms."
+           "InternalReconciliationStorageAdapterRDBMS.truncate_s3_partition")
+    @patch("src.adapters.storage.internal_reconciliation_rdbms.create_engine")
+    def test_truncate_s3_partition_happy_path(
+        self,
+        mock_create_engine: MagicMock,
+        mock_truncate_s3_partition: MagicMock,
+        mock_update_job_with_s3_inventory: MagicMock,
+    ):
+        """
+        Performs calls in sequence.
+        """
+        mock_user_connection_uri = Mock()
+        mock_admin_connection_uri = Mock()
+        mock_s3_access_key = Mock()
+        mock_s3_secret_key = Mock()
+
+        adapter = InternalReconciliationStorageAdapterRDBMS(
+            mock_user_connection_uri,
+            mock_admin_connection_uri,
+            mock_s3_access_key,
+            mock_s3_secret_key,
+        )
+
+        mock_create_engine.assert_has_calls([
+            call(mock_user_connection_uri, future=True),
+            call(mock_admin_connection_uri, future=True)
+        ])
+        self.assertEqual(2, mock_create_engine.call_count)
+
+        mock_report_source = Mock()
+        mock_report_cursor = Mock()
+        mock_columns_in_csv = Mock()
+        mock_csv_file_locations = Mock()
+        mock_report_bucket_region = Mock()
+        mock_logger = Mock()
+
+        adapter.pull_in_inventory_report(
+            mock_report_source,
+            mock_report_cursor,
+            mock_columns_in_csv,
+            mock_csv_file_locations,
+            mock_report_bucket_region,
+            mock_logger,
+        )
+
+        mock_truncate_s3_partition.assert_called_once_with(mock_report_source, mock_logger)
+        mock_update_job_with_s3_inventory.assert_called_once_with(
+            mock_report_cursor,
+            mock_columns_in_csv,
+            mock_csv_file_locations,
+            mock_report_bucket_region,
+            mock_logger,
+        )
+
+    @patch("src.adapters.storage.internal_reconciliation_rdbms."
+           "InternalReconciliationStorageAdapterRDBMS.truncate_s3_partition_sql")
+    @patch("src.adapters.storage.internal_reconciliation_rdbms."
+           "get_partition_name_from_bucket_name")
+    @patch("src.adapters.storage.internal_reconciliation_rdbms.create_engine")
+    def test_truncate_s3_partition_happy_path(
+        self,
+        mock_create_engine: MagicMock,
+        mock_get_partition_name_from_bucket_name: MagicMock,
+        mock_truncate_s3_partition_sql: MagicMock,
+    ):
+        """
+        Happy path.
+        """
+        mock_logger = Mock()
+
+        mock_user_connection_uri = Mock()
+        mock_admin_connection_uri = Mock()
+        mock_s3_access_key = Mock()
+        mock_s3_secret_key = Mock()
+
+        mock_orca_archive_location = Mock()
+        mock_execute = Mock()
+        mock_connection = Mock()
+        mock_connection.execute = mock_execute
+        mock_exit = Mock(return_value=False)
+        mock_enter = Mock()
+        mock_enter.__enter__ = Mock(return_value=mock_connection)
+        mock_enter.__exit__ = mock_exit
+        mock_engine = Mock()
+        mock_engine.begin = Mock(return_value=mock_enter)
+        mock_create_engine.return_value = mock_engine
+
+        adapter = InternalReconciliationStorageAdapterRDBMS(
+            mock_user_connection_uri,
+            mock_admin_connection_uri,
+            mock_s3_access_key,
+            mock_s3_secret_key,
+        )
+
+        adapter.truncate_s3_partition(
+            mock_orca_archive_location, mock_logger
+        )
+
+        mock_create_engine.assert_has_calls([
+            call(mock_user_connection_uri, future=True),
+            call(mock_admin_connection_uri, future=True)
+        ])
+        self.assertEqual(2, mock_create_engine.call_count)
+
+        mock_get_partition_name_from_bucket_name \
+            .assert_called_once_with(mock_orca_archive_location)
+        mock_enter.__enter__.assert_called_once_with()
+        mock_execute.assert_called_once_with(
+            mock_truncate_s3_partition_sql.return_value,
+            [
+                {
+                }
+            ],
+        )
+        mock_exit.assert_called_once_with(None, None, None)
+        mock_truncate_s3_partition_sql.assert_called_once_with(
+            mock_get_partition_name_from_bucket_name.return_value)
+
+    def test_update_job(self):
+        raise NotImplementedError()
+
+    @patch("src.adapters.storage.internal_reconciliation_rdbms."
+           "InternalReconciliationStorageAdapterRDBMS.update_job_with_s3_inventory_sql")
+    @patch("src.adapters.storage.internal_reconciliation_rdbms.generate_temporary_s3_column_list")
+    @patch("src.adapters.storage.internal_reconciliation_rdbms.create_engine")
+    def test_update_job_with_s3_inventory_happy_path(
+        self,
+        mock_create_engine: MagicMock,
+        mock_generate_temporary_s3_column_list: MagicMock,
+        mock_update_job_with_s3_inventory_sql: MagicMock,
+    ):
+        """
+        Happy path.
+        """
+        raise NotImplementedError()
+
+    def test_generate_temporary_s3_column_list_happy_path(self):
+        """
+        Should properly translate columns to orca DB format.
+        Must add extra columns for extra columns.
+        """
+        result = InternalReconciliationStorageAdapterRDBMS.generate_temporary_s3_column_list(
+            ["IsDeleteMarker", "StorageClass", "blah", "Size", "Key",
+             "IsLatest", "Extra", "Bucket", "LastModifiedDate", "ETag"]
+        )
+        self.assertEqual(
+            "delete_marker bool, storage_class text, junk2 text, "
+            "size_in_bytes bigint, key_path text, is_latest bool, "
+            "junk6 text, orca_archive_location text, last_update timestamptz, etag text",
+            result,
+        )
+
+    @patch("src.adapters.storage.internal_reconciliation_rdbms."
+           "InternalReconciliationStorageAdapterRDBMS.generate_mismatch_reports_sql")
+    @patch("src.adapters.storage.internal_reconciliation_rdbms."
+           "InternalReconciliationStorageAdapterRDBMS.generate_orphan_reports_sql")
+    @patch("src.adapters.storage.internal_reconciliation_rdbms."
+           "InternalReconciliationStorageAdapterRDBMS.generate_phantom_reports_sql")
+    @patch("src.adapters.storage.internal_reconciliation_rdbms.create_engine")
+    def test_perform_orca_reconcile_happy_path(
+        self,
+        mock_create_engine: MagicMock,
+        mock_generate_phantom_reports_sql: MagicMock,
+        mock_generate_orphan_reports_sql: MagicMock,
+        mock_generate_mismatch_reports_sql: MagicMock,
+    ):
+        """
+
+        """
+        mock_logger = Mock()
+
+        mock_user_connection_uri = Mock()
+        mock_admin_connection_uri = Mock()
+        mock_s3_access_key = Mock()
+        mock_s3_secret_key = Mock()
+
+        mock_job_id = random.randint(0, 99999999)  # nosec
+        mock_orca_archive_location = Mock()
+        mock_execute = Mock()
+        mock_connection = Mock()
+        mock_connection.execute = mock_execute
+        mock_exit = Mock(return_value=False)
+        mock_enter = Mock()
+        mock_enter.__enter__ = Mock(return_value=mock_connection)
+        mock_enter.__exit__ = mock_exit
+        mock_engine = Mock()
+        mock_engine.begin = Mock(return_value=mock_enter)
+        mock_create_engine.return_value = mock_engine
+
+        adapter = InternalReconciliationStorageAdapterRDBMS(
+            mock_user_connection_uri,
+            mock_admin_connection_uri,
+            mock_s3_access_key,
+            mock_s3_secret_key,
+        )
+        adapter.perform_orca_reconcile(
+            mock_orca_archive_location,
+            InternalReconcileReportCursor(mock_job_id),
+            mock_logger,
+        )
+
+        mock_enter.__enter__.assert_called_once_with()
+
+        mock_generate_phantom_reports_sql.assert_called_once_with()
+        mock_execute.assert_has_calls(
+            [
+                call(
+                    mock_generate_phantom_reports_sql.return_value,
+                    [
+                        {
+                            "job_id": mock_job_id,
+                            "orca_archive_location": mock_orca_archive_location,
+                        }
+                    ],
+                ),
+                call(
+                    mock_generate_orphan_reports_sql.return_value,
+                    [
+                        {
+                            "job_id": mock_job_id,
+                            "orca_archive_location": mock_orca_archive_location,
+                        }
+                    ],
+                ),
+                call(
+                    mock_generate_mismatch_reports_sql.return_value,
+                    [
+                        {
+                            "job_id": mock_job_id,
+                            "orca_archive_location": mock_orca_archive_location,
+                        }
+                    ],
+                ),
+            ]
+        )
+        self.assertEqual(3, mock_execute.call_count)
+
+        mock_generate_orphan_reports_sql.assert_called_once_with()
+
+        mock_generate_mismatch_reports_sql.assert_called_once_with()
+
+        mock_exit.assert_called_once_with(None, None, None)
+
     @patch("src.adapters.storage.internal_reconciliation_rdbms."
            "InternalReconciliationStorageAdapterRDBMS.get_phantom_page_sql")
     @patch("src.adapters.storage.internal_reconciliation_rdbms.create_engine")
