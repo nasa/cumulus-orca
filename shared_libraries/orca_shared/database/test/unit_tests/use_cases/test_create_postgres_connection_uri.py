@@ -32,7 +32,7 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
             admin_username=uuid.uuid4().__str__(),  # nosec
             admin_password=uuid.uuid4().__str__(),  # nosec
             user_username=user_username,  # nosec
-            user_password=str(user_password),  # nosec
+            user_password=user_password,  # nosec
             user_database_name=user_database_name,  # nosec
             host=host,
             port=port
