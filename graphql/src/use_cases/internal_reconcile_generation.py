@@ -22,7 +22,7 @@ class InternalReconcileGeneration:
         report_source: str,
         creation_timestamp: int,
         logger: logging.Logger,
-    ) -> InternalReconcileReportCursor:
+    ) -> InternalReconcileReportCreationRecord:
         """
 
         Args:
