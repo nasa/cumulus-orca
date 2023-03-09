@@ -9,7 +9,7 @@ psycopg2-binary==2.8.6
 
 ## Application libraries
 aws_lambda_powertools==1.31.0
-SQLAlchemy==2.0.5
+SQLAlchemy~=2.0.5
 ../../shared_libraries[all]
 
 ## Additional validation libraries

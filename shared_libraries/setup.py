@@ -33,7 +33,7 @@ install_requirements = ["aws_lambda_powertools==1.31.0"]
 
 # Additional library dependencies
 _dep_boto3 = "boto3~=1.18.40"
-_dep_sqlalchemy = "SQLAlchemy==2.0.5"
+_dep_sqlalchemy = "SQLAlchemy~=2.0.5"
 
 
 # Get all the libraries available in the orca_shared space
