@@ -63,7 +63,7 @@ def create_admin_uri(db_connect_info: PostgresConnectionInfo, logger: logging.Lo
     )
 
 
-def _create_connection_uri(logger: logging.Logger, **kwargs: Any) -> str:
+def _create_connection_uri(logger: logging.Logger, **kwargs: Any) -> URL:
     """
     Base function for creating a connection URI for a database.
 

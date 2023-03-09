@@ -53,6 +53,8 @@ class TestRDBMS(unittest.TestCase):
 
         storage_adapter = rdbms.StorageAdapterRDBMS(connection_uri)
 
+        mock_create_engine.assert_called_once_with(connection_uri, future=True)
+
         LOGGER = Mock()
 
         result = storage_adapter.get_orphans_page(
@@ -115,6 +117,7 @@ class TestRDBMS(unittest.TestCase):
         mock_create_engine.return_value = mock_engine
 
         storage_adapter = rdbms.StorageAdapterPostgres(connection_uri)
+        mock_create_engine.assert_called_once_with(connection_uri, future=True)
 
         LOGGER = Mock()
 
@@ -192,6 +195,7 @@ class TestRDBMS(unittest.TestCase):
         mock_create_engine.return_value = mock_engine
 
         storage_adapter = rdbms.StorageAdapterRDBMS(connection_uri)
+        mock_create_engine.assert_called_once_with(connection_uri, future=True)
 
         LOGGER = Mock()
 
