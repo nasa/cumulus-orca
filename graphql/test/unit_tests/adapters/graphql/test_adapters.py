@@ -2,6 +2,9 @@ import unittest
 from unittest.mock import Mock
 
 from src.adapters.graphql.adapters import AdaptersStorage
+from src.adapters.storage.internal_reconciliation_rdbms import (
+    InternalReconciliationStorageAdapterRDBMS,
+)
 from src.adapters.storage.rdbms import StorageAdapterRDBMS
 from src.use_cases.adapter_interfaces.logger_provider import LoggerProviderInterface
 from src.use_cases.adapter_interfaces.word_generation import WordGenerationInterface
@@ -17,7 +20,7 @@ class TestAdapters(unittest.TestCase):
         """
         mock_word_generation = Mock(spec=WordGenerationInterface)
         mock_storage = Mock(spec=StorageAdapterRDBMS)
-        mock_storage_internal_reconciliation = Mock(spec=StorageAdapterRDBMS)
+        mock_storage_internal_reconciliation = Mock(spec=InternalReconciliationStorageAdapterRDBMS)
         mock_logger_provider = Mock(spec=LoggerProviderInterface)
 
         result = AdaptersStorage(

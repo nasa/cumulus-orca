@@ -6,7 +6,11 @@ from orca_shared.reconciliation import OrcaStatus
 
 from src.entities.common import DirectionEnum
 from src.entities.files import FileLocation
-from src.entities.internal_reconcile_report import Mismatch, Phantom, InternalReconcileReportCursor
+from src.entities.internal_reconcile_report import (
+    InternalReconcileReportCursor,
+    Mismatch,
+    Phantom,
+)
 
 
 class StorageMetadataInterface:

@@ -3,9 +3,9 @@ from enum import Enum
 from typing import Optional
 
 import pydantic
+
 # noinspection PyPackageRequirements
 import strawberry
-
 
 # Copied from shared_libraries/reconciliation
 from src.use_cases.helpers.edge_cursor import EdgeCursor

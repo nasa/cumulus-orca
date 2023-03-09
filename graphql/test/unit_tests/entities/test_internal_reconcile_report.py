@@ -4,8 +4,13 @@ import uuid
 
 from orca_shared.reconciliation import OrcaStatus
 
-from src.entities.internal_reconcile_report import Mismatch, Phantom, \
-    InternalReconcileReportCreationRecord, InternalReconcileReportCursor, ReconciliationStatus
+from src.entities.internal_reconcile_report import (
+    InternalReconcileReportCreationRecord,
+    InternalReconcileReportCursor,
+    Mismatch,
+    Phantom,
+    ReconciliationStatus,
+)
 from src.use_cases.helpers.edge_cursor import EdgeCursor
 
 
@@ -23,7 +28,7 @@ class TestInternalReconcileReport(unittest.TestCase):
         """
         Constructor should properly store parameters.
         """
-        job_id = random.randint(0, 99999999999999999)  # nosec
+        job_id = random.randint(0, 99999999999999)  # nosec
 
         cursor = InternalReconcileReportCursor(job_id)
 

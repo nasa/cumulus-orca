@@ -4,8 +4,9 @@ import dataclasses
 import strawberry
 from pydantic import BaseModel
 
-from src.adapters.storage.internal_reconciliation_rdbms import \
-    InternalReconciliationStorageAdapterRDBMS
+from src.adapters.storage.internal_reconciliation_rdbms import (
+    InternalReconciliationStorageAdapterRDBMS,
+)
 from src.adapters.storage.rdbms import StorageAdapterRDBMS
 from src.use_cases.adapter_interfaces.logger_provider import LoggerProviderInterface
 from src.use_cases.adapter_interfaces.word_generation import WordGenerationInterface

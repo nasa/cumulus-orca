@@ -1,7 +1,8 @@
 from sqlalchemy import text
 
-from src.adapters.storage.internal_reconciliation_rdbms import \
-    InternalReconciliationStorageAdapterRDBMS
+from src.adapters.storage.internal_reconciliation_rdbms import (
+    InternalReconciliationStorageAdapterRDBMS,
+)
 from src.entities.common import DirectionEnum
 
 

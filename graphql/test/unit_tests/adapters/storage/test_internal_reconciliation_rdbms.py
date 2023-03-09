@@ -1,15 +1,20 @@
 import random
 import unittest
 import uuid
-from unittest.mock import MagicMock, Mock, patch, call
+from unittest.mock import MagicMock, Mock, call, patch
 
 from orca_shared.reconciliation import OrcaStatus
 
-from src.adapters.storage.internal_reconciliation_rdbms import \
-    InternalReconciliationStorageAdapterRDBMS
+from src.adapters.storage.internal_reconciliation_rdbms import (
+    InternalReconciliationStorageAdapterRDBMS,
+)
 from src.adapters.storage.internal_reconciliation_s3 import AWSS3FileLocation
 from src.entities.common import DirectionEnum
-from src.entities.internal_reconcile_report import Mismatch, Phantom, InternalReconcileReportCursor
+from src.entities.internal_reconcile_report import (
+    InternalReconcileReportCursor,
+    Mismatch,
+    Phantom,
+)
 
 
 class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
@@ -293,7 +298,7 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
                 key=uuid.uuid4().__str__() + ".csv.gz",
             ),
         ]
-        mock_job_id = random.randint(0, 999999999999)
+        mock_job_id = random.randint(0, 999999999999)  # nosec
         report_cursor = InternalReconcileReportCursor(mock_job_id)
         mock_columns_in_csv = Mock()
         mock_execute = Mock()

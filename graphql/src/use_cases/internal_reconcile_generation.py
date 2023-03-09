@@ -5,9 +5,13 @@ from typing import List, Optional
 from orca_shared.reconciliation import OrcaStatus
 
 from src.entities.files import FileLocation
-from src.entities.internal_reconcile_report import InternalReconcileReportCursor, \
-    InternalReconcileReportCreationRecord
-from src.use_cases.adapter_interfaces.storage import InternalReconcileGenerationStorageInterface
+from src.entities.internal_reconcile_report import (
+    InternalReconcileReportCreationRecord,
+    InternalReconcileReportCursor,
+)
+from src.use_cases.adapter_interfaces.storage import (
+    InternalReconcileGenerationStorageInterface,
+)
 
 
 class InternalReconcileGeneration:

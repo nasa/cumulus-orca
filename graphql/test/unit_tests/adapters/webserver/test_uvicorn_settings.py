@@ -16,6 +16,7 @@ class TestUvicornSettings(unittest.TestCase):
         mock_host = uuid.uuid4().__str__()
         mock_port = random.randint(0, 99999)  # nosec
         mock_db_connect_info = uuid.uuid4().__str__()
+        mock_s3_credentials = uuid.uuid4().__str__()
 
         for orca_env in ["production", "development", None, "apples"]:
             with self.subTest(orca_env=orca_env):
@@ -24,10 +25,12 @@ class TestUvicornSettings(unittest.TestCase):
                                     "HOST": mock_host, "PORT": mock_port.__str__(),
                                     "ORCA_ENV": orca_env,
                                     "DB_CONNECT_INFO": mock_db_connect_info,
+                                    "S3_ACCESS_CREDENTIALS": mock_s3_credentials,
                                 } if orca_env is not None else
                                 {
                                     "HOST": mock_host, "PORT": mock_port.__str__(),
                                     "DB_CONNECT_INFO": mock_db_connect_info,
+                                    "S3_ACCESS_CREDENTIALS": mock_s3_credentials,
                                 },
                                 clear=True):
                     result = UvicornSettings()
@@ -36,3 +39,4 @@ class TestUvicornSettings(unittest.TestCase):
                 self.assertEqual(mock_port, result.PORT)
                 self.assertEqual(True if orca_env == "development" else False, result.DEV)
                 self.assertEqual(mock_db_connect_info, result.DB_CONNECT_INFO)
+                self.assertEqual(mock_s3_credentials, result.S3_ACCESS_CREDENTIALS)

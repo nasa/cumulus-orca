@@ -1,6 +1,7 @@
 import dataclasses
 
 import pydantic
+
 # noinspection PyPackageRequirements
 import strawberry
 

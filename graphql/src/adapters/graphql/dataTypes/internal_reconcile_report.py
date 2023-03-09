@@ -5,8 +5,11 @@ import strawberry
 
 from src.adapters.graphql.dataTypes.common import InternalServerErrorGraphqlType
 from src.entities.common import Page
-from src.entities.internal_reconcile_report import Mismatch, Phantom, \
-    InternalReconcileReportCreationRecord
+from src.entities.internal_reconcile_report import (
+    InternalReconcileReportCreationRecord,
+    Mismatch,
+    Phantom,
+)
 
 CreateInternalReconciliationJobStrawberryResponse = strawberry.union(
     "CreateInternalReconciliationJobStrawberryResponse",
