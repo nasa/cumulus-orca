@@ -49,7 +49,7 @@ class InternalReconciliationStorageAdapterRDBMS(
             inventory_creation_time: The time the s3 Inventory report was created.
             logger: The logger to use.
 
-        Returns: The auto-incremented job_id from the database.
+        Returns: A cursor with the auto-incremented job_id from the database.
         """
         logger.debug("Creating status for job.")
         with self.user_engine.begin() as connection:

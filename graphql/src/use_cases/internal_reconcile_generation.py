@@ -30,8 +30,7 @@ class InternalReconcileGeneration:
             creation_timestamp: Seconds since UTC origin that the report was created.
             logger: The logger to use.
 
-        Returns:
-
+        Returns: A record of creation that includes a cursor to the created entry.
         """
         cursor = self.storage.create_job(
             report_source,
@@ -47,7 +46,7 @@ class InternalReconcileGeneration:
         report_cursor: InternalReconcileReportCursor,
         status: OrcaStatus,
         error_message: Optional[str],
-    ):
+    ) -> None:
         """
         Updates the status entry for a job.
 
