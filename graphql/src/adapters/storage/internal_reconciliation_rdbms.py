@@ -118,19 +118,13 @@ class InternalReconciliationStorageAdapterRDBMS(
             report_source: The region covered by the report.
             logger: The logger to use.
         """
-        try:
-            logger.debug(f"Truncating old s3 data blocking report {report_source}.")
-            partition_name = get_partition_name_from_bucket_name(report_source)
-            with self.admin_engine.begin() as connection:
-                connection.execute(
-                    self.truncate_s3_partition_sql(partition_name),
-                    [{}],
-                )
-        except Exception as sql_ex:
-            logger.error(
-                f"Error while truncating bucket '{report_source}': {sql_ex}"
+        logger.debug(f"Truncating old s3 data blocking report {report_source}.")
+        partition_name = get_partition_name_from_bucket_name(report_source)
+        with self.admin_engine.begin() as connection:
+            connection.execute(
+                self.truncate_s3_partition_sql(partition_name),
+                [{}],
             )
-            raise
 
     # todo: Pull code out of shared_reconciliation once old lambdas are gone.
     # todo: When pulling out code, add logger parameter and bubble up.
@@ -175,49 +169,45 @@ class InternalReconciliationStorageAdapterRDBMS(
             report_bucket_region: Required by current Postgres driver.
             logger: The logger to use.
         """
-        try:
-            logger.debug(f"Pulling in s3 inventory records for job {report_cursor.job_id}.")
-            temporary_s3_column_list = self.generate_temporary_s3_column_list(
-                columns_in_csv
+        logger.debug(f"Pulling in s3 inventory records for job {report_cursor.job_id}.")
+        temporary_s3_column_list = self.generate_temporary_s3_column_list(
+            columns_in_csv
+        )
+        with self.admin_engine.begin() as connection:
+            # Within this transaction import the csv and update the job status
+            connection.execute(
+                self.create_temporary_table_sql(temporary_s3_column_list),
+                [{}],
             )
-            with self.admin_engine.begin() as connection:
-                # Within this transaction import the csv and update the job status
+            for csv_file_location in csv_file_locations:
+                # Have postgres load the csv
+                logger.debug(
+                    f"Loading CSV {csv_file_location.key} for job {report_cursor.job_id}.")
                 connection.execute(
-                    self.create_temporary_table_sql(temporary_s3_column_list),
-                    [{}],
-                )
-                for csv_file_location in csv_file_locations:
-                    # Have postgres load the csv
-                    logger.debug(
-                        f"Loading CSV {csv_file_location.key} for job {report_cursor.job_id}.")
-                    connection.execute(
-                        self.trigger_csv_load_from_s3_sql(),
-                        [
-                            {
-                                "report_bucket_name": csv_file_location.bucket_name,
-                                "csv_key_path": csv_file_location.key,
-                                "report_bucket_region": report_bucket_region,
-                                "s3_access_key": self.s3_access_key,
-                                "s3_secret_key": self.s3_secret_key,
-                            }
-                        ],
-                    )
-                # Now that all csvs are loaded, pull them into main db from temporary table
-                logger.debug(f"Translating data to Orca format for job {report_cursor.job_id}.")
-                connection.execute(
-                    self.translate_s3_import_to_partitioned_data_sql(),
+                    self.trigger_csv_load_from_s3_sql(),
                     [
                         {
-                            "job_id": report_cursor.job_id,
+                            "report_bucket_name": csv_file_location.bucket_name,
+                            "csv_key_path": csv_file_location.key,
+                            "report_bucket_region": report_bucket_region,
+                            "s3_access_key": self.s3_access_key,
+                            "s3_secret_key": self.s3_secret_key,
                         }
                     ],
                 )
-                # Update job status
-                logger.debug(f"Posting successful status for job {report_cursor.job_id}.")
-                self.update_job(report_cursor, OrcaStatus.STAGED, None)
-        except Exception as sql_ex:
-            logger.error(f"Error while processing job '{report_cursor.job_id}': {sql_ex}")
-            raise
+            # Now that all csvs are loaded, pull them into main db from temporary table
+            logger.debug(f"Translating data to Orca format for job {report_cursor.job_id}.")
+            connection.execute(
+                self.translate_s3_import_to_partitioned_data_sql(),
+                [
+                    {
+                        "job_id": report_cursor.job_id,
+                    }
+                ],
+            )
+            # Update job status
+            logger.debug(f"Posting successful status for job {report_cursor.job_id}.")
+            self.update_job(report_cursor, OrcaStatus.STAGED, None)
 
     @staticmethod
     def generate_temporary_s3_column_list(columns_in_csv: List[str]) -> str:
