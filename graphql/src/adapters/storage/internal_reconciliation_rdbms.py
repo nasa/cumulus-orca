@@ -219,12 +219,7 @@ class InternalReconciliationStorageAdapterRDBMS(
                 )
                 # Update job status
                 logger.debug(f"Posting successful status for job {report_cursor.job_id}.")
-                orca_shared.reconciliation.shared_reconciliation.update_job(
-                    int(report_cursor.job_id),
-                    OrcaStatus.STAGED,
-                    None,
-                    self.user_engine,
-                )
+                self.update_job(report_cursor, OrcaStatus.STAGED, None)
         except Exception as sql_ex:
             logger.error(f"Error while processing job '{report_cursor.job_id}': {sql_ex}")
             raise
