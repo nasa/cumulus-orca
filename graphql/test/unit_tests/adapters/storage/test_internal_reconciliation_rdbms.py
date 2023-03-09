@@ -45,7 +45,7 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
         mock_enter.__exit__ = mock_exit
         mock_engine = Mock()
         mock_engine.begin = Mock(return_value=mock_enter)
-        mock_create_engine.return_value = mock_engine
+        mock_create_engine.side_effect = [mock_engine, Mock()]
 
         adapter = InternalReconciliationStorageAdapterRDBMS(
             mock_user_connection_uri,
@@ -64,6 +64,7 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
             call(mock_admin_connection_uri, future=True)
         ])
         self.assertEqual(2, mock_create_engine.call_count)
+        self.assertEqual(mock_engine, adapter.user_engine)
 
         mock_enter.__enter__.assert_called_once_with()
         mock_execute.assert_called_once_with(
@@ -88,7 +89,7 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
     @patch("src.adapters.storage.internal_reconciliation_rdbms."
            "InternalReconciliationStorageAdapterRDBMS.truncate_s3_partition")
     @patch("src.adapters.storage.internal_reconciliation_rdbms.create_engine")
-    def test_truncate_s3_partition_happy_path(
+    def test_pull_in_inventory_report_happy_path(
         self,
         mock_create_engine: MagicMock,
         mock_truncate_s3_partition: MagicMock,
@@ -171,7 +172,7 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
         mock_enter.__exit__ = mock_exit
         mock_engine = Mock()
         mock_engine.begin = Mock(return_value=mock_enter)
-        mock_create_engine.return_value = mock_engine
+        mock_create_engine.side_effect = [Mock(), mock_engine]
 
         adapter = InternalReconciliationStorageAdapterRDBMS(
             mock_user_connection_uri,
@@ -189,6 +190,7 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
             call(mock_admin_connection_uri, future=True)
         ])
         self.assertEqual(2, mock_create_engine.call_count)
+        self.assertEqual(mock_engine, adapter.admin_engine)
 
         mock_get_partition_name_from_bucket_name \
             .assert_called_once_with(mock_orca_archive_location)
@@ -303,7 +305,7 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
         mock_enter.__exit__ = mock_exit
         mock_engine = Mock()
         mock_engine.begin = Mock(return_value=mock_enter)
-        mock_create_engine.return_value = mock_engine
+        mock_create_engine.side_effect = [Mock(), mock_engine]
 
         adapter = InternalReconciliationStorageAdapterRDBMS(
             mock_user_connection_uri,
@@ -325,6 +327,7 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
             call(mock_admin_connection_uri, future=True)
         ])
         self.assertEqual(2, mock_create_engine.call_count)
+        self.assertEqual(mock_engine, adapter.admin_engine)
 
         mock_generate_temporary_s3_column_list.assert_called_once_with(
             mock_columns_in_csv
@@ -426,7 +429,7 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
         mock_enter.__exit__ = mock_exit
         mock_engine = Mock()
         mock_engine.begin = Mock(return_value=mock_enter)
-        mock_create_engine.return_value = mock_engine
+        mock_create_engine.side_effect = [mock_engine, Mock()]
 
         adapter = InternalReconciliationStorageAdapterRDBMS(
             mock_user_connection_uri,
@@ -546,7 +549,7 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
                 mock_enter.__exit__ = mock_exit
                 mock_engine = Mock()
                 mock_engine.begin = Mock(return_value=mock_enter)
-                mock_create_engine.return_value = mock_engine
+                mock_create_engine.side_effect = [mock_engine, Mock()]
 
                 adapter = InternalReconciliationStorageAdapterRDBMS(
                     mock_user_connection_uri,
@@ -567,6 +570,7 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
                     call(mock_admin_connection_uri, future=True)
                 ])
                 self.assertEqual(2, mock_create_engine.call_count)
+                self.assertEqual(mock_engine, adapter.user_engine)
                 mock_enter.__enter__.assert_called_once_with()
                 mock_execute.assert_called_once_with(
                     mock_get_phantom_page_sql.return_value,
@@ -661,7 +665,7 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
                 mock_enter.__exit__ = mock_exit
                 mock_engine = Mock()
                 mock_engine.begin = Mock(return_value=mock_enter)
-                mock_create_engine.return_value = mock_engine
+                mock_create_engine.side_effect = [mock_engine, Mock()]
 
                 adapter = InternalReconciliationStorageAdapterRDBMS(
                     mock_user_connection_uri,
@@ -682,6 +686,7 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
                     call(mock_admin_connection_uri, future=True)
                 ])
                 self.assertEqual(2, mock_create_engine.call_count)
+                self.assertEqual(mock_engine, adapter.user_engine)
                 mock_enter.__enter__.assert_called_once_with()
                 mock_execute.assert_called_once_with(
                     mock_get_mismatch_page_sql.return_value,

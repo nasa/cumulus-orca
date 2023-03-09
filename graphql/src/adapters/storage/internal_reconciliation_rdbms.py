@@ -29,7 +29,6 @@ class InternalReconciliationStorageAdapterRDBMS(
         s3_access_key: str,
         s3_secret_key: str,
     ):
-        # todo: Differentiate between engines in unit tests
         self.user_engine: Engine = create_engine(user_connection_uri, future=True)
         self.admin_engine: Engine = create_engine(admin_connection_uri, future=True)
         self.s3_access_key = s3_access_key
@@ -53,27 +52,23 @@ class InternalReconciliationStorageAdapterRDBMS(
         Returns: The auto-incremented job_id from the database.
         """
         logger.debug("Creating status for job.")
-        try:
-            with self.user_engine.begin() as connection:
-                # Within this transaction import the csv and update the job status
-                now = datetime.now(timezone.utc)
-                rows = connection.execute(
-                    self.create_job_sql(),
-                    [
-                        {
-                            "orca_archive_location": orca_archive_location,
-                            "inventory_creation_time": inventory_creation_time,
-                            "status_id": OrcaStatus.GETTING_S3_LIST.value,
-                            "start_time": now,
-                            "last_update": now,
-                            "end_time": None,
-                            "error_message": None,
-                        }
-                    ],
-                )
-        except Exception as sql_ex:
-            logger.error(f"Error while creating job: {sql_ex}")
-            raise
+        with self.user_engine.begin() as connection:
+            # Within this transaction import the csv and update the job status
+            now = datetime.now(timezone.utc)
+            rows = connection.execute(
+                self.create_job_sql(),
+                [
+                    {
+                        "orca_archive_location": orca_archive_location,
+                        "inventory_creation_time": inventory_creation_time,
+                        "status_id": OrcaStatus.GETTING_S3_LIST.value,
+                        "start_time": now,
+                        "last_update": now,
+                        "end_time": None,
+                        "error_message": None,
+                    }
+                ],
+            )
 
         return InternalReconcileReportCursor(rows.fetchone()["id"])
 
