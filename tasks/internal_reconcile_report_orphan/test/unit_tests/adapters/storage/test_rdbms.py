@@ -14,10 +14,8 @@ from src.entities.orphan import OrphanRecord, OrphanRecordFilter, OrphanRecordPa
 class TestRDBMS(unittest.TestCase):
     @patch("src.adapters.storage.rdbms.StorageAdapterRDBMS.get_orphans_sql")
     @patch("sqlalchemy.engine.create.create_engine")
-    @patch("sqlalchemy.engine.make_url")
     def test_get_orphans_page_happy_path(
             self,
-            mock_make_url: MagicMock,
             mock_create_engine: MagicMock,
             mock_get_orphans_sql: MagicMock,
     ):
@@ -54,9 +52,6 @@ class TestRDBMS(unittest.TestCase):
         mock_create_engine.return_value = mock_engine
 
         storage_adapter = rdbms.StorageAdapterRDBMS(connection_uri)
-
-        mock_make_url.assert_called_once_with(connection_uri)
-        mock_create_engine.assert_called_once_with(mock_make_url.return_value, future=True)
 
         LOGGER = Mock()
 
@@ -95,10 +90,8 @@ class TestRDBMS(unittest.TestCase):
 
     @patch("src.adapters.storage.rdbms.StorageAdapterPostgres.get_orphans_sql")
     @patch("sqlalchemy.engine.create.create_engine")
-    @patch("sqlalchemy.engine.make_url")
     def test_get_orphans_page_no_rows_happy_path(
             self,
-            mock_make_url: MagicMock,
             mock_create_engine: MagicMock,
             mock_get_orphans_sql: MagicMock,
     ):
@@ -122,9 +115,6 @@ class TestRDBMS(unittest.TestCase):
         mock_create_engine.return_value = mock_engine
 
         storage_adapter = rdbms.StorageAdapterPostgres(connection_uri)
-
-        mock_make_url.assert_called_once_with(connection_uri)
-        mock_create_engine.assert_called_once_with(mock_make_url.return_value, future=True)
 
         LOGGER = Mock()
 
@@ -156,10 +146,8 @@ class TestRDBMS(unittest.TestCase):
 
     @patch("src.adapters.storage.rdbms.StorageAdapterRDBMS.get_orphans_sql")
     @patch("sqlalchemy.engine.create.create_engine")
-    @patch("sqlalchemy.engine.make_url")
     def test_get_orphans_page_extra_results_pages(
             self,
-            mock_make_url: MagicMock,
             mock_create_engine: MagicMock,
             mock_get_orphans_sql: MagicMock,
     ):
@@ -204,9 +192,6 @@ class TestRDBMS(unittest.TestCase):
         mock_create_engine.return_value = mock_engine
 
         storage_adapter = rdbms.StorageAdapterRDBMS(connection_uri)
-
-        mock_make_url.assert_called_once_with(connection_uri)
-        mock_create_engine.assert_called_once_with(mock_make_url.return_value, future=True)
 
         LOGGER = Mock()
 

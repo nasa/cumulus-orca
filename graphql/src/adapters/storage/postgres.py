@@ -1,4 +1,5 @@
-from sqlalchemy import text
+from sqlalchemy import text, URL
+import urllib3
 
 from src.adapters.storage.rdbms import StorageAdapterRDBMS
 from src.entities.common import DirectionEnum
@@ -6,7 +7,7 @@ from src.entities.common import DirectionEnum
 
 class StorageAdapterPostgres(StorageAdapterRDBMS):
 
-    def __init__(self, user_connection_uri: str):
+    def __init__(self, user_connection_uri: URL):
         super(StorageAdapterPostgres, self).__init__(user_connection_uri)
 
     @staticmethod

@@ -2,11 +2,11 @@ import logging
 from abc import abstractmethod
 from typing import List
 
+from typing import URL
 from orca_shared.database import shared_db
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, text, URL
 from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.future import Engine
-
 from src.entities.common import DirectionEnum
 from src.entities.internal_reconcile_report import Mismatch, Phantom
 from src.use_cases.adapter_interfaces.storage import (
@@ -19,7 +19,7 @@ class StorageAdapterRDBMS(
     StorageMetadataInterface,
     StorageInternalReconcileReportInterface
 ):
-    def __init__(self, user_connection_uri: str):
+    def __init__(self, user_connection_uri: URL):
         self.user_engine: Engine = create_engine(user_connection_uri, future=True)
 
     @shared_db.retry_operational_error()
