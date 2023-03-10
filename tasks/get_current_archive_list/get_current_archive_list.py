@@ -202,11 +202,13 @@ def create_job(
                     }
                 ],
             )
+            for sql_result in rows.mappings():
+                rows = sql_result["id"]
     except Exception as sql_ex:
         LOGGER.error(f"Error while creating job: {sql_ex}")
         raise
 
-    return rows.fetchone()["id"]
+    return rows
 
 
 def create_job_sql() -> text:  # pragma: no cover

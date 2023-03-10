@@ -51,7 +51,7 @@ class StorageAdapterRDBMS(OrphansPageStorageInterface):
             )
 
             orphans = []
-            for sql_result in sql_results:
+            for sql_result in sql_results.mappings():
                 orphans.append(
                     OrphanRecord(key_path=sql_result["key_path"],
                                  etag=sql_result["etag"],
