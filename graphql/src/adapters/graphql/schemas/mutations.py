@@ -36,7 +36,7 @@ class Mutations:
     adapters_storage: strawberry.Private[AdaptersStorage]
 
     @field(
-        description="""Echos the given word back as a check of basic GraphQL functionality.""")
+        description="""Creates a status entry for the internal reconciliation job.""")
     def post_internal_reconciliation_job(
         self,
         report_source: Annotated[
