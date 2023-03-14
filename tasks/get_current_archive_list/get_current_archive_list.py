@@ -162,6 +162,7 @@ def get_manifest(
     Returns: The key of the csv specified in the manifest.
     """
     s3_client = boto3.client("s3", region_name=report_bucket_region)
+    LOGGER.info(manifest_key_path)
     file_object = s3_client.get_object(Bucket=report_bucket_name, Key=manifest_key_path)
     file_data = file_object["Body"].read()
     file_str = file_data.decode("utf-8")
@@ -203,12 +204,12 @@ def create_job(
                 ],
             )
             for sql_result in rows.mappings():
-                rows = sql_result["id"]
+                job_id = sql_result["id"]
     except Exception as sql_ex:
         LOGGER.error(f"Error while creating job: {sql_ex}")
         raise
 
-    return rows
+    return job_id
 
 
 def create_job_sql() -> text:  # pragma: no cover

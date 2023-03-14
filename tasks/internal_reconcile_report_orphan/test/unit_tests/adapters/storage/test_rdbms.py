@@ -40,7 +40,10 @@ class TestRDBMS(unittest.TestCase):
             "size_in_bytes": size_in_bytes,
             "storage_class": storage_class
         }
-        mock_execute = Mock(return_value=[returned_row0])
+        mock_execute_result = Mock()
+        mock_execute_result.mappings = Mock(return_value=[returned_row0])
+        mock_execute = Mock()
+        mock_execute.return_value = mock_execute_result
         mock_connection = Mock()
         mock_connection.execute = mock_execute
         mock_exit = Mock(return_value=False)
@@ -104,8 +107,10 @@ class TestRDBMS(unittest.TestCase):
         job_id = Mock()
         page_index = Mock()
         page_size = random.randint(1, 999)  # nosec
-
-        mock_execute = Mock(return_value=[])
+        mock_execute_result = Mock()
+        mock_execute_result.mappings = Mock(return_value=[])
+        mock_execute = Mock()
+        mock_execute.return_value = mock_execute_result
         mock_connection = Mock()
         mock_connection.execute = mock_execute
         mock_exit = Mock(return_value=False)
@@ -183,7 +188,10 @@ class TestRDBMS(unittest.TestCase):
             "size_in_bytes": random.randint(0, 999),  # nosec
             "storage_class": uuid.uuid4().__str__()
         }
-        mock_execute = Mock(return_value=[returned_row0, returned_row1])
+        mock_execute_result = Mock()
+        mock_execute_result.mappings = Mock(return_value=[returned_row0, returned_row1])
+        mock_execute = Mock()
+        mock_execute.return_value = mock_execute_result
         mock_connection = Mock()
         mock_connection.execute = mock_execute
         mock_exit = Mock(return_value=False)
