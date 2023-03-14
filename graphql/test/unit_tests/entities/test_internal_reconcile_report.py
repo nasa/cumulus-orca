@@ -2,10 +2,51 @@ import random
 import unittest
 import uuid
 
-from src.entities.internal_reconcile_report import Mismatch, Phantom
+from orca_shared.reconciliation import OrcaStatus
+
+from src.entities.internal_reconcile_report import (
+    InternalReconcileReportCreationRecord,
+    InternalReconcileReportCursor,
+    Mismatch,
+    Phantom,
+    ReconciliationStatus,
+)
+from src.use_cases.helpers.edge_cursor import EdgeCursor
 
 
 class TestInternalReconcileReport(unittest.TestCase):
+    def test_ReconciliationStatus_matches_shared_enum(self):
+        """
+        Constructor should properly store parameters.
+        """
+        shared_values = [(e.value, e.name) for e in OrcaStatus]
+        strawberry_values = [(e.value, e.name) for e in ReconciliationStatus]
+
+        self.assertEqual(shared_values, strawberry_values)
+
+    def test_InternalReconcileReportCursor_constructor(self):
+        """
+        Constructor should properly store parameters.
+        """
+        job_id = random.randint(0, 99999999999999)  # nosec
+
+        cursor = InternalReconcileReportCursor(job_id)
+
+        self.assertEqual(cursor.job_id, job_id)
+
+    def test_InternalReconcileReportCreationRecord_constructor(self):
+        """
+        Constructor should properly store encrypted cursor.
+        Cursor should be decryptable.
+        """
+        job_id = 954604896415
+
+        record = InternalReconcileReportCreationRecord(InternalReconcileReportCursor(job_id))
+
+        self.assertEqual("eyJqb2JfaWQiOiA5NTQ2MDQ4OTY0MTUuMH0=", record.cursor)
+        cursor = EdgeCursor.decode_cursor(record.cursor, InternalReconcileReportCursor)
+        self.assertEqual(InternalReconcileReportCursor(job_id), cursor)
+
     def test_phantom_constructor(
         self,
     ):

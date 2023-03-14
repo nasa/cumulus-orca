@@ -260,11 +260,12 @@ module "orca_graphql_1" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  db_connect_info_secret_arn      = module.orca_secretsmanager.secretsmanager_arn
-  ecs_cluster_id                  = module.orca_ecs.ecs_cluster_id
-  gql_ecs_task_execution_role_arn = module.orca_graphql_0.gql_ecs_task_execution_role_arn
-  gql_ecs_task_execution_role_id  = module.orca_graphql_0.gql_ecs_task_execution_role_id
-  gql_tasks_role_arn              = module.orca_graphql_0.gql_tasks_role_arn
+  db_connect_info_secret_arn       = module.orca_secretsmanager.secretsmanager_arn
+  s3_access_credentials_secret_arn = module.orca_secretsmanager.s3_access_credentials_secret_arn
+  ecs_cluster_id                   = module.orca_ecs.ecs_cluster_id
+  gql_ecs_task_execution_role_arn  = module.orca_graphql_0.gql_ecs_task_execution_role_arn
+  gql_ecs_task_execution_role_id   = module.orca_graphql_0.gql_ecs_task_execution_role_id
+  gql_tasks_role_arn               = module.orca_graphql_0.gql_tasks_role_arn
 }
 
 ## orca_api_gateway - api gateway module

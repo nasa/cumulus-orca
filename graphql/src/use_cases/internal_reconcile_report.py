@@ -10,7 +10,10 @@ from src.use_cases.helpers.edge_cursor import EdgeCursor
 
 
 class InternalReconcileReport:
-    def __init__(self, storage: StorageInternalReconcileReportInterface):
+    def __init__(
+        self,
+        storage: StorageInternalReconcileReportInterface
+    ):
         self.storage = storage
 
     def get_phantom_page(

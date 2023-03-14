@@ -9,6 +9,7 @@ class UvicornSettings(BaseSettings):
     PORT: int = 5000  # Used for local testing. Overwritten in Dockerfile.
     ORCA_ENV = "production"
     DB_CONNECT_INFO: str
+    S3_ACCESS_CREDENTIALS: str
 
     # noinspection PyPep8Naming
     def get_DEV(self) -> bool:
