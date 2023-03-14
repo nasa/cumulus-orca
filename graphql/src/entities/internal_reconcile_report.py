@@ -1,10 +1,59 @@
 import dataclasses
+from enum import Enum
 from typing import Optional
 
 import pydantic
 
 # noinspection PyPackageRequirements
 import strawberry
+
+# Copied from shared_libraries/reconciliation
+from src.use_cases.helpers.edge_cursor import EdgeCursor
+
+
+@strawberry.enum  # Not strictly clean, but alternative is duplicating classes in graphql adapter.
+class ReconciliationStatus(Enum):
+    """
+    An enumeration.
+    Defines the status value used in the ORCA Reconciliation database
+    for use by the reconciliation functions.
+    """
+    GETTING_S3_LIST = 1
+    STAGED = 2
+    GENERATING_REPORTS = 3
+    ERROR = 4
+    SUCCESS = 5
+
+
+@dataclasses.dataclass
+class InternalReconcileReportCursor(pydantic.BaseModel):
+    # IMPORTANT: Whenever properties are added/removed/modified/renamed, update constructor.
+    # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
+    job_id: float
+
+    # Overriding constructor to give us type/name hints for Pydantic class.
+    def __init__(self,
+                 job_id: int,
+                 ):
+        # This call to __init__ will NOT automatically update when performing renames.
+        super().__init__(
+            job_id=job_id,
+        )
+
+
+# Not strictly clean, but alternative is duplicating classes in graphql adapter.
+@strawberry.type
+@dataclasses.dataclass
+class InternalReconcileReportCreationRecord(pydantic.BaseModel):
+    # IMPORTANT: Whenever properties are added/removed/modified/renamed, update constructor.
+    cursor: str
+
+    # Overriding constructor to give us type/name hints for Pydantic class.
+    def __init__(self, cursor: InternalReconcileReportCursor):
+        # This call to __init__ will NOT automatically update when performing renames.
+        super().__init__(
+            cursor=EdgeCursor.encode_cursor(**dataclasses.asdict(cursor)),
+        )
 
 
 @strawberry.type  # Not strictly clean, but alternative is duplicating classes in graphql adapter.

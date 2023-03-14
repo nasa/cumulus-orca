@@ -5,3 +5,4 @@ pydantic==1.10.2
 SQLAlchemy~=2.0.5
 ../shared_libraries[database]
 psycopg2
+boto3~=1.18.65

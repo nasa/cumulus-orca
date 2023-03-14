@@ -7,9 +7,15 @@ from orca_shared.database.use_cases.validation import validate_config
 from src.adapters.api.fastapi import create_fastapi_app
 from src.adapters.graphql.adapters import AdaptersStorage
 from src.adapters.logger_provider.json import JsonLoggerProvider
+from src.adapters.storage.internal_reconciliation_postgres import (
+    InternalReconciliationStorageAdapterPostgres,
+)
 from src.adapters.storage.postgres import StorageAdapterPostgres
 from src.adapters.webserver.uvicorn_settings import UvicornSettings
 from src.adapters.word_generation.word_generation import UUIDWordGeneration
+
+S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY = "s3_access_key"
+S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY = "s3_secret_key"  # nosec
 
 
 def get_application(uvicorn_settings: UvicornSettings):
@@ -42,10 +48,27 @@ def get_application(uvicorn_settings: UvicornSettings):
     )
 
     user_connection_uri = create_postgres_connection_uri.create_user_uri(
-        db_connect_info, logger)
+        db_connect_info, logger
+    )
+    admin_connection_uri = create_postgres_connection_uri.create_admin_uri(
+        db_connect_info, logger
+    )
+
+    s3_credentials = json.loads(
+        uvicorn_settings.S3_ACCESS_CREDENTIALS
+    )
+    s3_access_key = s3_credentials[S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY]
+    s3_secret_key = s3_credentials[S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY]
+
     adapters_storage = AdaptersStorage(
         UUIDWordGeneration(),
         StorageAdapterPostgres(user_connection_uri),
+        InternalReconciliationStorageAdapterPostgres(
+            user_connection_uri,
+            admin_connection_uri,
+            s3_access_key,
+            s3_secret_key
+        ),
         initialized_logger_provider
     )
 

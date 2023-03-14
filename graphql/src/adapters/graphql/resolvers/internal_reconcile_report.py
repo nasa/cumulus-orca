@@ -1,15 +1,95 @@
 import logging
+from typing import List, Optional
+
+from orca_shared.reconciliation import OrcaStatus
 
 from src.adapters.graphql.dataTypes.common import InternalServerErrorGraphqlType
 from src.adapters.graphql.dataTypes.internal_reconcile_report import (
+    CreateInternalReconciliationJobStrawberryResponse,
     GetMismatchPageStrawberryResponse,
     GetPhantomPageStrawberryResponse,
+    ImportCurrentArchiveListInternalReconciliationJobStrawberryResponse,
+    PerformOrcaReconcileStrawberryResponse,
 )
 from src.entities.common import PageParameters
+from src.entities.files import FileLocation
+from src.entities.internal_reconcile_report import InternalReconcileReportCursor
 from src.use_cases.adapter_interfaces.storage import (
+    InternalReconcileGenerationStorageInterface,
     StorageInternalReconcileReportInterface,
 )
+from src.use_cases.internal_reconcile_generation import InternalReconcileGeneration
 from src.use_cases.internal_reconcile_report import InternalReconcileReport
+
+
+def create_job(
+    report_source: str,
+    creation_timestamp: int,
+    storage_irr: InternalReconcileGenerationStorageInterface,
+    logger: logging.Logger,
+) -> CreateInternalReconciliationJobStrawberryResponse:
+    try:
+        result = InternalReconcileGeneration(storage_irr) \
+            .create_job(report_source, creation_timestamp, logger)
+        return result
+    except Exception as ex:
+        return InternalServerErrorGraphqlType(ex)
+
+
+def update_job(
+    report_cursor: InternalReconcileReportCursor,
+    status: OrcaStatus,
+    error_message: Optional[str],
+    storage_irr: InternalReconcileGenerationStorageInterface,
+) -> Optional[InternalServerErrorGraphqlType]:
+    try:
+        InternalReconcileGeneration(storage_irr) \
+            .update_job(report_cursor, status, error_message)
+        return
+    except Exception as ex:
+        return InternalServerErrorGraphqlType(ex)
+
+
+def get_current_archive_list(
+    report_source: str,
+    report_cursor: InternalReconcileReportCursor,
+    columns_in_csv: List[str],
+    csv_file_locations: List[FileLocation],
+    report_bucket_region: str,
+    storage_irr: InternalReconcileGenerationStorageInterface,
+    logger: logging.Logger,
+) -> ImportCurrentArchiveListInternalReconciliationJobStrawberryResponse:
+    try:
+        InternalReconcileGeneration(storage_irr) \
+            .get_current_archive_list(
+            report_source,
+            report_cursor,
+            columns_in_csv,
+            csv_file_locations,
+            report_bucket_region,
+            logger,
+        )
+        return
+    except Exception as ex:
+        return InternalServerErrorGraphqlType(ex)
+
+
+def perform_orca_reconcile(
+    report_source: str,
+    report_cursor: InternalReconcileReportCursor,
+    storage_irr: InternalReconcileGenerationStorageInterface,
+    logger: logging.Logger,
+) -> PerformOrcaReconcileStrawberryResponse:
+    try:
+        InternalReconcileGeneration(storage_irr) \
+            .perform_orca_reconcile(
+            report_source,
+            report_cursor,
+            logger,
+        )
+        return
+    except Exception as ex:
+        return InternalServerErrorGraphqlType(ex)
 
 
 def get_phantom_page(
