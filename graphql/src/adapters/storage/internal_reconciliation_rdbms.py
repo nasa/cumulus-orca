@@ -178,7 +178,6 @@ class InternalReconciliationStorageAdapterRDBMS(
             columns_in_csv
         )
         with self.admin_engine.begin() as connection:
-            # Within this transaction import the csv and update the job status
             connection.execute(
                 self.create_temporary_table_sql(temporary_s3_column_list),
                 [{}],
@@ -209,9 +208,6 @@ class InternalReconciliationStorageAdapterRDBMS(
                     }
                 ],
             )
-            # Update job status
-            logger.debug(f"Posting successful status for job {report_cursor.job_id}.")
-            self.update_job(report_cursor, OrcaStatus.STAGED, None)
 
     @staticmethod
     def generate_temporary_s3_column_list(columns_in_csv: List[str]) -> str:
