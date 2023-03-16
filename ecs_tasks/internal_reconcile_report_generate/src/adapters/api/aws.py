@@ -7,6 +7,8 @@ from datetime import datetime, timezone
 
 import boto3
 
+from src.use_cases.helpers import retry_error
+
 MESSAGES_KEY = "Messages"
 
 # todo: remove this
@@ -177,8 +179,7 @@ class AWS:
                 ContentEncoding="gzip",
             )
 
-    # todo: add retry_error
-    # @retry_error()
+    @retry_error()
     def remove_job_from_queue(
         self,
         report_queue_url: str,
