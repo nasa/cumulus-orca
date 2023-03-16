@@ -2,7 +2,7 @@ import logging
 from abc import abstractmethod
 
 from orca_shared.database import shared_db
-from sqlalchemy import create_engine, text, URL
+from sqlalchemy import URL, create_engine, text
 from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.future import Engine
 

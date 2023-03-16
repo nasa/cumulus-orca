@@ -1,5 +1,4 @@
-from sqlalchemy import text, URL
-import urllib3
+from sqlalchemy import URL, text
 
 from src.adapters.storage.rdbms import StorageAdapterRDBMS
 
