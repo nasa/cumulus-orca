@@ -7,7 +7,6 @@ import orca_shared
 from orca_shared.database import shared_db
 from orca_shared.reconciliation import OrcaStatus, get_partition_name_from_bucket_name
 from sqlalchemy import create_engine, text
-from sqlalchemy.future import Engine
 
 from src.adapters.storage.internal_reconciliation_s3 import AWSS3FileLocation
 from src.entities.common import DirectionEnum
@@ -33,8 +32,8 @@ class InternalReconciliationStorageAdapterRDBMS(
         s3_access_key: str,
         s3_secret_key: str,
     ):
-        self.user_engine: Engine = create_engine(user_connection_uri, future=True)
-        self.admin_engine: Engine = create_engine(admin_connection_uri, future=True)
+        self.user_connection_uri = user_connection_uri
+        self.admin_connection_uri = admin_connection_uri
         self.s3_access_key = s3_access_key
         self.s3_secret_key = s3_secret_key
 
@@ -56,7 +55,7 @@ class InternalReconciliationStorageAdapterRDBMS(
         Returns: A cursor with the auto-incremented job_id from the database.
         """
         logger.debug("Creating status for job.")
-        with self.user_engine.begin() as connection:
+        with create_engine(self.user_connection_uri, future=True).begin() as connection:
             # Within this transaction import the csv and update the job status
             now = datetime.now(timezone.utc)
             rows = connection.execute(
@@ -124,7 +123,7 @@ class InternalReconciliationStorageAdapterRDBMS(
         """
         logger.debug(f"Truncating old s3 data blocking report {report_source}.")
         partition_name = get_partition_name_from_bucket_name(report_source)
-        with self.admin_engine.begin() as connection:
+        with create_engine(self.admin_connection_uri, future=True).begin() as connection:
             connection.execute(
                 self.truncate_s3_partition_sql(partition_name),
                 [{}],
@@ -150,7 +149,7 @@ class InternalReconciliationStorageAdapterRDBMS(
             int(report_cursor.job_id),
             status,
             error_message,
-            self.user_engine
+            create_engine(self.user_connection_uri, future=True)
         )
 
     @shared_db.retry_operational_error()
@@ -177,7 +176,7 @@ class InternalReconciliationStorageAdapterRDBMS(
         temporary_s3_column_list = self.generate_temporary_s3_column_list(
             columns_in_csv
         )
-        with self.admin_engine.begin() as connection:
+        with create_engine(self.admin_connection_uri, future=True).begin() as connection:
             connection.execute(
                 self.create_temporary_table_sql(temporary_s3_column_list),
                 [{}],
@@ -260,7 +259,7 @@ class InternalReconciliationStorageAdapterRDBMS(
             logger: The logger to use.
         """
         logger.debug(f"Generating reports for job id {report_cursor.job_id}.")
-        with self.user_engine.begin() as connection:
+        with create_engine(self.user_connection_uri, future=True).begin() as connection:
             logger.debug(f"Generating phantom reports for job id {report_cursor.job_id}.")
             connection.execute(
                 # populate reconcile_phantom_report with files in orca.files
@@ -310,7 +309,7 @@ class InternalReconciliationStorageAdapterRDBMS(
         Returns:
             A list of phantoms.
         """
-        with self.user_engine.begin() as connection:
+        with create_engine(self.user_connection_uri, future=True).begin() as connection:
             logger.info(f"Retrieving phantoms for job '{job_id}'.")
             results = connection.execute(
                 self.get_phantom_page_sql(direction),
@@ -370,7 +369,7 @@ class InternalReconciliationStorageAdapterRDBMS(
         Returns:
             A list of mismatches.
         """
-        with self.user_engine.begin() as connection:
+        with create_engine(self.user_connection_uri, future=True).begin() as connection:
             logger.info(f"Retrieving mismatches for job '{job_id}'.")
             results = connection.execute(
                 self.get_mismatch_page_sql(direction),
