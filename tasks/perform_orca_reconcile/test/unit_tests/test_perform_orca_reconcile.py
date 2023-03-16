@@ -450,7 +450,7 @@ class TestPerformOrcaReconcile(
 
     # copied from shared_db.py
     @patch("time.sleep")
-    def test_retry_operational_error_happy_path(self, mock_sleep: MagicMock):
+    def test_retry_error_happy_path(self, mock_sleep: MagicMock):
         expected_result = Mock()
 
         @perform_orca_reconcile.retry_error(3)

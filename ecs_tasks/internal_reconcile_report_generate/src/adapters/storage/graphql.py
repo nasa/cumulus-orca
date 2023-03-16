@@ -1,13 +1,13 @@
 import json
-from datetime import datetime
-from typing import Dict, Optional, Any, List
+from typing import Optional, Any
 
 import requests
 
 from src.adapters.api.aws import S3InventoryManifest, S3InventoryManifestMetadata
+from src.use_cases.adapter_interfaces.storage import StorageInterface
 
 
-class GraphQL:
+class GraphQL(StorageInterface):
     def __init__(
         self,
         graphql_endpoint: str,
@@ -19,6 +19,15 @@ class GraphQL:
         inventory_creation_timestamp: float,
         report_source: str,
     ) -> str:
+        """
+        Creates a job status entry.
+
+        Args:
+            inventory_creation_timestamp: Seconds since epoch that the inventory was created.
+            report_source: The region covered by the report.
+
+        Returns: The cursor to the reconciliation job.
+        """
         query_name = "postInternalReconciliationJob"
         expected_type = "InternalReconcileReportCreationRecord"
         query = f"""
@@ -43,7 +52,6 @@ mutation {{
     }}
   }}
 }}"""
-        print(query)
         result = self.perform_request(
             query,
             query_name,
@@ -56,8 +64,15 @@ mutation {{
         inventory_manifest: S3InventoryManifest,
         inventory_manifest_metadata: S3InventoryManifestMetadata,
         report_cursor: str,
-
     ) -> None:
+        """
+        Pulls the inventory report into the database.
+
+        Args:
+            inventory_manifest: Contains information about the inventory report.
+            inventory_manifest_metadata: Extra information about the inventory report.
+            report_cursor: The cursor to the reconciliation job.
+        """
         query_name = "importCurrentArchiveListForReconciliationJob"
         expected_type = None
         # GraphQL does not support standard json. See csvFileLocations
@@ -87,7 +102,6 @@ mutation {{
         }}
       }}
     }}"""
-        print(query)
         self.perform_request(
             query,
             query_name,
@@ -98,8 +112,14 @@ mutation {{
         self,
         report_source: str,
         report_cursor: str,
-
     ) -> None:
+        """
+        Checks the pulled-in inventory report against the database's expectations.
+
+        Args:
+            report_source: The region covered by the report.
+            report_cursor: The cursor to the reconciliation job.
+        """
         query_name = "performOrcaReconcileForReconciliationJob"
         expected_type = None
         query = f"""
@@ -133,6 +153,20 @@ mutation {{
         query_name: str,
         expected_type: Optional[str],
     ) -> Optional[dict[str, Any]]:
+        """
+        Helper for communicating with GraphQL
+
+        Args:
+            query: The query to perform.
+            query_name: The name of the query. Used for results validity checks.
+            expected_type: The expected type to be returned. All other types rejected.
+        Returns:
+            The data returned by GraphQL.
+
+        Raises:
+            Exception if GraphQL returned a non-200 status id
+            or returned types outside expected_type.
+        """
         r = requests.post(self.graphql_endpoint, json={"query": query}, headers={})
         if r.status_code != 200:
             raise Exception(f"Query failed to run with a {r.status_code}.")
