@@ -93,12 +93,11 @@ def get_granule_status_entries_for_job(
                 [{"job_id": job_id}],
             )
     except Exception as err:
-        # Can't use f"" because of '{}' bug in CumulusLogger.
-        LOGGER.error("DbError: {err}", err=str(err))
+        LOGGER.error(f"DbError: {err}")
         raise
 
     rows = []
-    for row in results:
+    for row in results.mappings():
         rows.append(
             {
                 OUTPUT_GRANULE_ID_KEY: row[OUTPUT_GRANULE_ID_KEY],
@@ -146,11 +145,10 @@ def get_status_totals_for_job(job_id: str, engine: Engine) -> Dict[str, int]:
                 [{"job_id": job_id}],
             )
     except Exception as err:
-        # Can't use f"" because of '{}' bug in CumulusLogger.
-        LOGGER.error("DbError: {err}", err=str(err))
+        LOGGER.error(f"DbError: {err}")
         raise
 
-    totals = {row["value"]: row["total"] for row in results}
+    totals = {row["value"]: row["total"] for row in results.mappings()}
     return totals
 
 
