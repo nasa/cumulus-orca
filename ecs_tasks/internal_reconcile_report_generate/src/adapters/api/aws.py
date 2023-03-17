@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from typing import Optional
 
 import boto3
 
@@ -9,9 +10,6 @@ from src.entities.aws import AWSSQSInventoryReportMessage, S3InventoryManifestMe
 from src.use_cases.helpers import retry_error
 
 MESSAGES_KEY = "Messages"
-
-
-# todo: remove this
 
 
 class AWS:
@@ -23,7 +21,7 @@ class AWS:
 
     def get_s3_manifest_event_from_sqs(
         self
-    ) -> AWSSQSInventoryReportMessage:
+    ) -> Optional[AWSSQSInventoryReportMessage]:
         """
         Gets a message from the queue and formats it into the format for internal reconciliation.
 
@@ -37,7 +35,7 @@ class AWS:
         )
 
         if MESSAGES_KEY not in sqs_response.keys():
-            raise Exception("No messages in queue.")
+            return None
 
         if len(sqs_response[MESSAGES_KEY]) > 1:
             raise Exception("More than one message retrieved. Check `receive_message` call.")

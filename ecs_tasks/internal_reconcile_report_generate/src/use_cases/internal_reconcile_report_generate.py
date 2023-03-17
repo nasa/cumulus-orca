@@ -16,8 +16,19 @@ class InternalReconcileReportGenerate:
     def internal_reconcile_report_generate(
         self,
         logger: logging.Logger
-    ):
+    ) -> bool:
+        """
+        Orchestrates Internal Reconciliation Report generation.
+
+        Args:
+            logger: The logger to use.
+
+        Returns: False if there were no reports to generate. True otherwise.
+        """
         sqs_message = self.aws_adapter.get_s3_manifest_event_from_sqs()
+        if sqs_message is None:
+            logger.info("No messages in queue.")
+            return False
 
         for manifest_metadata in sqs_message.manifest_metadatas:
             manifest = self.aws_adapter.get_manifest(
@@ -48,5 +59,4 @@ class InternalReconcileReportGenerate:
                 report_cursor,
             )
             self.aws_adapter.remove_job_from_queue(sqs_message.message_receipt, logger)
-            # todo: Update status to error if failed
-
+            return True

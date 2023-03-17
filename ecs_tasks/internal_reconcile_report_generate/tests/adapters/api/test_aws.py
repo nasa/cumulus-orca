@@ -76,23 +76,22 @@ class TestAWS(unittest.TestCase):
         self.assertEqual(key1, result.manifest_metadatas[1].manifest_key)
 
     @patch("src.adapters.api.aws.boto3.client")
-    def test_get_s3_manifest_event_from_sqs_no_messages_raises_error(
+    def test_get_s3_manifest_event_from_sqs_no_messages_returns_none(
         self,
         mock_boto3_client,
     ):
         # noinspection GrazieInspection
         """
-        If no messages are present, raise error.
+        If no messages are present, return none.
         """
         mock_s3_inventory_queue = Mock()
 
         mock_boto3_client.return_value.receive_message.return_value = {
         }
 
-        with self.assertRaises(Exception) as cm:
-            AWS(mock_s3_inventory_queue).get_s3_manifest_event_from_sqs()
+        result = AWS(mock_s3_inventory_queue).get_s3_manifest_event_from_sqs()
 
-        self.assertEqual("No messages in queue.", str(cm.exception))
+        self.assertIsNone(result)
         mock_boto3_client.assert_called_once_with("sqs")
         mock_boto3_client.return_value.receive_message.assert_called_once_with(
             QueueUrl=mock_s3_inventory_queue,
