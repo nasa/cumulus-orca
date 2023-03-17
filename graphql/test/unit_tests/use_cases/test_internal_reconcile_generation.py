@@ -2,7 +2,7 @@ import random
 import unittest
 import uuid
 from datetime import datetime, timezone
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock, call, patch
 
 from orca_shared.reconciliation import OrcaStatus
 
@@ -61,8 +61,10 @@ class TestInternalReconcileGeneration(unittest.TestCase):
             mock_report_cursor, mock_status, mock_error_message,
         )
 
+    @patch("src.use_cases.internal_reconcile_generation.InternalReconcileGeneration.update_job")
     def test_get_current_archive_list_happy_path(
-        self
+        self,
+        mock_update_job: MagicMock,
     ):
         """
         Should call the underlying storage function.
@@ -94,6 +96,8 @@ class TestInternalReconcileGeneration(unittest.TestCase):
             mock_report_bucket_region,
             mock_logger,
         )
+
+        mock_update_job.assert_called_once_with(mock_report_cursor, OrcaStatus.STAGED, None)
 
     @patch("src.use_cases.internal_reconcile_generation.InternalReconcileGeneration.update_job")
     def test_get_current_archive_list_error_recorded(
@@ -140,8 +144,10 @@ class TestInternalReconcileGeneration(unittest.TestCase):
             str(expected_exception),
         )
 
+    @patch("src.use_cases.internal_reconcile_generation.InternalReconcileGeneration.update_job")
     def test_perform_orca_reconcile_happy_path(
-        self
+        self,
+        mock_update_job: MagicMock,
     ):
         """
         Should call the underlying storage function.
@@ -164,6 +170,12 @@ class TestInternalReconcileGeneration(unittest.TestCase):
             mock_report_cursor,
             mock_logger,
         )
+
+        mock_update_job.assert_has_calls([
+            call(mock_report_cursor, OrcaStatus.GENERATING_REPORTS, None),
+            call(mock_report_cursor, OrcaStatus.SUCCESS, None),
+        ])
+        self.assertEqual(2, mock_update_job.call_count)
 
     @patch("src.use_cases.internal_reconcile_generation.InternalReconcileGeneration.update_job")
     def test_perform_orca_reconcile_error_recorded(
@@ -195,8 +207,8 @@ class TestInternalReconcileGeneration(unittest.TestCase):
             mock_report_cursor,
             mock_logger,
         )
-        mock_update_job.assert_called_once_with(
-            mock_report_cursor,
-            OrcaStatus.ERROR,
-            str(expected_exception),
-        )
+        mock_update_job.assert_has_calls([
+            call(mock_report_cursor, OrcaStatus.GENERATING_REPORTS, None),
+            call(mock_report_cursor, OrcaStatus.ERROR, str(expected_exception)),
+        ])
+        self.assertEqual(2, mock_update_job.call_count)

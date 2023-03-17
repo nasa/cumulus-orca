@@ -95,7 +95,7 @@ class InternalReconcileGeneration:
                 logger
             )
             # Update job status
-            self.storage.update_job(report_cursor, OrcaStatus.STAGED, None)
+            self.update_job(report_cursor, OrcaStatus.STAGED, None)
         except Exception as fatal_exception:
             # On error, set job status to failure.
             logger.error(f"Encountered a fatal error: {fatal_exception}")
@@ -114,7 +114,7 @@ class InternalReconcileGeneration:
         logger: logging.Logger,
     ):
         try:
-            self.storage.update_job(
+            self.update_job(
                 report_cursor,
                 OrcaStatus.GENERATING_REPORTS,
                 None,
@@ -124,7 +124,7 @@ class InternalReconcileGeneration:
                 report_cursor,
                 logger,
             )
-            self.storage.update_job(
+            self.update_job(
                 report_cursor,
                 OrcaStatus.SUCCESS,
                 None,
