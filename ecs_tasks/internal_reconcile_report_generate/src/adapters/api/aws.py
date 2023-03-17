@@ -101,20 +101,19 @@ class AWS:
         )
 
     # noinspection PyMethodMayBeStatic
-    def add_metadata_to_gzip(self, report_bucket_name: str, gzip_key_path: str) -> None:
+    def add_metadata_to_gzip(self, file_location: AWSS3FileLocation) -> None:
         """
         AWS does not add proper metadata to gzip files, which breaks aws_s3.table_import_from_s3
         Must add manually.
         Args:
-            report_bucket_name: The name of the bucket the csv is located in.
-            gzip_key_path: The path within the bucket to the gzip file that needs metadata updated.
+            file_location: Location of the file in S3
         """
         s3 = boto3.resource("s3")
-        s3_object = s3.Object(report_bucket_name, gzip_key_path)
+        s3_object = s3.Object(file_location.bucket_name, file_location.key)
         # Only add if needed.
         if s3_object.content_encoding is None:
             s3_object.copy_from(
-                CopySource={"Bucket": report_bucket_name, "Key": gzip_key_path},
+                CopySource={"Bucket": file_location.bucket_name, "Key": file_location.key},
                 Metadata=s3_object.metadata,
                 MetadataDirective="REPLACE",
                 ContentEncoding="gzip",

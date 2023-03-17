@@ -47,7 +47,7 @@ class InternalReconcileReportGenerate:
                 if not csv_file.key.endswith(".csv.gz"):
                     raise Exception(f"Cannot handle file extension on '{csv_file.key}'")
                 # Set the required metadata
-                self.aws_adapter.add_metadata_to_gzip(csv_file.bucket_name, csv_file.key)
+                self.aws_adapter.add_metadata_to_gzip(csv_file)
 
             self.storage_adapter.import_current_archive_list_for_reconciliation_job(
                 manifest,
@@ -58,5 +58,5 @@ class InternalReconcileReportGenerate:
                 manifest.source_bucket_name,
                 report_cursor,
             )
-            self.aws_adapter.remove_job_from_queue(sqs_message.message_receipt, logger)
-            return True
+        self.aws_adapter.remove_job_from_queue(sqs_message.message_receipt, logger)
+        return True
