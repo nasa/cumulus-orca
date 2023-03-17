@@ -39,9 +39,10 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
         mock_orca_archive_location = Mock()
         mock_inventory_creation_time = Mock()
         mock_job_id = random.randint(0, 9999999)  # nosec
-        returned_rows = Mock()
-        returned_rows.fetchone = Mock(return_value={"id": mock_job_id})
-        mock_execute = Mock(return_value=returned_rows)
+        returned_rows = [{"id": mock_job_id}]
+        mock_execute_result = Mock()
+        mock_execute_result.mappings = Mock(return_value=returned_rows)
+        mock_execute = Mock(return_value=mock_execute_result)
         mock_connection = Mock()
         mock_connection.execute = mock_execute
         mock_exit = Mock(return_value=False)
@@ -86,6 +87,7 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
                 }
             ],
         )
+        mock_execute_result.mappings.assert_called_once_with()
         mock_exit.assert_called_once_with(None, None, None)
         mock_create_job_sql.assert_called_once_with()
 
@@ -545,7 +547,9 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
                     )
                 if direction == DirectionEnum.previous:
                     rows.reverse()
-                mock_execute = Mock(return_value=rows)
+                mock_execute_result = Mock()
+                mock_execute_result.mappings = Mock(return_value=rows)
+                mock_execute = Mock(return_value=mock_execute_result)
                 mock_connection = Mock()
                 mock_connection.execute = mock_execute
                 mock_exit = Mock(return_value=False)
@@ -587,6 +591,7 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
                         "limit": mock_limit,
                     }],
                 )
+                mock_execute_result.mappings.assert_called_once_with()
                 mock_exit.assert_called_once_with(None, None, None)
                 mock_get_phantom_page_sql.assert_called_once_with(direction)
             mock_create_engine.reset_mock()
@@ -661,7 +666,9 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
                     )
                 if direction == DirectionEnum.previous:
                     rows.reverse()
-                mock_execute = Mock(return_value=rows)
+                mock_execute_result = Mock()
+                mock_execute_result.mappings = Mock(return_value=rows)
+                mock_execute = Mock(return_value=mock_execute_result)
                 mock_connection = Mock()
                 mock_connection.execute = mock_execute
                 mock_exit = Mock(return_value=False)
@@ -703,6 +710,7 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
                         "limit": mock_limit,
                     }],
                 )
+                mock_execute_result.mappings.assert_called_once_with()
                 mock_exit.assert_called_once_with(None, None, None)
                 mock_get_mismatch_page_sql.assert_called_once_with(direction)
             mock_create_engine.reset_mock()

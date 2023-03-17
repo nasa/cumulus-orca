@@ -308,6 +308,7 @@ class TestRequestStatusForJobUnit(
             mock_sql.return_value,
             [{"job_id": job_id}],
         )
+        mock_execute_result.mappings.assert_called_once_with()
 
         self.assertEqual(expected_result, result)
 
@@ -341,6 +342,7 @@ class TestRequestStatusForJobUnit(
             mock_sql.return_value,
             [{"job_id": job_id}],
         )
+        mock_execute_result.mappings.assert_called_once_with()
 
         self.assertEqual({"success": 5, "future_status": 10}, result)
 

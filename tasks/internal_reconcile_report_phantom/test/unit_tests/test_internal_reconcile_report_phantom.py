@@ -295,6 +295,7 @@ class TestInternalReconcileReportPhantom(
                 }
             ],
         )
+        mock_execute_result.mappings.assert_called_once_with()
         mock_exit.assert_called_once_with(None, None, None)
         mock_get_phantoms_sql.assert_called_once_with()
         self.assertEqual(
@@ -358,6 +359,7 @@ class TestInternalReconcileReportPhantom(
                 }
             ],
         )
+        mock_execute_result.mappings.assert_called_once_with()
         mock_exit.assert_called_once_with(None, None, None)
         mock_get_phantoms_sql.assert_called_once_with()
         self.assertEqual(
