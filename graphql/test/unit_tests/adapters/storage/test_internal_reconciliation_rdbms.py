@@ -228,7 +228,6 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
             mock_error_message,
         )
 
-            call(mock_admin_connection_uri, future=True)
         mock_create_engine.assert_called_once_with(
             mock_user_connection_uri, future=True)
 
