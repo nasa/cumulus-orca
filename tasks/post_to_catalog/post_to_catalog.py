@@ -133,7 +133,7 @@ def create_catalog_records(
             for (
                 row
             ) in (
-                results
+                results.mappings()
             ):  # Need loop due to limitations on the underlying object. Welcome alternatives.
                 granule_id = row["id"]
 

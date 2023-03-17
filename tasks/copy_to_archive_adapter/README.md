@@ -85,6 +85,13 @@ bash-4.2# bin/run_tests.sh
 Note that Bamboo will run this same script via the `bin/run_tests.sh` script found
 in the cumulus-orca base of the repo.
 
+To run integration test for **copy_to_archive_adapter**, run `bin/run_integration_tests.sh` script from the
+`tasks/copy_to_archive_adapter` directory. Make sure the object to be copied exists in the source bucket first before running the test.
+Remember to export the following environment variables in your terminal before running the test.
+- ORCA_RECOVERY_BUCKET - S3 bucket where the object should be recovered. For example, `test-orca-primary`.
+- CUMULUS_BUCKET_NAME -S3 bucket where the object to be recovered exists. For example, `orca-sandbox-s3-provider`.
+- OBJECT_KEY_NAME - The S3 object url. For example, `MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf`.
+
 ## Deployment
 
 The `copy_to_archive_adapter` lambda function can be deployed using terraform using the example shown in TODO

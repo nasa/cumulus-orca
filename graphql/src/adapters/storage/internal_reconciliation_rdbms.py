@@ -72,8 +72,10 @@ class InternalReconciliationStorageAdapterRDBMS(
                     }
                 ],
             )
+            for sql_result in rows.mappings():
+                job_id = sql_result["id"]
 
-        return InternalReconcileReportCursor(rows.fetchone()["id"])
+        return InternalReconcileReportCursor(job_id)
 
     def pull_in_inventory_report(
         self,
@@ -323,7 +325,7 @@ class InternalReconciliationStorageAdapterRDBMS(
             )
 
             phantoms = []
-            for result in results:
+            for result in results.mappings():
                 phantoms.append(
                     Phantom(
                         job_id=result["job_id"],
@@ -383,7 +385,7 @@ class InternalReconciliationStorageAdapterRDBMS(
             )
 
             mismatches = []
-            for result in results:
+            for result in results.mappings():
                 mismatches.append(
                     Mismatch(
                         job_id=result["job_id"],

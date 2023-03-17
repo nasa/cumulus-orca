@@ -109,7 +109,7 @@ def query_db(
         )
 
         mismatches = []
-        for sql_result in sql_results:
+        for sql_result in sql_results.mappings():
             mismatches.append(
                 {
                     MISMATCHES_COLLECTION_ID_KEY:

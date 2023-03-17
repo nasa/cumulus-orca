@@ -8,7 +8,7 @@
 
 # copy\_to\_archive\_adapter
 
-Name: copy_to_archive.py
+Name: copy_to_archive_adapter.py
 Description: Lambda function that takes a Cumulus message, extracts a list of files,
 and copies those files from their current storage location into a staging/archive location.
 

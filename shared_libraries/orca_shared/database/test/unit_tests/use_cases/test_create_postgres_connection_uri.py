@@ -130,4 +130,4 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
                                         password=password)
 
         self.assertEqual(f"postgresql://{username}:{password}@{host}:{port}/{database_name}",
-                         result)
+                         result.render_as_string(hide_password=False))

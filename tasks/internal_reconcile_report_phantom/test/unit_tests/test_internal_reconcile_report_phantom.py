@@ -265,7 +265,10 @@ class TestInternalReconcileReportPhantom(
             "orca_size": orca_size,
             "orca_storage_class": orca_storage_class,
         }
-        mock_execute = Mock(return_value=[returned_row0])
+        mock_execute_result = Mock()
+        mock_execute_result.mappings = Mock(return_value=[returned_row0])
+        mock_execute = Mock()
+        mock_execute.return_value = mock_execute_result
         mock_connection = Mock()
         mock_connection.execute = mock_execute
         mock_exit = Mock(return_value=False)
@@ -325,8 +328,10 @@ class TestInternalReconcileReportPhantom(
         """
         job_id = random.randint(0, 999)  # nosec
         page_index = Mock()
-
-        mock_execute = Mock(return_value=[])
+        mock_execute_result = Mock()
+        mock_execute_result.mappings = Mock(return_value=[])
+        mock_execute = Mock()
+        mock_execute.return_value = mock_execute_result
         mock_connection = Mock()
         mock_connection.execute = mock_execute
         mock_exit = Mock(return_value=False)
