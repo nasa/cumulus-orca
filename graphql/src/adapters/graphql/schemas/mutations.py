@@ -4,6 +4,7 @@ from typing import Annotated
 
 # noinspection PyPackageRequirements
 import strawberry
+
 # noinspection PyPackageRequirements
 from orca_shared.reconciliation import OrcaStatus
 from strawberry import argument, field, type
@@ -21,9 +22,7 @@ from src.adapters.graphql.resolvers.internal_reconcile_report import (
     update_job,
 )
 from src.adapters.storage.internal_reconciliation_s3 import AWSS3FileLocation
-from src.entities.internal_reconcile_report import (
-    ReconciliationStatus,
-)
+from src.entities.internal_reconcile_report import ReconciliationStatus
 
 
 @type
