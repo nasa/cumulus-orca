@@ -76,6 +76,7 @@ class TestRDBMS(unittest.TestCase):
                 }
             ],
         )
+        mock_execute_result.mappings.assert_called_once_with()
         mock_exit.assert_called_once_with(None, None, None)
         mock_get_orphans_sql.assert_called_once_with()
         self.assertEqual(
@@ -142,6 +143,7 @@ class TestRDBMS(unittest.TestCase):
                 }
             ],
         )
+        mock_execute_result.mappings.assert_called_once_with()
         mock_exit.assert_called_once_with(None, None, None)
         mock_get_orphans_sql.assert_called_once_with()
         self.assertEqual(
@@ -223,6 +225,7 @@ class TestRDBMS(unittest.TestCase):
                 }
             ],
         )
+        mock_execute_result.mappings.assert_called_once_with()
         mock_exit.assert_called_once_with(None, None, None)
         mock_get_orphans_sql.assert_called_once_with()
         self.assertEqual(

@@ -317,3 +317,4 @@ class TestPostToDatabase(
                 ),
             ]
         )
+        mock_execute_result.mappings.assert_called_once_with()

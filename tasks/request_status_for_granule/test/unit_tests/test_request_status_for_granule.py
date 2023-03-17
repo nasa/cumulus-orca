@@ -491,6 +491,7 @@ class TestRequestStatusForGranuleUnit(
             mock_sql.return_value,
             [{"granule_id": granule_id}],
         )
+        mock_execute_result.mappings.assert_called_once_with()
 
         self.assertEqual(job_id, result)
 
@@ -538,6 +539,7 @@ class TestRequestStatusForGranuleUnit(
                 }
             ],
         )
+        mock_execute_result.mappings.assert_called_once_with()
 
         self.assertEqual(expected_result, result)
 
@@ -582,6 +584,7 @@ class TestRequestStatusForGranuleUnit(
                 }
             ],
         )
+        mock_execute_result.mappings.assert_called_once_with()
 
         self.assertEqual(expected_result, result)
 
