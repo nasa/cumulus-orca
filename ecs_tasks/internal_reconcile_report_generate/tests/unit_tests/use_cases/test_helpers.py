@@ -4,7 +4,7 @@ from unittest.mock import patch, MagicMock, Mock
 from src.use_cases.helpers import retry_error
 
 
-class MyTestCase(unittest.TestCase):
+class TestHelpers(unittest.TestCase):
     # copied from shared_db.py
     @patch("time.sleep")
     def test_retry_error_happy_path(self, mock_sleep: MagicMock):
@@ -40,4 +40,3 @@ class MyTestCase(unittest.TestCase):
             self.assertEqual(max_retries, mock_sleep.call_count)
             return
         self.fail("Error not raised.")
-        

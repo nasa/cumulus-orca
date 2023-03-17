@@ -94,7 +94,7 @@ class AWS:
         return S3InventoryManifest(
             source_bucket_name=manifest["sourceBucket"],
             manifest_creation_datetime=
-            int(manifest["creationTimestamp"]) / 1000,
+            int(int(manifest["creationTimestamp"]) / 1000),
             manifest_files=[
                 AWSS3FileLocation(key=f["key"], bucket_name=report_bucket_name)
                 for f in manifest["files"]
