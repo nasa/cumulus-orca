@@ -2,7 +2,7 @@ import logging
 from abc import abstractmethod
 
 from orca_shared.database import shared_db
-from sqlalchemy import create_engine, text
+from sqlalchemy import URL, create_engine, text
 from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.future import Engine
 
@@ -14,7 +14,7 @@ class StorageAdapterRDBMS(
 ):
     def __init__(
         self,
-        user_connection_uri: str,
+        user_connection_uri: URL,
     ):
         self.user_engine: Engine = create_engine(user_connection_uri, future=True)
 

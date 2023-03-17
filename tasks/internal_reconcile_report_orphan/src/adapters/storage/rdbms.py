@@ -3,20 +3,19 @@ from abc import abstractmethod
 import logging
 import sqlalchemy
 from orca_shared.database import shared_db
-from sqlalchemy import text
+from sqlalchemy import text, URL
 
 from src.entities.orphan import OrphanRecordFilter, OrphanRecordPage, OrphanRecord
 from src.use_cases.adapter_interfaces.storage import OrphansPageStorageInterface
 
 
 class StorageAdapterRDBMS(OrphansPageStorageInterface):
-    def __init__(self, connection_uri: str):
+    def __init__(self, connection_uri: URL):
         """
         Args:
-            connection_uri: The URI connection string.
+            connection_uri: The DB connection URL.
         """
-        connection_url = sqlalchemy.engine.make_url(connection_uri)
-        self._engine = sqlalchemy.engine.create.create_engine(connection_url, future=True)
+        self._engine = sqlalchemy.engine.create.create_engine(connection_uri, future=True)
 
     @shared_db.retry_operational_error()
     def get_orphans_page(
@@ -52,7 +51,7 @@ class StorageAdapterRDBMS(OrphansPageStorageInterface):
             )
 
             orphans = []
-            for sql_result in sql_results:
+            for sql_result in sql_results.mappings():
                 orphans.append(
                     OrphanRecord(key_path=sql_result["key_path"],
                                  etag=sql_result["etag"],

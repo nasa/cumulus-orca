@@ -1,4 +1,4 @@
-from sqlalchemy import text
+from sqlalchemy import URL, text
 
 from src.adapters.storage.rdbms import StorageAdapterRDBMS
 
@@ -7,7 +7,7 @@ class StorageAdapterPostgres(StorageAdapterRDBMS):
 
     def __init__(
         self,
-        user_connection_uri: str,
+        user_connection_uri: URL,
     ):
         super(StorageAdapterPostgres, self).__init__(
             user_connection_uri,

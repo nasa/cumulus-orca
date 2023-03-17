@@ -28,6 +28,7 @@ and includes an additional section for migration notes.
 ### Changed
 - *ORCA-573* Updated ORCA DB user password to now have a stronger password requirement. See migration notes for details.
 - *ORCA-520* Removed `run_cumulus_task` function from copy_to_archive to decouple ORCA from Cumulus.
+- *ORCA-647* Upgraded sqlalchemy from v1.4.11 to v2.0.5.
 
 ### Migration Notes
 - The output format of `copy_to_archive` lambda and step-function has been simplified. If accessing these resources outside of a Cumulus perspective, instead of accessing `output["payload"]["granules"]` you now use `output["granules"]`.

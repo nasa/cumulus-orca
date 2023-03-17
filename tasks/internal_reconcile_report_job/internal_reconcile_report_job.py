@@ -95,7 +95,7 @@ def query_db(
         )
 
         jobs = []
-        for sql_result in sql_results:
+        for sql_result in sql_results.mappings():
             jobs.append(
                 {
                     JOBS_ID_KEY: sql_result["id"],
