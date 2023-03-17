@@ -1,9 +1,15 @@
 import unittest
 from unittest.mock import Mock, call
 
-from src.entities.aws import S3InventoryManifestMetadata, S3InventoryManifest, AWSS3FileLocation, \
-    AWSSQSInventoryReportMessage
-from src.use_cases.internal_reconcile_report_generate import InternalReconcileReportGenerate
+from src.entities.aws import (
+    AWSS3FileLocation,
+    AWSSQSInventoryReportMessage,
+    S3InventoryManifest,
+    S3InventoryManifestMetadata,
+)
+from src.use_cases.internal_reconcile_report_generate import (
+    InternalReconcileReportGenerate,
+)
 
 
 class MyTestCase(unittest.TestCase):

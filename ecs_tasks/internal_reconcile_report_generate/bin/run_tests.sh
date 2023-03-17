@@ -5,14 +5,14 @@
 ##
 ## DESCRIPTION
 ## -----------------------------------------------------------------------------
-## Tests graphql using unit tests.
+## Tests script using unit tests.
 ##
 ##
 ## USAGE
 ## -----------------------------------------------------------------------------
 ## bin/run_tests.sh
 ##
-## This must be called from the (root) directory /graphql
+## This must be called from the (root) directory /internal_reconcile_report_generate
 ## =============================================================================
 
 ## Set this for Debugging only
@@ -21,15 +21,15 @@
 ## Make sure we are calling the script the correct way.
 BASEDIR=$(dirname $0)
 if [ "$BASEDIR" != "bin" ]; then
-  >&2 echo "ERROR: This script must be called from the root directory of graphql [bin/run_tests.sh]."
+  >&2 echo "ERROR: This script must be called from the root directory of internal_reconcile_report_generate [bin/run_tests.sh]."
   exit 1
 fi
 
 
 ## FUNCTIONS
 ## -----------------------------------------------------------------------------
-source ../bin/common/check_returncode.sh
-source ../bin/common/venv_management.sh
+source ../../bin/common/check_returncode.sh
+source ../../bin/common/venv_management.sh
 
 
 ## MAIN

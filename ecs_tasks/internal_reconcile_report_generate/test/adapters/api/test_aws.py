@@ -1,9 +1,10 @@
 import json
 import unittest
 import uuid
-from unittest.mock import patch, Mock, MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
 from src.adapters.api.aws import AWS, MESSAGES_KEY
+from src.entities.aws import AWSS3FileLocation
 
 
 class TestAWS(unittest.TestCase):
@@ -171,7 +172,7 @@ class TestAWS(unittest.TestCase):
         aws = AWS(Mock())
 
         aws.add_metadata_to_gzip(
-            mock_report_bucket_name, mock_gzip_key_path
+            AWSS3FileLocation(mock_report_bucket_name, mock_gzip_key_path)
         )
 
         mock_boto3_resource.assert_called_once_with("s3")
@@ -200,7 +201,7 @@ class TestAWS(unittest.TestCase):
         aws = AWS(Mock())
 
         aws.add_metadata_to_gzip(
-            mock_report_bucket_name, mock_gzip_key_path
+            AWSS3FileLocation(mock_report_bucket_name, mock_gzip_key_path)
         )
 
         mock_boto3_resource.assert_called_once_with("s3")

@@ -1,5 +1,5 @@
 import json
-from typing import Optional, Any
+from typing import Any, Optional
 
 import requests
 
@@ -84,7 +84,7 @@ mutation {{
         reportCursor: "{report_cursor}"
         columnsInCsv: {json.dumps(inventory_manifest.manifest_files_columns)}
         csvFileLocations: [{{{"}, {".join([
-            f'bucketName: "{f.bucket_name}", key: "{f.key}"' 
+            f'bucketName: "{f.bucket_name}", key: "{f.key}"'
             for f in inventory_manifest.manifest_files
         ])
         }}}]
