@@ -1,4 +1,5 @@
 import json
+import random
 import unittest
 import uuid
 from unittest.mock import MagicMock, Mock, patch
@@ -117,9 +118,10 @@ class TestAWS(unittest.TestCase):
         column1 = uuid.uuid4().__str__()
         column2 = uuid.uuid4().__str__()
         mock_body = Mock()
+        manifest_creation_timestamp = random.randint(4000000000000, 5000000000000)  # nosec
         mock_body.read = Mock(return_value=json.dumps({
             "sourceBucket": manifest_source_bucket,
-            "creationTimestamp": 4986486464735,
+            "creationTimestamp": manifest_creation_timestamp,
             "files": [
                 {
                     "key": manifest_file0_key
@@ -141,7 +143,7 @@ class TestAWS(unittest.TestCase):
             Mock(),
         )
 
-        self.assertEqual(4986486464, result.manifest_creation_datetime)
+        self.assertEqual(int(manifest_creation_timestamp / 1000), result.manifest_creation_datetime)
         self.assertEqual(manifest_source_bucket, result.source_bucket_name)
         self.assertEqual(2, len(result.manifest_files))
         self.assertEqual(manifest_file0_key, result.manifest_files[0].key)

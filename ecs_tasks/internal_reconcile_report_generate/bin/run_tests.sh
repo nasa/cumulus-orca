@@ -12,7 +12,7 @@
 ## -----------------------------------------------------------------------------
 ## bin/run_tests.sh
 ##
-## This must be called from the (root) directory /internal_reconcile_report_generate
+## This must be called from the (root) directory /ecs_tasks/internal_reconcile_report_generate
 ## =============================================================================
 
 ## Set this for Debugging only
@@ -21,7 +21,7 @@
 ## Make sure we are calling the script the correct way.
 BASEDIR=$(dirname $0)
 if [ "$BASEDIR" != "bin" ]; then
-  >&2 echo "ERROR: This script must be called from the root directory of internal_reconcile_report_generate [bin/run_tests.sh]."
+  >&2 echo "ERROR: This script must be called from the root directory of ecs_tasks/internal_reconcile_report_generate [bin/run_tests.sh]."
   exit 1
 fi
 
