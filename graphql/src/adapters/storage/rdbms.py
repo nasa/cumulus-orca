@@ -4,7 +4,6 @@ from abc import abstractmethod
 from orca_shared.database import shared_db
 from sqlalchemy import URL, create_engine, text
 from sqlalchemy.exc import ProgrammingError
-from sqlalchemy.future import Engine
 
 from src.use_cases.adapter_interfaces.storage import StorageMetadataInterface
 
@@ -16,7 +15,7 @@ class StorageAdapterRDBMS(
         self,
         user_connection_uri: URL,
     ):
-        self.user_engine: Engine = create_engine(user_connection_uri, future=True)
+        self.user_connection_uri = user_connection_uri
 
     @shared_db.retry_operational_error()
     def get_schema_version(
@@ -34,7 +33,7 @@ class StorageAdapterRDBMS(
             Version number of the currently installed ORCA schema.
         """
         try:
-            with self.user_engine.begin() as connection:
+            with create_engine(self.user_connection_uri, future=True).begin() as connection:
                 # If table exists get the latest version from the table
                 logger.info("Getting current schema version from table.")
                 results = connection.execute(self.get_schema_version_sql())

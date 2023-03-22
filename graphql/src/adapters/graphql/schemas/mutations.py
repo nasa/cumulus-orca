@@ -22,11 +22,7 @@ from src.adapters.graphql.resolvers.internal_reconcile_report import (
     update_job,
 )
 from src.adapters.storage.internal_reconciliation_s3 import AWSS3FileLocation
-from src.entities.internal_reconcile_report import (
-    InternalReconcileReportCursor,
-    ReconciliationStatus,
-)
-from src.use_cases.helpers.edge_cursor import EdgeCursor
+from src.entities.internal_reconcile_report import ReconciliationStatus
 
 
 @type
@@ -86,9 +82,12 @@ class Mutations:
         ] = None,  # Default value actually MAKES it optional
     ) -> UpdateInternalReconciliationJobStrawberryResponse:
         return update_job(
-            EdgeCursor.decode_cursor(report_cursor, InternalReconcileReportCursor),
+            report_cursor,
             OrcaStatus(status.value),
             error_message,
+            Mutations.adapters_storage.logger_provider.get_logger(
+                uuid.uuid4().__str__()
+            ),
             Mutations.adapters_storage.storage_internal_reconciliation,
         )
 
@@ -129,7 +128,7 @@ class Mutations:
     ) -> ImportCurrentArchiveListInternalReconciliationJobStrawberryResponse:
         return get_current_archive_list(
             report_source,
-            EdgeCursor.decode_cursor(report_cursor, InternalReconcileReportCursor),
+            report_cursor,
             columns_in_csv,
             csv_file_locations,
             report_bucket_region,
@@ -158,7 +157,7 @@ class Mutations:
     ) -> ImportCurrentArchiveListInternalReconciliationJobStrawberryResponse:
         return perform_orca_reconcile(
             report_source,
-            EdgeCursor.decode_cursor(report_cursor, InternalReconcileReportCursor),
+            report_cursor,
             Mutations.adapters_storage.storage_internal_reconciliation,
             Mutations.adapters_storage.logger_provider.get_logger(
                 uuid.uuid4().__str__()

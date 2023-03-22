@@ -86,6 +86,7 @@ class TestApplication(unittest.TestCase):
         mock_create_postgres_connection_uri.create_admin_uri.assert_called_once_with(
             mock_postgres_connection_info.return_value,
             mock_logger,
+            mock_postgres_connection_info.return_value.user_database_name,
         )
         mock_uuid_word_generation.assert_called_once_with()
         mock_storage_adapter_postgres.assert_called_once_with(

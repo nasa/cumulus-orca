@@ -7,9 +7,6 @@ import strawberry
 
 from src.entities.files import FileLocation
 
-MANIFEST_FILES_KEY = "files"
-FILES_KEY_KEY = "key"
-
 
 @strawberry.input  # Not strictly clean, but alternative is duplicating classes in graphql adapter.
 @dataclasses.dataclass

@@ -51,7 +51,7 @@ def get_application(uvicorn_settings: UvicornSettings):
         db_connect_info, logger
     )
     admin_connection_uri = create_postgres_connection_uri.create_admin_uri(
-        db_connect_info, logger
+        db_connect_info, logger, db_connect_info.user_database_name,
     )
 
     s3_credentials = json.loads(

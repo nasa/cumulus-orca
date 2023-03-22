@@ -24,7 +24,7 @@ class InternalReconcileGeneration:
     def create_job(
         self,
         report_source: str,
-        creation_timestamp: int,
+        creation_timestamp: float,
         logger: logging.Logger,
     ) -> InternalReconcileReportCreationRecord:
         """
@@ -94,6 +94,8 @@ class InternalReconcileGeneration:
                 report_bucket_region,
                 logger
             )
+            # Update job status
+            self.update_job(report_cursor, OrcaStatus.STAGED, None)
         except Exception as fatal_exception:
             # On error, set job status to failure.
             logger.error(f"Encountered a fatal error: {fatal_exception}")
@@ -112,10 +114,20 @@ class InternalReconcileGeneration:
         logger: logging.Logger,
     ):
         try:
+            self.update_job(
+                report_cursor,
+                OrcaStatus.GENERATING_REPORTS,
+                None,
+            )
             self.storage.perform_orca_reconcile(
                 report_source,
                 report_cursor,
                 logger,
+            )
+            self.update_job(
+                report_cursor,
+                OrcaStatus.SUCCESS,
+                None,
             )
         except Exception as fatal_exception:
             # On error, set job status to failure.

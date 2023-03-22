@@ -23,7 +23,7 @@ and includes an additional section for migration notes.
   - *ORCA-592* GraphQL logs are json structures, and can thus be queried in CloudWatch.
 - *ORCA-597*
   - Server access logging is now enabled for graphql application load balancer.
-- *ORCA-614* Moved some Internal Reconciliation functionality to GraphQL
+- *ORCA-614*, *ORCA-428* Moved some Internal Reconciliation functionality to GraphQL
 
 ### Changed
 - *ORCA-573* Updated ORCA DB user password to now have a stronger password requirement. See migration notes for details.

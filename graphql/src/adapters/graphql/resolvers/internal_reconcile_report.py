@@ -18,13 +18,14 @@ from src.use_cases.adapter_interfaces.storage import (
     InternalReconcileGenerationStorageInterface,
     StorageInternalReconcileReportInterface,
 )
+from src.use_cases.helpers.edge_cursor import EdgeCursor
 from src.use_cases.internal_reconcile_generation import InternalReconcileGeneration
 from src.use_cases.internal_reconcile_report import InternalReconcileReport
 
 
 def create_job(
     report_source: str,
-    creation_timestamp: int,
+    creation_timestamp: float,
     storage_irr: InternalReconcileGenerationStorageInterface,
     logger: logging.Logger,
 ) -> CreateInternalReconciliationJobStrawberryResponse:
@@ -33,26 +34,30 @@ def create_job(
             .create_job(report_source, creation_timestamp, logger)
         return result
     except Exception as ex:
+        logger.error(ex)
         return InternalServerErrorGraphqlType(ex)
 
 
 def update_job(
-    report_cursor: InternalReconcileReportCursor,
+    report_cursor: str,
     status: OrcaStatus,
     error_message: Optional[str],
     storage_irr: InternalReconcileGenerationStorageInterface,
+    logger: logging.Logger,
 ) -> Optional[InternalServerErrorGraphqlType]:
     try:
+        cursor = EdgeCursor.decode_cursor(report_cursor, InternalReconcileReportCursor)
         InternalReconcileGeneration(storage_irr) \
-            .update_job(report_cursor, status, error_message)
+            .update_job(cursor, status, error_message)
         return
     except Exception as ex:
+        logger.error(ex)
         return InternalServerErrorGraphqlType(ex)
 
 
 def get_current_archive_list(
     report_source: str,
-    report_cursor: InternalReconcileReportCursor,
+    report_cursor: str,
     columns_in_csv: List[str],
     csv_file_locations: List[FileLocation],
     report_bucket_region: str,
@@ -60,10 +65,11 @@ def get_current_archive_list(
     logger: logging.Logger,
 ) -> ImportCurrentArchiveListInternalReconciliationJobStrawberryResponse:
     try:
+        cursor = EdgeCursor.decode_cursor(report_cursor, InternalReconcileReportCursor)
         InternalReconcileGeneration(storage_irr) \
             .get_current_archive_list(
             report_source,
-            report_cursor,
+            cursor,
             columns_in_csv,
             csv_file_locations,
             report_bucket_region,
@@ -71,12 +77,13 @@ def get_current_archive_list(
         )
         return
     except Exception as ex:
+        logger.error(ex)
         return InternalServerErrorGraphqlType(ex)
 
 
 def perform_orca_reconcile(
     report_source: str,
-    report_cursor: InternalReconcileReportCursor,
+    report_cursor: str,
     storage_irr: InternalReconcileGenerationStorageInterface,
     logger: logging.Logger,
 ) -> PerformOrcaReconcileStrawberryResponse:
@@ -84,11 +91,12 @@ def perform_orca_reconcile(
         InternalReconcileGeneration(storage_irr) \
             .perform_orca_reconcile(
             report_source,
-            report_cursor,
+            EdgeCursor.decode_cursor(report_cursor, InternalReconcileReportCursor),
             logger,
         )
         return
     except Exception as ex:
+        logger.error(ex)
         return InternalServerErrorGraphqlType(ex)
 
 
@@ -102,6 +110,7 @@ def get_phantom_page(
         return InternalReconcileReport(storage_irr) \
             .get_phantom_page(job_id, page_parameters, logger)
     except Exception as ex:
+        logger.error(ex)
         return InternalServerErrorGraphqlType(ex)
 
 
@@ -115,4 +124,5 @@ def get_mismatch_page(
         return InternalReconcileReport(storage_irr) \
             .get_mismatch_page(job_id, page_parameters, logger)
     except Exception as ex:
+        logger.error(ex)
         return InternalServerErrorGraphqlType(ex)
