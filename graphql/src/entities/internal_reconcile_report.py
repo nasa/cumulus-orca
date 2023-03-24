@@ -30,7 +30,7 @@ class ReconciliationStatus(Enum):
 class InternalReconcileReportCursor(pydantic.BaseModel):
     # IMPORTANT: Whenever properties are added/removed/modified/renamed, update constructor.
     # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
-    job_id: int8
+    job_id: float
 
     # Overriding constructor to give us type/name hints for Pydantic class.
     def __init__(self,
@@ -62,14 +62,14 @@ class InternalReconcileReportCreationRecord(pydantic.BaseModel):
 class Phantom(pydantic.BaseModel):
     # IMPORTANT: Whenever properties are added/removed/modified/renamed, update constructor.
     # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
-    job_id: int8
+    job_id: float
     collection_id: str
     granule_id: str
     filename: str
     key_path: str
     orca_etag: str
     # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
-    orca_granule_last_update: int8
+    orca_granule_last_update: float
     orca_size_in_bytes: int
     orca_storage_class: str
 
@@ -119,7 +119,7 @@ class Phantom(pydantic.BaseModel):
 class Mismatch(pydantic.BaseModel):
     # IMPORTANT: Whenever properties are added/removed/modified/renamed, update constructor.
     # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
-    job_id: int8
+    job_id: float
     collection_id: str
     granule_id: str
     filename: str
@@ -128,13 +128,13 @@ class Mismatch(pydantic.BaseModel):
     orca_etag: str
     s3_etag: str
     # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
-    orca_granule_last_update: int8
+    orca_granule_last_update: float
     # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
-    s3_file_last_update: int8
+    s3_file_last_update: float
     # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
-    orca_size_in_bytes: int8
+    orca_size_in_bytes: float
     # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
-    s3_size_in_bytes: int8
+    s3_size_in_bytes: float
     orca_storage_class: str
     s3_storage_class: str
     discrepancy_type: str
