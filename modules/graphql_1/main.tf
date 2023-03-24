@@ -56,8 +56,8 @@ resource "aws_iam_role_policy" "gql_task_role_policy" {
   policy = data.aws_iam_policy_document.gql_task_execution_policy_document.json
 }
 
-resource "aws_security_group" "gql_security_group" {
-  name        = "${var.prefix}-gql"
+resource "aws_security_group" "gql_lb_security_group" {
+  name        = "${var.prefix}-lb-gql"
   description = "Allow inbound communication on container port."
   vpc_id      = var.vpc_id
 
@@ -89,7 +89,7 @@ resource "aws_lb" "gql_app_lb" {
     prefix  = "${var.prefix}-lb-gql-a-logs"
     enabled = true
   }
-  security_groups    = [aws_security_group.gql_security_group.id]
+  security_groups    = [aws_security_group.gql_lb_security_group.id]
   subnets            = var.lambda_subnet_ids
   idle_timeout       = 30 # API Gateway locks us to 30 seconds.
   tags               = var.tags
@@ -243,7 +243,7 @@ DEFINITION
 
 resource "aws_security_group" "gql_task_security_group" {
   name        = "${var.prefix}-gql-task"
-  description = "Allow inbound communication on container port. Allow outbound communication to get image."
+  description = "Allow inbound communication from LB on container port. Allow outbound communication to get image."
   vpc_id      = var.vpc_id
 
   ingress {
@@ -251,7 +251,7 @@ resource "aws_security_group" "gql_task_security_group" {
     from_port        = local.graphql_port
     to_port          = local.graphql_port
     protocol         = "tcp"
-    cidr_blocks      = [data.aws_vpc.primary.cidr_block]
+    security_groups  = [aws_security_group.gql_lb_security_group.id]
   }
 
   egress {

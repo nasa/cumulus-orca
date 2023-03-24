@@ -10,6 +10,7 @@ from orca_shared.reconciliation import OrcaStatus
 from strawberry import argument, field, type
 
 from src.adapters.graphql.adapters import AdaptersStorage
+from src.adapters.graphql.dataTypes.common import int8
 from src.adapters.graphql.dataTypes.internal_reconcile_report import (
     CreateInternalReconciliationJobStrawberryResponse,
     ImportCurrentArchiveListInternalReconciliationJobStrawberryResponse,
@@ -50,7 +51,7 @@ class Mutations:
     ) -> CreateInternalReconciliationJobStrawberryResponse:
         result = create_job(
             report_source,
-            int(creation_timestamp),
+            creation_timestamp,
             Mutations.adapters_storage.storage_internal_reconciliation,
             Mutations.adapters_storage.logger_provider.get_logger(
                 uuid.uuid4().__str__()

@@ -9,6 +9,7 @@ import strawberry
 from strawberry import argument, field, type
 
 from src.adapters.graphql.adapters import AdaptersStorage
+from src.adapters.graphql.dataTypes.common import int8
 from src.adapters.graphql.dataTypes.internal_reconcile_report import (
     GetMismatchPageStrawberryResponse,
     GetPhantomPageStrawberryResponse,
@@ -70,7 +71,7 @@ class Queries:
     def get_phantom_page(
         self,
         job_id: Annotated[
-            float,
+            int8,
             argument(
                 description="""The unique job ID of the reconciliation job."""
             )
@@ -97,7 +98,7 @@ class Queries:
     def get_mismatch_page(
         self,
         job_id: Annotated[
-            float,
+            int8,
             argument(
                 description="""The unique job ID of the reconciliation job."""
             )

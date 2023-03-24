@@ -143,7 +143,7 @@ class TestAWS(unittest.TestCase):
             Mock(),
         )
 
-        self.assertEqual(int(manifest_creation_timestamp / 1000), result.manifest_creation_datetime)
+        self.assertEqual(manifest_creation_timestamp / 1000, result.manifest_creation_datetime)
         self.assertEqual(manifest_source_bucket, result.source_bucket_name)
         self.assertEqual(2, len(result.manifest_files))
         self.assertEqual(manifest_file0_key, result.manifest_files[0].key)
