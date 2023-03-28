@@ -25,13 +25,30 @@ class InternalServerErrorGraphqlType(ErrorGraphqlTypeInterface):
         self.stack_trace = traceback.format_exc()
 
 
-int8 = strawberry.scalar(
-    NewType("int8", int),
+# Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
+# noinspection PyPep8Naming
+class int8(int):
+    @classmethod
+    def __get_validators__(cls):
+        # one or more validators may be yielded which will be called in the
+        # order to validate the input, each validator will receive as an input
+        # the value returned from the previous validator
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, v):
+        return int8_parse_value(v)
+
+    def __repr__(self):
+        return f'PostCode({super().__repr__()})'
+
+
+strawberry_int8 = strawberry.scalar(
+    NewType("int8", int8),
     # todo: add size limits -9223372036854775808 to +9223372036854775807
     serialize=lambda v: int8_serialize(v),
     parse_value=lambda v: int8_parse_value(v),
 )
-
 
 int8_max = 9223372036854775807
 int8_min = int8_max * -1

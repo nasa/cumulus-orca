@@ -10,7 +10,6 @@ from orca_shared.reconciliation import OrcaStatus
 from strawberry import argument, field, type
 
 from src.adapters.graphql.adapters import AdaptersStorage
-from src.adapters.graphql.dataTypes.common import int8
 from src.adapters.graphql.dataTypes.internal_reconcile_report import (
     CreateInternalReconciliationJobStrawberryResponse,
     ImportCurrentArchiveListInternalReconciliationJobStrawberryResponse,

@@ -7,11 +7,10 @@ import pydantic
 # noinspection PyPackageRequirements
 import strawberry
 
-# Copied from shared_libraries/reconciliation
-from src.adapters.graphql.dataTypes.common import int8
 from src.use_cases.helpers.edge_cursor import EdgeCursor
 
 
+# Copied from shared_libraries/reconciliation
 @strawberry.enum  # Not strictly clean, but alternative is duplicating classes in graphql adapter.
 class ReconciliationStatus(Enum):
     """
