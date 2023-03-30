@@ -7,6 +7,7 @@ import pydantic
 # noinspection PyPackageRequirements
 import strawberry
 
+from src.adapters.graphql.dataTypes.common import int8
 from src.use_cases.helpers.edge_cursor import EdgeCursor
 
 
@@ -29,7 +30,7 @@ class ReconciliationStatus(Enum):
 class InternalReconcileReportCursor(pydantic.BaseModel):
     # IMPORTANT: Whenever properties are added/removed/modified/renamed, update constructor.
     # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
-    job_id: float
+    job_id: int8
 
     # Overriding constructor to give us type/name hints for Pydantic class.
     def __init__(self,
@@ -61,20 +62,21 @@ class InternalReconcileReportCreationRecord(pydantic.BaseModel):
 class Phantom(pydantic.BaseModel):
     # IMPORTANT: Whenever properties are added/removed/modified/renamed, update constructor.
     # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
-    job_id: float
+    job_id: int8
     collection_id: str
     granule_id: str
     filename: str
     key_path: str
     orca_etag: str
     # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
-    orca_granule_last_update: float
-    orca_size_in_bytes: int
+    orca_granule_last_update: int8
+    # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
+    orca_size_in_bytes: int8
     orca_storage_class: str
 
     @dataclasses.dataclass
     class Cursor:
-        job_id: int = None
+        job_id: int8 = None
         collection_id: str = None
         granule_id: str = None
         key_path: str = None
@@ -118,7 +120,7 @@ class Phantom(pydantic.BaseModel):
 class Mismatch(pydantic.BaseModel):
     # IMPORTANT: Whenever properties are added/removed/modified/renamed, update constructor.
     # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
-    job_id: float
+    job_id: int8
     collection_id: str
     granule_id: str
     filename: str
@@ -127,13 +129,13 @@ class Mismatch(pydantic.BaseModel):
     orca_etag: str
     s3_etag: str
     # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
-    orca_granule_last_update: float
+    orca_granule_last_update: int8
     # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
-    s3_file_last_update: float
+    s3_file_last_update: int8
     # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
-    orca_size_in_bytes: float
+    orca_size_in_bytes: int8
     # Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
-    s3_size_in_bytes: float
+    s3_size_in_bytes: int8
     orca_storage_class: str
     s3_storage_class: str
     discrepancy_type: str
@@ -141,7 +143,7 @@ class Mismatch(pydantic.BaseModel):
 
     @dataclasses.dataclass
     class Cursor:
-        job_id: int = None
+        job_id: int8 = None
         collection_id: str = None
         granule_id: str = None
         key_path: str = None

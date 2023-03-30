@@ -43,7 +43,7 @@ class TestInternalReconcileReport(unittest.TestCase):
 
         record = InternalReconcileReportCreationRecord(InternalReconcileReportCursor(job_id))
 
-        self.assertEqual("eyJqb2JfaWQiOiA5NTQ2MDQ4OTY0MTUuMH0=", record.cursor)
+        self.assertEqual("eyJqb2JfaWQiOiA5NTQ2MDQ4OTY0MTV9", record.cursor)
         cursor = EdgeCursor.decode_cursor(record.cursor, InternalReconcileReportCursor)
         self.assertEqual(InternalReconcileReportCursor(job_id), cursor)
 

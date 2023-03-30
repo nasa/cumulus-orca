@@ -1,8 +1,6 @@
 import traceback
 
 # noinspection PyPackageRequirements
-from typing import NewType
-
 import strawberry
 
 
@@ -25,7 +23,6 @@ class InternalServerErrorGraphqlType(ErrorGraphqlTypeInterface):
         self.stack_trace = traceback.format_exc()
 
 
-# Python doesn't cap 32 bit/4 byte int size, but GraphQL can't handle larger ints.
 # noinspection PyPep8Naming
 class int8(int):
     @classmethod
@@ -44,8 +41,7 @@ class int8(int):
 
 
 strawberry_int8 = strawberry.scalar(
-    NewType("int8", int8),
-    # todo: add size limits -9223372036854775808 to +9223372036854775807
+    int8,
     serialize=lambda v: int8_serialize(v),
     parse_value=lambda v: int8_parse_value(v),
 )
