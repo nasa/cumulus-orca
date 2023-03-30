@@ -15,7 +15,7 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 ### Added
-- *ORCA-554*, *ORCA-561*, *ORCA-579*, *ORCA-581*
+- *ORCA-554*, *ORCA-561*, *ORCA-579*, *ORCA-581*, *ORCA-622*
   - GraphQL image, service, and Load Balancer will now be deployed by TF.
   - *ORCA-557* Added `orca_graphql_load_balancer_dns_name` to output variables for GraphQL integration.
   - *ORCA-420* Added Internal Reconcile Report Mismatch functionality to GraphQL.

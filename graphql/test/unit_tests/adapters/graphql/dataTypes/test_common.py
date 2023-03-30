@@ -2,8 +2,13 @@ import unittest
 import uuid
 from unittest.mock import MagicMock, Mock, patch
 
-from src.adapters.graphql.dataTypes.common import InternalServerErrorGraphqlType, int8, \
-    int8_min, int8_max, strawberry_int8
+from src.adapters.graphql.dataTypes.common import (
+    InternalServerErrorGraphqlType,
+    int8,
+    int8_max,
+    int8_min,
+    strawberry_int8,
+)
 
 
 class TestCommon(unittest.TestCase):
