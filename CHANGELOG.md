@@ -15,12 +15,13 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 ### Added
-- *ORCA-554*, *ORCA-561*, *ORCA-579*, *ORCA-581*, *ORCA-622*
+- *ORCA-554*, *ORCA-561*, *ORCA-579*, *ORCA-581*
   - GraphQL image, service, and Load Balancer will now be deployed by TF.
   - *ORCA-557* Added `orca_graphql_load_balancer_dns_name` to output variables for GraphQL integration.
   - *ORCA-420* Added Internal Reconcile Report Mismatch functionality to GraphQL.
   - *ORCA-556* Added Internal Reconcile Report Phantom functionality to GraphQL.
   - *ORCA-592* GraphQL logs are json structures, and can thus be queried in CloudWatch.
+  - *ORCA-622* Added support for integer sizes up to 8 bytes.
 - *ORCA-597*
   - Server access logging is now enabled for graphql application load balancer.
 - *ORCA-614*, *ORCA-428* Moved some Internal Reconciliation functionality to GraphQL
