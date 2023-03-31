@@ -118,7 +118,6 @@ Clean up DR ORCA buckets:
         bash integration_test/cleanup/cleanup-dr-buckets.sh
 variables:
   DEPLOYMENT: sandbox
-  ORCA_VERSION: 6.0.2
   AWS_DEFAULT_REGION: us-west-2
   CUMULUS_AWS_DEFAULT_REGION: us-west-2
   CUMULUS_AWS_ACCESS_KEY_ID: REPLACE ME
