@@ -50,7 +50,7 @@ class Mutations:
     ) -> CreateInternalReconciliationJobStrawberryResponse:
         result = create_job(
             report_source,
-            int(creation_timestamp),
+            creation_timestamp,
             Mutations.adapters_storage.storage_internal_reconciliation,
             Mutations.adapters_storage.logger_provider.get_logger(
                 uuid.uuid4().__str__()

@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import MagicMock, Mock, patch
 
 from graphql import NoSchemaIntrospectionCustomRule
+from src.adapters.graphql.dataTypes.common import int8, strawberry_int8
 from src.adapters.graphql.schemas.schemas import get_schema
 
 
@@ -43,7 +44,10 @@ class TestSchemas(unittest.TestCase):
                     mutation=mock_mutations,
                     extensions=[mock_add_validation_rules.return_value]
                     if graphiql_setting is False else
-                    []
+                    [],
+                    scalar_overrides={
+                        int8: strawberry_int8
+                    }
                 )
 
             mock_queries.reset_mock()

@@ -21,6 +21,7 @@ and includes an additional section for migration notes.
   - *ORCA-420* Added Internal Reconcile Report Mismatch functionality to GraphQL.
   - *ORCA-556* Added Internal Reconcile Report Phantom functionality to GraphQL.
   - *ORCA-592* GraphQL logs are json structures, and can thus be queried in CloudWatch.
+  - *ORCA-622* Added support for integer sizes up to 8 bytes.
 - *ORCA-597*
   - Server access logging is now enabled for graphql application load balancer.
 - *ORCA-614*, *ORCA-428* Moved some Internal Reconciliation functionality to GraphQL

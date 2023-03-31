@@ -26,7 +26,8 @@ class TestQueries(unittest.TestCase):
         result = queries.get_phantom_page(mock_job_id, mock_page_parameters)
 
         mock_get_phantom_page.assert_called_once_with(
-            mock_job_id, mock_page_parameters, mock_adapters_storage.storage,
+            mock_job_id, mock_page_parameters,
+            mock_adapters_storage.storage_internal_reconciliation,
             mock_adapters_storage.logger_provider.get_logger.return_value
         )
         self.assertEqual(mock_get_phantom_page.return_value, result)
@@ -51,7 +52,8 @@ class TestQueries(unittest.TestCase):
         result = queries.get_mismatch_page(mock_job_id, mock_page_parameters)
 
         mock_get_mismatch_page.assert_called_once_with(
-            mock_job_id, mock_page_parameters, mock_adapters_storage.storage,
+            mock_job_id, mock_page_parameters,
+            mock_adapters_storage.storage_internal_reconciliation,
             mock_adapters_storage.logger_provider.get_logger.return_value
         )
         self.assertEqual(mock_get_mismatch_page.return_value, result)

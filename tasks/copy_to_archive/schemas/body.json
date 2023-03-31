@@ -135,6 +135,7 @@
                 "sizeInBytes",
                 "hash",
                 "hashType",
+                "storageClass",
                 "version",
                 "ingestTime",
                 "etag"

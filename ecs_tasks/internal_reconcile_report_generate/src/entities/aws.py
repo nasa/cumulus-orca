@@ -49,7 +49,7 @@ class S3InventoryManifest:
 
     Contains:
         source_bucket_name: Name of the bucket the report was generated for.
-        manifest_creation_datetime: Milliseconds since epoch the report was generated.
+        manifest_creation_datetime: Seconds since epoch the report was generated.
         manifest_files: Locations of files that make up the report.
         manifest_files_columns: CSV string of column names in the report files.
     """
