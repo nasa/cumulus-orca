@@ -1,6 +1,6 @@
 ---
 !include 'specs/deploy-cumulus-orca-buckets.yaml'
----
-!include 'specs/orca-code-release.yaml'
----
-!include 'specs/orca-documentation-release.yaml'
+# ---
+# !include 'specs/orca-code-release.yaml'
+# ---
+# !include 'specs/orca-documentation-release.yaml'

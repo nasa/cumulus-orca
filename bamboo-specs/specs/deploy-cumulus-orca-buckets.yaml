@@ -7,21 +7,16 @@ plan:
   key: ODPT
   name: ORCA Deploy Plan Test
 stages:
-- Ingest Integration test:
-    manual: true
-    final: false
-    jobs:
-    - Ingest Integration tests
+# - Ingest Integration test:
+#     manual: true
+#     final: false
+#     jobs:
+#     - Ingest Integration tests
 - Deploy DR ORCA Buckets:
     manual: true
     final: false
     jobs:
     - Deploy DR ORCA buckets
-- Deploy Cumulus buckets and Cumulus and Orca modules:
-    manual: true
-    final: false
-    jobs:
-    - Deploy Cumulus buckets and Cumulus and Orca modules
 # - Ingest Integration test:
 #     manual: false
 #     final: false
@@ -39,25 +34,25 @@ stages:
     - Clean up DR ORCA buckets
 
 # Job for ingest integration tests
-Ingest Integration tests:
-  key: IIT
-  other:
-    clean-working-dir: true
-  docker:
-    image: maven.earthdata.nasa.gov/cumulus_orca
-    volumes:
-      ${bamboo.working.directory}: ${bamboo.working.directory}
-      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
-  tasks:
-  - checkout:
-      force-clean-build: 'true'
-      description: Checkout Default Repository
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-
-        #!/bin/bash
-        bash integration_test/ingest/ingest-integration-tests.sh
+# Ingest Integration tests:
+#   key: IIT
+#   other:
+#     clean-working-dir: true
+#   docker:
+#     image: maven.earthdata.nasa.gov/cumulus_orca
+#     volumes:
+#       ${bamboo.working.directory}: ${bamboo.working.directory}
+#       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+#   tasks:
+#   - checkout:
+#       force-clean-build: 'true'
+#       description: Checkout Default Repository
+#   - script:
+#       interpreter: SHELL
+#       scripts:
+#       - |-
+#         #!/bin/bash
+#         bash integration_test/ingest/ingest-integration-tests.sh
 
 #job for deploying ORCA buckets in DR account
 Deploy DR ORCA buckets:
@@ -78,32 +73,30 @@ Deploy DR ORCA buckets:
       scripts:
       - |-
         #!/bin/bash
-        bash integration_test/input-validation.sh
-        . ./integration_test/shared/setup-dr-buckets.sh
-        bash integration_test/deployment-dr-buckets.sh
+        aws s3 ls
          
 #job for deploying ORCA buckets, Cumulus and ORCA modules
-Deploy Cumulus buckets and Cumulus and Orca modules:
-  key: DOBM
-  other:
-    clean-working-dir: true
-    # Some plugin configurations are not supported by YAML Specs
-  docker:
-    image: maven.earthdata.nasa.gov/cumulus_orca
-    volumes:
-      ${bamboo.working.directory}: ${bamboo.working.directory}
-      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
-  tasks:
-  - checkout:
-      force-clean-build: 'true'
-      description: Checkout Default Repository
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-
-        #!/bin/bash
-        . ./integration_test/shared/setup-orca.sh
-        bash integration_test/deployment-orca.sh
+# Deploy Cumulus buckets and Cumulus and Orca modules:
+#   key: DOBM
+#   other:
+#     clean-working-dir: true
+#     # Some plugin configurations are not supported by YAML Specs
+#   docker:
+#     image: maven.earthdata.nasa.gov/cumulus_orca
+#     volumes:
+#       ${bamboo.working.directory}: ${bamboo.working.directory}
+#       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+#   tasks:
+#   - checkout:
+#       force-clean-build: 'true'
+#       description: Checkout Default Repository
+#   - script:
+#       interpreter: SHELL
+#       scripts:
+#       - |-
+#         #!/bin/bash
+#         . ./integration_test/shared/setup-orca.sh
+#         bash integration_test/deployment-orca.sh
 
 # Job for ingest integration tests
 # Ingest Integration tests:
@@ -146,8 +139,7 @@ Clean up ORCA buckets and modules:
       scripts:
       - |-
         #!/bin/bash
-        . ./integration_test/shared/setup-orca.sh
-        bash integration_test/cleanup/cleanup-orca.sh
+        echo "test cleanup 1"
 # Job for cleaning up ORCA buckets, Cumulus, and ORCA modules
 Clean up DR ORCA buckets:
   key: COBM
@@ -169,8 +161,7 @@ Clean up DR ORCA buckets:
       scripts:
       - |-
         #!/bin/bash
-        . ./integration_test/shared/setup-dr-buckets.sh
-        bash integration_test/cleanup/cleanup-dr-buckets.sh
+        echo "test cleanup 2"
 variables:
   DEPLOYMENT: sandbox
   ORCA_VERSION: 4.0.3
