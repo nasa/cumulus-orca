@@ -10,6 +10,7 @@ Note that this only impacts [Internal Reconciliation reports](../api/api.md#inte
 If you are unable to follow these instructions, or wish to avoid generating/managing credentials, blank values may be used and the impact will be isolated to Internal Reconciliation.
 
 To generate an access key:
+1. Connect to the NASA VPN.
 1. Go to https://cloud.earthdata.nasa.gov/portal/project
 1. Click the account containing your ORCA Reports bucket
 1. `CLOUD MANAGEMENT` -> `AWS Long-Term Access Keys`
