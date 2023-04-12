@@ -57,6 +57,7 @@ module.exports = {
         'developer/deployment-guide/deployment',
         'developer/deployment-guide/deployment-environment',
         'developer/deployment-guide/deployment-s3-bucket',
+        'developer/deployment-guide/deployment-s3-credentials',
         'developer/deployment-guide/deployment-with-cumulus',
         'developer/deployment-guide/deployment-upgrading-orca',
         'developer/deployment-guide/recovery-workflow',
