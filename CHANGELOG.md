@@ -354,6 +354,7 @@ and includes an additional section for migration notes.
   - orca_reports_bucket_name
   - s3_access_key
   - s3_secret_key
+    - For generating these keys, see [documentation](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-s3-credentials/).
   
 - Update the collection configuration with the new optional key `orcaDefaultRecoveryTypeOverride` that can be added to override the default S3 glacier recovery type as shown below.
 
