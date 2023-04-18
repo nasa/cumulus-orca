@@ -144,6 +144,10 @@ class TestMultipleGranulesHappyPath(TestCase):
                     key_name_1,
                     key_name_2,
                 ]:
+                    # If ORCA ever migrates its functionality to DR,
+                    # and cross-account access is no longer granted,
+                    # use boto3.Session(profile_name="yourAWSConfigureProfileName").client(...
+                    # to use a differently configured aws access key
                     head_object_output = boto3.client("s3").head_object(
                         Bucket=recovery_bucket_name, Key=key)
                     self.assertEqual(
