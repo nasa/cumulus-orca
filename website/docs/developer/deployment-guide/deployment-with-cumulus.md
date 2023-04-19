@@ -307,6 +307,22 @@ buckets = {
 
 :::
 
+### Modifying cumulus-tf/main.tf
+
+To use the Orca API, add the following line within the Cumulus module:
+
+```
+module "cumulus" {
+
+  ...
+
+  orca_api_uri = module.orca.orca_api_deployment_invoke_url
+  
+  ...
+  
+}
+```
+
 ## Define the ORCA Workflows
 
 The ORCA Ingest Workflows follows each step listed below. Adding the 
@@ -625,14 +641,12 @@ For more information, see the documentation on the
   "granuleId": "^.*$",
   "provider_path": "L0A_HR_RAW/",
   "meta": {
-    "s3MultipartChunksizeMb": 400,
     "granuleRecoveryWorkflow": "OrcaRecoveryWorkflow",
-    "orca": {
-      "excludedFileExtensions": [".cmr", ".xml", ".met"],
-      "defaultBucketOverride": "prod_orca_worm",
-      "defaultRecoveryTypeOverride": "Standard",
-      "defaultStorageClassOverride": "DEEP_ARCHIVE"
-    }
+    "excludedFileExtensions": [".cmr", ".xml", ".met"],
+    "s3MultipartChunksizeMb": 400,
+    "defaultBucketOverride": "prod_orca_worm",
+    "defaultRecoveryTypeOverride": "Standard",
+    "defaultStorageClassOverride": "DEEP_ARCHIVE"
   },
 }
 ```
@@ -646,4 +660,3 @@ Here is an sample command to run the Cumulus Dashboard locally.
 ```bash
 APIROOT=https://uttm5y1jcj.execute-api.us-west-2.amazonaws.com:8000/dev ENABLE_RECOVERY=true npm run serve
 ```
-
