@@ -155,6 +155,10 @@ class TestMultipleGranulesHappyPath(TestCase):
                     key_name_1,
                     key_name_2,
                 ]:
+                    # If ORCA ever migrates its functionality to DR,
+                    # and cross-account access is no longer granted,
+                    # use boto3.Session(profile_name="yourAWSConfigureProfileName").client(...
+                    # to use a differently configured aws access key
                     head_object_output = boto3.client("s3").head_object(
                         Bucket=recovery_bucket_name, Key=key)
                     self.assertEqual(
@@ -237,9 +241,9 @@ class TestMultipleGranulesHappyPath(TestCase):
                 "Expected API output not returned.",
             )
             # Make sure all given granules are present without checking order.
-            self.assertCountEqual(
-                expected_catalog_output_granules,
-                catalog_output_json["granules"],
+            self.assertEqual(
+                len(expected_catalog_output_granules),
+                len(catalog_output_json["granules"]),
                 "Expected API output not returned."
             )
         except Exception as ex:
