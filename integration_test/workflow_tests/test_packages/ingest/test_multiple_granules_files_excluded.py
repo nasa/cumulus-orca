@@ -29,10 +29,18 @@ class TestMultipleGranules(TestCase):
             collection_name = uuid.uuid4().__str__()
             collection_version = uuid.uuid4().__str__()
             recovery_bucket_name = helpers.recovery_bucket_name
-            bucket_name = "orca-sandbox-s3-provider"  # standard bucket where initial file exists
+            bucket_name = "orca-sandbox-s3-provider"  # standard bucket where test file will be copied
             excluded_filetype = [".hdf"]
-            key_name = "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf"  # file size 6B
+            file_name = uuid.uuid4().__str__() + ".hdf"  # refers to file1.hdf
+            key_name = uuid.uuid4().__str__() + "/" + file_name             
             execution_id = uuid.uuid4().__str__()
+
+            # Upload the randomized file to source bucket
+            try:
+                boto3.client('s3').upload_file("file1.hdf",
+                                                bucket_name, key_name)
+            except Exception as ex:
+                raise ex
 
             copy_to_archive_input = {
                 "payload": {

@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import time
 import uuid
 from unittest import TestCase, mock
@@ -27,17 +28,28 @@ class TestMultipleGranulesHappyPath(TestCase):
             createdAt_time = int((time.time() + 5) * 1000)
             collection_name = uuid.uuid4().__str__()
             collection_version = uuid.uuid4().__str__()
-            # standard bucket where initial file exists
+            # standard bucket where test files will be copied
             cumulus_bucket_name = "orca-sandbox-s3-provider"
             recovery_bucket_name = helpers.recovery_bucket_name
             excluded_filetype = []
-            name_1 = "ancillary_data_input_forcing_ECCO_V4r4.tar.gz"
-            key_name_1 = "PODAAC/SWOT/" + name_1
+            name_1 = uuid.uuid4().__str__() + ".hdf"    # refers to file1.hdf
+            key_name_1 = uuid.uuid4().__str__() + "/" + name_1 
             file_1_hash = uuid.uuid4().__str__()
             file_1_hash_type = uuid.uuid4().__str__()
-            name_2 = "MOD09GQ.A2017025.h21v00.006.2017034065104.hdf"
-            key_name_2 = "MOD09GQ/006/" + name_2
+            name_2 = uuid.uuid4().__str__()+ ".tif"  # refers to file2.tar.gz
+            key_name_2 = uuid.uuid4().__str__() + "/" + name_2
             execution_id = uuid.uuid4().__str__()
+
+            # Upload the randomized file to source bucket
+            try:
+                boto3.client('s3').upload_file(
+                    "file1.hdf", cumulus_bucket_name, key_name_1
+                    )
+                boto3.client('s3').upload_file(
+                    "file2.tif", cumulus_bucket_name, key_name_2
+                    )
+            except Exception as ex:
+                raise ex
 
             copy_to_archive_input = {
                 "payload": {
