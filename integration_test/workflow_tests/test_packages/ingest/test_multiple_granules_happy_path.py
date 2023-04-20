@@ -36,16 +36,14 @@ class TestMultipleGranulesHappyPath(TestCase):
             key_name_1 = uuid.uuid4().__str__() + "/" + name_1 
             file_1_hash = uuid.uuid4().__str__()
             file_1_hash_type = uuid.uuid4().__str__()
-            name_2 = uuid.uuid4().__str__()+ ".tif"
-            key_name_2 = uuid.uuid4().__str__() + "/" + name_2
             execution_id = uuid.uuid4().__str__()
+            # Since this file is 191GB, it should already exist in the source bucket.
+            name_2 = "ancillary_data_input_forcing_ECCO_V4r4.tar.gz"  # file for large file test
+            key_name_2 = "PODAAC/SWOT/" + name_2
 
             # Upload the randomized file to source bucket
             boto3.client('s3').upload_file(
                 "file1.hdf", cumulus_bucket_name, key_name_1
-                )
-            boto3.client('s3').upload_file(
-                "file1.hdf", cumulus_bucket_name, key_name_2
                 )
 
             copy_to_archive_input = {
