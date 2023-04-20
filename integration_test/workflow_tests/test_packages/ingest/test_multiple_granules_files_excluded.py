@@ -36,11 +36,8 @@ class TestMultipleGranules(TestCase):
             execution_id = uuid.uuid4().__str__()
 
             # Upload the randomized file to source bucket
-            try:
-                boto3.client('s3').upload_file("file1.hdf",
-                                                bucket_name, key_name)
-            except Exception as ex:
-                raise ex
+            boto3.client('s3').upload_file("file1.hdf",
+                                            bucket_name, key_name)
 
             copy_to_archive_input = {
                 "payload": {

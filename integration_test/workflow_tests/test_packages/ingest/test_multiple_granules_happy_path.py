@@ -36,20 +36,17 @@ class TestMultipleGranulesHappyPath(TestCase):
             key_name_1 = uuid.uuid4().__str__() + "/" + name_1 
             file_1_hash = uuid.uuid4().__str__()
             file_1_hash_type = uuid.uuid4().__str__()
-            name_2 = uuid.uuid4().__str__()+ ".tif"  # refers to file2.tif
+            name_2 = uuid.uuid4().__str__()+ ".tif"
             key_name_2 = uuid.uuid4().__str__() + "/" + name_2
             execution_id = uuid.uuid4().__str__()
 
             # Upload the randomized file to source bucket
-            try:
-                boto3.client('s3').upload_file(
-                    "file1.hdf", cumulus_bucket_name, key_name_1
-                    )
-                boto3.client('s3').upload_file(
-                    "file2.tif", cumulus_bucket_name, key_name_2
-                    )
-            except Exception as ex:
-                raise ex
+            boto3.client('s3').upload_file(
+                "file1.hdf", cumulus_bucket_name, key_name_1
+                )
+            boto3.client('s3').upload_file(
+                "file1.hdf", cumulus_bucket_name, key_name_2
+                )
 
             copy_to_archive_input = {
                 "payload": {
