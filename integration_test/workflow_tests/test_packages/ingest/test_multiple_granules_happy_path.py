@@ -36,7 +36,7 @@ class TestMultipleGranulesHappyPath(TestCase):
             key_name_1 = uuid.uuid4().__str__() + "/" + name_1 
             file_1_hash = uuid.uuid4().__str__()
             file_1_hash_type = uuid.uuid4().__str__()
-            name_2 = uuid.uuid4().__str__()+ ".tif"  # refers to file2.tar.gz
+            name_2 = uuid.uuid4().__str__()+ ".tif"  # refers to file2.tif
             key_name_2 = uuid.uuid4().__str__() + "/" + name_2
             execution_id = uuid.uuid4().__str__()
 
