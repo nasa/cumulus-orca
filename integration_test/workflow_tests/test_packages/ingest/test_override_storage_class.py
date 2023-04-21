@@ -32,7 +32,7 @@ class TestMultipleGranulesHappyPath(TestCase):
             recovery_bucket_name = helpers.recovery_bucket_name
             excluded_filetype = []
             name_1 = uuid.uuid4().__str__() + ".hdf"    # refers to file1.hdf
-            key_name_1 = uuid.uuid4().__str__() + "/" + name_1 
+            key_name_1 = "test/" + uuid.uuid4().__str__() + "/" + name_1
             file_1_hash = uuid.uuid4().__str__()
             file_1_hash_type = uuid.uuid4().__str__()
             execution_id = uuid.uuid4().__str__()
@@ -106,7 +106,8 @@ class TestMultipleGranulesHappyPath(TestCase):
             )
 
             step_function_results = helpers.get_state_machine_execution_results(
-                execution_info["executionArn"]
+                execution_info["executionArn"],
+                maximum_duration_seconds=30,
             )
 
             self.assertEqual(
@@ -142,8 +143,11 @@ class TestMultipleGranulesHappyPath(TestCase):
                     )
                     s3_versions.append(head_object_output["VersionId"])
             except Exception as ex:
-                return ex
+                logging.error(ex)
+                raise
 
+            # Let the catalog update
+            time.sleep(1)
             # noinspection PyArgumentList
             catalog_output = helpers.post_to_api(
                 my_session,
@@ -174,7 +178,7 @@ class TestMultipleGranulesHappyPath(TestCase):
                         "cumulusArchiveLocation": cumulus_bucket_name,
                         "orcaArchiveLocation": recovery_bucket_name,
                         "keyPath": key_name_1,
-                        "sizeBytes": 205640819682,
+                        "sizeBytes": 6,
                         "hash": file_1_hash, "hashType": file_1_hash_type,
                         "storageClass": "DEEP_ARCHIVE",
                         "version": s3_versions[0],
@@ -194,9 +198,9 @@ class TestMultipleGranulesHappyPath(TestCase):
                 "Expected API output not returned.",
             )
             # Make sure all given granules are present without checking order.
-            self.assertEqual(
-                len(expected_catalog_output_granules),
-                len(catalog_output_json["granules"]),
+            self.assertCountEqual(
+                expected_catalog_output_granules,
+                catalog_output_json["granules"],
                 "Expected API output not returned."
             )
         except Exception as ex:
