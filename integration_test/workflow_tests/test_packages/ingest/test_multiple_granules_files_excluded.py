@@ -97,7 +97,8 @@ class TestMultipleGranules(TestCase):
             )
 
             step_function_results = helpers.get_state_machine_execution_results(
-                execution_info["executionArn"]
+                execution_info["executionArn"],
+                maximum_duration_seconds=30,
             )
 
             self.assertEqual(
@@ -124,6 +125,10 @@ class TestMultipleGranules(TestCase):
                     "404",
                     err.response["Error"]["Code"]
                 )
+
+            # Let the catalog update
+            time.sleep(1)
+            # noinspection PyArgumentList
             catalog_output = helpers.post_to_api(
                 my_session,
                 helpers.api_url + "/catalog/reconcile/",

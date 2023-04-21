@@ -161,11 +161,6 @@ This is a list of tests that should be created for existing Orca architecture. T
      :::tip
      Include a large (bigger than 250 Gb) file to make sure timeouts do not prevent ingest.
      :::
-     :::tip
-     Test ingesting from Glacier buckets as well as regular buckets.
-     Make sure that Glacier data is less than 24 hours old.
-     If older, data will be moved out of `recovered` and `pre-archival` states, and ingest will incur additional costs and time penalties, possibly beyond timeout limits.
-     :::
   1. Call the OrcaCopyToArchiveWorkflow to ingest the granules to Orca.
      :::tip
      Make sure to cover excludedFileExtensions being set, being unset, and excluding/allowing proper files in either case.

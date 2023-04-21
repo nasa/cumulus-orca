@@ -9,22 +9,18 @@ import boto3
 import helpers
 
 
-class TestMultipleGranulesHappyPath(TestCase):
+class TestOverrideStorageClassHappyPath(TestCase):
 
-    def test_multiple_granules_happy_path(self):
+    def test_override_storage_class(self):
         self.maxDiff = None
-        use_large_file = True  # This should not be checked in with any value other than `True`
         """
-        - If multiple granules are provided, should store them in DB as well as in recovery bucket.
-        - Files stored in GLACIER are also ingest-able.
-        - Large files should not cause timeout.
+        - If storage class is overridden in config, should be respected.
         """
         try:
             # Set up Orca API resources
             # ---
             my_session = helpers.create_session()
             granule_id_1 = uuid.uuid4().__str__()
-            granule_id_2 = uuid.uuid4().__str__()
             provider_id = uuid.uuid4().__str__()
             provider_name = uuid.uuid4().__str__()
             # noinspection PyPep8Naming
@@ -35,28 +31,17 @@ class TestMultipleGranulesHappyPath(TestCase):
             cumulus_bucket_name = "orca-sandbox-s3-provider"
             recovery_bucket_name = helpers.recovery_bucket_name
             excluded_filetype = []
-            name_1 = uuid.uuid4().__str__() + ".hdf"  # refers to file1.hdf
+            name_1 = uuid.uuid4().__str__() + ".hdf"    # refers to file1.hdf
             key_name_1 = "test/" + uuid.uuid4().__str__() + "/" + name_1
             file_1_hash = uuid.uuid4().__str__()
             file_1_hash_type = uuid.uuid4().__str__()
+            execution_id = uuid.uuid4().__str__()
+
             # Upload the randomized file to source bucket
             boto3.client('s3').upload_file(
                 "file1.hdf", cumulus_bucket_name, key_name_1
-            )
-            execution_id = uuid.uuid4().__str__()
-
-            if use_large_file:
-                # file for large file test
-                # Since this file is 191GB, it should already exist in the source bucket.
-                name_2 = "ancillary_data_input_forcing_ECCO_V4r4.tar.gz"
-                key_name_2 = "test/" + "PODAAC/SWOT/" + name_2
-            else:
-                name_2 = uuid.uuid4().__str__() + ".hdf"  # refers to file1.hdf
-                key_name_2 = uuid.uuid4().__str__() + "/" + name_2
-                # Upload the randomized file to source bucket
-                boto3.client('s3').upload_file(
-                    "file1.hdf", cumulus_bucket_name, key_name_2
                 )
+
             copy_to_archive_input = {
                 "payload": {
                     "granules": [
@@ -71,16 +56,6 @@ class TestMultipleGranulesHappyPath(TestCase):
                                     "checksumType": file_1_hash_type,
                                 }
                             ]
-                        },
-                        {
-                            "granuleId": granule_id_2,
-                            "createdAt": createdAt_time,
-                            "files": [
-                                {
-                                    "bucket": cumulus_bucket_name,
-                                    "key": key_name_2
-                                }
-                            ]
                         }
                     ]
                 },
@@ -92,7 +67,8 @@ class TestMultipleGranulesHappyPath(TestCase):
                     "collection": {
                         "meta": {
                             "orca": {
-                                "excludedFileExtensions": excluded_filetype
+                                "excludedFileExtensions": excluded_filetype,
+                                "defaultStorageClassOverride": "DEEP_ARCHIVE"
                             }
                         },
                         "name": collection_name,
@@ -117,21 +93,10 @@ class TestMultipleGranulesHappyPath(TestCase):
                                 "checksumType": file_1_hash_type
                             }
                         ]
-                    },
-                    {
-                        "granuleId": granule_id_2,
-                        "createdAt": createdAt_time,
-                        "files": [
-                            {
-                                "bucket": cumulus_bucket_name,
-                                "key": key_name_2,
-                            }
-                        ]
                     }
                 ],
                 "copied_to_orca": [
-                    "s3://" + cumulus_bucket_name + "/" + key_name_1,
-                    "s3://" + cumulus_bucket_name + "/" + key_name_2
+                    "s3://" + cumulus_bucket_name + "/" + key_name_1
                 ]
             }
 
@@ -141,7 +106,8 @@ class TestMultipleGranulesHappyPath(TestCase):
             )
 
             step_function_results = helpers.get_state_machine_execution_results(
-                execution_info["executionArn"]
+                execution_info["executionArn"],
+                maximum_duration_seconds=30,
             )
 
             self.assertEqual(
@@ -158,8 +124,7 @@ class TestMultipleGranulesHappyPath(TestCase):
             # verify that the objects exist in recovery bucket
             try:
                 for key in [
-                    key_name_1,
-                    key_name_2,
+                    key_name_1
                 ]:
                     # If ORCA ever migrates its functionality to DR,
                     # and cross-account access is no longer granted,
@@ -173,7 +138,7 @@ class TestMultipleGranulesHappyPath(TestCase):
                         f"Error searching for object {key} in the {recovery_bucket_name}",
                     )
                     self.assertEqual(
-                        "GLACIER",
+                        "DEEP_ARCHIVE",
                         head_object_output["StorageClass"]
                     )
                     s3_versions.append(head_object_output["VersionId"])
@@ -191,8 +156,7 @@ class TestMultipleGranulesHappyPath(TestCase):
                     {
                         "pageIndex": 0,
                         "granuleId": [
-                            granule_id_1,
-                            granule_id_2,
+                            granule_id_1
                         ],
                         "endTimestamp": int((time.time() + 5) * 1000),
                     }
@@ -214,36 +178,15 @@ class TestMultipleGranulesHappyPath(TestCase):
                         "cumulusArchiveLocation": cumulus_bucket_name,
                         "orcaArchiveLocation": recovery_bucket_name,
                         "keyPath": key_name_1,
-                        "sizeBytes": 205640819682 if use_large_file else 6,
+                        "sizeBytes": 6,
                         "hash": file_1_hash, "hashType": file_1_hash_type,
-                        "storageClass": "GLACIER",
+                        "storageClass": "DEEP_ARCHIVE",
                         "version": s3_versions[0],
                     }
                 ],
                 "ingestDate": mock.ANY,
                 "lastUpdate": mock.ANY
-            },
-                {
-                    "providerId": provider_id,
-                    "collectionId": collection_name + "___" + collection_version,
-                    "id": granule_id_2,
-                    "createdAt": createdAt_time,
-                    "executionId": execution_id,
-                    "files": [
-                        {
-                            "name": name_2,
-                            "cumulusArchiveLocation": cumulus_bucket_name,
-                            "orcaArchiveLocation": recovery_bucket_name,
-                            "keyPath": key_name_2,
-                            "sizeBytes": 6,
-                            "hash": None, "hashType": None,
-                            "storageClass": "GLACIER",
-                            "version": s3_versions[1],
-                        }
-                    ],
-                    "ingestDate": mock.ANY,
-                    "lastUpdate": mock.ANY
-                }]
+            }]
             expected_catalog_output = {
                 "anotherPage": False,
                 "granules": mock.ANY
