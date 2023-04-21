@@ -646,4 +646,3 @@ Here is an sample command to run the Cumulus Dashboard locally.
 ```bash
 APIROOT=https://uttm5y1jcj.execute-api.us-west-2.amazonaws.com:8000/dev ENABLE_RECOVERY=true npm run serve
 ```
-
