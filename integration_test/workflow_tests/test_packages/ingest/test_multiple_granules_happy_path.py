@@ -13,8 +13,10 @@ class TestMultipleGranulesHappyPath(TestCase):
 
     def test_multiple_granules_happy_path(self):
         self.maxDiff = None
+        use_large_file = True  # This should not be checked in with any value other than `True`
         """
         - If multiple granules are provided, should store them in DB as well as in recovery bucket.
+        - Files stored in GLACIER are also ingest-able.
         - Large files should not cause timeout.
         """
         try:
@@ -33,7 +35,7 @@ class TestMultipleGranulesHappyPath(TestCase):
             cumulus_bucket_name = "orca-sandbox-s3-provider"
             recovery_bucket_name = helpers.recovery_bucket_name
             excluded_filetype = []
-            name_1 = uuid.uuid4().__str__() + ".hdf"    # refers to file1.hdf
+            name_1 = uuid.uuid4().__str__() + ".hdf"  # refers to file1.hdf
             key_name_1 = "test/" + uuid.uuid4().__str__() + "/" + name_1
             file_1_hash = uuid.uuid4().__str__()
             file_1_hash_type = uuid.uuid4().__str__()
@@ -43,7 +45,6 @@ class TestMultipleGranulesHappyPath(TestCase):
             )
             execution_id = uuid.uuid4().__str__()
 
-            use_large_file = True  # This should not be checked in with any value other than `True`
             if use_large_file:
                 # file for large file test
                 # Since this file is 191GB, it should already exist in the source bucket.
@@ -221,7 +222,7 @@ class TestMultipleGranulesHappyPath(TestCase):
                 ],
                 "ingestDate": mock.ANY,
                 "lastUpdate": mock.ANY
-                },
+            },
                 {
                     "providerId": provider_id,
                     "collectionId": collection_name + "___" + collection_version,

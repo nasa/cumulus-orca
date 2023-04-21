@@ -9,9 +9,9 @@ import boto3
 import helpers
 
 
-class TestMultipleGranulesHappyPath(TestCase):
+class TestOverrideStorageClassHappyPath(TestCase):
 
-    def test_overrides_storage_class(self):
+    def test_override_storage_class(self):
         self.maxDiff = None
         """
         - If storage class is overridden in config, should be respected.
