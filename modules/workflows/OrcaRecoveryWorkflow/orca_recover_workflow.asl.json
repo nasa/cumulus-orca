@@ -8,12 +8,12 @@
         "event.$": "$",
         "input.$": "$.payload",
         "config": {
-          "buckets.$": "$.meta.buckets",
-          "fileBucketMaps.$": "$.meta.collection.files"
+          "buckets.$": "$.config.buckets",
+          "fileBucketMaps.$": "$.config.fileBucketMaps"
         },
         "optionalValues": {
           "config": {
-            "excludedFileExtensions": "event.meta.collection.meta.orca.excludedFileExtensions"
+            "excludedFileExtensions": "event.config.excludedFileExtensions"
           }
         }
       },
@@ -49,10 +49,10 @@
         "input.$": "$.previous_step_output",
         "optionalValues": {
           "config": {
-            "defaultRecoveryTypeOverride": "event.meta.collection.meta.orca.defaultRecoveryTypeOverride",
-            "defaultBucketOverride": "event.meta.collection.meta.orca.defaultBucketOverride",
-            "s3MultipartChunksizeMb": "event.meta.collection.meta.s3MultipartChunksizeMb",
-            "asyncOperationId": "event.cumulus_meta.asyncOperationId"
+            "defaultRecoveryTypeOverride": "event.config.defaultRecoveryTypeOverride",
+            "defaultBucketOverride": "event.config.defaultBucketOverride",
+            "s3MultipartChunksizeMb": "event.config.s3MultipartChunksizeMb",
+            "asyncOperationId": "event.config.asyncOperationId"
           }
         }
       },

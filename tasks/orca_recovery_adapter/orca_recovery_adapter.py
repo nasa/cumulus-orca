@@ -20,7 +20,7 @@ from run_cumulus_task import run_cumulus_task
 
 OS_ENVIRON_ORCA_RECOVERY_STEP_FUNCTION_ARN_KEY = "ORCA_RECOVERY_STEP_FUNCTION_ARN"
 
-ORCA_INPUT_KEY = "input"
+ORCA_INPUT_KEY = "payload"
 ORCA_CONFIG_KEY = "config"
 
 # Set AWS powertools logger
