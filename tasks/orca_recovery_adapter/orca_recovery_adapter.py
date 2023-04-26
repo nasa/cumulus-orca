@@ -59,7 +59,8 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
         }, indent=4)
     )
     step_function_results = get_state_machine_execution_results(
-        execution_info["executionArn"]
+        client,
+        execution_info["executionArn"],
     )
 
     # noinspection GrazieInspection
@@ -73,13 +74,22 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
 
 
 def get_state_machine_execution_results(
-    execution_arn, retry_interval_seconds=5, maximum_duration_seconds=600
+    client,
+    execution_arn: str,
+    retry_interval_seconds=5,
+    maximum_duration_seconds=600,
 ):
+    """
+    Synchronous running of step functions is not allowed via boto3
+    https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/stepfunctions/client/start_sync_execution.html
+    so retry until it is complete.
+    Step function is relatively lightweight, so duration should be brief.
+    """
     start = datetime.datetime.utcnow()
     while True:
         # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/stepfunctions.html#SFN.Client.describe_execution
         LOGGER.debug("Getting execution description...")
-        execution_state = boto3.client("stepfunctions").describe_execution(
+        execution_state = client.describe_execution(
             executionArn=execution_arn
         )
         if execution_state["status"] != "RUNNING":
@@ -87,7 +97,7 @@ def get_state_machine_execution_results(
 
         if (
                 datetime.datetime.utcnow() - start
-        ).total_seconds() > maximum_duration_seconds:
+        ).total_seconds() + retry_interval_seconds > maximum_duration_seconds:
             return execution_state
 
         time.sleep(retry_interval_seconds)
@@ -96,9 +106,9 @@ def get_state_machine_execution_results(
 @LOGGER.inject_lambda_context
 def handler(event: Dict[str, Union[List[str], Dict]], context: LambdaContext) -> Any:
     """Lambda handler. Runs a cumulus task that
-    Formats the input from the Cumulus format
+    translates the input from the Cumulus format
     to the format required by ORCA's copy_to_archive Lambda,
-    then calls copy_to_archive and returns the result.
+    then calls the recovery workflow and returns the result.
 
     Args:
         event: Event passed into the step from the aws workflow.

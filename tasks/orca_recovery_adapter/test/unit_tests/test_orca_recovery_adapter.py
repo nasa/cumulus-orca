@@ -1,9 +1,10 @@
+import datetime
 import json
 import os
 import random
 import uuid
 from unittest import TestCase
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock, Mock, patch, call
 
 # noinspection PyPackageRequirements
 import fastjsonschema as fastjsonschema
@@ -51,9 +52,9 @@ class TestOrcaRecoveryAdapter(TestCase):
 
         mock_execution_arn = Mock()
         mock_start_execution = Mock(return_value={"executionArn": mock_execution_arn})
-        mock_lambda_client = Mock()
-        mock_lambda_client.start_execution = mock_start_execution
-        mock_boto3_client.return_value = mock_lambda_client
+        mock_stepfunctions_client = Mock()
+        mock_stepfunctions_client.start_execution = mock_start_execution
+        mock_boto3_client.return_value = mock_stepfunctions_client
 
         mock_input = {
             uuid.uuid4().__str__(): uuid.uuid4().__str__(),
@@ -90,7 +91,10 @@ class TestOrcaRecoveryAdapter(TestCase):
                 orca_recovery_adapter.ORCA_CONFIG_KEY: mock_config
             }, indent=4)
         )
-        mock_get_state_machine_execution_results.assert_called_once_with(mock_execution_arn)
+        mock_get_state_machine_execution_results.assert_called_once_with(
+            mock_stepfunctions_client,
+            mock_execution_arn
+        )
         self.assertEqual(payload, result)
 
     @patch("orca_recovery_adapter.get_state_machine_execution_results")
@@ -119,9 +123,9 @@ class TestOrcaRecoveryAdapter(TestCase):
 
         mock_execution_arn = Mock()
         mock_start_execution = Mock(return_value={"executionArn": mock_execution_arn})
-        mock_lambda_client = Mock()
-        mock_lambda_client.start_execution = mock_start_execution
-        mock_boto3_client.return_value = mock_lambda_client
+        mock_stepfunctions_client = Mock()
+        mock_stepfunctions_client.start_execution = mock_start_execution
+        mock_boto3_client.return_value = mock_stepfunctions_client
 
         mock_input = {
             uuid.uuid4().__str__(): uuid.uuid4().__str__(),
@@ -159,12 +163,82 @@ class TestOrcaRecoveryAdapter(TestCase):
                 orca_recovery_adapter.ORCA_CONFIG_KEY: mock_config
             }, indent=4)
         )
-        mock_get_state_machine_execution_results.assert_called_once_with(mock_execution_arn)
+        mock_get_state_machine_execution_results.assert_called_once_with(
+            mock_stepfunctions_client,
+            mock_execution_arn,
+        )
         self.assertEqual(f"Step function did not succeed: "
                          f"{str(response).replace('{', '{{').replace('}', '}}')}",
                          str(cm.exception))
 
-    # todo: test get_state_machine_execution_results
+    @patch("time.sleep")
+    def test_get_state_machine_execution_results_retries_until_not_running(
+        self,
+        mock_sleep: MagicMock,
+    ):
+        mock_client = Mock()
+        final_execution_state = {
+            "status": "BLAH",
+            uuid.uuid4().__str__(): uuid.uuid4().__str__(),
+        }
+        mock_client.describe_execution = Mock(side_effect=[
+            {
+                "status": "RUNNING",
+            },
+            final_execution_state,
+        ])
+        mock_execution_arn = Mock()
+        mock_retry_interval_seconds = random.randint(0, 5)  # nosec
+
+        result = orca_recovery_adapter.get_state_machine_execution_results(
+            mock_client,
+            mock_execution_arn,
+            mock_retry_interval_seconds,
+            20,
+        )
+
+        mock_sleep.assert_called_once_with(mock_retry_interval_seconds)
+        mock_client.describe_execution.assert_has_calls([
+            call(executionArn=mock_execution_arn),
+            call(executionArn=mock_execution_arn),
+        ])
+        self.assertEqual(2, mock_client.describe_execution.call_count)
+
+        self.assertEqual(final_execution_state, result)
+
+    @patch("time.sleep")
+    def test_get_state_machine_execution_results_retries_until_timeout(
+        self,
+        mock_sleep: MagicMock,
+    ):
+        mock_client = Mock()
+        final_execution_state = {
+            "status": "RUNNING",
+        }
+        mock_client.describe_execution = Mock(return_value=final_execution_state)
+        mock_execution_arn = Mock()
+        mock_retry_interval_seconds = 1
+
+        start = datetime.datetime.utcnow()
+        result = orca_recovery_adapter.get_state_machine_execution_results(
+            mock_client,
+            mock_execution_arn,
+            mock_retry_interval_seconds,
+            4,
+        )
+        end = datetime.datetime.utcnow()
+
+        mock_sleep.assert_called_with(mock_retry_interval_seconds)
+        mock_client.describe_execution.assert_called_with(
+            executionArn=mock_execution_arn,
+        )
+        self.assertLess(100, mock_client.describe_execution.call_count)
+
+        duration_seconds = (end - start).total_seconds()
+        self.assertLess(2, duration_seconds)
+        self.assertGreater(4, duration_seconds)
+
+        self.assertEqual(final_execution_state, result)
 
     @patch("orca_recovery_adapter.task")
     def test_handler_happy_path(self, mock_task: MagicMock):
