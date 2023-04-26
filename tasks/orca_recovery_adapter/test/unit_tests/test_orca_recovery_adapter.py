@@ -176,11 +176,15 @@ class TestOrcaRecoveryAdapter(TestCase):
             "fileBucketMaps": [
                 {
                     "regex": uuid.uuid4().__str__(),
+                    "sampleFileName": uuid.uuid4().__str__(),
                     "bucket": uuid.uuid4().__str__(),
                 }
             ],
-            "collectionShortname": uuid.uuid4().__str__(),
-            "collectionVersion": uuid.uuid4().__str__(),
+            "excludedFileExtensions": ["." + uuid.uuid4().__str__()],
+            "asyncOperationId": uuid.uuid4().__str__(),
+            "s3MultipartChunksizeMb": random.randint(0, 5000),  # nosec
+            "defaultBucketOverride": uuid.uuid4().__str__(),
+            "defaultRecoveryTypeOverride": uuid.uuid4().__str__(),
         }
         handler_input_event = {
             "payload": {"granules": granules},
@@ -198,13 +202,16 @@ class TestOrcaRecoveryAdapter(TestCase):
                     "granuleId": uuid.uuid4().__str__(),
                     "recoverFiles": [
                         {
+                            "errorMessage": uuid.uuid4().__str__(),
+                            "completionTime": "2023-04-26T19:12:44.213614+00:00",
                             "filename": uuid.uuid4().__str__(),
                             "keyPath": uuid.uuid4().__str__(),
                             "lastUpdate": "2023-04-26T19:12:44.213614+00:00",
                             "restoreDestination": uuid.uuid4().__str__(),
                             "requestTime": "2023-04-26T19:12:44.213614+00:00",
-                            "statusId": random.randint(1, 3),
+                            "statusId": random.randint(1, 3),  # nosec
                             "success": True,
+                            "s3MultipartChunksizeMb": random.randint(0, 5000),  # nosec
                         }
                     ]
                 },
