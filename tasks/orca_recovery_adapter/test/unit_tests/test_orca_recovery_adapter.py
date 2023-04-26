@@ -159,23 +159,26 @@ class TestOrcaRecoveryAdapter(TestCase):
         granules = [
             {
                 "granuleId": uuid.uuid4().__str__(),
-                "dataType": uuid.uuid4().__str__(),
-                "version": uuid.uuid4().__str__(),
-                "createdAt": random.randint(0, 628021800000),  # nosec
                 "files": [
                     {
-                        "bucket": uuid.uuid4().__str__(),
-                        "key": uuid.uuid4().__str__(),
-                        "checksum": uuid.uuid4().__str__(),
-                        "checksumType": uuid.uuid4().__str__(),
+                        "fileName": uuid.uuid4().__str__(),
+                        "key": uuid.uuid4().__str__()
                     }
                 ],
             }
         ]
 
         config = {
-            "providerId": uuid.uuid4().__str__(),
-            "executionId": uuid.uuid4().__str__(),
+            "buckets": {
+                uuid.uuid4().__str__():
+                    {"name": uuid.uuid4().__str__(), "type": uuid.uuid4().__str__()},
+            },
+            "fileBucketMaps": [
+                {
+                    "regex": uuid.uuid4().__str__(),
+                    "bucket": uuid.uuid4().__str__(),
+                }
+            ],
             "collectionShortname": uuid.uuid4().__str__(),
             "collectionVersion": uuid.uuid4().__str__(),
         }
@@ -193,18 +196,20 @@ class TestOrcaRecoveryAdapter(TestCase):
             "granules": [
                 {
                     "granuleId": uuid.uuid4().__str__(),
-                    "createdAt": random.randint(0, 999999999),  # nosec
-                    "files": [
+                    "recoverFiles": [
                         {
-                            "bucket": uuid.uuid4().__str__(),
-                            "key": uuid.uuid4().__str__(),
-                            "checksum": uuid.uuid4().__str__(),
-                            "checksumType": uuid.uuid4().__str__(),
+                            "filename": uuid.uuid4().__str__(),
+                            "keyPath": uuid.uuid4().__str__(),
+                            "lastUpdate": "2023-04-26T19:12:44.213614+00:00",
+                            "restoreDestination": uuid.uuid4().__str__(),
+                            "requestTime": "2023-04-26T19:12:44.213614+00:00",
+                            "statusId": random.randint(1, 3),
+                            "success": True,
                         }
                     ]
                 },
             ],
-            "copied_to_orca": [uuid.uuid4().__str__()],
+            "asyncOperationId": uuid.uuid4().__str__(),
         }
 
         result = orca_recovery_adapter.handler(handler_input_event, handler_input_context)

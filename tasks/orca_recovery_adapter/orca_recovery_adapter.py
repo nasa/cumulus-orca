@@ -62,8 +62,12 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
         execution_info["executionArn"]
     )
 
+    # noinspection GrazieInspection
     if step_function_results["status"] != "SUCCEEDED":
-        raise Exception(f"Step function did not succeed: {step_function_results}")
+        raise Exception(f"Step function did not succeed: "
+                        f"{str(step_function_results).replace('{', '{{').replace('}', '}}')}")
+        # CMA cannot handle strings with '{' as it treats any instance as a dictionary key.
+        # The above line replaces '{' with '{{' to prevent errors that hide the actual error.
 
     return json.loads(step_function_results["output"])
 
@@ -82,7 +86,7 @@ def get_state_machine_execution_results(
             return execution_state
 
         if (
-            datetime.datetime.utcnow() - start
+                datetime.datetime.utcnow() - start
         ).total_seconds() > maximum_duration_seconds:
             return execution_state
 

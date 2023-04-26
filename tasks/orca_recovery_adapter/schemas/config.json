@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/orca_recovery_adapter/schemas/config.json",
   "title": "orca_recovery_adapter Lambda Config",
-  "description": "The config for the orca_recovery_adapter Lambda. TODO: Add request_files config.json",
+  "description": "The config for the orca_recovery_adapter Lambda.",
   "type": "object",
   "required": [
     "buckets",
@@ -66,6 +66,22 @@
         "type": "string",
         "pattern": "\\..+"
       }
+    },
+    "asyncOperationId": {
+      "description": "The unique identifier used for tracking requests. If not present, will be generated.",
+      "type": ["string", "null"]
+    },
+    "s3MultipartChunksizeMb": {
+      "description": "Overrides default_multipart_chunksize from TF.",
+      "type": ["number", "null"]
+    },
+    "defaultBucketOverride": {
+      "type": ["string", "null"],
+      "description": "Overrides the default bucket to copy to in os.environ['ORCA_DEFAULT_BUCKET']."
+    },
+    "defaultRecoveryTypeOverride": {
+      "type": ["string", "null"],
+      "description": "Overrides the default restore type in os.environ['DEFAULT_RECOVERY_TYPE']."
     }
   }
 }
