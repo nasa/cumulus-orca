@@ -25,32 +25,34 @@ class TestOrcaRecoveryAdapter(TestCase):
     Test orca_recovery_adapter functionality and business logic.
     """
 
+    @patch("orca_recovery_adapter.get_state_machine_execution_results")
     @patch("orca_recovery_adapter.Config")
     @patch("boto3.client")
     def test_task_happy_path(
         self,
         mock_boto3_client: MagicMock,
         mock_boto3_config: MagicMock,
+        mock_get_state_machine_execution_results: MagicMock,
     ):
         """
         Basic happy-path test for invoking the target lambda and receiving a 200 response.
         """
-        copy_to_archive_arn = uuid.uuid4().__str__()
+        orca_recovery_step_function_arn = uuid.uuid4().__str__()
 
         payload = {
             uuid.uuid4().__str__(): uuid.uuid4().__str__(),
             uuid.uuid4().__str__(): uuid.uuid4().__str__(),
         }
-        mock_payload = Mock()
-        mock_payload.read = Mock(return_value=json.dumps(payload))
         response = {
-            "StatusCode": 200,
-            "Payload": mock_payload
+            "status": "SUCCEEDED",
+            "output": json.dumps(payload)
         }
+        mock_get_state_machine_execution_results.return_value = response
 
-        mock_invoke = Mock(return_value=response)
+        mock_execution_arn = Mock()
+        mock_start_execution = Mock(return_value={"executionArn": mock_execution_arn})
         mock_lambda_client = Mock()
-        mock_lambda_client.invoke = mock_invoke
+        mock_lambda_client.start_execution = mock_start_execution
         mock_boto3_client.return_value = mock_lambda_client
 
         mock_input = {
@@ -69,8 +71,8 @@ class TestOrcaRecoveryAdapter(TestCase):
 
         with patch.dict(os.environ,
                         {
-                            orca_recovery_adapter.OS_ENVIRON_COPY_TO_ARCHIVE_ARN_KEY:
-                                copy_to_archive_arn
+                            orca_recovery_adapter.OS_ENVIRON_ORCA_RECOVERY_STEP_FUNCTION_ARN_KEY:
+                                orca_recovery_step_function_arn
                         }):
             result = orca_recovery_adapter.task(event, None)
 
@@ -78,18 +80,17 @@ class TestOrcaRecoveryAdapter(TestCase):
             read_timeout=600, retries={'total_max_attempts': 1}
         )
         mock_boto3_client.assert_called_once_with(
-            "lambda",
+            "stepfunctions",
             config=mock_boto3_config.return_value
         )
-        mock_invoke.assert_called_once_with(
-            FunctionName=copy_to_archive_arn,
-            InvocationType="RequestResponse",  # Synchronous
-            Payload=json.dumps({
+        mock_start_execution.assert_called_once_with(
+            stateMachineArn=orca_recovery_step_function_arn,
+            input=json.dumps({
                 orca_recovery_adapter.ORCA_INPUT_KEY: mock_input,
                 orca_recovery_adapter.ORCA_CONFIG_KEY: mock_config
-            }, indent=4).encode("utf-8")
+            }, indent=4)
         )
-        mock_payload.read.assert_called_once_with()
+        mock_get_state_machine_execution_results.assert_called_once_with(mock_execution_arn)
         self.assertEqual(payload, result)
 
     @patch("orca_recovery_adapter.Config")
