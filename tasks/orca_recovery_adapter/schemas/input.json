@@ -4,49 +4,55 @@
   "title": "orca_recovery_adapter Lambda Input",
   "description": "The input for the orca_recovery_adapter Lambda.",
   "type": "object",
-  "required": ["granules"],
   "properties": {
     "granules": {
-      "description": "A list of objects representing individual files to copy.",
+      "description": "A list of objects representing individual files.",
       "type": "array",
-      "items": {
-        "required": ["granuleId", "createdAt", "files"],
-        "properties": {
-          "granuleId": {
-            "description": "The granule's ID.",
-            "type": "string"
-          },
-          "createdAt": {
-            "description": "The time, in milliseconds since 1 January 1970 UTC, data was originally ingested into Cumulus.",
-            "type": "integer"
-          },
-          "files": {
-            "description": "The files to copy.",
-            "type": "array",
-            "items": {
-              "required": ["bucket", "key"],
-              "properties": {
-                "bucket": {
-                  "type": "string",
-                  "description": "Name of the Bucket where file is archived in S3."
-                },
-                "key": {
-                  "type": "string",
-                  "description": "S3 Key for archived file."
-                },
-                "checksum": {
-                  "type": ["string", "null"],
-                  "description": "Hash of the object from Cumulus"
-                },
-                "checksumType": {
-                  "type": ["string", "null"],
-                  "description": "Hash type used to hash the object. Supplied by Cumulus."
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "recoveryBucketOverride": {
+              "description": "The user specified recovery S3 bucket to store recovered files",
+              "type": ["string", "null"]
+            },
+            "granuleId": {
+              "description": "The ID of the granule.",
+              "type": "string"
+            },
+            "files": {
+              "description": "Description of the files within the given granule.",
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "fileName": {
+                      "description": "Name of file (e.g. file.txt).",
+                      "type": "string"
+                    },
+                    "key": {
+                      "description": "S3 Key for archived file (full path and file name less the bucket name).",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "fileName",
+                    "key"
+                  ]
                 }
-              }
+              ]
             }
-          }
+          },
+          "required": [
+            "granuleId",
+            "files"
+          ]
         }
-      }
+      ]
     }
-  }
+  },
+  "required": [
+    "granules"
+  ]
 }

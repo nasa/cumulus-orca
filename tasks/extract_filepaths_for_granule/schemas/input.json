@@ -1,56 +1,56 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "description": "The input for the extract_filepaths_for_granule Lambda.",
-    "type": "object",
-    "properties": {
-      "granules": {
-        "description": "A list of objects representing individual files.",
-        "type": "array",
-        "items": [
-          {
-            "type": "object",
-            "properties": {
-              "recoveryBucketOverride": {
-                "description": "The user specified recovery S3 bucket to store recovered files",
-                "type": ["string", "null"]
-              },
-              "granuleId": {
-                "description": "The ID of the granule.",
-                "type": "string"
-              },
-              "files": {
-                "description": "Description of the files within the given granule.",
-                "type": "array",
-                "items": [
-                  {
-                    "type": "object",
-                    "properties": {
-                      "fileName": {
-                        "description": "Name of file (e.g. file.txt).",
-                        "type": "string"
-                      },
-                      "key": {
-                        "description": "S3 Key for archived file (full path and file name less the bucket name).",
-                        "type": "string"
-                      }
-                    },
-                    "required": [
-                      "fileName",
-                      "key"
-                    ]
-                  }
-                ]
-              }
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "The input for the extract_filepaths_for_granule Lambda.",
+  "type": "object",
+  "properties": {
+    "granules": {
+      "description": "A list of objects representing individual files.",
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "recoveryBucketOverride": {
+              "description": "The user specified recovery S3 bucket to store recovered files",
+              "type": ["string", "null"]
             },
-            "required": [
-              "granuleId",
-              "files"
-            ]
-          }
-        ]
-      }
-    },
-    "required": [
-      "granules"
-    ]
-  }
+            "granuleId": {
+              "description": "The ID of the granule.",
+              "type": "string"
+            },
+            "files": {
+              "description": "Description of the files within the given granule.",
+              "type": "array",
+              "items": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "fileName": {
+                      "description": "Name of file (e.g. file.txt).",
+                      "type": "string"
+                    },
+                    "key": {
+                      "description": "S3 Key for archived file (full path and file name less the bucket name).",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "fileName",
+                    "key"
+                  ]
+                }
+              ]
+            }
+          },
+          "required": [
+            "granuleId",
+            "files"
+          ]
+        }
+      ]
+    }
+  },
+  "required": [
+    "granules"
+  ]
+}

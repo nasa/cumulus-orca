@@ -4,52 +4,80 @@
   "title": "orca_recovery_adapter Lambda Output",
   "description": "The output for the orca_recovery_adapter Lambda.",
   "type": "object",
-  "required": ["granules", "copied_to_orca"],
   "properties": {
     "granules": {
-      "description": "The 'granules' property from the input.",
+      "description": "A list of values representing the granules entered through input and their recovery status.",
       "type": "array",
       "items": {
-        "required": ["granuleId", "files"],
+        "type": "object",
         "properties": {
           "granuleId": {
-            "description": "The granule's ID.",
+            "description": "The id of the granule being restored.",
             "type": "string"
           },
-          "files": {
-            "description": "The files to copy.",
+          "recoverFiles": {
+            "description": "A list of values representing each file that was requested for recovery.",
             "type": "array",
             "items": {
-              "required": ["bucket", "key"],
+              "type": "object",
               "properties": {
-                "fileName": {
-                  "type": "string",
-                  "description": "Name of file (e.g. file.txt)."
+                "errorMessage": {
+                  "description": "If the restoration of the file errored, the error will be stored here.",
+                  "type": "string"
                 },
-                "bucket": {
+                "completionTime": {
+                  "description": "The time the restore was completed, in UTC and iso-format.",
                   "type": "string",
-                  "description": "Name of the Bucket where file is archived in S3."
+                  "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?\\+00:00$"
                 },
-                "key": {
-                  "type": "string",
-                  "description": "S3 Key for archived file."
+                "filename": {
+                  "description": "Name of the granule file with no path.",
+                  "type": "string"
                 },
-                "source": {
+                "keyPath": {
+                  "description": "S3 key that includes the name of the file and path that is a part of the granule.",
+                  "type": "string"
+                },
+                "lastUpdate": {
+                  "description": "The last time the file's status changed, in UTC and iso-format.",
                   "type": "string",
-                  "description": "Source URI of the file from origin system (e.g. S3, FTP, HTTP)."
+                  "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?\\+00:00$"
+                },
+                "restoreDestination": {
+                  "description": "The bucket the restored file will be moved to after the restore completes.",
+                  "type": "string"
+                },
+                "requestTime": {
+                  "description": "The time the restore was requested, in UTC and iso-format.",
+                  "type": "string",
+                  "pattern": "^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(.[0-9]+)?(Z)?\\+00:00$"
+                },
+                "statusId": {
+                  "description": "The numerical status value that the file is in; 1 - pending or 3 - failed",
+                  "type": "integer",
+                  "pattern": "(?:^\\W)1|3(?:$|\\W)"
+                },
+                "success": {
+                  "description": "Must be true, otherwise an exception will be raised.",
+                  "type": "boolean",
+                  "pattern": "(?:^|\\W)true(?:$|\\W)"
+                },
+                "s3MultipartChunksizeMb": {
+                  "description": "The maximum chunk size that will be used when copying the file.",
+                  "type": ["integer", "null"]
                 }
-              }
+              },
+              "required": ["filename", "keyPath", "lastUpdate", "restoreDestination", "requestTime", "statusId", "success"]
             }
           }
-        }
+        },
+        "required": ["granuleId", "recoverFiles"]
       }
     },
-    "copied_to_orca": {
-      "description": "Source URI of the file from origin s3 bucket.",
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
+    "asyncOperationId": {
+      "description": "The 'job_id' from input event if present, otherwise a newly-generated uuid.",
+      "type": "string"
     }
-  }
+  },
+  "required": ["granules", "asyncOperationId"]
 }

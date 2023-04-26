@@ -18,7 +18,7 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 from botocore.client import Config
 from run_cumulus_task import run_cumulus_task
 
-OS_ENVIRON_ORCA_RECOVERY_WORKFLOW_ARN_KEY = "ORCA_RECOVERY_WORKFLOW_ARN"
+OS_ENVIRON_ORCA_RECOVERY_STEP_FUNCTION_ARN_KEY = "ORCA_RECOVERY_STEP_FUNCTION_ARN"
 
 ORCA_INPUT_KEY = "input"
 ORCA_CONFIG_KEY = "config"
@@ -51,7 +51,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     config = Config(read_timeout=600, retries={'total_max_attempts': 1})
     client = boto3.client("stepfunctions", config=config)
     execution_info = client.start_execution(
-        stateMachineArn=os.environ[OS_ENVIRON_ORCA_RECOVERY_WORKFLOW_ARN_KEY],
+        stateMachineArn=os.environ[OS_ENVIRON_ORCA_RECOVERY_STEP_FUNCTION_ARN_KEY],
         # name=,
         input=json.dumps({
             ORCA_INPUT_KEY: event["input"],
@@ -104,8 +104,8 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: LambdaContext) ->
             and execution env.
 
     Environment Variables:
-        COPY_TO_ARCHIVE_ARN (string, required):
-            ARN of ORCA's copy_to_archive lambda.
+        ORCA_RECOVERY_WORKFLOW_ARN (string, required):
+            ARN of ORCA's recovery step function.
 
     Returns:
         The result of the cumulus task. See schemas/output.json for more information.

@@ -27,7 +27,7 @@ try:
         _UPDATE_FILE_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
 except Exception as ex:
     # Can't use f"" because of '{}' bug in CumulusLogger.
-    LOGGER.error("Could not build schema validator: {ex}", ex=ex)
+    LOGGER.error(f"Could not build schema validator: {ex}")
     raise
 
 
@@ -185,9 +185,7 @@ def create_status_for_job_and_files(
     except Exception as sql_ex:
         # Can't use f"" because of '{}' bug in CumulusLogger.
         LOGGER.error(
-            "Error while creating statuses for job '{job_id}': {sql_ex}",
-            job_id=job_id,
-            sql_ex=sql_ex,
+            f"Error while creating statuses for job '{job_id}': {sql_ex}"
         )
         raise
 
@@ -241,9 +239,7 @@ def update_status_for_file(
     except Exception as sql_ex:
         # Can't use f"" because of '{}' bug in CumulusLogger.
         LOGGER.error(
-            "Error while creating statuses for job '{job_id}': {sql_ex}",
-            job_id=job_id,
-            sql_ex=sql_ex,
+            f"Error while creating statuses for job '{job_id}': {sql_ex}"
         )
         raise
 
