@@ -212,6 +212,12 @@ See the schema [configuration file](https://github.com/nasa/cumulus-orca/blob/ma
 
 ## Step Function Configuration
 
+As part of the [Cumulus Message Adapter configuration](https://nasa.github.io/cumulus/docs/workflows/input_output#cma-configuration) 
+several properties must be passed into the lambda.
+See [input](https://github.com/nasa/cumulus-orca/blob/master/tasks/orca_recovery_adapter/schemas/input.json) 
+and [config](https://github.com/nasa/cumulus-orca/blob/master/tasks/orca_recovery_adapter/schemas/config.json) 
+schemas for more information.
+
 ```
 {
   "Comment": "Recover files belonging to a granule",
