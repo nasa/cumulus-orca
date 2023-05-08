@@ -4,9 +4,10 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 
 ## Description
 
-The `orca_recovery_adapter` module is meant to be deployed as a lambda function that takes a Cumulus message, extracts a list of files, and recovers those files from their ORCA archive location. 
+The `orca_recovery_adapter` module is meant to be deployed as a lambda function that takes a Cumulus message, 
+extracts a list of files, and initiates recovery of those files from their ORCA archive location. 
 
-This lambda calls the ORCA recovery step-function synchronously, returning results and raising errors as appropriate.
+This lambda calls the ORCA recovery step-function, returning results and raising errors as appropriate.
 This provides an injection seam to contact the ORCA recovery step-function with ORCA's formatting.
 
 ## Build
@@ -79,7 +80,72 @@ The `handler` function `handler(event, context)` expects input as a Cumulus Mess
 Event is passed from the AWS step function workflow. 
 The actual format of that input may change over time, so we use the [cumulus-message-adapter](https://github.com/nasa/cumulus-message-adapter) package (check `requirements.txt`), which Cumulus develops and updates, to parse the input.
 
-TODO: Example
+```json
+{
+  "payload": {
+    "granules": [
+      {
+        "granuleId": "a3a94886-c11d-4c21-a942-a836b8e9aa75",
+        "version": "integrationGranuleVersion",
+        "files": [
+          {
+            "fileName": "MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
+            "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
+            "bucket": "PREFIX-orca-primary"
+          }
+        ]
+      }
+    ]
+  },
+  "task_config": {
+    "buckets": "{$.meta.buckets}",
+    "fileBucketMaps": "{$.meta.collection.files}",
+    "excludedFileExtensions": "{$.meta.collection.meta.orca.excludedFileExtensions}",
+    "asyncOperationId": "{$.cumulus_meta.asyncOperationId}",
+    "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
+    "defaultBucketOverride": "{$.meta.collection.meta.orca.defaultBucketOverride}",
+    "defaultRecoveryTypeOverride": "{$.meta.collection.meta.orca.defaultRecoveryTypeOverride}"
+  }
+  ,
+  "meta": {
+    "buckets": {
+      "protected": {"name": "PREFIX-protected", "type": "protected"},
+      "internal": {"name": "PREFIX-internal", "type": "internal"},
+      "private": {"name": "PREFIX-private", "type": "private"},
+      "public": {"name": "PREFIX-public", "type": "public"},
+      "orca_default": {"name": "PREFIX-orca-primary", "type": "orca"}
+    },
+    "collection": {
+      "meta": {
+        "orca": {
+          "excludedFileExtensions": [".blah"]
+        }
+      },
+      "files": [
+        {
+          "regex": ".*.tar.gz",
+          "sampleFileName": "blah.tar.gz",
+          "bucket": "public"
+        },
+        {
+          "regex": ".*.jpg",
+          "sampleFileName": "blah.jpg",
+          "bucket": "public"
+        },
+        {
+          "regex": ".*.hdf",
+          "sampleFileName": "blah.hdf",
+          "bucket": "public"
+        }
+      ]
+    }
+  },
+  "cumulus_meta": {
+    "system_bucket": "PREFIX-internal"
+  }
+}
+```
+
 See the schema [configuration file](https://github.com/nasa/cumulus-orca/blob/master/tasks/orca_recovery_adapter/schemas/input.json) for more information.
 
 ## Output
@@ -87,12 +153,122 @@ See the schema [configuration file](https://github.com/nasa/cumulus-orca/blob/ma
 The `orca_recovery_adapter` lambda will request that files be restored from the ORCA archive.
 See [recovery documentation](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/recovery-workflow) for more information.
 
-TODO
+```json
+{
+  "payload": {
+    "granules": [{
+      "granuleId": "a3a94886-c11d-4c21-a942-a836b8e9aa75", 
+      "keys": [{
+        "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf", 
+        "destBucket": "doctest-public"
+      }], 
+      "recoverFiles": [{
+        "success": true, 
+        "filename": "MOD09GQ.A2017025.h21v00.006.2017034065104.hdf", 
+        "keyPath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf", 
+        "restoreDestination": "doctest-public", 
+        "s3MultipartChunksizeMb": null, 
+        "statusId": 1, 
+        "requestTime": "2023-05-08T16:59:01.910817+00:00", 
+        "lastUpdate": "2023-05-08T16:59:01.910817+00:00"}]
+    }], 
+    "asyncOperationId": "dd57408f-8602-4601-bee7-04062444250e"
+  }, 
+  "task_config": {
+    "buckets": "{$.meta.buckets}", 
+    "fileBucketMaps": "{$.meta.collection.files}", 
+    "excludedFileExtensions": "{$.meta.collection.meta.orca.excludedFileExtensions}", 
+    "asyncOperationId": "{$.cumulus_meta.asyncOperationId}", 
+    "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}", 
+    "defaultBucketOverride": "{$.meta.collection.meta.orca.defaultBucketOverride}", 
+    "defaultRecoveryTypeOverride": "{$.meta.collection.meta.orca.defaultRecoveryTypeOverride}"
+  }, 
+  "meta": {
+    "buckets": {
+      "protected": {"name": "doctest-protected", "type": "protected"}, 
+      "internal": {"name": "doctest-internal", "type": "internal"}, 
+      "private": {"name": "doctest-private", "type": "private"}, 
+      "public": {"name": "doctest-public", "type": "public"}, 
+      "orca_default": {"name": "doctest-orca-primary", "type": "orca"}
+    },
+    "collection": {
+      "meta": {
+        "orca": {
+          "excludedFileExtensions": [".blah"]
+        }
+      }, 
+      "files": [
+        {"regex": ".*.tar.gz", "sampleFileName": "blah.tar.gz", "bucket": "public"}, 
+        {"regex": ".*.jpg", "sampleFileName": "blah.tar.gz", "bucket": "public"}, 
+        {"regex": ".*.hdf", "sampleFileName": "blah.tar.gz", "bucket": "public"}
+      ]
+    }},
+  "cumulus_meta": {"system_bucket": "doctest-internal"}, 
+  "exception": "None"
+}
+```
+
 See the schema [configuration file](https://github.com/nasa/cumulus-orca/blob/master/tasks/orca_recovery_adapter/schemas/output.json) for more information.
 
 ## Step Function Configuration
 
-TODO
+```
+{
+  "Comment": "Recover files belonging to a granule",
+  "StartAt": "OrcaRecovery",
+  "TimeoutSeconds": 18000,
+  "States": {
+    "OrcaRecovery": {
+      "Parameters": {
+        "cma": {
+          "event.$": "$",
+          "ReplaceConfig": {
+            "FullMessage": true
+          },
+          "task_config": {
+            "buckets": "{$.meta.buckets}",
+            "fileBucketMaps": "{$.meta.collection.files}",
+            "excludedFileExtensions": "{$.meta.collection.meta.orca.excludedFileExtensions}",
+            
+            "asyncOperationId": "{$.cumulus_meta.asyncOperationId}",
+            "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
+            "defaultBucketOverride": "{$.meta.collection.meta.orca.defaultBucketOverride}",
+            "defaultRecoveryTypeOverride": "{$.meta.collection.meta.orca.defaultRecoveryTypeOverride}"
+          }
+        }
+      },
+      "Type": "Task",
+      "Resource": "${orca_lambda_recovery_adapter_arn}",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "ResultPath": "$.exception",
+          "Next": "WorkflowFailed"
+        }
+      ],
+    },
+    "WorkflowFailed": {
+      "Type": "Fail",
+      "Cause": "Workflow failed"
+    }
+  }
+}
+```
+
 See the schema [configuration file](https://github.com/nasa/cumulus-orca/blob/master/tasks/orca_recovery_adapter/schemas/config.json) for more information.
 
 ## pydoc orca_recovery_adapter

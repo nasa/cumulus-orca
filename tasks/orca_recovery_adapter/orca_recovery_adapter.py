@@ -4,9 +4,9 @@ Description: Lambda function that takes a Cumulus message, extracts a list of fi
 and requests that those files be restored from ORCA.
 """
 import datetime
-import time
 import json
 import os
+import time
 from typing import Any, Dict, List, Union
 
 # Third party libraries
@@ -30,29 +30,25 @@ LOGGER = Logger()
 # noinspection PyUnusedLocal
 def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str, Any]:
     """
-    Converts event to a format accepted by ORCA's copy_to_archive lambda,
-    then calls copy_to_archive and returns the result.
+    Converts event to a format accepted by ORCA's recovery step-function,
+    then calls step-function and returns the result.
 
     Args:
         event: Passed through from {handler}
         context: An object required by AWS Lambda. Unused.
 
     Environment Variables:
-        COPY_TO_ARCHIVE_ARN (string, required):
-            ARN of ORCA's copy_to_archive lambda.
+        ORCA_RECOVERY_STEP_FUNCTION_ARN (string, required):
+            ARN of ORCA's recovery step-function.
 
     Returns:
         A dict representing input and copied files. See schemas/output.json for more information.
     """
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/lambda.html
-    # 600s for copy_to_archive operation
-    # todo: is read_timeout a thing for step functions?
-    # todo: Make timeout configurable in both adapters. Tie to TF vars?
     config = Config(read_timeout=600, retries={'total_max_attempts': 1})
     client = boto3.client("stepfunctions", config=config)
     execution_info = client.start_execution(
         stateMachineArn=os.environ[OS_ENVIRON_ORCA_RECOVERY_STEP_FUNCTION_ARN_KEY],
-        # name=,
         input=json.dumps({
             ORCA_INPUT_KEY: event["input"],
             ORCA_CONFIG_KEY: event["config"]
@@ -78,12 +74,22 @@ def get_state_machine_execution_results(
     execution_arn: str,
     retry_interval_seconds=5,
     maximum_duration_seconds=600,
-):
+) -> Dict:
     """
     Synchronous running of step functions is not allowed via boto3
     https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/stepfunctions/client/start_sync_execution.html
     so retry until it is complete.
     Step function is relatively lightweight, so duration should be brief.
+
+    Args:
+        client: The boto3 client to use when retrieving status.
+        execution_arn: The AWS ARN of the step-function execution to monitor.
+        retry_interval_seconds: How many seconds to wait between status retrievals.
+        maximum_duration_seconds: The maximum duration of this function.
+            If {retry_interval_seconds} would pass this limit, will return most recent status.
+
+    Returns:
+        Step function execution results. If timeout was reached, status will be "RUNNING".
     """
     start = datetime.datetime.utcnow()
     while True:
@@ -107,8 +113,8 @@ def get_state_machine_execution_results(
 def handler(event: Dict[str, Union[List[str], Dict]], context: LambdaContext) -> Any:
     """Lambda handler. Runs a cumulus task that
     translates the input from the Cumulus format
-    to the format required by ORCA's copy_to_archive Lambda,
-    then calls the recovery workflow and returns the result.
+    to the format required by ORCA's recovery step-function,
+    then calls the recovery step-function and returns the result.
 
     Args:
         event: Event passed into the step from the aws workflow.

@@ -4,7 +4,7 @@ import os
 import random
 import uuid
 from unittest import TestCase
-from unittest.mock import MagicMock, Mock, patch, call
+from unittest.mock import MagicMock, Mock, call, patch
 
 # noinspection PyPackageRequirements
 import fastjsonschema as fastjsonschema

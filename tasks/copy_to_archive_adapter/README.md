@@ -263,7 +263,7 @@ These settings can often be derived from the collection configuration in Cumulus
         }
       },
       "Type": "Task",
-      "Resource": "${orca_lambda_copy_to_archive_arn}",
+      "Resource": "${orca_lambda_copy_to_archive_adapter_arn}",
       "Retry": [
         {
           "ErrorEquals": [
