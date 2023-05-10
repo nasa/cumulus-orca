@@ -72,7 +72,7 @@ in the cumulus-orca base of the repo.
 To run integration test for **orca_recovery_adapter**, run `bin/run_integration_tests.sh` script from the
 `tasks/orca_recovery_adapter` directory. Make sure the object to be restored exists in ORCA before running the test.
 Remember to export the following environment variables in your terminal before running the test.
-- TODO
+- TODO: https://bugs.earthdata.nasa.gov/browse/ORCA-666
 
 ## Input
 
