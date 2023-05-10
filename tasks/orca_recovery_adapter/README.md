@@ -74,6 +74,10 @@ To run integration test for **orca_recovery_adapter**, run `bin/run_integration_
 Remember to export the following environment variables in your terminal before running the test.
 - TODO: https://bugs.earthdata.nasa.gov/browse/ORCA-666
 
+## Environment Variables
+
+See [API.md](API.md#handler)
+
 ## Input
 
 The `handler` function `handler(event, context)` expects input as a Cumulus Message. 
