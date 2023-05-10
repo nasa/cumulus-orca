@@ -366,13 +366,14 @@ def recovery_job_table_sql() -> text:  # pragma: no cover
         CREATE TABLE IF NOT EXISTS recovery_job
         (
           job_id              text NOT NULL
+        , collection_id       text NOT NULL
         , granule_id          text NOT NULL
         , archive_destination text NOT NULL
         , status_id           int2 NOT NULL
         , request_time        timestamp with time zone NOT NULL
         , completion_time     timestamp with time zone NULL
         , CONSTRAINT PK_recovery_job
-            PRIMARY KEY (job_id, granule_id)
+            PRIMARY KEY (job_id, collection_id, granule_id)
         , CONSTRAINT FK_recovery_job_status
             FOREIGN KEY (status_id) REFERENCES recovery_status (id)
         );
@@ -413,6 +414,7 @@ def recovery_file_table_sql() -> text:  # pragma: no cover
         CREATE TABLE IF NOT EXISTS recovery_file
         (
           job_id                 text NOT NULL
+        , collection_id          text NOT NULL
         , granule_id             text NOT NULL
         , filename               text NOT NULL
         , key_path               text NOT NULL
@@ -424,11 +426,11 @@ def recovery_file_table_sql() -> text:  # pragma: no cover
         , last_update            timestamp with time zone NOT NULL
         , completion_time        timestamp with time zone NULL
         , CONSTRAINT PK_recovery_file
-            PRIMARY KEY (job_id, granule_id, filename)
+            PRIMARY KEY (job_id, collection_id, granule_id, filename)
         , CONSTRAINT FK_recovery_file_status
             FOREIGN KEY (status_id) REFERENCES recovery_status (id)
         , CONSTRAINT FK_recovery_file_recoverjob
-            FOREIGN KEY (job_id, granule_id) REFERENCES recovery_job (job_id, granule_id)
+            FOREIGN KEY (job_id, collection_id, granule_id) REFERENCES recovery_job (job_id, collection_id, granule_id)
         );
 
         -- Comments
