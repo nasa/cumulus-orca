@@ -45,7 +45,7 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
         A dict representing input and copied files. See schemas/output.json for more information.
     """
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/lambda.html
-    config = Config(read_timeout=600, retries={'total_max_attempts': 1})
+    config = Config(read_timeout=1800, retries={'total_max_attempts': 1})
     client = boto3.client("stepfunctions", config=config)
     execution_info = client.start_execution(
         stateMachineArn=os.environ[OS_ENVIRON_ORCA_RECOVERY_STEP_FUNCTION_ARN_KEY],
@@ -73,7 +73,7 @@ def get_state_machine_execution_results(
     client,
     execution_arn: str,
     retry_interval_seconds=5,
-    maximum_duration_seconds=600,
+    maximum_duration_seconds=1800,
 ) -> Dict:
     """
     Synchronous running of step functions is not allowed via boto3
