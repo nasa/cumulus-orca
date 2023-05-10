@@ -124,7 +124,7 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: LambdaContext) ->
             and execution env.
 
     Environment Variables:
-        ORCA_RECOVERY_WORKFLOW_ARN (string, required):
+        OS_ENVIRON_ORCA_RECOVERY_STEP_FUNCTION_ARN_KEY (string, required):
             ARN of ORCA's recovery step function.
 
     Returns:
