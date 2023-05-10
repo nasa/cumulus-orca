@@ -9,6 +9,7 @@ import boto3
 import orca_recovery_adapter
 
 
+# todo: Copied from copy_to_glacier adapter. Refine in ORCA-666
 class TestCopyToArchiveAdapter(unittest.TestCase):
     def test_orca_recovery_adapter_happy_path(self):
 
