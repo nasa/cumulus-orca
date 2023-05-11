@@ -430,7 +430,8 @@ def recovery_file_table_sql() -> text:  # pragma: no cover
         , CONSTRAINT FK_recovery_file_status
             FOREIGN KEY (status_id) REFERENCES recovery_status (id)
         , CONSTRAINT FK_recovery_file_recoverjob
-            FOREIGN KEY (job_id, collection_id, granule_id) REFERENCES recovery_job (job_id, collection_id, granule_id)
+            FOREIGN KEY (job_id, collection_id, granule_id)
+            REFERENCES recovery_job (job_id, collection_id, granule_id)
         );
 
         -- Comments

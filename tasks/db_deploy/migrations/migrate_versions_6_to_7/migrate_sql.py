@@ -55,13 +55,14 @@ def add_collection_id_to_recovery_job_and_recovery_file_sql() -> text:
 
         ALTER TABLE orca.recovery_file
             ALTER COLUMN collection_id SET NOT NULL,
-            ADD CONSTRAINT PK_recovery_file PRIMARY KEY (job_id, collection_id, granule_id, 
-            filename);
+            ADD CONSTRAINT PK_recovery_file
+                PRIMARY KEY (job_id, collection_id, granule_id, filename);
         ALTER TABLE orca.recovery_job
             ALTER COLUMN collection_id SET NOT NULL,
             ADD CONSTRAINT PK_recovery_job PRIMARY KEY (job_id, collection_id, granule_id);
         ALTER TABLE orca.recovery_file
-            ADD CONSTRAINT FK_recovery_file_recoverjob FOREIGN KEY (job_id, collection_id, 
-            granule_id) REFERENCES orca.recovery_job (job_id, collection_id, granule_id);
+            ADD CONSTRAINT FK_recovery_file_recoverjob
+                FOREIGN KEY (job_id, collection_id, granule_id)
+                REFERENCES orca.recovery_job (job_id, collection_id, granule_id);
         """
     )
