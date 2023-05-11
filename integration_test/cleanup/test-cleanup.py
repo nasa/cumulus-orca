@@ -13,31 +13,43 @@ recovery_bucket_name = os.environ["orca_RECOVERY_BUCKET_NAME"]
 source_bucket_name = os.environ["SOURCE_BUCKET_NAME"]
 db_connect_info_secret_arn = os.environ["DB_CONNECT_INFO_SECRET_ARN"]
 
-# grab the objects to be deleted
+# grab the objects to be deleted from source bucket
 s3 = boto3.client('s3')
-result = s3.list_objects_v2(
+source_object_results = s3.list_objects_v2(
     Bucket=source_bucket_name,
     Prefix='test'
 )
-filenames = []
-for item in result['Contents']:
+source_filenames = []
+for item in source_object_results['Contents']:
     files = item['Key']
-    filenames.append(files)
-LOGGER.info(filenames)
+    source_filenames.append(files)
+LOGGER.info(source_filenames)
+
+# grab the objects to be deleted from recovery bucket
+recovery_object_results = s3.list_objects_v2(
+    Bucket=recovery_bucket_name,
+    Prefix='test'
+)
+recovery_filenames = []
+for item in recovery_object_results['Contents']:
+    files = item['Key']
+    recovery_filenames.append(files)
+LOGGER.info(recovery_filenames)
 
 # Delete objects from source and recovery buckets
-for object in filenames:
+for object in source_filenames:
     response_source = s3.delete_object(
         Bucket=source_bucket_name,
         Key=object,
     )
+for object in recovery_filenames:
     response_destination = s3.delete_object(
         Bucket=recovery_bucket_name,
         Key=object,
     )
 
 # verify objects are deleted from buckets
-for object in filenames:
+for object in source_filenames:
     try:
         head_source_object_output = s3.head_object(
         Bucket=source_bucket_name,Key=object)
@@ -46,7 +58,9 @@ for object in filenames:
     except ClientError as error:
         if error.response['Error']['Code'] == '404':
             LOGGER.info(f"{object} deleted from {source_bucket_name}. Test passed!")
-for object in filenames:
+        else:
+            raise error
+for object in recovery_filenames:
     try:
         head_recovery_object_output = s3.head_object(
         Bucket=recovery_bucket_name,Key=object
@@ -56,7 +70,8 @@ for object in filenames:
     except ClientError as error:
         if error.response['Error']['Code'] == '404':
             LOGGER.info(f"{object} deleted from {recovery_bucket_name}. Test passed!")
-
+        else:
+            raise error
 #delete from ORCA catalog
 db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)
 db_connect_info["host"] = "localhost"  # this is needed when running locally
