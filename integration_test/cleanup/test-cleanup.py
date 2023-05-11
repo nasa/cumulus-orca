@@ -53,8 +53,7 @@ for object in source_filenames:
     try:
         head_source_object_output = s3.head_object(
         Bucket=source_bucket_name,Key=object)
-        if head_source_object_output["ResponseMetadata"]["HTTPStatusCode"] == 200:
-            raise Exception(f"{object} still exists in {source_bucket_name}")
+        raise Exception(f"{object} still exists in {source_bucket_name}")
     except ClientError as error:
         if error.response['Error']['Code'] == '404':
             LOGGER.info(f"{object} deleted from {source_bucket_name}. Test passed!")
@@ -65,8 +64,7 @@ for object in recovery_filenames:
         head_recovery_object_output = s3.head_object(
         Bucket=recovery_bucket_name,Key=object
         )
-        if head_recovery_object_output["ResponseMetadata"]["HTTPStatusCode"] == 200:
-            raise Exception(f"{object} still exists in {recovery_bucket_name}")    
+        raise Exception(f"{object} still exists in {recovery_bucket_name}")    
     except ClientError as error:
         if error.response['Error']['Code'] == '404':
             LOGGER.info(f"{object} deleted from {recovery_bucket_name}. Test passed!")
