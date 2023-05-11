@@ -39,24 +39,27 @@ for object in filenames:
 # verify objects are deleted from buckets
 for object in filenames:
     try:
-        head_object_output = s3.head_object(
-        Bucket=source_bucket_name,Key=object
-        )
+        head_source_object_output = s3.head_object(
+        Bucket=source_bucket_name,Key=object)
+        if head_source_object_output["ResponseMetadata"]["HTTPStatusCode"] == 200:
+            raise Exception(f"{object} still exists in {source_bucket_name}")
     except ClientError as error:
         if error.response['Error']['Code'] == '404':
             LOGGER.info(f"{object} deleted from {source_bucket_name}. Test passed!")
 for object in filenames:
     try:
-        head_object_output = s3.head_object(
+        head_recovery_object_output = s3.head_object(
         Bucket=recovery_bucket_name,Key=object
         )
+        if head_recovery_object_output["ResponseMetadata"]["HTTPStatusCode"] == 200:
+            raise Exception(f"{object} still exists in {recovery_bucket_name}")    
     except ClientError as error:
         if error.response['Error']['Code'] == '404':
             LOGGER.info(f"{object} deleted from {recovery_bucket_name}. Test passed!")
 
 #delete from ORCA catalog
 db_connect_info = shared_db.get_configuration(db_connect_info_secret_arn)
-db_connect_info["host"]= "localhost"  # this is needed when running locally
+db_connect_info["host"] = "localhost"  # this is needed when running locally
 engine = shared_db.get_user_connection(db_connect_info)
 
 def delete_from_catalog_sql() -> text:
