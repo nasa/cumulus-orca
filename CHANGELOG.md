@@ -37,6 +37,13 @@ and includes an additional section for migration notes.
   - This section will be updated when a compatible version is created.
   - deployment-with-cumulus.md will also be updated.
   - copy_to_archive_adapter/README.md will also be updated.
+  - restore-to-orca.mdx will also be updated.
+- The input format of the ORCA Recovery Workflow step-function has been simplified.
+  If accessing these resources outside of a Cumulus perspective, go to `orca_recover_workflow.asl.json` and look at `config` elements to see the new paths.
+- Cumulus is not currently compatible with the changes to the Recovery Workflow step-function.
+  - This section will be updated when a compatible version is created.
+  - deployment-with-cumulus.md will also be updated.
+  - orca_recovery_adapter/README.md will also be updated.
 - Update the bucket policy for your `system-bucket` to allow load balancer to post server access logs to the bucket. See the instructions [here](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-s3-bucket#bucket-policy-for-load-balancer-server-access-loging).
 - InternalReconcileReport [Phantom](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#internal-reconcile-report-phantom-api) and [Mismatch](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#internal-reconcile-report-mismatch-api) reports are now available via GraphQL.
   - API Gateway access is now deprecated, and will be removed in a future update.
@@ -98,7 +105,7 @@ and includes an additional section for migration notes.
 - If utilizing the `orca_lambda_copy_to_glacier_arn` [output of Terraform](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/outputs.tf#L8), likely as a means of pulling the lambda into your workflows, 
   rename to new key `orca_lambda_copy_to_archive_arn`
 - If utilizing the `orca_lambda_request_files_arn` [output of Terraform](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/outputs.tf#L28), likely as a means of pulling the lambda into your workflows, rename to new key `orca_lambda_request_from_archive_arn`
-- If desired, use the optional `recoveryBucketOverride` property in `extract_filepaths_for_granule` input schema to to override the default recovery bucket. See example below.
+- If desired, use the optional `recoveryBucketOverride` property in `extract_filepaths_for_granule` input schema to override the default recovery bucket. See example below.
   ```json
   {
     "input":
@@ -119,7 +126,7 @@ and includes an additional section for migration notes.
     }
   }
   ```
-- If utilizing the output of the OrcaRecoveryWorkflow, adjust to the   simplified output schema. See example below:
+- If utilizing the output of the OrcaRecoveryWorkflow, adjust to the simplified output schema. See example below:
   ```json
   {
       "granules": [
