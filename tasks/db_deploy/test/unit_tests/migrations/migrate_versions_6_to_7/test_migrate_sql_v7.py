@@ -1,5 +1,5 @@
 """
-Name: test_migrate_sql_v6.py
+Name: test_migrate_sql_v7.py
 
 Description: Testing library for the migrations/migrate_versions_6_to_7/migrate_sql.py.
 """

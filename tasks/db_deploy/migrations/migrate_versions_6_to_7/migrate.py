@@ -1,7 +1,7 @@
 """
 Name: migrate.py
 
-Description: Migrates the ORCA schema from version 5 to version 6.
+Description: Migrates the ORCA schema from version 6 to version 7.
 """
 
 from orca_shared.database.entities import PostgresConnectionInfo
