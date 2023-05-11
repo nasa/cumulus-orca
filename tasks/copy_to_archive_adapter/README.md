@@ -92,9 +92,9 @@ Remember to export the following environment variables in your terminal before r
 - CUMULUS_BUCKET_NAME -S3 bucket where the object to be recovered exists. For example, `orca-sandbox-s3-provider`.
 - OBJECT_KEY_NAME - The S3 object url. For example, `MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf`.
 
-## Deployment
+## Environment Variables
 
-The `copy_to_archive_adapter` lambda function can be deployed using terraform using the example shown in TODO
+See [API.md](API.md#handler)
 
 ## Input
 
@@ -267,7 +267,7 @@ These settings can often be derived from the collection configuration in Cumulus
         }
       },
       "Type": "Task",
-      "Resource": "${orca_lambda_copy_to_archive_arn}",
+      "Resource": "${orca_lambda_copy_to_archive_adapter_arn}",
       "Retry": [
         {
           "ErrorEquals": [

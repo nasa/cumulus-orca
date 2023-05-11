@@ -1,6 +1,8 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "description": "The input for the extract_filepaths_for_granule Lambda.",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/orca_recovery_adapter/schemas/input.json",
+  "title": "orca_recovery_adapter Lambda Input",
+  "description": "The input for the orca_recovery_adapter Lambda.",
   "type": "object",
   "properties": {
     "granules": {
