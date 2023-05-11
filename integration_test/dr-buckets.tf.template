@@ -184,7 +184,8 @@ data "aws_iam_policy_document" "orca-primary-policy-json" {
                 "s3:GetBucket*",
                 "s3:ListBucket",
                 "s3:PutObjectAcl",
-                "s3:PutBucketNotification"
+                "s3:PutBucketNotification",
+                "s3:DeleteObject"
     ]
     resources = [
                 "arn:aws:s3:::PREFIX-orca-primary",
