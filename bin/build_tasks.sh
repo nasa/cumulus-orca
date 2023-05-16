@@ -30,14 +30,17 @@ function build_task() {
   then
     echo "ERROR: Building of $1 failed with code $return_code"
   fi
+  echo "Completed building $1"
   return $return_code
 }
 export -f build_task
 
 task_dirs=$(ls -d tasks/* | egrep -v "package")
+echo "Build targets: $task_dirs"
 
 echo "Building in parallel..."
-parallel --jobs 0 -n 1 -X --halt now,fail=1 build_task ::: $task_dirs
+# todo: ORCA-681: Repair parallelism and switch back to `--jobs 0`
+parallel --jobs 1 -n 1 -X --halt now,fail=1 build_task ::: $task_dirs
 
 process_return_code=$?
 echo
