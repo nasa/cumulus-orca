@@ -42,7 +42,6 @@ Clean up DR ORCA buckets:
   key: COBM
   other:
     clean-working-dir: true
-    # Some plugin configurations are not supported by YAML Specs
   docker:
     image: maven.earthdata.nasa.gov/cumulus_orca
     volumes:

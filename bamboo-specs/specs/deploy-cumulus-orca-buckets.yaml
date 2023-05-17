@@ -45,7 +45,6 @@ Deploy Cumulus buckets and Cumulus and Orca modules:
   key: DOBM
   other:
     clean-working-dir: true
-    # Some plugin configurations are not supported by YAML Specs
   docker:
     image: maven.earthdata.nasa.gov/cumulus_orca
     volumes:
