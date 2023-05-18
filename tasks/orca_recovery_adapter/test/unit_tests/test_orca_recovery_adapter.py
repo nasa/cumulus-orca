@@ -78,7 +78,7 @@ class TestOrcaRecoveryAdapter(TestCase):
             result = orca_recovery_adapter.task(event, None)
 
         mock_boto3_config.assert_called_once_with(
-            read_timeout=600, retries={'total_max_attempts': 1}
+            read_timeout=18000, retries={'total_max_attempts': 1}
         )
         mock_boto3_client.assert_called_once_with(
             "stepfunctions",
@@ -150,7 +150,7 @@ class TestOrcaRecoveryAdapter(TestCase):
                 orca_recovery_adapter.task(event, None)
 
         mock_boto3_config.assert_called_once_with(
-            read_timeout=600, retries={'total_max_attempts': 1}
+            read_timeout=18000, retries={'total_max_attempts': 1}
         )
         mock_boto3_client.assert_called_once_with(
             "stepfunctions",
