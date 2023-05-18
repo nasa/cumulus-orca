@@ -71,8 +71,13 @@ in the cumulus-orca base of the repo.
 
 To run integration test for **orca_recovery_adapter**, run `bin/run_integration_tests.sh` script from the
 `tasks/orca_recovery_adapter` directory. Make sure the object to be restored exists in ORCA before running the test.
-Remember to export the following environment variables in your terminal before running the test.
-- TODO: https://bugs.earthdata.nasa.gov/browse/ORCA-666
+In addition to the [standard environment variables](#lambda-setup),
+export the following environment variables in your terminal before running the test.
+- ORCA_RECOVERY_BUCKET - S3 bucket where the object is stored in ORCA. For example, `test-orca-primary`.
+- CUMULUS_BUCKET_NAME - S3 bucket where the object will be recovered to. For example, `test-public`.
+- CUMULUS_SYSTEM_BUCKET_NAME - S3 bucket used by CMA. For example, `test-internal`.
+- OBJECT_KEY_NAME - The S3 object url. For example, `MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf`.
+- GRANULE_ID - The Cumulus Granule ID of the granule containing the file to be recovered.
 
 ## Environment Variables
 
@@ -150,12 +155,70 @@ The actual format of that input may change over time, so we use the [cumulus-mes
 }
 ```
 
+This is what the same input looks like for use with the [Step Function configuration](#step-function-configuration):
+
+```json
+{
+  "payload": {
+    "granules": [
+      {
+        "granuleId": "a3a94886-c11d-4c21-a942-a836b8e9aa75",
+        "files": [
+          {
+            "fileName": "MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
+            "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
+            "bucket": "PREFIX-orca-primary"
+          }
+        ]
+      }
+    ]
+  },
+  "meta": {
+    "buckets": {
+      "protected": {"name": "PREFIX-protected", "type": "protected"},
+      "internal": {"name": "PREFIX-internal", "type": "internal"},
+      "private": {"name": "PREFIX-private", "type": "private"},
+      "public": {"name": "PREFIX-public", "type": "public"},
+      "orca_default": {"name": "PREFIX-orca-primary", "type": "orca"}
+    },
+    "collection": {
+      "meta": {
+        "orca": {
+          "excludedFileExtensions": [".blah"]
+        }
+      },
+      "files": [
+        {
+          "regex": ".*.tar.gz",
+          "sampleFileName": "blah.tar.gz",
+          "bucket": "public"
+        },
+        {
+          "regex": ".*.jpg",
+          "sampleFileName": "blah.tar.gz",
+          "bucket": "public"
+        },
+        {
+          "regex": ".*.hdf",
+          "sampleFileName": "blah.tar.gz",
+          "bucket": "public"
+        }
+      ]
+    }
+  },
+  "cumulus_meta": {
+    "system_bucket": "PREFIX-internal"
+  }
+}
+```
+
 See the schema [configuration file](https://github.com/nasa/cumulus-orca/blob/master/tasks/orca_recovery_adapter/schemas/input.json) for more information.
 
 ## Output
 
 The `orca_recovery_adapter` lambda will request that files be restored from the ORCA archive.
 See [recovery documentation](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/recovery-workflow) for more information.
+Note that if a [Step Function](#step-function-configuration) is used, the output may be obfuscated by CMA.
 
 ```json
 {
@@ -164,13 +227,13 @@ See [recovery documentation](https://nasa.github.io/cumulus-orca/docs/developer/
       "granuleId": "a3a94886-c11d-4c21-a942-a836b8e9aa75", 
       "keys": [{
         "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf", 
-        "destBucket": "doctest-public"
+        "destBucket": "PREFIX-public"
       }], 
       "recoverFiles": [{
         "success": true, 
         "filename": "MOD09GQ.A2017025.h21v00.006.2017034065104.hdf", 
         "keyPath": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf", 
-        "restoreDestination": "doctest-public", 
+        "restoreDestination": "PREFIX-public", 
         "s3MultipartChunksizeMb": null, 
         "statusId": 1, 
         "requestTime": "2023-05-08T16:59:01.910817+00:00", 
@@ -189,11 +252,11 @@ See [recovery documentation](https://nasa.github.io/cumulus-orca/docs/developer/
   }, 
   "meta": {
     "buckets": {
-      "protected": {"name": "doctest-protected", "type": "protected"}, 
-      "internal": {"name": "doctest-internal", "type": "internal"}, 
-      "private": {"name": "doctest-private", "type": "private"}, 
-      "public": {"name": "doctest-public", "type": "public"}, 
-      "orca_default": {"name": "doctest-orca-primary", "type": "orca"}
+      "protected": {"name": "PREFIX-protected", "type": "protected"}, 
+      "internal": {"name": "PREFIX-internal", "type": "internal"}, 
+      "private": {"name": "PREFIX-private", "type": "private"}, 
+      "public": {"name": "PREFIX-public", "type": "public"}, 
+      "orca_default": {"name": "PREFIX-orca-primary", "type": "orca"}
     },
     "collection": {
       "meta": {
@@ -207,15 +270,23 @@ See [recovery documentation](https://nasa.github.io/cumulus-orca/docs/developer/
         {"regex": ".*.hdf", "sampleFileName": "blah.tar.gz", "bucket": "public"}
       ]
     }},
-  "cumulus_meta": {"system_bucket": "doctest-internal"}, 
+  "cumulus_meta": {"system_bucket": "PREFIX-internal"}, 
   "exception": "None"
 }
 ```
 
 See the schema [configuration file](https://github.com/nasa/cumulus-orca/blob/master/tasks/orca_recovery_adapter/schemas/output.json) for more information.
 
+## Lambda Setup
+- Create a new lambda in AWS with a `Python` runtime.
+- Assign the lambda an IAM role that has [StartExecution](https://docs.aws.amazon.com/step-functions/latest/apireference/API_StartExecution.html)
+  permissions on the recovery Step Function.
+- Set the environment variable `ORCA_RECOVERY_STEP_FUNCTION_ARN` to the `orca_sfn_recovery_workflow_arn` output from ORCA.
+
 ## Step Function Configuration
 
+For minimum impact to integrators, it may be best to run the adapter lambda via a Step Function,
+mirroring how integrators call the ORCA Recovery Workflow via its Step Function.
 As part of the [Cumulus Message Adapter configuration](https://nasa.github.io/cumulus/docs/workflows/input_output#cma-configuration), 
 several properties must be passed into the lambda.
 See [input](https://github.com/nasa/cumulus-orca/blob/master/tasks/orca_recovery_adapter/schemas/input.json) 
@@ -228,7 +299,7 @@ schemas for more information.
   "StartAt": "OrcaRecovery",
   "TimeoutSeconds": 18000,
   "States": {
-    "OrcaRecovery": {
+    "OrcaRecoveryAdapter": {
       "Parameters": {
         "cma": {
           "event.$": "$",
@@ -270,10 +341,14 @@ schemas for more information.
           "Next": "WorkflowFailed"
         }
       ],
+      "Next": "WorkflowSucceeded"
     },
     "WorkflowFailed": {
       "Type": "Fail",
       "Cause": "Workflow failed"
+    },
+    "WorkflowSucceeded": {
+      "Type": "Succeed"
     }
   }
 }

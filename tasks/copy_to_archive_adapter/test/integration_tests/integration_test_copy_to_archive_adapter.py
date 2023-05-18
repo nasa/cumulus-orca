@@ -75,7 +75,7 @@ class TestCopyToArchiveAdapter(unittest.TestCase):
         }
         context = Mock()
         result = copy_to_archive_adapter.handler(copy_to_archive_adapter_input_event, context)
-        self.assertEqual(result, expected_output)
+        self.assertEqual(expected_output, result)
         # verify that the object exists in recovery bucket
         try:
             head_object_output = boto3.client("s3").head_object(
