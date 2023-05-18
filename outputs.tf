@@ -84,6 +84,13 @@ output "orca_sqs_status_update_queue_id" {
   value       = module.orca.orca_sqs_status_update_queue_id
 }
 
+## Workflow Module Outputs (orca_workflows)
+## =============================================================================
+output "orca_sfn_recovery_workflow_arn" {
+  description = "The ARN of the recovery step function."
+  value       = module.orca.orca_sfn_recovery_workflow_arn
+}
+
 ## Secretsmanager Module outputs
 ## =============================================================================
 output "orca_secretsmanager_arn" {

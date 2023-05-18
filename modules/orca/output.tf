@@ -49,8 +49,10 @@ output "orca_lambda_post_copy_request_to_queue_arn" {
 
 ## Workflow Module Outputs (orca_workflows)
 ## =============================================================================
-## No workflow outputs currently requested/needed
-
+output "orca_sfn_recovery_workflow_arn" {
+  description = "The ARN of the recovery step function."
+  value       = module.orca_workflows.orca_sfn_recovery_workflow_arn
+}
 
 ## SQS Module Outputs (orca_sqs)
 ## =============================================================================
