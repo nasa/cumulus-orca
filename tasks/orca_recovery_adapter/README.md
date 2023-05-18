@@ -218,7 +218,7 @@ See the schema [configuration file](https://github.com/nasa/cumulus-orca/blob/ma
 
 The `orca_recovery_adapter` lambda will request that files be restored from the ORCA archive.
 See [recovery documentation](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/recovery-workflow) for more information.
-Note that if a [Step Function](#step-function-configuration) is used, the output may be obfuscated by CMA.
+Note that if a [Step Function](#step-function-configuration) is used, the output may be obfuscated and stored in S3 by CMA.
 
 ```json
 {
