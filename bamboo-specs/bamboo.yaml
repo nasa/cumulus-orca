@@ -4,3 +4,5 @@
 !include 'specs/orca-code-release.yaml'
 ---
 !include 'specs/orca-documentation-release.yaml'
+---
+!include 'specs/orca-cleanup.yaml'
