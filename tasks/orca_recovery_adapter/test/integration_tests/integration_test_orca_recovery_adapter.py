@@ -18,6 +18,9 @@ class TestOrcaRecoveryAdapter(unittest.TestCase):
         Runs against AWS to request recovery of a file.
         """
         def lambda_context():
+            """
+            Sets up an object with the information required for inject_lambda_context.
+            """
             @dataclass
             class LambdaContext:
                 function_name: str = "test"
