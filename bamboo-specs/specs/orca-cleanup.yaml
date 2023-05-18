@@ -1,0 +1,84 @@
+#bamboo plan for cleaning cumulus, ORCA and relevant buckets.
+---
+version: 2
+plan:
+  project-key: ORCA
+  key: OCPT
+  name: ORCA Cleanup Plan TEST
+stages:
+- Clean up ORCA buckets and modules:
+    manual: true
+    final: false
+    jobs:
+    - Clean up ORCA buckets and modules
+- Clean up DR ORCA buckets:
+    manual: true
+    final: false
+    jobs:
+    - Clean up DR ORCA buckets
+# Job for cleaning up ORCA buckets, Cumulus, and ORCA modules
+Clean up ORCA buckets and modules:
+  key: CDROB
+  other:
+    clean-working-dir: true
+  docker:
+    image: maven.earthdata.nasa.gov/cumulus_orca
+    volumes:
+      ${bamboo.working.directory}: ${bamboo.working.directory}
+      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+  tasks:
+  - checkout:
+      force-clean-build: 'true'
+      description: Checkout Default Repository
+  - script:
+      interpreter: SHELL
+      scripts:
+      - |-
+        #!/bin/bash
+        . ./integration_test/shared/setup-orca.sh
+        bash integration_test/cleanup/cleanup-orca.sh
+# Job for cleaning up ORCA buckets, Cumulus, and ORCA modules
+Clean up DR ORCA buckets:
+  key: COBM
+  other:
+    clean-working-dir: true
+  docker:
+    image: maven.earthdata.nasa.gov/cumulus_orca
+    volumes:
+      ${bamboo.working.directory}: ${bamboo.working.directory}
+      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+  tasks:
+  - checkout:
+      force-clean-build: 'true'
+      description: Checkout Default Repository
+
+  - script:
+      interpreter: SHELL
+      scripts:
+      - |-
+        #!/bin/bash
+        . ./integration_test/shared/setup-dr-buckets.sh
+        bash integration_test/cleanup/cleanup-dr-buckets.sh
+variables:
+  AWS_DEFAULT_REGION: us-west-2
+  CUMULUS_AWS_DEFAULT_REGION: us-west-2
+  CUMULUS_AWS_ACCESS_KEY_ID: REPLACE ME
+  CUMULUS_AWS_SECRET_ACCESS_KEY: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
+  DR_AWS_ACCESS_KEY_ID: REPLACE ME
+  DR_AWS_SECRET_ACCESS_KEY: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
+  CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION: release/v11.1.1-v4.0.1
+  PREFIX: REPLACE ME
+  BRANCH_NAME: ${bamboo.planRepository.branchName}
+ 
+repositories:
+- orca test 2:
+    scope: global
+triggers:
+- polling: # Does not actually poll, as we do not have webhooks enabled.
+    period: '60' #time in seconds
+branches:
+  create: for-new-branch
+  delete:
+    after-deleted-days: 7
+    after-inactive-days: 30
+  link-to-jira: true
