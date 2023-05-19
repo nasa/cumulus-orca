@@ -61,7 +61,7 @@ def get_aws_region() -> str:
 
 # Keys for input schema. Utilized by calling code.
 JOB_ID_KEY = "jobId"
-COLLECTION_ID_KEY = "collectionId"  # todo: Add note to migration notes about clearing queue
+COLLECTION_ID_KEY = "collectionId"
 GRANULE_ID_KEY = "granuleId"
 ARCHIVE_DESTINATION_KEY = "archiveDestination"
 
