@@ -27,7 +27,7 @@ and includes an additional section for migration notes.
 - *ORCA-614*, *ORCA-428* Moved some Internal Reconciliation functionality to GraphQL
 - *ORCA-679* Updated area in recovery where granule ID was treated as a globally unique key. Per Cumulus updates, uniqueness is now granule ID plus collection ID.
   - *ORCA-678* `collection_id` column added to recovery status tables.
-  - *ORCA-622* `collectionId` added as input to `request_from_archive` and the recovery workflow.
+  - *ORCA-672*, *ORCA-671* `collectionId` added as input to `extract_filepaths_for_granule`, `request_from_archive`, and the recovery workflow.
 
 ### Changed
 - *ORCA-573* Updated ORCA DB user password to now have a stronger password requirement. See migration notes for details.
