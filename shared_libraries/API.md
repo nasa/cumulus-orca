@@ -55,6 +55,10 @@
     * [test\_retry\_operational\_error\_non\_operational\_error\_raises](#orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.test_retry_operational_error_non_operational_error_raises)
     * [test\_retry\_operational\_error\_operational\_error\_retries\_and\_raises](#orca_shared.database.test.unit_tests.test_shared_db.TestSharedDatabaseLibraries.test_retry_operational_error_operational_error_retries_and_raises)
 * [orca\_shared.database.shared\_db](#orca_shared.database.shared_db)
+  * [MAX\_RETRIES](#orca_shared.database.shared_db.MAX_RETRIES)
+  * [BACKOFF\_FACTOR](#orca_shared.database.shared_db.BACKOFF_FACTOR)
+  * [INITIAL\_BACKOFF\_IN\_SECONDS](#orca_shared.database.shared_db.INITIAL_BACKOFF_IN_SECONDS)
+  * [RT](#orca_shared.database.shared_db.RT)
   * [get\_configuration](#orca_shared.database.shared_db.get_configuration)
   * [get\_admin\_connection](#orca_shared.database.shared_db.get_admin_connection)
   * [get\_user\_connection](#orca_shared.database.shared_db.get_user_connection)
@@ -80,12 +84,13 @@
     * [test\_post\_entry\_to\_standard\_queue\_happy\_path](#orca_shared.recovery.test.unit_tests.test_shared_recovery.TestSharedRecoveryLibraries.test_post_entry_to_standard_queue_happy_path)
     * [test\_create\_status\_for\_job\_no\_errors](#orca_shared.recovery.test.unit_tests.test_shared_recovery.TestSharedRecoveryLibraries.test_create_status_for_job_no_errors)
     * [test\_update\_status\_for\_file\_no\_errors](#orca_shared.recovery.test.unit_tests.test_shared_recovery.TestSharedRecoveryLibraries.test_update_status_for_file_no_errors)
-    * [test\_update\_status\_for\_file\_raise\_errors\_error\_message](#orca_shared.recovery.test.unit_tests.test_shared_recovery.TestSharedRecoveryLibraries.test_update_status_for_file_raise_errors_error_message)
+    * [test\_update\_status\_for\_file\_error\_message\_empty\_raises\_error\_message](#orca_shared.recovery.test.unit_tests.test_shared_recovery.TestSharedRecoveryLibraries.test_update_status_for_file_error_message_empty_raises_error_message)
 * [orca\_shared.recovery](#orca_shared.recovery)
 * [orca\_shared.recovery.shared\_recovery](#orca_shared.recovery.shared_recovery)
   * [RequestMethod](#orca_shared.recovery.shared_recovery.RequestMethod)
   * [OrcaStatus](#orca_shared.recovery.shared_recovery.OrcaStatus)
   * [get\_aws\_region](#orca_shared.recovery.shared_recovery.get_aws_region)
+  * [COLLECTION\_ID\_KEY](#orca_shared.recovery.shared_recovery.COLLECTION_ID_KEY)
   * [create\_status\_for\_job](#orca_shared.recovery.shared_recovery.create_status_for_job)
   * [update\_status\_for\_file](#orca_shared.recovery.shared_recovery.update_status_for_file)
   * [post\_entry\_to\_fifo\_queue](#orca_shared.recovery.shared_recovery.post_entry_to_fifo_queue)
@@ -698,6 +703,30 @@ Name: shared_db.py
 
 Description: Shared library for database objects needed by the various libraries.
 
+<a id="orca_shared.database.shared_db.MAX_RETRIES"></a>
+
+#### MAX\_RETRIES
+
+number of times to retry.
+
+<a id="orca_shared.database.shared_db.BACKOFF_FACTOR"></a>
+
+#### BACKOFF\_FACTOR
+
+Value of the factor used to backoff
+
+<a id="orca_shared.database.shared_db.INITIAL_BACKOFF_IN_SECONDS"></a>
+
+#### INITIAL\_BACKOFF\_IN\_SECONDS
+
+Number of seconds to sleep the first time through.
+
+<a id="orca_shared.database.shared_db.RT"></a>
+
+#### RT
+
+return type
+
 <a id="orca_shared.database.shared_db.get_configuration"></a>
 
 #### get\_configuration
@@ -1024,12 +1053,12 @@ def test_update_status_for_file_no_errors()
 Test that sending a message to SQS queue using post_status_for_file
 function returns the same expected message.
 
-<a id="orca_shared.recovery.test.unit_tests.test_shared_recovery.TestSharedRecoveryLibraries.test_update_status_for_file_raise_errors_error_message"></a>
+<a id="orca_shared.recovery.test.unit_tests.test_shared_recovery.TestSharedRecoveryLibraries.test_update_status_for_file_error_message_empty_raises_error_message"></a>
 
-#### test\_update\_status\_for\_file\_raise\_errors\_error\_message
+#### test\_update\_status\_for\_file\_error\_message\_empty\_raises\_error\_message
 
 ```python
-def test_update_status_for_file_raise_errors_error_message()
+def test_update_status_for_file_error_message_empty_raises_error_message()
 ```
 
 Tests that update_status_for_file will raise a ValueError
@@ -1088,12 +1117,18 @@ Gets AWS region variable from the runtime environment variable.
 
 - `Exception` - Thrown if AWS region is empty or None.
 
+<a id="orca_shared.recovery.shared_recovery.COLLECTION_ID_KEY"></a>
+
+#### COLLECTION\_ID\_KEY
+
+todo: Add note to migration notes about clearing queue
+
 <a id="orca_shared.recovery.shared_recovery.create_status_for_job"></a>
 
 #### create\_status\_for\_job
 
 ```python
-def create_status_for_job(job_id: str, granule_id: str,
+def create_status_for_job(job_id: str, collection_id: str, granule_id: str,
                           archive_destination: str,
                           files: List[Dict[str, Any]], db_queue_url: str)
 ```
@@ -1103,6 +1138,7 @@ Creates status information for a new job and its files, and posts to queue.
 **Arguments**:
 
 - `job_id` - The unique identifier used for tracking requests.
+- `collection_id` - The id of the collection containing the collection.
 - `granule_id` - The id of the granule being restored.
 - `archive_destination` - The S3 bucket destination of where the data is archived.
 - `files` - A List of Dicts with the following keys:
@@ -1122,8 +1158,8 @@ Creates status information for a new job and its files, and posts to queue.
 #### update\_status\_for\_file
 
 ```python
-def update_status_for_file(job_id: str, granule_id: str, filename: str,
-                           orca_status: OrcaStatus,
+def update_status_for_file(job_id: str, collection_id: str, granule_id: str,
+                           filename: str, orca_status: OrcaStatus,
                            error_message: Optional[str], db_queue_url: str)
 ```
 
@@ -1134,6 +1170,7 @@ job_id + granule_id + filename does not exist.
 **Arguments**:
 
 - `job_id` - The unique identifier used for tracking requests.
+- `collection_id` - The id of the collection containing the collection.
 - `granule_id` - The id of the granule being restored.
 - `filename` - The name of the file being copied.
 - `orca_status` - Defines the status id used in the ORCA Recovery database.
