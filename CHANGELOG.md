@@ -34,6 +34,8 @@ and includes an additional section for migration notes.
 - *ORCA-647* Upgraded sqlalchemy from v1.4.11 to v2.0.5.
 
 ### Migration Notes
+- Changes have been made to SQS message processing that are not backwards compatible. Halt ingest and wait for the `PREFIX-orca-status-update-queue.fifo` queue to empty before applying update.
+  - If the queue is or becomes stuck, it may be necessary to flush the queue and its associated Dead Letter Queue.
 - The output format of `copy_to_archive` lambda and step-function has been simplified. If accessing these resources outside of a Cumulus perspective, instead of accessing `output["payload"]["granules"]` you now use `output["granules"]`.
 - Cumulus is not currently compatible with the changes to copy_to_archive.
   - This section will be updated when a compatible version is created.

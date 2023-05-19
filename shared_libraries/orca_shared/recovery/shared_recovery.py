@@ -61,6 +61,7 @@ def get_aws_region() -> str:
 
 # Keys for input schema. Utilized by calling code.
 JOB_ID_KEY = "jobId"
+COLLECTION_ID_KEY = "collectionId"
 GRANULE_ID_KEY = "granuleId"
 ARCHIVE_DESTINATION_KEY = "archiveDestination"
 
@@ -79,6 +80,7 @@ COMPLETION_TIME_KEY = "completionTime"
 
 def create_status_for_job(
     job_id: str,
+    collection_id: str,
     granule_id: str,
     archive_destination: str,
     files: List[Dict[str, Any]],
@@ -88,6 +90,7 @@ def create_status_for_job(
     Creates status information for a new job and its files, and posts to queue.
     Args:
         job_id: The unique identifier used for tracking requests.
+        collection_id: The id of the collection containing the collection.
         granule_id: The id of the granule being restored.
         archive_destination: The S3 bucket destination of where the data is archived.
         files: A List of Dicts with the following keys:
@@ -104,6 +107,7 @@ def create_status_for_job(
     """
     new_data = {
         JOB_ID_KEY: job_id,
+        COLLECTION_ID_KEY: collection_id,
         GRANULE_ID_KEY: granule_id,
         REQUEST_TIME_KEY: datetime.now(timezone.utc).isoformat(),
         ARCHIVE_DESTINATION_KEY: archive_destination,
@@ -118,6 +122,7 @@ def create_status_for_job(
 
 def update_status_for_file(
     job_id: str,
+    collection_id: str,
     granule_id: str,
     filename: str,
     orca_status: OrcaStatus,
@@ -131,6 +136,7 @@ def update_status_for_file(
 
     Args:
         job_id: The unique identifier used for tracking requests.
+        collection_id: The id of the collection containing the collection.
         granule_id: The id of the granule being restored.
         filename: The name of the file being copied.
         orca_status: Defines the status id used in the ORCA Recovery database.
@@ -140,6 +146,7 @@ def update_status_for_file(
     last_update = datetime.now(timezone.utc).isoformat()
     new_data = {
         JOB_ID_KEY: job_id,
+        COLLECTION_ID_KEY: collection_id,
         GRANULE_ID_KEY: granule_id,
         FILENAME_KEY: filename,
         LAST_UPDATE_KEY: last_update,

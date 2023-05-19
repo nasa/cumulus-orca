@@ -32,7 +32,7 @@ install all shared libraries, run the following pip command.
 
 :::info
 
-The command below assumes you are running the install from within the root repo
+The command below assumes you are running the installation from within the root repo
 directory. Adjust the relative path accordingly based on where your requirements
 file or install script is located.
 
