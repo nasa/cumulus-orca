@@ -62,6 +62,9 @@ Validate test job:
       - |-
         #!/bin/bash
         echo "Hello 2"
+        ls /data/bamboo/bamboo-home/shared/artifacts/plan-463012187/shared/build-00009
+        less /data/bamboo/bamboo-home/shared/artifacts/plan-463012187/shared/build-00009/s3_list.txt
+
 variables:
   AWS_DEFAULT_REGION: us-west-2
   CUMULUS_AWS_DEFAULT_REGION: us-west-2
