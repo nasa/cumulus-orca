@@ -39,7 +39,6 @@ Test stage 1 job:
   artifacts:
     -
       name: Test Reports
-      location: test/reports
       pattern: '*.txt'
       shared: true
 # Job for cleaning up ORCA buckets, Cumulus, and ORCA modules
