@@ -55,7 +55,10 @@ Validate test job:
   - checkout:
       force-clean-build: 'true'
       description: Checkout Default Repository
-
+  # - artifact-download:
+  #     source-plan: ORCA-OTA
+  #     artifacts:
+  #       - name: S3 List
   - script:
       interpreter: SHELL
       scripts:
@@ -63,8 +66,8 @@ Validate test job:
         #!/bin/bash
         echo "Hello 2"
         pwd
-        ls /data/bamboo/bamboo-home/shared/artifacts/plan-463012187/shared/build-00009
-        less /data/bamboo/bamboo-home/shared/artifacts/plan-463012187/shared/build-00009/s3_list.txt
+        ls
+        less s3_list.txt
 
 variables:
   AWS_DEFAULT_REGION: us-west-2
