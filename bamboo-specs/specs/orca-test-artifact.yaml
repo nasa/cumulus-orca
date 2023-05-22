@@ -62,6 +62,7 @@ Validate test job:
       - |-
         #!/bin/bash
         echo "Hello 2"
+        pwd
         ls /data/bamboo/bamboo-home/shared/artifacts/plan-463012187/shared/build-00009
         less /data/bamboo/bamboo-home/shared/artifacts/plan-463012187/shared/build-00009/s3_list.txt
 
