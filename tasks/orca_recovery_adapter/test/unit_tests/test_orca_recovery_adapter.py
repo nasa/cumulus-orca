@@ -1,3 +1,4 @@
+import copy
 import datetime
 import json
 import os
@@ -59,16 +60,22 @@ class TestOrcaRecoveryAdapter(TestCase):
         mock_input = {
             uuid.uuid4().__str__(): uuid.uuid4().__str__(),
             uuid.uuid4().__str__(): uuid.uuid4().__str__(),
+            "granules": [{}]
         }
         mock_config = {
             uuid.uuid4().__str__(): uuid.uuid4().__str__(),
             uuid.uuid4().__str__(): uuid.uuid4().__str__(),
+            "collectionShortname": uuid.uuid4().__str__(),
+            "collectionVersion": uuid.uuid4().__str__(),
         }
 
         event = {
-            "input": mock_input,
-            "config": mock_config,
+            "input": copy.deepcopy(mock_input),
+            "config": copy.deepcopy(mock_config),
         }
+
+        mock_input["granules"][0]["collectionId"] = \
+            mock_config["collectionShortname"] + "___" + mock_config["collectionVersion"]
 
         with patch.dict(os.environ,
                         {
@@ -130,16 +137,22 @@ class TestOrcaRecoveryAdapter(TestCase):
         mock_input = {
             uuid.uuid4().__str__(): uuid.uuid4().__str__(),
             uuid.uuid4().__str__(): uuid.uuid4().__str__(),
+            "granules": [{}],
         }
         mock_config = {
             uuid.uuid4().__str__(): uuid.uuid4().__str__(),
             uuid.uuid4().__str__(): uuid.uuid4().__str__(),
+            "collectionShortname": uuid.uuid4().__str__(),
+            "collectionVersion": uuid.uuid4().__str__(),
         }
 
         event = {
-            "input": mock_input,
-            "config": mock_config,
+            "input": copy.deepcopy(mock_input),
+            "config": copy.deepcopy(mock_config),
         }
+
+        mock_input["granules"][0]["collectionId"] = \
+            mock_config["collectionShortname"] + "___" + mock_config["collectionVersion"]
 
         with patch.dict(os.environ,
                         {
@@ -256,6 +269,8 @@ class TestOrcaRecoveryAdapter(TestCase):
         ]
 
         config = {
+            "collectionShortname": uuid.uuid4().__str__(),
+            "collectionVersion": uuid.uuid4().__str__(),
             "buckets": {
                 uuid.uuid4().__str__():
                     {"name": uuid.uuid4().__str__(), "type": uuid.uuid4().__str__()},
@@ -326,6 +341,8 @@ class TestOrcaRecoveryAdapter(TestCase):
         ]
 
         config = {
+            "collectionShortname": uuid.uuid4().__str__(),
+            "collectionVersion": uuid.uuid4().__str__(),
             "buckets": {
                 uuid.uuid4().__str__():
                     {"name": uuid.uuid4().__str__(), "type": uuid.uuid4().__str__()},

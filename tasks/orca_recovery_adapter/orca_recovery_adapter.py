@@ -28,7 +28,7 @@ LOGGER = Logger()
 
 
 # noinspection PyUnusedLocal
-def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str, Any]:
+def task(event: Dict[str, Union[List[str], Dict, str]], context: object) -> Dict[str, Any]:
     """
     Converts event to a format accepted by ORCA's recovery step-function,
     then calls step-function and returns the result.
@@ -45,12 +45,17 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
         A dict representing input and copied files. See schemas/output.json for more information.
     """
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/lambda.html
-    config = Config(read_timeout=18000, retries={'total_max_attempts': 1})
-    client = boto3.client("stepfunctions", config=config)
+    boto3_config = Config(read_timeout=18000, retries={'total_max_attempts': 1})
+    client = boto3.client("stepfunctions", config=boto3_config)
+    recovery_input = event["input"]
+    recovery_config = event["config"]
+    for granule in recovery_input["granules"]:
+        granule["collectionId"] = \
+            recovery_config["collectionShortname"] + "___" + recovery_config["collectionVersion"]
     execution_info = client.start_execution(
         stateMachineArn=os.environ[OS_ENVIRON_ORCA_RECOVERY_STEP_FUNCTION_ARN_KEY],
         input=json.dumps({
-            ORCA_INPUT_KEY: event["input"],
+            ORCA_INPUT_KEY: recovery_input,
             ORCA_CONFIG_KEY: event["config"]
         }, indent=4)
     )
@@ -110,7 +115,7 @@ def get_state_machine_execution_results(
 
 
 @LOGGER.inject_lambda_context
-def handler(event: Dict[str, Union[List[str], Dict]], context: LambdaContext) -> Any:
+def handler(event: Dict[str, Union[List[str], Dict, str]], context: LambdaContext) -> Any:
     """Lambda handler. Runs a cumulus task that
     translates the input from the Cumulus format
     to the format required by ORCA's recovery step-function,

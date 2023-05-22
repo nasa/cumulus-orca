@@ -107,6 +107,8 @@ The actual format of that input may change over time, so we use the [cumulus-mes
     ]
   },
   "task_config": {
+    "collectionShortname": "{$.meta.collection.name}",
+    "collectionVersion": "{$.meta.collection.version}",
     "buckets": "{$.meta.buckets}",
     "fileBucketMaps": "{$.meta.collection.files}",
     "excludedFileExtensions": "{$.meta.collection.meta.orca.excludedFileExtensions}",
@@ -125,6 +127,8 @@ The actual format of that input may change over time, so we use the [cumulus-mes
       "orca_default": {"name": "PREFIX-orca-primary", "type": "orca"}
     },
     "collection": {
+      "name": "collectionShortName",
+      "version": "001",
       "meta": {
         "orca": {
           "excludedFileExtensions": [".blah"]
@@ -182,6 +186,8 @@ This is what the same input looks like for use with the [Step Function configura
       "orca_default": {"name": "PREFIX-orca-primary", "type": "orca"}
     },
     "collection": {
+      "name": "collectionShortName",
+      "version": "001",
       "meta": {
         "orca": {
           "excludedFileExtensions": [".blah"]
@@ -224,6 +230,7 @@ Note that if a [Step Function](#step-function-configuration) is used, the output
 {
   "payload": {
     "granules": [{
+      "collectionId": "collectionShortName___001",
       "granuleId": "a3a94886-c11d-4c21-a942-a836b8e9aa75", 
       "keys": [{
         "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf", 
@@ -259,6 +266,8 @@ Note that if a [Step Function](#step-function-configuration) is used, the output
       "orca_default": {"name": "PREFIX-orca-primary", "type": "orca"}
     },
     "collection": {
+      "name": "collectionShortName",
+      "version": "001",
       "meta": {
         "orca": {
           "excludedFileExtensions": [".blah"]
@@ -307,6 +316,8 @@ schemas for more information.
             "FullMessage": true
           },
           "task_config": {
+            "collectionShortname": "{$.meta.collection.name}",
+            "collectionVersion": "{$.meta.collection.version}",
             "buckets": "{$.meta.buckets}",
             "fileBucketMaps": "{$.meta.collection.files}",
             "excludedFileExtensions": "{$.meta.collection.meta.orca.excludedFileExtensions}",
