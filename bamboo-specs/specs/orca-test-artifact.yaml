@@ -1,0 +1,83 @@
+#bamboo plan for cleaning cumulus, ORCA and relevant buckets.
+---
+version: 2
+plan:
+  project-key: ORCA
+  key: OTA
+  name: ORCA Artifact TEST
+stages:
+- Test stage 1:
+    manual: true
+    final: false
+    jobs:
+    - Test stage 1 job
+- Test stage 2:
+    manual: true
+    final: true
+    jobs:
+    - Test stage 2 job
+# Job for cleaning up ORCA buckets, Cumulus, and ORCA modules
+Test stage 1 job:
+  key: TS1J
+  other:
+    clean-working-dir: true
+  docker:
+    image: maven.earthdata.nasa.gov/cumulus_orca
+    volumes:
+      ${bamboo.working.directory}: ${bamboo.working.directory}
+      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+  tasks:
+  - checkout:
+      force-clean-build: 'true'
+      description: Checkout Default Repository
+  - script:
+      interpreter: SHELL
+      scripts:
+      - |-
+        #!/bin/bash
+        echo "Hello"
+  artifacts:
+    -
+      name: Test Reports
+      location: test/reports
+      pattern: '*.txt'
+      shared: true
+# Job for cleaning up ORCA buckets, Cumulus, and ORCA modules
+Test stage 2 job:
+  key: TS2J
+  other:
+    clean-working-dir: true
+  docker:
+    image: maven.earthdata.nasa.gov/cumulus_orca
+    volumes:
+      ${bamboo.working.directory}: ${bamboo.working.directory}
+      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+  tasks:
+  - checkout:
+      force-clean-build: 'true'
+      description: Checkout Default Repository
+
+  - script:
+      interpreter: SHELL
+      scripts:
+      - |-
+        #!/bin/bash
+        echo "Hello 2"
+variables:
+  AWS_DEFAULT_REGION: us-west-2
+  CUMULUS_AWS_DEFAULT_REGION: us-west-2
+  CUMULUS_AWS_ACCESS_KEY_ID: REPLACE ME
+  CUMULUS_AWS_SECRET_ACCESS_KEY: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
+ 
+repositories:
+- orca test 2:
+    scope: global
+triggers:
+- polling: # Does not actually poll, as we do not have webhooks enabled.
+    period: '60' #time in seconds
+branches:
+  create: for-new-branch
+  delete:
+    after-deleted-days: 7
+    after-inactive-days: 30
+  link-to-jira: true
