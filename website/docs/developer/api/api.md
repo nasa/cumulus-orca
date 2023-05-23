@@ -124,6 +124,7 @@ Recovery granules API input invoke URL example: `https://example.execute-api.us-
 An example of the API input body is shown below:
 ```json
 {
+  "collectionId": "collectionName___001",
   "granuleId": "MOD14A1.061.H5V12.2020312.141531789",
   "asyncOperationId": "43c9751b-9498-4733-90d8-56b1458e0f85"
 }
@@ -132,7 +133,8 @@ The following table lists the fields in the input:
 
 | Name              | Data Type   | Description                                                                              | Required |
 | ------------------|-------------|------------------------------------------------------------------------------------------|----------|
-| granuleId         | `str`       | The unique ID of the granule to retrieve status for.                                     | Yes |
+| collectionId      | `str`       | The ID of the collection containing the granule.                                         | Yes |
+| granuleId         | `str`       | The ID of the granule to retrieve status for.                                            | Yes |
 | asyncOperationId  | `str`       | The unique ID of the asyncOperation. May apply to a request that covers multiple granules. | No |
 
 
@@ -140,6 +142,7 @@ The following table lists the fields in the input:
 An example of the API output is shown below:
 ```json
 {
+  "collectionId": "collectionName___001",
   "granuleId": "MOD14A1.061.H5V12.2020312.141531789",
   "asyncOperationId": "43c9751b-9498-4733-90d8-56b1458e0f85",
   "files": [
@@ -168,7 +171,8 @@ The following table lists the fields in the output:
 
 | Name               | Data Type   |                           Description                                                               |
 | -------------------| ----------- | ----------------------------------------------------------------------------------------------------|
-| granuleId          | `str`       | The unique ID of the granule retrieved.                                                             |
+| collectionId       | `str`       | The ID of the collection containing the granule retrieved.                                          |
+| granuleId          | `str`       | The ID of the granule retrieved.                                                                    |
 | asyncOperationId   | `str`       | The unique ID of the asyncOperation.                                                                |
 | files              | `Array[Object]`| Description and status of the files within the given granule.                                    |
 | fileName           | `str`       | The name and extension of the file.                                                                 |

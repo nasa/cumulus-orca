@@ -27,7 +27,8 @@ and includes an additional section for migration notes.
 - *ORCA-614*, *ORCA-428* Moved some Internal Reconciliation functionality to GraphQL
 - *ORCA-679* Updated area in recovery where granule ID was treated as a globally unique key. Per Cumulus updates, uniqueness is now granule ID plus collection ID.
   - *ORCA-678* `collection_id` column added to recovery status tables.
-  - ORCA-683* `collectionId` added to [Recovery Job status](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-jobs-api-output) output.
+  - *ORCA-683* `collectionId` added to [Recovery Job status](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-jobs-api-output) output.
+  - *ORCA-684* `collectionId` added to [Recovery Granule status](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-granules-api) input and output.
 
 ### Changed
 - *ORCA-573* Updated ORCA DB user password to now have a stronger password requirement. See migration notes for details.
@@ -35,6 +36,9 @@ and includes an additional section for migration notes.
 - *ORCA-647* Upgraded sqlalchemy from v1.4.11 to v2.0.5.
 
 ### Migration Notes
+- `collectionId` properties have been added to [Recovery Jobs](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-jobs-api) and [Recovery Granules](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-granules-api).
+  - For Recovery Jobs, it is only added to [output](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-jobs-api-output).
+  - For Recovery Granules, it is now required on [input](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-granules-api-input) and will be returned on [output](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-granules-api-output).
 - Changes have been made to SQS message processing that are not backwards compatible. Halt ingest and wait for the `PREFIX-orca-status-update-queue.fifo` queue to empty before applying update.
   - If the queue is or becomes stuck, it may be necessary to flush the queue and its associated Dead Letter Queue.
 - The output format of `copy_to_archive` lambda and step-function has been simplified. If accessing these resources outside of a Cumulus perspective, instead of accessing `output["payload"]["granules"]` you now use `output["granules"]`.

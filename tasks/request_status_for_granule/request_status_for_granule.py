@@ -11,9 +11,11 @@ from orca_shared.database import shared_db
 from sqlalchemy import text
 from sqlalchemy.future import Engine
 
+INPUT_COLLECTION_ID_KEY = "collectionId"
 INPUT_GRANULE_ID_KEY = "granuleId"
 INPUT_JOB_ID_KEY = "asyncOperationId"
 
+OUTPUT_COLLECTION_ID_KEY = "collectionId"
 OUTPUT_GRANULE_ID_KEY = "granuleId"
 OUTPUT_JOB_ID_KEY = "asyncOperationId"
 OUTPUT_FILES_KEY = "files"
@@ -26,13 +28,15 @@ OUTPUT_COMPLETION_TIME_KEY = "completionTime"
 
 
 class JobNotFoundException(Exception):
-    def __init__(self, granule_id: str):
+    def __init__(self, collection_id: str, granule_id: str):
+        self.collection_id = collection_id
         self.granule_id = granule_id
 
 
 class JobGranuleCombinationNotFoundException(Exception):
-    def __init__(self, job_id: str, granule_id: str):
+    def __init__(self, job_id: str, collection_id: str, granule_id: str):
         self.job_id = job_id
+        self.collection_id = collection_id
         self.granule_id = granule_id
 
 
@@ -47,34 +51,32 @@ LOGGER = Logger()
 
 
 def task(
-    granule_id: str, db_connect_info: Dict, job_id: str = None
+    collection_id: str, granule_id: str, db_connect_info: Dict, job_id: str = None
 ) -> Dict[str, Any]:
     # noinspection SpellCheckingInspection
     """
     Args:
-        granule_id: The unique ID of the granule to retrieve status for.
+        collection_id: The ID of the collection containing the granule.
+        granule_id: The ID of the granule to retrieve status for.
         db_connect_info: The {database}.py defined db_connect_info.
         job_id: An optional additional filter to get a specific job's entry.
     Returns: See output.json
     """
-    if granule_id is None or len(granule_id) == 0:
-        raise ValueError("granule_id must be set to a non-empty value.")
-
     engine = shared_db.get_user_connection(db_connect_info)
 
     if job_id is None or len(job_id) == 0:
-        job_id = get_most_recent_job_id_for_granule(granule_id, engine)
+        job_id = get_most_recent_job_id_for_granule(collection_id, granule_id, engine)
         if job_id is None:
-            raise JobNotFoundException(granule_id)
+            raise JobNotFoundException(collection_id, granule_id)
 
-    job_entry = get_job_entry_for_granule(granule_id, job_id, engine)
+    job_entry = get_job_entry_for_granule(collection_id, granule_id, job_id, engine)
     if job_entry is None:
-        raise JobGranuleCombinationNotFoundException(job_id, granule_id)
+        raise JobGranuleCombinationNotFoundException(job_id, collection_id, granule_id)
 
     if job_entry[OUTPUT_COMPLETION_TIME_KEY] is None:
         del job_entry[OUTPUT_COMPLETION_TIME_KEY]
 
-    file_entries = get_file_entries_for_granule_in_job(granule_id, job_id, engine)
+    file_entries = get_file_entries_for_granule_in_job(collection_id, granule_id, job_id, engine)
     for file_entry in file_entries:
         if file_entry[OUTPUT_ERROR_MESSAGE_KEY] is None:
             del file_entry[OUTPUT_ERROR_MESSAGE_KEY]
@@ -85,13 +87,14 @@ def task(
 
 @shared_db.retry_operational_error()
 def get_most_recent_job_id_for_granule(
-    granule_id: str, engine: Engine
+    collection_id: str, granule_id: str, engine: Engine
 ) -> Union[str, None]:
     """
     Gets the job_id for the most recent job that restores the given granule.
 
     Args:
-        granule_id: The unique ID of the granule.
+        collection_id: The ID of the collection containing the granule.
+        granule_id: The ID of the granule to retrieve status for.
         engine: The sqlalchemy engine to use for contacting the database.
 
     Returns: The job_id for the given granule's restore job.
@@ -102,6 +105,7 @@ def get_most_recent_job_id_for_granule(
                 get_most_recent_job_id_for_granule_sql(),
                 [
                     {
+                        "collection_id": collection_id,
                         "granule_id": granule_id,
                     }
                 ],
@@ -127,6 +131,7 @@ def get_most_recent_job_id_for_granule_sql() -> text:  # pragma: no cover
             FROM
                 recovery_job
             WHERE
+                collection_id = :collection_id
                 granule_id = :granule_id
             ORDER BY
                  request_time DESC
@@ -136,7 +141,7 @@ def get_most_recent_job_id_for_granule_sql() -> text:  # pragma: no cover
 
 @shared_db.retry_operational_error()
 def get_job_entry_for_granule(
-    granule_id: str, job_id: str, engine: Engine
+    collection_id: str, granule_id: str, job_id: str, engine: Engine
 ) -> Union[Dict[str, Any], None]:
     # noinspection SpellCheckingInspection
     """
@@ -145,11 +150,13 @@ def get_job_entry_for_granule(
     Otherwise, only the item with the most recent request_time will be returned.
 
     Args:
-        granule_id: The unique ID of the granule to retrieve status for.
+        collection_id: The ID of the collection containing the granule.
+        granule_id: The ID of the granule to retrieve status for.
         job_id: An optional additional filter to get a specific job's entry.
         engine: The sqlalchemy engine to use for contacting the database.
     Returns: A Dict with the following keys:
-        'granule_id' (str): The unique ID of the granule to retrieve status for.
+        'collection_id' (str): The ID of the collection containing the granule retrieved.
+        'granule_id' (str): The ID of the granule retrieved.
         'job_id' (str): The unique ID of the asyncOperation.
         'request_time' (int): The time, in milliseconds since 1 January 1970 UTC,
             when the request to restore the granule was initiated.
@@ -162,6 +169,7 @@ def get_job_entry_for_granule(
                 get_job_entry_for_granule_sql(),
                 [
                     {
+                        "collection_id": collection_id,
                         "granule_id": granule_id,
                         "job_id": job_id,
                     }
@@ -178,6 +186,7 @@ def get_job_entry_for_granule(
     if row is None:
         return None
     return {
+        OUTPUT_COLLECTION_ID_KEY: row[OUTPUT_COLLECTION_ID_KEY],
         OUTPUT_GRANULE_ID_KEY: row[OUTPUT_GRANULE_ID_KEY],
         OUTPUT_JOB_ID_KEY: row[OUTPUT_JOB_ID_KEY],
         OUTPUT_REQUEST_TIME_KEY: row[OUTPUT_REQUEST_TIME_KEY],
@@ -189,6 +198,7 @@ def get_job_entry_for_granule_sql() -> text:  # pragma: no cover
     return text(  # nosec
         f"""
                 SELECT
+                    collection_id as "{OUTPUT_COLLECTION_ID_KEY}",
                     granule_id as "{OUTPUT_GRANULE_ID_KEY}",
                     job_id as "{OUTPUT_JOB_ID_KEY}",
                     (EXTRACT(EPOCH FROM date_trunc('milliseconds', request_time)
@@ -198,18 +208,21 @@ def get_job_entry_for_granule_sql() -> text:  # pragma: no cover
                 FROM
                     recovery_job
                 WHERE
-                    granule_id = :granule_id AND job_id = :job_id"""
+                    collection_id = :collection_id
+                    granule_id = :granule_id
+                    job_id = :job_id"""
     )
 
 
 @shared_db.retry_operational_error()
 def get_file_entries_for_granule_in_job(
-    granule_id: str, job_id: str, engine: Engine
+    collection_id: str, granule_id: str, job_id: str, engine: Engine
 ) -> List[Dict]:
     """
     Gets the individual status entries for the files for the given job+granule.
 
     Args:
+        collection_id: The id of the collection containing the granule.
         granule_id: The id of the granule to get file statuses for.
         job_id: The id of the job to get file statuses for.
         engine: The sqlalchemy engine to use for contacting the database.
@@ -228,6 +241,7 @@ def get_file_entries_for_granule_in_job(
                 get_file_entries_for_granule_in_job_sql(),
                 [
                     {
+                        "collection_id": collection_id,
                         "granule_id": granule_id,
                         "job_id": job_id,
                     }
@@ -263,7 +277,7 @@ def get_file_entries_for_granule_in_job_sql() -> text:  # pragma: no cover
                 recovery_file
             JOIN recovery_status ON recovery_file.status_id=recovery_status.id
             WHERE
-                granule_id = :granule_id AND job_id = :job_id
+                collection_id = :collection_id AND granule_id = :granule_id AND job_id = :job_id
             ORDER BY filename desc"""
     )
 
@@ -356,15 +370,11 @@ def handler(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:
                 json_schema_exception.__str__(),
             )
 
-        granule_id = event.get(INPUT_GRANULE_ID_KEY, None)
-        if granule_id is None or len(granule_id) == 0:
-            return create_http_error_dict(
-                "BadRequest",
-                HTTPStatus.BAD_REQUEST,
-                context.aws_request_id,
-                f"{INPUT_GRANULE_ID_KEY} must be set to a non-empty value.",
-            )
+        collection_id = event[INPUT_COLLECTION_ID_KEY]
+        granule_id = event[INPUT_GRANULE_ID_KEY]
+
         result = task(
+            collection_id,
             granule_id,
             db_connect_info,
             event.get(INPUT_JOB_ID_KEY, None),
@@ -378,14 +388,15 @@ def handler(event: Dict[str, Any], context: LambdaContext) -> Dict[str, Any]:
             "NotFound",
             HTTPStatus.NOT_FOUND,
             context.aws_request_id,
-            f"No job for granule id '{error.granule_id}'.",
+            f"No job for collection '{error.collection_id}' granule '{error.granule_id}'.",
         )
     except JobGranuleCombinationNotFoundException as error:
         return create_http_error_dict(
             "NotFound",
             HTTPStatus.NOT_FOUND,
             context.aws_request_id,
-            f"No job found for granule id '{error.granule_id}' and job id '{error.job_id}'.",
+            f"No job found for collection '{error.collection_id}' granule '{error.granule_id}' "
+            f"job '{error.job_id}'.",
         )
     except Exception as error:
         return create_http_error_dict(
