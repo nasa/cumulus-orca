@@ -43,8 +43,12 @@
 				"description": "A granule being copied as part of the job.",
 				"type": "object",
 				"properties": {
+					"collectionId": {
+						"description": "The id of the collection containing the granule.",
+						"type": "string"
+					},
 					"granuleId": {
-						"description": "The unique ID of the granule.",
+						"description": "The id of the granule.",
 						"type": "string"
 					},
 					"status": {
@@ -53,7 +57,7 @@
 						"pattern": "^(pending|success|error|staged)$"
 					}
 				},
-				"required": [ "granuleId", "status" ]
+				"required": [ "collectionId", "granuleId", "status" ]
 			},
 			"uniqueItems": true
 		}

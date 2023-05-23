@@ -27,6 +27,7 @@ and includes an additional section for migration notes.
 - *ORCA-614*, *ORCA-428* Moved some Internal Reconciliation functionality to GraphQL
 - *ORCA-679* Updated area in recovery where granule ID was treated as a globally unique key. Per Cumulus updates, uniqueness is now granule ID plus collection ID.
   - *ORCA-678* `collection_id` column added to recovery status tables.
+  - ORCA-683* `collectionId` added to [Recovery Job status](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-jobs-api-output) output.
 
 ### Changed
 - *ORCA-573* Updated ORCA DB user password to now have a stronger password requirement. See migration notes for details.

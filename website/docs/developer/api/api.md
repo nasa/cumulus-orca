@@ -124,7 +124,7 @@ Recovery granules API input invoke URL example: `https://example.execute-api.us-
 An example of the API input body is shown below:
 ```json
 {
-  "granule_id": "MOD14A1.061.H5V12.2020312.141531789",
+  "granuleId": "MOD14A1.061.H5V12.2020312.141531789",
   "asyncOperationId": "43c9751b-9498-4733-90d8-56b1458e0f85"
 }
 ```
@@ -212,10 +212,12 @@ An example of the API output is shown below:
   },
   "granules": [
     {
+      "collectionId": "collectionName___001",
       "granuleId": "6c8d0c8b-4f9a-4d87-ab7c-480b185a0250",
       "status": "error"
     },
     {
+      "collectionId": "collectionName___001",
       "granuleId": "b5681dc1-48ba-4dc3-877d-1b5ad97e8276",
       "status": "pending"
     }
@@ -229,8 +231,9 @@ The following table lists the fields in the output:
 | asyncOperationId    | `str`       | The unique ID of the asyncOperation.                                                                |
 | jobStatusTotals     | `Object`    | Sum of how many granules are in each particular restoration status ('pending', 'staged', 'success', or 'error'). |
 | granules            | `Array[Object]` | An array representing each granule being copied as part of the job.                             |
-| granuleId           | `str`       | The unique ID of the granule retrieved.                                                             |
-| status              | `str`       | The status of the restoration of the file. May be 'pending', 'staged', 'success', or 'error'.       |
+| collectionId        | `str`       | The id of the collection containing the granule.                                                    |
+| granuleId           | `str`       | The id of the granule.                                                                              |
+| status              | `str`       | The status of the restoration of the granule. May be 'pending', 'staged', 'success', or 'error'.    |
 
 The API returns status code 200 on success, 400 if input is in incorrect format, 500 if an error occurs when querying the database, and 404 if not found.
 
