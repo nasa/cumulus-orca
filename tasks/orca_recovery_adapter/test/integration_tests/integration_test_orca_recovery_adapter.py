@@ -1,8 +1,10 @@
 import os
 import unittest
-import uuid
 from dataclasses import dataclass
 from unittest import mock
+
+# noinspection PyPackageRequirements
+import pytest
 
 import orca_recovery_adapter
 
@@ -40,9 +42,6 @@ class TestOrcaRecoveryAdapter(unittest.TestCase):
         _, file_extension = os.path.splitext(file_name)
         granule_id = os.environ["GRANULE_ID"]
 
-        collection_name = uuid.uuid4().__str__()
-        collection_version = uuid.uuid4().__str__()
-
         orca_recovery_adapter_input_event = {
             "payload": {
                 "granules": [
@@ -59,8 +58,6 @@ class TestOrcaRecoveryAdapter(unittest.TestCase):
                 ]
             },
             "task_config": {
-                "collectionShortname": "{$.meta.collection.name}",
-                "collectionVersion": "{$.meta.collection.version}",
                 "buckets": "{$.meta.buckets}",
                 "fileBucketMaps": "{$.meta.collection.files}",
                 "excludedFileExtensions": "{$.meta.collection.meta.orca.excludedFileExtensions}",
@@ -78,8 +75,6 @@ class TestOrcaRecoveryAdapter(unittest.TestCase):
                 "collection": {
                     "meta": {
                         "orca": {
-                            "name": collection_name,
-                            "version": collection_version,
                             "excludedFileExtensions": [".blah"]
                         }
                     },
@@ -101,7 +96,6 @@ class TestOrcaRecoveryAdapter(unittest.TestCase):
             'payload': {
                 'granules': [{
                     'granuleId': granule_id,
-                    'collectionId': collection_name + "___" + collection_version,
                     'keys': [{
                         'key': key_name, 'destBucket': cumulus_bucket_name
                     }],
