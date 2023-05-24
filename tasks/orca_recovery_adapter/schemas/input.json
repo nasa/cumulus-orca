@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/nasa/cumulus-orca/blob/master/tasks/orca_recovery_adapter/schemas/input.json",
   "title": "orca_recovery_adapter Lambda Input",
-  "description": "The input for the orca_recovery_adapter Lambda.",
+  "description": "The input for the orca_recovery_adapter Lambda. Based on https://github.com/nasa/cumulus/blob/master/packages/api/lib/schemas.js#L259",
   "type": "object",
   "properties": {
     "granules": {
@@ -15,6 +15,10 @@
             "recoveryBucketOverride": {
               "description": "The user specified recovery S3 bucket to store recovered files",
               "type": ["string", "null"]
+            },
+            "collectionId": {
+              "description": "The ID of the collection containing the granule.",
+              "type": "string"
             },
             "granuleId": {
               "description": "The ID of the granule.",

@@ -11,6 +11,10 @@
       "items": {
         "type": "object",
         "properties": {
+          "collectionId": {
+            "description": "The id of the collection containing the granule.",
+            "type": "string"
+          },
           "granuleId": {
             "description": "The id of the granule being restored.",
             "type": "string"
@@ -71,7 +75,7 @@
             }
           }
         },
-        "required": ["granuleId", "recoverFiles"]
+        "required": ["collectionId", "granuleId", "recoverFiles"]
       }
     },
     "asyncOperationId": {

@@ -10,6 +10,7 @@
   "input": {
     "granules": [
       {
+        "collectionId": "integrationCollectionName___IntegrationCollectionVersion",
         "granuleId": "integrationGranuleId",
         "version": "integrationGranuleVersion",
         "files": [
@@ -32,6 +33,7 @@
     "payload": {
       "granules": [
         {
+          "collectionId": "integrationCollectionName___IntegrationCollectionVersion",
           "granuleId": "integrationGranuleId",
           "version": "integrationGranuleVersion",
           "files": [

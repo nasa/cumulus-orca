@@ -50,6 +50,7 @@ CONFIG_JOB_ID_KEY = "asyncOperationId"
 CONFIG_COLLECTION_KEY = "collection"
 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
 
+GRANULE_COLLECTION_ID_KEY = "collectionId"  # todo: Higher 'collections' list?
 GRANULE_GRANULE_ID_KEY = "granuleId"
 GRANULE_KEYS_KEY = "keys"
 GRANULE_RECOVER_FILES_KEY = "recoverFiles"
@@ -82,8 +83,8 @@ try:
     with open("schemas/output.json", "r") as raw_schema:
         output_schema = json.loads(raw_schema.read())
         _VALIDATE_OUTPUT = fastjsonschema.compile(output_schema)
-except Exception as ex:
-    LOGGER.error(f"Could not build schema validator: {ex}")
+except Exception as schema_ex:
+    LOGGER.error(f"Could not build schema validator: {schema_ex}")
     raise
 
 
@@ -353,12 +354,14 @@ def inner_task(
         # post to DB-queue. Retry using exponential delay if it fails
         LOGGER.debug("Sending initial job status information to DB QUEUE.")
         job_id = event[EVENT_CONFIG_KEY][CONFIG_JOB_ID_KEY]
+        collection_id = granule[GRANULE_COLLECTION_ID_KEY]
         granule_id = granule[GRANULE_GRANULE_ID_KEY]
 
         for retry in range(max_retries + 1):
             try:
                 shared_recovery.create_status_for_job(
-                    job_id, granule_id, archive_bucket, files, status_update_queue_url
+                    job_id, collection_id, granule_id, archive_bucket, files,
+                    status_update_queue_url
                 )
                 break
             except Exception as ex:
@@ -437,6 +440,7 @@ def process_granule(
     Raises: RestoreRequestError if any file restore could not be initiated.
     """
     attempt = 1
+    collection_id = granule[GRANULE_COLLECTION_ID_KEY]
     granule_id = granule[GRANULE_GRANULE_ID_KEY]
 
     # Try to restore objects in S3
@@ -507,6 +511,7 @@ def process_granule(
                 try:
                     shared_recovery.update_status_for_file(
                         job_id,
+                        collection_id,
                         granule_id,
                         a_file[FILE_FILENAME_KEY],
                         shared_recovery.OrcaStatus.FAILED,
@@ -681,7 +686,7 @@ def set_optional_event_property(event: Dict[str, Any], target_path_cursor: Dict,
 
 
 @LOGGER.inject_lambda_context
-def handler(event: Dict[str, Any], context: LambdaContext):  # pylint: disable-msg=unused-argument
+def handler(event: Dict[str, Any], _: LambdaContext):  # pylint: disable-msg=unused-argument
     """Lambda handler. Initiates a restore_object request from archive for each file of a granule.
     Note that this function is set up to accept a list of granules, (because Cumulus sends a list),
     but at this time, only 1 granule will be accepted.
@@ -706,7 +711,7 @@ def handler(event: Dict[str, Any], context: LambdaContext):  # pylint: disable-m
         Args:
             event: Event passed into the step from the aws workflow.
                 See schemas/input.json and schemas/config.json for more information.
-            context: This object provides information about the lambda invocation, function,
+            _: This object provides information about the lambda invocation, function,
                 and execution env.
         Returns:
             A dict matching schemas/output.json

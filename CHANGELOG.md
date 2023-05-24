@@ -19,18 +19,18 @@ and includes an additional section for migration notes.
   - *ORCA-678* `collection_id` column added to recovery status tables.
   - *ORCA-683* `collectionId` added to [Recovery Job status](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-jobs-api-output) output.
   - *ORCA-684* `collectionId` added to [Recovery Granule status](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-granules-api) input and output.
+  - *ORCA-672*, *ORCA-671* `collectionId` added as input to `extract_filepaths_for_granule`, `request_from_archive`, and the recovery workflow.
 
 ### Changed
 
 ### Migration Notes
 - Changes have been made to SQS message processing that are not backwards compatible. Halt ingest and wait for the `PREFIX-orca-status-update-queue.fifo` queue to empty before applying update.
   - If the queue is or becomes stuck, it may be necessary to flush the queue and its associated Dead Letter Queue.
-- The input format of the ORCA Recovery Workflow step-function has been simplified.
-  If accessing these resources outside of a Cumulus perspective, go to `orca_recover_workflow.asl.json` and look at `config` elements to see the new paths.
+- The input format of the ORCA Recovery Workflow step-function has been modified.
+  If accessing these resources outside of a Cumulus perspective, go to `orca_recover_workflow.asl.json` and look at `config` elements to see the new paths. Additionally, add a `collectionId` property to each granule passed in.
 - `collectionId` properties have been added to [Recovery Jobs](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-jobs-api) and [Recovery Granules](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-granules-api).
   - For Recovery Jobs, it is only added to [output](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-jobs-api-output).
   - For Recovery Granules, it is now required on [input](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-granules-api-input) and will be returned on [output](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-granules-api-output).
-
 
 ## [8.0.0]
 ### Added
