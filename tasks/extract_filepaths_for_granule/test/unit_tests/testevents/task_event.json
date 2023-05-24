@@ -3,6 +3,7 @@
     {
       "granules": [
         {
+          "collectionId": "collectionName___collectionVersion",
           "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
           "dataType": "MOD09GQ_test-jk2-IngestGranuleSuccess-1558420117156",
           "version": "006",

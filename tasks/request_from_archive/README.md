@@ -35,6 +35,7 @@ Fully defined json schemas written in the schema of https://json-schema.org/ can
   "granules": 
   [
     {
+      "collectionId": "MOD09GQ___001",
       "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
       "keys": [
         {
@@ -53,6 +54,7 @@ Fully defined json schemas written in the schema of https://json-schema.org/ can
   "granules":
   [
     {
+      "collectionId": "MOD09GQ___001",
       "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
       "recoverFiles":
       [
