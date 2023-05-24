@@ -14,6 +14,8 @@ and includes an additional section for migration notes.
 - *Security* - Vulnerabilities fixes and changes.
 
 ## [Unreleased]
+
+## [8.0.0]
 ### Added
 - *ORCA-554*, *ORCA-561*, *ORCA-579*, *ORCA-581*
   - GraphQL image, service, and Load Balancer will now be deployed by TF.

@@ -3,9 +3,6 @@ import unittest
 from dataclasses import dataclass
 from unittest import mock
 
-# noinspection PyPackageRequirements
-import pytest
-
 import orca_recovery_adapter
 
 
