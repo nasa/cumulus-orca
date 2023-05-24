@@ -1,6 +1,5 @@
 import os
 import unittest
-import uuid
 from dataclasses import dataclass
 from unittest import mock
 
@@ -38,14 +37,12 @@ class TestOrcaRecoveryAdapter(unittest.TestCase):
         key_name = os.environ["OBJECT_KEY_NAME"]
         file_name = os.path.basename(key_name)
         _, file_extension = os.path.splitext(file_name)
-        collection_id = uuid.uuid4().__str__()
         granule_id = os.environ["GRANULE_ID"]
 
         orca_recovery_adapter_input_event = {
             "payload": {
                 "granules": [
                     {
-                        "collectionId": collection_id,
                         "granuleId": granule_id,
                         "files": [
                             {
@@ -95,7 +92,6 @@ class TestOrcaRecoveryAdapter(unittest.TestCase):
         expected_output = {
             'payload': {
                 'granules': [{
-                    'collectionId': collection_id,
                     'granuleId': granule_id,
                     'keys': [{
                         'key': key_name, 'destBucket': cumulus_bucket_name

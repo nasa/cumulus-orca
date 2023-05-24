@@ -10,10 +10,6 @@
         {
           "type": "object",
           "properties": {
-            "collectionId": {
-            "description": "The id of the collection containing the granule.",
-            "type": "string"
-          },
             "granuleId": {
               "description": "The ID of the granule.",
               "type": "string"
@@ -42,7 +38,6 @@
             }
           },
           "required": [
-            "collectionId",
             "granuleId",
             "keys"
           ]

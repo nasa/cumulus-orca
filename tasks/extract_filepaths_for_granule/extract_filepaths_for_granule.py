@@ -24,7 +24,6 @@ CONFIG_BUCKETS_KEY = "buckets"
 
 INPUT_GRANULES_KEY = "granules"
 INPUT_GRANULE_RECOVERY_BUCKET_OVERRIDE_KEY = "recoveryBucketOverride"
-INPUT_COLLECTION_ID_KEY = "collectionId"
 INPUT_GRANULE_ID_KEY = "granuleId"
 INPUT_GRANULE_FILES_KEY = "files"
 INPUT_GRANULE_FILE_FILENAME_KEY = "fileName"
@@ -58,14 +57,14 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any]):
     """
     Task called by the handler to perform the work.
 
-    This task will parse the input, extracting the properties for a granule.
+    This task will parse the input, removing the granuleId and file keys for a granule.
 
         Args:
             task_input: See schemas/input.json
             config: See schemas/config.json
 
         Returns:
-            dict: dict containing properties for granules. See handler for detail.
+            dict: dict containing granuleId and keys. See handler for detail.
 
         Raises:
             ExtractFilePathsError: An error occurred parsing the input.
@@ -126,10 +125,8 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any]):
                     }
                 )
         if len(files) == 0:
-            LOGGER.warning(f"All files for collection '{a_granule[INPUT_COLLECTION_ID_KEY]} "
-                           f"granule {a_granule[INPUT_GRANULE_ID_KEY]}' excluded.")
+            LOGGER.warning(f"All files for granule '{a_granule['granuleId']}' excluded.")
         result_granules.append({
-            "collectionId": a_granule[INPUT_COLLECTION_ID_KEY],
             "granuleId": a_granule[INPUT_GRANULE_ID_KEY],
             "keys": files,
         })
@@ -176,7 +173,7 @@ def get_regex_buckets(config: Dict[str, Any]) -> Dict[str, str]:
 
 def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> bool:
     """
-    Tests whether file is included in {excludedFileExtensions} from copy_to_archive.
+    Tests whether or not file is included in {excludedFileExtensions} from copy_to_archive.
     Args:
         file_key: The key of the file within the s3 bucket.
         exclude_file_types: List of extensions to exclude in the backup.
@@ -254,7 +251,16 @@ def handler(event: Dict[str, Dict[str, Any]],
             and execution env.
 
     Returns:
-        See schemas/output.json for more information.
+        dict: A dict with the following keys:
+
+            'granules' (list(dict)): list of dict with the following keys:
+                'granuleId' (string): The id of a granule.
+                'keys' (list(string)): list of keys for the granule.
+
+        Example:
+            {"granules": [{"granuleId": "granxyz",
+                         "keys": ["key1",
+                                       "key2"]}]}
 
     Raises:
         ExtractFilePathsError: An error occurred parsing the input.

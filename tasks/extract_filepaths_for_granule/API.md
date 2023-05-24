@@ -36,7 +36,7 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any])
 
 Task called by the handler to perform the work.
 
-This task will parse the input, extracting the properties for a granule.
+This task will parse the input, removing the granuleId and file keys for a granule.
 
 **Arguments**:
 
@@ -46,7 +46,7 @@ This task will parse the input, extracting the properties for a granule.
 
 **Returns**:
 
-- `dict` - dict containing properties for granules. See handler for detail.
+- `dict` - dict containing granuleId and keys. See handler for detail.
   
 
 **Raises**:
@@ -87,7 +87,7 @@ def should_exclude_files_type(file_key: str,
                               exclude_file_types: List[str]) -> bool
 ```
 
-Tests whether file is included in {excludedFileExtensions} from copy_to_archive.
+Tests whether or not file is included in {excludedFileExtensions} from copy_to_archive.
 
 **Arguments**:
 
@@ -136,13 +136,21 @@ Lambda handler. Extracts the key's for a granule from an input dict.
 - `event` - Event passed into the step from the aws workflow.
   See schemas/input.json and schemas/config.json for more information.
   
-- `context` - This object provides information about the lambda invocation, function,
-  and execution env.
-  
 
 **Returns**:
 
-  See schemas/output.json for more information.
+- `dict` - A dict with the following keys:
+  
+  'granules' (list(dict)): list of dict with the following keys:
+- `'granuleId'` _string_ - The id of a granule.
+  'keys' (list(string)): list of keys for the granule.
+  
+
+**Example**:
+
+- `{"granules"` - [{"granuleId": "granxyz",
+- `"keys"` - ["key1",
+  "key2"]}]}
   
 
 **Raises**:

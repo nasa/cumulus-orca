@@ -71,7 +71,6 @@ class TestExtractFilePaths(unittest.TestCase):
         mock_task.return_value = {
             "granules": [
                 {
-                    "collectionId": uuid.uuid4().__str__(),
                     "granuleId": "L0A_HR_RAW_product_0003-of-0420",
                     "keys": [
                         "L0A_HR_RAW_product_0003-of-0420.h5",
@@ -144,7 +143,6 @@ class TestExtractFilePaths(unittest.TestCase):
         bad_handler_input_event = {"input": {
             "granules": [
                 {
-                    "collectionId": uuid.uuid4().__str__(),
                     "status": "completed",
                     "files": [
                         {
@@ -165,7 +163,7 @@ class TestExtractFilePaths(unittest.TestCase):
             extract_filepaths_for_granule.handler(bad_handler_input_event, context)
         self.assertEqual(
             "data.granules[0] must contain "
-            "['collectionId', 'granuleId', 'files'] properties",
+            "['granuleId', 'files'] properties",
             str(ex.exception))
         mock_task.assert_not_called()
 
@@ -213,7 +211,6 @@ class TestExtractFilePaths(unittest.TestCase):
         mock_task.return_value = {
             "granules": [
                 {
-                    "collectionId": uuid.uuid4().__str__(),
                     "keys": [
                         "key1",
                         "key2"
@@ -226,7 +223,7 @@ class TestExtractFilePaths(unittest.TestCase):
             extract_filepaths_for_granule.handler(handler_input_event, context)
         self.assertEqual(
             str(ex.exception), "data.granules[0] must contain "
-                               "['collectionId', 'granuleId', 'keys'] properties")
+                               "['granuleId', 'keys'] properties")
 
     # noinspection PyUnusedLocal
     @patch("extract_filepaths_for_granule.LOGGER.debug")
@@ -256,7 +253,6 @@ class TestExtractFilePaths(unittest.TestCase):
             extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: "sndbx-cumulus-public",
         }
         exp_gran = {
-            "collectionId": self.task_input_event["input"]["granules"][0]["collectionId"],
             "granuleId": self.task_input_event["input"]["granules"][0]["granuleId"],
             "keys": [exp_key1, exp_key2, exp_key3],
         }
@@ -272,10 +268,8 @@ class TestExtractFilePaths(unittest.TestCase):
         """
         Test with one valid file in input.
         """
-        collection_id = uuid.uuid4().__str__()
         self.task_input_event["input"]["granules"] = [
             {
-                "collectionId": collection_id,
                 "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
                 "files": [
                     {
@@ -299,7 +293,6 @@ class TestExtractFilePaths(unittest.TestCase):
                                 "sndbx-cumulus-protected",
                         }
                     ],
-                    "collectionId": collection_id,
                     "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
                 }
             ]
@@ -335,17 +328,14 @@ class TestExtractFilePaths(unittest.TestCase):
                          str(cm.exception))
 
     def test_exclude_file_type(self):
-        # noinspection SpellCheckingInspection
         """
         Tests the exclude file type filtering. The .cmr filetype will be excluded and
         not show up in the output since the
         "extract_filepaths_for_granule/test/unit_tests/testevents/task_event.json" includes
         "excludedFileExtensions": [".cmr"]
         """
-        collection_id = uuid.uuid4().__str__()
         self.task_input_event["input"]["granules"] = [
             {
-                "collectionId": collection_id,
                 "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
                 "files": [
                     {
@@ -360,7 +350,6 @@ class TestExtractFilePaths(unittest.TestCase):
             "granules": [
                 {
                     "keys": [],  # this will be empty since the filetype is .cmr
-                    "collectionId": collection_id,
                     "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
                 }
             ]
@@ -375,12 +364,9 @@ class TestExtractFilePaths(unittest.TestCase):
         """
         Test with two granules, one key each.
         """
-        collection_id0 = uuid.uuid4().__str__()
-        collection_id1 = uuid.uuid4().__str__()
 
         self.task_input_event["input"]["granules"] = [
             {
-                "collectionId": collection_id0,
                 "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
                 "files": [
                     {
@@ -391,7 +377,6 @@ class TestExtractFilePaths(unittest.TestCase):
                 ],
             },
             {
-                "collectionId": collection_id1,
                 "granuleId": "MOD09GQ.A0219115.N5aUCG.006.0656338553321",
                 "files": [
                     {
@@ -414,7 +399,6 @@ class TestExtractFilePaths(unittest.TestCase):
                                 "sndbx-cumulus-protected",
                         }
                     ],
-                    "collectionId": collection_id0,
                     "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
                 },
                 {
@@ -426,8 +410,8 @@ class TestExtractFilePaths(unittest.TestCase):
                                 "sndbx-cumulus-protected",
                         }
                     ],
-                    "collectionId": collection_id1,
-                    "granuleId": "MOD09GQ.A0219115.N5aUCG.006.0656338553321",
+                    "granuleId":
+                        "MOD09GQ.A0219115.N5aUCG.006.0656338553321",
                 },
             ]
         }
@@ -470,11 +454,9 @@ class TestExtractFilePaths(unittest.TestCase):
         self.assertEqual(True, result_true)
         self.assertEqual(False, result_false)
 
-    # noinspection PyUnusedLocal
     @patch("extract_filepaths_for_granule.LOGGER.info")
     def test_set_optional_event_property(
-        self,
-        mock_logger: MagicMock,
+        self, mock_logger: MagicMock,
     ):
         """
         Tests that set_optional_event_property sets asyncOperationId as the value

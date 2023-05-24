@@ -95,7 +95,6 @@ The actual format of that input may change over time, so we use the [cumulus-mes
     "granules": [
       {
         "granuleId": "a3a94886-c11d-4c21-a942-a836b8e9aa75",
-        "collectionId": "collectionName___001",
         "version": "integrationGranuleVersion",
         "files": [
           {
@@ -163,7 +162,6 @@ This is what the same input looks like for use with the [Step Function configura
   "payload": {
     "granules": [
       {
-        "collectionId": "collectionName___001",
         "granuleId": "a3a94886-c11d-4c21-a942-a836b8e9aa75",
         "files": [
           {
@@ -226,7 +224,6 @@ Note that if a [Step Function](#step-function-configuration) is used, the output
 {
   "payload": {
     "granules": [{
-      "collectionId": "collectionName___001",
       "granuleId": "a3a94886-c11d-4c21-a942-a836b8e9aa75", 
       "keys": [{
         "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf", 

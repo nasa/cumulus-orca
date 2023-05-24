@@ -373,8 +373,6 @@ class TestRequestFromArchive(unittest.TestCase):
         file_dest_bucket_0 = uuid.uuid4().__str__()
         file_dest_bucket_1 = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
-        collection_id_0 = uuid.uuid4().__str__()
-        collection_id_1 = uuid.uuid4().__str__()
         granule_id0 = uuid.uuid4().__str__()
         granule_id1 = uuid.uuid4().__str__()
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
@@ -414,7 +412,6 @@ class TestRequestFromArchive(unittest.TestCase):
             expected_file0_output,
         ]
         granule0 = {
-            request_from_archive.GRANULE_COLLECTION_ID_KEY: collection_id_0,
             request_from_archive.GRANULE_GRANULE_ID_KEY: granule_id0,
             request_from_archive.GRANULE_KEYS_KEY: [
                 file_0,
@@ -429,7 +426,6 @@ class TestRequestFromArchive(unittest.TestCase):
             expected_file1_output,
         ]
         granule1 = {
-            request_from_archive.GRANULE_COLLECTION_ID_KEY: collection_id_1,
             request_from_archive.GRANULE_GRANULE_ID_KEY: granule_id1,
             request_from_archive.GRANULE_KEYS_KEY: [
                 file_1,
@@ -474,7 +470,6 @@ class TestRequestFromArchive(unittest.TestCase):
             [
                 call(
                     job_id,
-                    collection_id_0,
                     granule_id0,
                     archive_bucket_name,
                     [
@@ -501,7 +496,6 @@ class TestRequestFromArchive(unittest.TestCase):
                 ),
                 call(
                     job_id,
-                    collection_id_1,
                     granule_id1,
                     archive_bucket_name,
                     [
@@ -591,8 +585,6 @@ class TestRequestFromArchive(unittest.TestCase):
         file_dest_bucket_0 = uuid.uuid4().__str__()
         file_dest_bucket_1 = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
-        collection_id0 = uuid.uuid4().__str__()
-        collection_id1 = uuid.uuid4().__str__()
         granule_id0 = uuid.uuid4().__str__()
         granule_id1 = uuid.uuid4().__str__()
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
@@ -638,7 +630,6 @@ class TestRequestFromArchive(unittest.TestCase):
             expected_file0_output,
         ]
         granule0 = {
-            request_from_archive.GRANULE_COLLECTION_ID_KEY: collection_id0,
             request_from_archive.GRANULE_GRANULE_ID_KEY: granule_id0,
             request_from_archive.GRANULE_KEYS_KEY: [
                 file_0,
@@ -653,7 +644,6 @@ class TestRequestFromArchive(unittest.TestCase):
             expected_file1_output,
         ]
         granule1 = {
-            request_from_archive.GRANULE_COLLECTION_ID_KEY: collection_id1,
             request_from_archive.GRANULE_GRANULE_ID_KEY: granule_id1,
             request_from_archive.GRANULE_KEYS_KEY: [
                 file_1,
@@ -701,7 +691,6 @@ class TestRequestFromArchive(unittest.TestCase):
             [
                 call(
                     job_id,
-                    collection_id0,
                     granule_id0,
                     archive_bucket_name,
                     [
@@ -732,7 +721,6 @@ class TestRequestFromArchive(unittest.TestCase):
                 ),
                 call(
                     job_id,
-                    collection_id1,
                     granule_id1,
                     archive_bucket_name,
                     [
@@ -821,8 +809,6 @@ class TestRequestFromArchive(unittest.TestCase):
         file_dest_bucket_0 = uuid.uuid4().__str__()
         file_dest_bucket_1 = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
-        collection_id0 = uuid.uuid4().__str__()
-        collection_id1 = uuid.uuid4().__str__()
         granule_id0 = uuid.uuid4().__str__()
         granule_id1 = uuid.uuid4().__str__()
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
@@ -861,7 +847,6 @@ class TestRequestFromArchive(unittest.TestCase):
             expected_file0_output,
         ]
         granule0 = {
-            request_from_archive.GRANULE_COLLECTION_ID_KEY: collection_id0,
             request_from_archive.GRANULE_GRANULE_ID_KEY: granule_id0,
             request_from_archive.GRANULE_KEYS_KEY: [
                 file_0,
@@ -876,7 +861,6 @@ class TestRequestFromArchive(unittest.TestCase):
             expected_file1_output,
         ]
         granule1 = {
-            request_from_archive.GRANULE_COLLECTION_ID_KEY: collection_id1,
             request_from_archive.GRANULE_GRANULE_ID_KEY: granule_id1,
             request_from_archive.GRANULE_KEYS_KEY: [
                 file_1,
@@ -926,7 +910,6 @@ class TestRequestFromArchive(unittest.TestCase):
             [
                 call(
                     job_id,
-                    collection_id0,
                     granule_id0,
                     archive_bucket_name,
                     [
@@ -998,7 +981,6 @@ class TestRequestFromArchive(unittest.TestCase):
         file_dest_bucket_1 = uuid.uuid4().__str__()
         missing_file_dest_bucket = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
-        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
         archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
@@ -1072,7 +1054,6 @@ class TestRequestFromArchive(unittest.TestCase):
             expected_file1_output,
         ]
         granule = {
-            request_from_archive.GRANULE_COLLECTION_ID_KEY: collection_id,
             request_from_archive.GRANULE_GRANULE_ID_KEY: granule_id,
             request_from_archive.GRANULE_KEYS_KEY: [
                 file_0,
@@ -1126,7 +1107,6 @@ class TestRequestFromArchive(unittest.TestCase):
 
         mock_create_status_for_job.assert_called_once_with(
             job_id,
-            collection_id,
             granule_id,
             archive_bucket_name,
             # Compare to orca_shared to verify schema.
@@ -1383,7 +1363,6 @@ class TestRequestFromArchive(unittest.TestCase):
         retry_sleep_secs = randint(0, 99)  # nosec
         recovery_type = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99)  # nosec
-        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         file_name_0 = uuid.uuid4().__str__()
         dest_bucket_0 = uuid.uuid4().__str__()
@@ -1398,7 +1377,6 @@ class TestRequestFromArchive(unittest.TestCase):
             ] = archive_recovery_queue_url
 
         granule = {
-            request_from_archive.GRANULE_COLLECTION_ID_KEY: collection_id,
             request_from_archive.GRANULE_GRANULE_ID_KEY: granule_id,
             request_from_archive.GRANULE_RECOVER_FILES_KEY: [
                 {
@@ -1480,7 +1458,6 @@ class TestRequestFromArchive(unittest.TestCase):
         retry_sleep_secs = randint(0, 99)  # nosec
         recovery_type = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99)  # nosec
-        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         file_name_0 = uuid.uuid4().__str__()
         dest_bucket_0 = uuid.uuid4().__str__()
@@ -1493,7 +1470,6 @@ class TestRequestFromArchive(unittest.TestCase):
             ] = archive_recovery_queue_url
 
         granule = {
-            request_from_archive.GRANULE_COLLECTION_ID_KEY: collection_id,
             request_from_archive.GRANULE_GRANULE_ID_KEY: granule_id,
             request_from_archive.GRANULE_RECOVER_FILES_KEY: [
                 {
@@ -1571,7 +1547,6 @@ class TestRequestFromArchive(unittest.TestCase):
         retry_sleep_secs = randint(0, 99)  # nosec
         recovery_type = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99)  # nosec
-        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         file_name_0 = uuid.uuid4().__str__()
         dest_bucket_0 = uuid.uuid4().__str__()
@@ -1587,7 +1562,6 @@ class TestRequestFromArchive(unittest.TestCase):
             ] = db_queue_url
 
         granule = {
-            request_from_archive.GRANULE_COLLECTION_ID_KEY: collection_id,
             request_from_archive.GRANULE_GRANULE_ID_KEY: granule_id,
             request_from_archive.GRANULE_RECOVER_FILES_KEY: [
                 {
@@ -1667,7 +1641,6 @@ class TestRequestFromArchive(unittest.TestCase):
         mock_sleep.assert_has_calls([call(retry_sleep_secs)] * max_retries)
         mock_update_status_for_file.assert_called_once_with(
             job_id,
-            collection_id,
             granule_id,
             file_name_0,
             OrcaStatus.FAILED,
@@ -1708,7 +1681,6 @@ class TestRequestFromArchive(unittest.TestCase):
         retry_sleep_secs = randint(0, 99)  # nosec
         recovery_type = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99)  # nosec
-        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         file_name_0 = uuid.uuid4().__str__()
         dest_bucket_0 = uuid.uuid4().__str__()
@@ -1721,7 +1693,6 @@ class TestRequestFromArchive(unittest.TestCase):
             ] = archive_recovery_queue_url
 
         granule = {
-            request_from_archive.GRANULE_COLLECTION_ID_KEY: collection_id,
             request_from_archive.GRANULE_GRANULE_ID_KEY: granule_id,
             request_from_archive.GRANULE_RECOVER_FILES_KEY: [
                 {
@@ -1804,7 +1775,6 @@ class TestRequestFromArchive(unittest.TestCase):
             [
                 call(
                     job_id,
-                    collection_id,
                     granule_id,
                     file_name_0,
                     OrcaStatus.FAILED,
@@ -1976,7 +1946,6 @@ class TestRequestFromArchive(unittest.TestCase):
         mock_task.return_value = {
             "granules": [
                 {
-                    request_from_archive.GRANULE_COLLECTION_ID_KEY: uuid.uuid4().__str__(),
                     request_from_archive.GRANULE_GRANULE_ID_KEY: "some_granule_id",
                     request_from_archive.GRANULE_RECOVER_FILES_KEY: [
                         {
@@ -2019,7 +1988,6 @@ class TestRequestFromArchive(unittest.TestCase):
         bad_handler_input_event = {"input": {
             "granules": [
                 {
-                    "collectionId": uuid.uuid4().__str__(),
                     "version": "integrationGranuleVersion",
                     "files": [
                         {
@@ -2041,8 +2009,7 @@ class TestRequestFromArchive(unittest.TestCase):
         with self.assertRaises(Exception) as ex:
             request_from_archive.handler(bad_handler_input_event, context)
         self.assertEqual(
-            str(ex.exception),
-            "data.granules[0] must contain ['collectionId', 'granuleId', 'keys'] properties")
+            str(ex.exception), "data.granules[0] must contain ['granuleId', 'keys'] properties")
         mock_task.assert_not_called()
 
     @patch("request_from_archive.task")
@@ -2144,14 +2111,12 @@ class TestRequestFromArchive(unittest.TestCase):
             request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
         ] = "https://archive.queue.url"
         job_id = uuid.uuid4().__str__()
-        collection_id = uuid.uuid4().__str__()
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"
         files = [key0, key1, key2, key3]
         input_event = {
             "input": {
                 request_from_archive.INPUT_GRANULES_KEY: [
                     {
-                        request_from_archive.GRANULE_COLLECTION_ID_KEY: collection_id,
                         request_from_archive.GRANULE_GRANULE_ID_KEY: granule_id,
                         request_from_archive.GRANULE_KEYS_KEY: files,
                     }
@@ -2213,7 +2178,6 @@ class TestRequestFromArchive(unittest.TestCase):
         )
 
         expected_granule = {
-            request_from_archive.GRANULE_COLLECTION_ID_KEY: collection_id,
             request_from_archive.GRANULE_GRANULE_ID_KEY: granule_id,
             request_from_archive.GRANULE_KEYS_KEY: [
                 {
