@@ -14,6 +14,17 @@ and includes an additional section for migration notes.
 - *Security* - Vulnerabilities fixes and changes.
 
 ## [Unreleased]
+### Added
+- *ORCA-679* Updated area in recovery where granule ID was treated as a globally unique key. Per Cumulus updates, uniqueness is now granule ID plus collection ID.
+  - *ORCA-678* `collection_id` column added to recovery status tables.
+
+### Changed
+
+### Migration Notes
+- Changes have been made to SQS message processing that are not backwards compatible. Halt ingest and wait for the `PREFIX-orca-status-update-queue.fifo` queue to empty before applying update.
+  - If the queue is or becomes stuck, it may be necessary to flush the queue and its associated Dead Letter Queue.
+- The input format of the ORCA Recovery Workflow step-function has been simplified.
+  If accessing these resources outside of a Cumulus perspective, go to `orca_recover_workflow.asl.json` and look at `config` elements to see the new paths.
 
 ## [8.0.0]
 ### Added
@@ -27,8 +38,6 @@ and includes an additional section for migration notes.
 - *ORCA-597*
   - Server access logging is now enabled for graphql application load balancer.
 - *ORCA-614*, *ORCA-428* Moved some Internal Reconciliation functionality to GraphQL
-- *ORCA-679* Updated area in recovery where granule ID was treated as a globally unique key. Per Cumulus updates, uniqueness is now granule ID plus collection ID.
-  - *ORCA-678* `collection_id` column added to recovery status tables.
 
 ### Changed
 - *ORCA-573* Updated ORCA DB user password to now have a stronger password requirement. See migration notes for details.
@@ -36,16 +45,12 @@ and includes an additional section for migration notes.
 - *ORCA-647* Upgraded sqlalchemy from v1.4.11 to v2.0.5.
 
 ### Migration Notes
-- Changes have been made to SQS message processing that are not backwards compatible. Halt ingest and wait for the `PREFIX-orca-status-update-queue.fifo` queue to empty before applying update.
-  - If the queue is or becomes stuck, it may be necessary to flush the queue and its associated Dead Letter Queue.
 - The output format of `copy_to_archive` lambda and step-function has been simplified. If accessing these resources outside of a Cumulus perspective, instead of accessing `output["payload"]["granules"]` you now use `output["granules"]`.
 - Cumulus is not currently compatible with the changes to copy_to_archive.
   - This section will be updated when a compatible version is created.
   - deployment-with-cumulus.md will also be updated.
   - copy_to_archive_adapter/README.md will also be updated.
   - restore-to-orca.mdx will also be updated.
-- The input format of the ORCA Recovery Workflow step-function has been simplified.
-  If accessing these resources outside of a Cumulus perspective, go to `orca_recover_workflow.asl.json` and look at `config` elements to see the new paths.
 - Cumulus is not currently compatible with the changes to the Recovery Workflow step-function.
   - This section will be updated when a compatible version is created.
   - deployment-with-cumulus.md will also be updated.
