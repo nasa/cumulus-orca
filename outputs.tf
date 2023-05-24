@@ -84,6 +84,13 @@ output "orca_sqs_status_update_queue_id" {
   value       = module.orca.orca_sqs_status_update_queue_id
 }
 
+## Workflow Module Outputs (orca_workflows)
+## =============================================================================
+output "orca_sfn_recovery_workflow_arn" {
+  description = "The ARN of the recovery step function."
+  value       = module.orca.orca_sfn_recovery_workflow_arn
+}
+
 ## Secretsmanager Module outputs
 ## =============================================================================
 output "orca_secretsmanager_arn" {
@@ -96,4 +103,11 @@ output "orca_secretsmanager_arn" {
 output "orca_api_deployment_invoke_url" {
   value       = module.orca.orca_api_deployment_invoke_url
   description = "The URL to invoke the ORCA Cumulus reconciliation API gateway. Excludes the resource path"
+}
+
+## GraphQL Module Outputs (graphql_0 and graphql_1)
+## =============================================================================
+output "orca_graphql_load_balancer_dns_name" {
+  value       = module.orca.orca_graphql_load_balancer_dns_name
+  description = "The DNS Name of the Application Load Balancer that handles access to ORCA GraphQL."
 }

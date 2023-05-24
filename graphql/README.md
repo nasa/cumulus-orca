@@ -30,6 +30,8 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 
 ## Testing
 ### Local Testing
+- Install the test version of psycopg2 by running `pip install psycopg2-binary` in your venv.
+  This will satisfy the `psycopg2` requirement.
 - Entry point is `src/adapters/webserver/main.py`, 
   which will start the developer UI at http://localhost:5000/graphql by default
   - Make sure to set the following environment variables:
@@ -42,6 +44,19 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
     - Replace `imageName` with the name of your built image.
     - Replace `path/to/env` with the path to the env file you created in the previous step.
 - The GraphQL URL is `http://localhost:5000/graphql`
+
+If you need to install the production version of psycopg2 for local testing:
+1. In terminal, run `brew install libpq`.
+2. Open `$HOME/.bash_profile` in a text editor.
+3. Add the following to the bottom of the file:
+   ```shell
+   # Setting PATH for pg_config and paths for other psycopg2 requirements
+   PATH="/usr/local/Cellar/libpq/15.1/bin/:${PATH}"
+   export PATH
+   export LDFLAGS="-L/usr/local/opt/openssl/lib"
+   export CPPFLAGS="-I/usr/local/opt/openssl/include"
+   ```
+4. Relaunch your terminal/IDE. `pip install psycopg2` can now install psycopg2 in your venv.
 
 ### AWS Testing
 1. If you wish to enable the developer GUI, add/modify the "ORCA_ENV" 
@@ -64,7 +79,7 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 3. Run the following bash command, 
    replacing `i-00000000000000000` with your `PREFIX-CumulusECSCluster` ec2 instance ID.
    ```shell
-   aws ssm pytest==6.2.5 --target i-00000000000000000 --document-name AWS-StartPortForwardingSession --parameters portNumber=22,localPortNumber=6868
+   aws ssm start-session --target i-00000000000000000 --document-name AWS-StartPortForwardingSession --parameters portNumber=22,localPortNumber=6868
    ```
 4. In a separate bash, run the following command,
    replacing `/blah/prefix.pem` with the path to your local `.pem` file for your installation and

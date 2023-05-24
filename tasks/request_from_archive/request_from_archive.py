@@ -704,7 +704,8 @@ def handler(event: Dict[str, Any], context: LambdaContext):  # pylint: disable-m
             ORCA_DEFAULT_BUCKET
                 The bucket to use if destBucket is not set.
         Args:
-            event: See schemas/input.json.
+            event: Event passed into the step from the aws workflow.
+                See schemas/input.json and schemas/config.json for more information.
             context: This object provides information about the lambda invocation, function,
                 and execution env.
         Returns:
@@ -715,7 +716,6 @@ def handler(event: Dict[str, Any], context: LambdaContext):  # pylint: disable-m
             will be included in the message, with 'success' = False for
             the files for which the restore request failed to submit.
     """
-
     # set the optional variables to None if not configured
     try:
         set_optional_event_property(event, event.get(EVENT_OPTIONAL_VALUES_KEY, {}), [])
@@ -724,13 +724,13 @@ def handler(event: Dict[str, Any], context: LambdaContext):  # pylint: disable-m
         raise ex
 
     try:
-        _VALIDATE_INPUT(event["input"])
+        _VALIDATE_INPUT(event[EVENT_INPUT_KEY])
     except JsonSchemaException as json_schema_exception:
         LOGGER.error(json_schema_exception)
         raise
 
     try:
-        _VALIDATE_CONFIG(event["config"])
+        _VALIDATE_CONFIG(event[EVENT_CONFIG_KEY])
     except JsonSchemaException as json_schema_exception:
         LOGGER.error(json_schema_exception)
         raise

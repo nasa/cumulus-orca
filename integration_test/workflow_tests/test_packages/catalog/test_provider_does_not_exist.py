@@ -17,6 +17,7 @@ class TestProviderDoesNotExist(TestCase):
             # ---
             my_session = helpers.create_session()
 
+            # noinspection PyArgumentList
             catalog_output = helpers.post_to_api(
                 my_session,
                 helpers.api_url + "/catalog/reconcile/",

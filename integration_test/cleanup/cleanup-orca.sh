@@ -25,3 +25,5 @@ echo "Destroying Cumulus S3 buckets and dynamoDB table"
 terraform destroy \
   -auto-approve \
   -input=false
+
+aws rds delete-db-cluster-snapshot --db-cluster-snapshot-identifier ${bamboo_PREFIX}-cumulus-rds-serverless-default-cluster-final-snapshot

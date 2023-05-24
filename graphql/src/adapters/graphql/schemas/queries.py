@@ -4,17 +4,24 @@ from typing import Annotated
 
 # noinspection PyPackageRequirements
 import strawberry
+
+# noinspection PyPackageRequirements
 from strawberry import argument, field, type
 
 from src.adapters.graphql.adapters import AdaptersStorage
+from src.adapters.graphql.dataTypes.common import int8
 from src.adapters.graphql.dataTypes.internal_reconcile_report import (
     GetMismatchPageStrawberryResponse,
+    GetPhantomPageStrawberryResponse,
 )
 from src.adapters.graphql.dataTypes.sample import GetEchoStrawberryResponse
 from src.adapters.graphql.dataTypes.storage_metadata import (
     GetStorageSchemaVersionStrawberryResponse,
 )
-from src.adapters.graphql.resolvers.internal_reconcile_report import get_mismatch_page
+from src.adapters.graphql.resolvers.internal_reconcile_report import (
+    get_mismatch_page,
+    get_phantom_page,
+)
 from src.adapters.graphql.resolvers.sample import get_echo
 from src.adapters.graphql.resolvers.storage_metadata import (
     get_storage_migration_version,
@@ -52,8 +59,35 @@ class Queries:
         self,
     ) -> GetStorageSchemaVersionStrawberryResponse:
         return get_storage_migration_version(
-            self.adapters_storage.storage,
-            self.adapters_storage.logger_provider.get_logger(
+            Queries.adapters_storage.storage,
+            Queries.adapters_storage.logger_provider.get_logger(
+                uuid.uuid4().__str__()
+            )
+        )
+
+    @field(
+        description="""Gets a page of phantom reports for the given filter."""
+    )
+    def get_phantom_page(
+        self,
+        job_id: Annotated[
+            int8,
+            argument(
+                description="""The unique job ID of the reconciliation job."""
+            )
+        ],
+        page_parameters: Annotated[
+            PageParameters,
+            argument(
+                description="""Parameters of the page to retrieve."""
+            )
+        ]
+    ) -> GetPhantomPageStrawberryResponse:
+        return get_phantom_page(
+            job_id,
+            page_parameters,
+            Queries.adapters_storage.storage_internal_reconciliation,
+            Queries.adapters_storage.logger_provider.get_logger(
                 uuid.uuid4().__str__()
             )
         )
@@ -64,7 +98,7 @@ class Queries:
     def get_mismatch_page(
         self,
         job_id: Annotated[
-            int,
+            int8,
             argument(
                 description="""The unique job ID of the reconciliation job."""
             )
@@ -79,7 +113,7 @@ class Queries:
         return get_mismatch_page(
             job_id,
             page_parameters,
-            Queries.adapters_storage.storage,
+            Queries.adapters_storage.storage_internal_reconciliation,
             Queries.adapters_storage.logger_provider.get_logger(
                 uuid.uuid4().__str__()
             )

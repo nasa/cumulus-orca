@@ -288,16 +288,18 @@ class TestRequestStatusForJobUnit(
                 request_status_for_job.OUTPUT_STATUS_KEY: uuid.uuid4().__str__(),
             },
         ]
-        mock_engine = Mock()
-        mock_engine.begin.return_value = Mock()
+        mock_execute_result = Mock()
+        mock_execute_result.mappings = Mock(return_value=copy.deepcopy(expected_result))
+        mock_execute = Mock()
+        mock_execute.return_value = mock_execute_result
         mock_connection = Mock()
-        mock_connection.execute.return_value = copy.deepcopy(expected_result)
-        mock_engine.begin.return_value.__enter__ = Mock()
-        mock_engine.begin.return_value.__enter__.return_value = mock_connection
-        mock_engine.begin.return_value.__exit__ = Mock(
-            return_value=False
-        )  # required for "with", but untestable.
-
+        mock_connection.execute = mock_execute
+        mock_exit = Mock(return_value=False)
+        mock_enter = Mock()
+        mock_enter.__enter__ = Mock(return_value=mock_connection)
+        mock_enter.__exit__ = mock_exit
+        mock_engine = Mock()
+        mock_engine.begin = Mock(return_value=mock_enter)
         result = request_status_for_job.get_granule_status_entries_for_job(
             job_id, mock_engine
         )
@@ -306,6 +308,7 @@ class TestRequestStatusForJobUnit(
             mock_sql.return_value,
             [{"job_id": job_id}],
         )
+        mock_execute_result.mappings.assert_called_once_with()
 
         self.assertEqual(expected_result, result)
 
@@ -320,15 +323,18 @@ class TestRequestStatusForJobUnit(
             {"value": "success", "total": 5},
             {"value": "future_status", "total": 10},
         ]
-        mock_engine = Mock()
-        mock_engine.begin.return_value = Mock()
+        mock_execute_result = Mock()
+        mock_execute_result.mappings = Mock(return_value=copy.deepcopy(expected_result))
+        mock_execute = Mock()
+        mock_execute.return_value = mock_execute_result
         mock_connection = Mock()
-        mock_connection.execute.return_value = copy.deepcopy(expected_result)
-        mock_engine.begin.return_value.__enter__ = Mock()
-        mock_engine.begin.return_value.__enter__.return_value = mock_connection
-        mock_engine.begin.return_value.__exit__ = Mock(
-            return_value=False
-        )  # required for "with", but untestable.
+        mock_connection.execute = mock_execute
+        mock_exit = Mock(return_value=False)
+        mock_enter = Mock()
+        mock_enter.__enter__ = Mock(return_value=mock_connection)
+        mock_enter.__exit__ = mock_exit
+        mock_engine = Mock()
+        mock_engine.begin = Mock(return_value=mock_enter)
 
         result = request_status_for_job.get_status_totals_for_job(job_id, mock_engine)
 
@@ -336,6 +342,7 @@ class TestRequestStatusForJobUnit(
             mock_sql.return_value,
             [{"job_id": job_id}],
         )
+        mock_execute_result.mappings.assert_called_once_with()
 
         self.assertEqual({"success": 5, "future_status": 10}, result)
 
@@ -382,15 +389,13 @@ class TestRequestStatusForJobUnit(
         job_id = uuid.uuid4().__str__()
 
         db_connect_info = Mock()
-
-        mock_engine = Mock()
-        mock_engine.begin.return_value = Mock()
-        mock_connection = Mock()
         granule_id_0 = uuid.uuid4().__str__()
         granule_id_1 = uuid.uuid4().__str__()
-        mock_connection.execute.side_effect = [
-            # granules
-            [
+
+        mock_execute_result0 = Mock()
+        mock_execute_result1 = Mock()
+        mock_execute_result0.mappings = Mock(
+            return_value=[
                 {
                     request_status_for_job.OUTPUT_GRANULE_ID_KEY: granule_id_0,
                     request_status_for_job.OUTPUT_STATUS_KEY: "success",
@@ -399,20 +404,26 @@ class TestRequestStatusForJobUnit(
                     request_status_for_job.OUTPUT_GRANULE_ID_KEY: granule_id_1,
                     request_status_for_job.OUTPUT_STATUS_KEY: "pending",
                 },
-            ],
-            # status totals
-            [
+            ]
+            )
+        mock_execute_result1.mappings = Mock(
+            return_value=[
                 {"value": "pending", "total": 5},
                 {"value": "success", "total": 2},
                 {"value": "staged", "total": 0},
                 {"value": "error", "total": 1000},
-            ],
-        ]
-        mock_engine.begin.return_value.__enter__ = Mock()
-        mock_engine.begin.return_value.__enter__.return_value = mock_connection
-        mock_engine.begin.return_value.__exit__ = Mock(
-            return_value=False
-        )  # required for "with", but untestable.
+            ]
+        )
+
+        mock_execute = Mock(side_effect=[mock_execute_result0, mock_execute_result1])
+        mock_connection = Mock()
+        mock_connection.execute = mock_execute
+        mock_exit = Mock(return_value=False)
+        mock_enter = Mock()
+        mock_enter.__enter__ = Mock(return_value=mock_connection)
+        mock_enter.__exit__ = mock_exit
+        mock_engine = Mock()
+        mock_engine.begin = Mock(return_value=mock_enter)
         mock_get_user_connection.return_value = mock_engine
 
         result = request_status_for_job.task(job_id, db_connect_info)

@@ -102,7 +102,7 @@ def query_db(
         )
 
         phantoms = []
-        for sql_result in sql_results:
+        for sql_result in sql_results.mappings():
             phantoms.append(
                 {
                     PHANTOMS_COLLECTION_ID_KEY: sql_result["collection_id"],

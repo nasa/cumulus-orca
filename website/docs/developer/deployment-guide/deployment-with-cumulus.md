@@ -562,6 +562,7 @@ accessed using terraform dot syntax in the format of `module.orca.variable_name`
 | Output Variable                                         | Description                                             |
 | --------------------------------------------------------|---------------------------------------------------------|
 | `orca_api_deployment_invoke_url`                        | The URL to invoke the ORCA Cumulus reconciliation API gateway. Excludes the resource path |
+| `orca_graphql_load_balancer_dns_name`                   | The DNS Name of the Application Load Balancer that handles access to ORCA GraphQL. |
 | `orca_lambda_copy_to_archive_arn`                       | AWS ARN of the ORCA copy_to_archive lambda. |
 | `orca_lambda_extract_filepaths_for_granule_arn`         | AWS ARN of the ORCA extract_filepaths_for_granule lambda. |
 | `orca_lambda_orca_catalog_reporting_arn`                | AWS ARN of the ORCA orca_catalog_reporting lambda. |
@@ -572,6 +573,7 @@ accessed using terraform dot syntax in the format of `module.orca.variable_name`
 | `orca_lambda_post_copy_request_to_queue_arn`            | AWS ARN of the ORCA post_copy_request_to_queue lambda. |
 | `orca_lambda_orca_catalog_reporting_arn`                | AWS ARN of the ORCA orca_catalog_reporting lambda. |
 | `orca_secretsmanager_arn`                               | The Amazon Resource Name (ARN) of the AWS secretsmanager |
+| `orca_sfn_recovery_workflow_arn`                        | The ARN of the recovery step function. |
 | `orca_sqs_archive_recovery_queue_arn`                   | The ARN of the archive-recovery-queue SQS |
 | `orca_sqs_archive_recovery_queue_id`                    | The URL of the archive-recovery-queue SQS |
 | `orca_sqs_metadata_queue_arn`                           | The ARN of the metadata-queue SQS |
@@ -645,4 +647,3 @@ Here is an sample command to run the Cumulus Dashboard locally.
 ```bash
 APIROOT=https://uttm5y1jcj.execute-api.us-west-2.amazonaws.com:8000/dev ENABLE_RECOVERY=true npm run serve
 ```
-

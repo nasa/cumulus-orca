@@ -44,36 +44,7 @@ class TestNoGranules(TestCase):
             }
 
             expected_output = {
-                "payload": {"granules": [], "copied_to_orca": []},
-                "meta": {
-                    "collection": {
-                        "name": collection_name,
-                        "version": collection_version,
-                    },
-                    "provider": {"id": provider_id, "name": provider_name},
-                },
-                "cumulus_meta": {"execution_name": execution_id},
-                "task_config": {
-                    "excludedFileExtensions":
-                        "{$.meta.collection.meta.orca.excludedFileExtensions}",
-                    "s3MultipartChunksizeMb":
-                        "{$.meta.collection.meta.s3MultipartChunksizeMb}",
-                    "providerId":
-                        "{$.meta.provider.id}",
-                    "providerName":
-                        "{$.meta.provider.name}",
-                    "executionId":
-                        "{$.cumulus_meta.execution_name}",
-                    "collectionShortname":
-                        "{$.meta.collection.name}",
-                    "collectionVersion":
-                        "{$.meta.collection.version}",
-                    "defaultBucketOverride":
-                        "{$.meta.collection.meta.orca.defaultBucketOverride}",
-                    "defaultStorageClassOverride":
-                        "{$.meta.collection.meta.orca.defaultStorageClassOverride}",
-                },
-                "exception": "None",
+                "granules": [], "copied_to_orca": []
             }
 
             execution_info = boto3.client("stepfunctions").start_execution(
@@ -82,7 +53,8 @@ class TestNoGranules(TestCase):
             )
 
             step_function_results = helpers.get_state_machine_execution_results(
-                execution_info["executionArn"]
+                execution_info["executionArn"],
+                maximum_duration_seconds=30,
             )
 
             self.assertEqual(
@@ -96,6 +68,8 @@ class TestNoGranules(TestCase):
                 "Expected step function output not returned.",
             )
 
+            # Let the catalog update
+            time.sleep(1)
             catalog_output = helpers.post_to_api(
                 my_session,
                 helpers.api_url + "/catalog/reconcile/",

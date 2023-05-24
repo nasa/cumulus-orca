@@ -208,7 +208,7 @@ After hitting the play button on `Deploy Cumulus buckets and Cumulus and Orca mo
 - EARTHDATA_CLIENT_PASSWORD
 - CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION
 
-This is because some variables are sensitive and some will vary depending upon the user running the pipeline. Hitting 'play' next to any of the deployment and cleanup stages brings up a checkbox list to run multiple jobs at once. Note that none of the checkboxes should be checked.
+This is because some variables are sensitive and some will vary depending upon the user running the pipeline. Hitting 'play' next to any of the deployment stages brings up a checkbox list to run multiple jobs at once. Note that none of the checkboxes should be checked.
 
 The above buckets can also be created manually if desired by the user. Make sure to use the proper AWS access keys for configuration before running the commands.
 
@@ -236,7 +236,12 @@ A new earthdata application will need to be created if not done previously which
 
 Note that the jobs may need to be run multiple times to get past deployment errors if there is one. If an error is raised saying `Cloudwatch log groups already exist`, then manually delete all the cloudwatch log groups and corresponding lambdas having the same name as the log groups from the AWS console and retry running the job.
 
-`Clean up ORCA buckets and modules` and `Clean up DR ORCA buckets` can be run in sequence to remove most of the resources created by the deployment stages.
+The `ORCA Cleanup Plan` has two stages named `Clean up ORCA buckets and modules` and `Clean up DR ORCA buckets` which can be run in sequence to remove most of the resources created by the deployment stages. Remember to add the following AWS secrets keys for both Cumulus and DR accounts while running the pipeline.
+
+- CUMULUS_AWS_ACCESS_KEY_ID
+- CUMULUS_AWS_SECRET_ACCESS_KEY
+- DR_AWS_ACCESS_KEY_ID
+- DR_AWS_SECRET_ACCESS_KEY
+
 State buckets and lock tables will be left intact to aid in any cleanup issues/debugging.
-Additionally, Cumulus's RDS module will automatically create a final-snapshot `PREFIX-cumulus-rds-serverless-default-cluster-final-snapshot` that must be manually deleted.
 To verify cleanup, check the stage logs for errors, and [check the AWS environment for additional resources](https://docs.aws.amazon.com/ARG/latest/userguide/find-resources-to-tag.html) with the tag `Deployment=PREFIX`.

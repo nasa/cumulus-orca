@@ -311,7 +311,10 @@ class TestInternalReconcileReportMismatch(
             "discrepancy_type": discrepancy_type,
             "comment": comment
         }
-        mock_execute = Mock(return_value=[returned_row0])
+        mock_execute_result = Mock()
+        mock_execute_result.mappings = Mock(return_value=[returned_row0])
+        mock_execute = Mock()
+        mock_execute.return_value = mock_execute_result
         mock_connection = Mock()
         mock_connection.execute = mock_execute
         mock_exit = Mock(return_value=False)
@@ -338,6 +341,7 @@ class TestInternalReconcileReportMismatch(
                 }
             ],
         )
+        mock_execute_result.mappings.assert_called_once_with()
         mock_exit.assert_called_once_with(None, None, None)
         mock_get_mismatches_sql.assert_called_once_with()
         self.assertEqual(
@@ -386,7 +390,10 @@ class TestInternalReconcileReportMismatch(
         job_id = random.randint(0, 999)  # nosec
         page_index = Mock()
 
-        mock_execute = Mock(return_value=[])
+        mock_execute_result = Mock()
+        mock_execute_result.mappings = Mock(return_value=[])
+        mock_execute = Mock()
+        mock_execute.return_value = mock_execute_result
         mock_connection = Mock()
         mock_connection.execute = mock_execute
         mock_exit = Mock(return_value=False)
@@ -413,6 +420,7 @@ class TestInternalReconcileReportMismatch(
                 }
             ],
         )
+        mock_execute_result.mappings.assert_called_once_with()
         mock_exit.assert_called_once_with(None, None, None)
         mock_get_mismatches_sql.assert_called_once_with()
         self.assertEqual(

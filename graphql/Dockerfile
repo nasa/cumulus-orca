@@ -9,9 +9,12 @@ ENV PYTHONUNBUFFERED 1
 # Keep key consistent with value in uvicorn_settings.py
 ENV PORT 5000
 
-# Install python app requirements
+# Install psycopg2 requirements
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends build-essential libpq-dev
 # Copy external dependencies
 COPY shared_libraries shared_libraries
+# Install python app requirements
 COPY requirements.txt graphql/requirements.txt
 WORKDIR graphql
 RUN pip wheel --no-cache-dir --wheel-dir /app/wheels -r requirements.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org

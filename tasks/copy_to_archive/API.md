@@ -6,6 +6,7 @@
   * [task](#copy_to_archive.task)
   * [get\_destination\_bucket\_name](#copy_to_archive.get_destination_bucket_name)
   * [get\_storage\_class](#copy_to_archive.get_storage_class)
+  * [set\_optional\_event\_property](#copy_to_archive.set_optional_event_property)
   * [handler](#copy_to_archive.handler)
 * [sqs\_library](#sqs_library)
   * [retry\_error](#sqs_library.retry_error)
@@ -88,11 +89,10 @@ Also queries the destination_bucket to get additional metadata file info.
 #### task
 
 ```python
-def task(event: Dict[str, Union[List[str], Dict]],
-         context: object) -> Dict[str, Any]
+def task(task_input: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]
 ```
 
-Copies the files in {event}['input']
+Copies the files in input['files']
 to the ORCA archive bucket defined in ORCA_DEFAULT_BUCKET.
 
 Environment Variables:
@@ -107,8 +107,8 @@ SQS URL of the metadata queue.
 
 **Arguments**:
 
-- `event` - Passed through from {handler}
-- `context` - An object required by AWS Lambda. Unused.
+- `task_input` - See schemas/input.json
+- `config` - See schemas/config.json
   
 
 **Returns**:
@@ -168,16 +168,40 @@ Must match value in storage_class table.
 
   The name of the storage class to use.
 
+<a id="copy_to_archive.set_optional_event_property"></a>
+
+#### set\_optional\_event\_property
+
+```python
+def set_optional_event_property(event: Dict[str,
+                                            Any], target_path_cursor: Dict,
+                                target_path_segments: List) -> None
+```
+
+Sets the optional variable value from event if present, otherwise sets to None.
+
+**Arguments**:
+
+- `event` - See schemas/input.json.
+- `target_path_cursor` - Cursor of the current section to check.
+- `target_path_segments` - The path to the current cursor.
+
+**Returns**:
+
+  None
+
 <a id="copy_to_archive.handler"></a>
 
 #### handler
 
 ```python
-def handler(event: Dict[str, Union[List[str], Dict]], context: object) -> Any
+@LOGGER.inject_lambda_context
+def handler(event: Dict[str, Union[List[str], Dict]],
+            context: LambdaContext) -> Any
 ```
 
 Lambda handler. Runs a cumulus task that
-Copies the files in {event}['input']
+Copies the files in event['input']['files']
 to the default ORCA bucket. Environment variables must be set to
 provide a default ORCA bucket to store the files in.
 
@@ -199,13 +223,13 @@ METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
 - `event` - Event passed into the step from the aws workflow.
   See schemas/input.json and schemas/config.json for more information.
   
-  
-- `context` - An object required by AWS Lambda. Unused.
+- `context` - This object provides information about the lambda invocation, function,
+  and execution env.
   
 
 **Returns**:
 
-  The result of the cumulus task. See schemas/output.json for more information.
+  See schemas/output.json for more information.
 
 <a id="sqs_library"></a>
 

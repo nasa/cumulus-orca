@@ -33,9 +33,13 @@ rm -rf Python-${PYTHON_VERSION}
 # Install and configure git-secrets
 RUN \
 cd /root && \
+# Fixes issue with git-secrets instal bug
+yum install -y which && \
 git clone https://github.com/awslabs/git-secrets.git && \
 cd git-secrets && \
 make install && \
+# Fixes issue with git-secrets instal bug
+ln -s "$(which echo)" /usr/local/bin/say && \
 git secrets --register-aws --global && \
 git secrets --install ~/.git-templates/git-secrets && \
 git config --global init.templateDir ~/.git-templates/git-secrets

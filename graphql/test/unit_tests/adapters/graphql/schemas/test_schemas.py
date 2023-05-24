@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import MagicMock, Mock, patch
 
 from graphql import NoSchemaIntrospectionCustomRule
+from src.adapters.graphql.dataTypes.common import int8, strawberry_int8
 from src.adapters.graphql.schemas.schemas import get_schema
 
 
@@ -9,10 +10,12 @@ class TestSchemas(unittest.TestCase):
 
     @patch("src.adapters.graphql.schemas.schemas.AddValidationRules")
     @patch("src.adapters.graphql.schemas.schemas.Schema")
+    @patch("src.adapters.graphql.schemas.schemas.Mutations")
     @patch("src.adapters.graphql.schemas.schemas.Queries")
     def test_get_schema_happy_path(
         self,
         mock_queries: MagicMock,
+        mock_mutations: MagicMock,
         mock_schema: MagicMock,
         mock_add_validation_rules: MagicMock,
     ):
@@ -28,6 +31,7 @@ class TestSchemas(unittest.TestCase):
                 result = get_schema(mock_graphql_settings, mock_adapters_storage)
 
                 self.assertEqual(mock_adapters_storage, mock_queries.adapters_storage)
+                self.assertEqual(mock_adapters_storage, mock_mutations.adapters_storage)
 
                 if not graphiql_setting:  # We only add this rule if graphiql access is denied.
                     mock_add_validation_rules.assert_called_once_with(
@@ -37,9 +41,13 @@ class TestSchemas(unittest.TestCase):
                 self.assertEqual(mock_schema.return_value, result)
                 mock_schema.assert_called_once_with(
                     query=mock_queries,
+                    mutation=mock_mutations,
                     extensions=[mock_add_validation_rules.return_value]
                     if graphiql_setting is False else
-                    []
+                    [],
+                    scalar_overrides={
+                        int8: strawberry_int8
+                    }
                 )
 
             mock_queries.reset_mock()

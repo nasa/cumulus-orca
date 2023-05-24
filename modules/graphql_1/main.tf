@@ -1,5 +1,11 @@
+data "aws_caller_identity" "current_account" {}
+
+data "aws_region" "current_region" {}
+
 # Local Variables
 locals {
+  account_id   = data.aws_caller_identity.current_account.account_id
+  region       = data.aws_region.current_region.name
   # Used for Load Balancer, EC2 Service, and Container ports. Specifies how GQL will be hosted.
   graphql_port = 5000
 }
@@ -31,7 +37,10 @@ data "aws_iam_policy_document" "gql_task_execution_policy_document" {
       "logs:DescribeLogStreams",
       "logs:PutLogEvents"
     ]
-    resources = ["*"]
+    resources = [
+      "arn:aws:logs:${local.region}:${local.account_id}:log-group:${var.prefix}_orca_graph_ql:*",
+      "arn:aws:logs:${local.region}:${local.account_id}:log-group:${var.prefix}_orca_graph_ql:log-stream:ecs/orca-gql*"
+    ]
   }
   statement {
     actions = [
@@ -47,8 +56,8 @@ resource "aws_iam_role_policy" "gql_task_role_policy" {
   policy = data.aws_iam_policy_document.gql_task_execution_policy_document.json
 }
 
-resource "aws_security_group" "gql_security_group" {
-  name        = "${var.prefix}-gql"
+resource "aws_security_group" "gql_lb_security_group" {
+  name        = "${var.prefix}-lb-gql"
   description = "Allow inbound communication on container port."
   vpc_id      = var.vpc_id
 
@@ -75,7 +84,12 @@ resource "aws_lb" "gql_app_lb" {
   name               = "${var.prefix}-gql-a" # Max 32 characters. Some prefixes are 25 characters long.
   internal           = true
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.gql_security_group.id]
+  access_logs {
+    bucket  = var.system_bucket
+    prefix  = "${var.prefix}-lb-gql-a-logs"
+    enabled = true
+  }
+  security_groups    = [aws_security_group.gql_lb_security_group.id]
   subnets            = var.lambda_subnet_ids
   idle_timeout       = 30 # API Gateway locks us to 30 seconds.
   tags               = var.tags
@@ -183,7 +197,7 @@ resource "aws_ecs_task_definition" "gql_task" {
 [
   {
     "name": "orca-gql",
-    "image": "ghcr.io/nasa/cumulus-orca/graphql:0.0.25",
+    "image": "ghcr.io/nasa/cumulus-orca/graphql:0.0.32",
     "cpu": 512,
     "memory": 256,
     "networkMode": "awsvpc",
@@ -207,6 +221,10 @@ resource "aws_ecs_task_definition" "gql_task" {
       {
         "name": "DB_CONNECT_INFO",
         "valueFrom": "${var.db_connect_info_secret_arn}"
+      },
+      {
+        "name": "S3_ACCESS_CREDENTIALS",
+        "valueFrom": "${var.s3_access_credentials_secret_arn}"
       }
     ],
     "logConfiguration": {
@@ -225,7 +243,7 @@ DEFINITION
 
 resource "aws_security_group" "gql_task_security_group" {
   name        = "${var.prefix}-gql-task"
-  description = "Allow inbound communication on container port. Allow outbound communication to get image."
+  description = "Allow inbound communication from LB on container port. Allow outbound communication to get image."
   vpc_id      = var.vpc_id
 
   ingress {
@@ -233,7 +251,7 @@ resource "aws_security_group" "gql_task_security_group" {
     from_port        = local.graphql_port
     to_port          = local.graphql_port
     protocol         = "tcp"
-    cidr_blocks      = [data.aws_vpc.primary.cidr_block]
+    security_groups  = [aws_security_group.gql_lb_security_group.id]
   }
 
   egress {

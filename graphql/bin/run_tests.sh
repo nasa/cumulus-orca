@@ -12,7 +12,7 @@
 ## -----------------------------------------------------------------------------
 ## bin/run_tests.sh
 ##
-## This must be called from the (root) lambda directory /graphql
+## This must be called from the (root) directory /graphql
 ## =============================================================================
 
 ## Set this for Debugging only

@@ -233,9 +233,13 @@ class TestPostToDatabase(
 
         internal_id = random.randint(0, 10000)  # nosec
         mock_engine = Mock()
+        mock_execute_result = Mock()
+        mock_execute_result.mappings = Mock(return_value=[{"id": internal_id}])
+        mock_execute = Mock()
+        mock_execute.return_value = mock_execute_result
         mock_engine.begin.return_value = Mock()
         mock_connection = Mock()
-        mock_connection.execute.return_value = [{"id": internal_id}]
+        mock_connection.execute = mock_execute
         mock_engine.begin.return_value.__enter__ = Mock()
         mock_engine.begin.return_value.__enter__.return_value = mock_connection
         mock_engine.begin.return_value.__exit__ = Mock(return_value=False)
@@ -277,6 +281,7 @@ class TestPostToDatabase(
                         }
                     ],
                 ),
+                call().mappings(),
                 call(
                     mock_create_file_sql.return_value,
                     [
@@ -312,3 +317,4 @@ class TestPostToDatabase(
                 ),
             ]
         )
+        mock_execute_result.mappings.assert_called_once_with()
