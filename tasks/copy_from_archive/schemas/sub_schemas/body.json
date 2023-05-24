@@ -9,8 +9,11 @@
       "description": "The unique id of the recovery job.",
       "type": "string"
     },
+    "collectionId": {
+      "description": "The ID of the collection containing the granule."
+    },
     "granuleId": {
-      "description": "The unique ID of the granule.",
+      "description": "The ID of the granule.",
       "type": "string"
     },
     "filename": {
@@ -39,6 +42,6 @@
     }
   },
   "required": [
-    "jobId", "granuleId", "filename", "sourceKey", "targetKey", "restoreDestination", "sourceBucket", "s3MultipartChunksizeMb"
+    "jobId", "collectionId", "granuleId", "filename", "sourceKey", "targetKey", "restoreDestination", "sourceBucket", "s3MultipartChunksizeMb"
   ]
 }
