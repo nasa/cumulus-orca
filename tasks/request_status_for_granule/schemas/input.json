@@ -5,8 +5,11 @@
 	"description": "The input for the request_status Lambda when retrieving status for a particular granule.",
 	"type": "object",
 	"properties": {
+		"collectionId": {
+			"description": "The ID of the collection containing the granule."
+		},
 		"granuleId": {
-			"description": "The unique ID of the granule to retrieve status for.",
+			"description": "The ID of the granule to retrieve status for.",
 			"type": "string"
 		},
 		"asyncOperationId": {
@@ -14,5 +17,5 @@
 			"type": "string"
 		}
 	},
-	"required": [ "granuleId" ]
+	"required": [ "collectionId", "granuleId" ]
 }

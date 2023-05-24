@@ -45,6 +45,7 @@ class TestRequestStatusForJobUnit(
             request_status_for_job.OUTPUT_JOB_ID_KEY: job_id,
             request_status_for_job.OUTPUT_GRANULES_KEY: [
                 {
+                    request_status_for_job.OUTPUT_COLLECTION_ID_KEY: uuid.uuid4().__str__(),
                     request_status_for_job.OUTPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
                     request_status_for_job.OUTPUT_STATUS_KEY: "staged"
                 }
@@ -182,6 +183,7 @@ class TestRequestStatusForJobUnit(
             request_status_for_job.OUTPUT_JOB_ID_KEY: job_id,
             request_status_for_job.OUTPUT_GRANULES_KEY: [
                 {
+                    request_status_for_job.OUTPUT_COLLECTION_ID_KEY: uuid.uuid4().__str__(),
                     request_status_for_job.OUTPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
                     request_status_for_job.OUTPUT_STATUS_KEY: "staged"
                 }
@@ -280,10 +282,12 @@ class TestRequestStatusForJobUnit(
 
         expected_result = [
             {
+                request_status_for_job.OUTPUT_COLLECTION_ID_KEY: uuid.uuid4().__str__(),
                 request_status_for_job.OUTPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
                 request_status_for_job.OUTPUT_STATUS_KEY: uuid.uuid4().__str__(),
             },
             {
+                request_status_for_job.OUTPUT_COLLECTION_ID_KEY: uuid.uuid4().__str__(),
                 request_status_for_job.OUTPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
                 request_status_for_job.OUTPUT_STATUS_KEY: uuid.uuid4().__str__(),
             },
@@ -389,6 +393,10 @@ class TestRequestStatusForJobUnit(
         job_id = uuid.uuid4().__str__()
 
         db_connect_info = Mock()
+
+        collection_id_0 = uuid.uuid4().__str__()
+        collection_id_1 = uuid.uuid4().__str__()
+
         granule_id_0 = uuid.uuid4().__str__()
         granule_id_1 = uuid.uuid4().__str__()
 
@@ -397,10 +405,12 @@ class TestRequestStatusForJobUnit(
         mock_execute_result0.mappings = Mock(
             return_value=[
                 {
+                    request_status_for_job.OUTPUT_COLLECTION_ID_KEY: collection_id_0,
                     request_status_for_job.OUTPUT_GRANULE_ID_KEY: granule_id_0,
                     request_status_for_job.OUTPUT_STATUS_KEY: "success",
                 },
                 {
+                    request_status_for_job.OUTPUT_COLLECTION_ID_KEY: collection_id_1,
                     request_status_for_job.OUTPUT_GRANULE_ID_KEY: granule_id_1,
                     request_status_for_job.OUTPUT_STATUS_KEY: "pending",
                 },
@@ -431,10 +441,12 @@ class TestRequestStatusForJobUnit(
             request_status_for_job.OUTPUT_JOB_ID_KEY: job_id,
             request_status_for_job.OUTPUT_GRANULES_KEY: [
                 {
+                    request_status_for_job.OUTPUT_COLLECTION_ID_KEY: collection_id_0,
                     request_status_for_job.OUTPUT_GRANULE_ID_KEY: granule_id_0,
                     request_status_for_job.OUTPUT_STATUS_KEY: "success",
                 },
                 {
+                    request_status_for_job.OUTPUT_COLLECTION_ID_KEY: collection_id_1,
                     request_status_for_job.OUTPUT_GRANULE_ID_KEY: granule_id_1,
                     request_status_for_job.OUTPUT_STATUS_KEY: "pending",
                 }

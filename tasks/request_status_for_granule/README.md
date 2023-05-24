@@ -12,9 +12,10 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 Fully defined json schemas written in the schema of https://json-schema.org/ can be found in the [schemas folder](schemas).
 
 ### Example Input
-Input with granule_id and asyncOperationId.
+Input with granule info and asyncOperationId.
 ```json
 {
+  "collectionId": "collectionName___001",
   "granuleId": "6c8d0c8b-4f9a-4d87-ab7c-480b185a0250",
   "asyncOperationId": "43c9751b-9498-4733-90d8-56b1458e0f85"
 }
@@ -22,6 +23,7 @@ Input with granule_id and asyncOperationId.
 Input with no asyncOperationId. Only the most recent operation for the granule will be queried.
 ```json
 {
+  "collectionId": "collectionName___001",
   "granuleId": "6c8d0c8b-4f9a-4d87-ab7c-480b185a0250"
 }
 ```
@@ -29,6 +31,7 @@ Input with no asyncOperationId. Only the most recent operation for the granule w
 ### Example Output
 ```json
 {
+  "collectionId": "collectionName___001",
   "granuleId": "6c8d0c8b-4f9a-4d87-ab7c-480b185a0250",
   "asyncOperationId": "43c9751b-9498-4733-90d8-56b1458e0f85",
   "files": [
