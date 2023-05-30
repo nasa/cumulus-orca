@@ -29,7 +29,7 @@ ln -sf /usr/local/bin/python3.9 /usr/local/bin/python3 && \
 ln -sf /url/local/bin/pip3.9 /usr/local/bin/pip3 && \
 rm -f Python-${PYTHON_VERSION}.tgz && \
 rm -rf Python-${PYTHON_VERSION} $$ \
-pip install  --trusted-host pypi.org --trusted-host files.pythonhosted.org bandit flake8 black isort
+pip install bandit flake8 black isort
 
 # Install Terraform
 RUN \
