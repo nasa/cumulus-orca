@@ -100,7 +100,7 @@ variables:
   RDS_ENGINE_VERSION: 10.18
   ROLE_BOUNDARY: NGAPShRoleBoundary
   CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION: release/v11.1.1-v4.0.1
-  PREFIX: REPLACE ME
+  PREFIX: rhrh
   DB_ADMIN_USERNAME: postgres
   DB_ADMIN_PASSWORD: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
   DB_USER_PASSWORD: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
@@ -109,8 +109,8 @@ variables:
   BRANCH_NAME: ${bamboo.planRepository.branchName}
   CMR_OAUTH_PROVIDER: earthdata
   orca_API_DEPLOYMENT_INVOKE_URL: test
-  orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN: test
-  orca_RECOVERY_BUCKET_NAME: test
+  orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN: arn:aws:states:us-west-2:236859827343:stateMachine:doctest-OrcaCopyToArchiveWorkflow
+  orca_RECOVERY_BUCKET_NAME: doctest-orca-primary
 
  
 repositories:
