@@ -6,66 +6,66 @@ plan:
   key: ODPIT
   name: ORCA Deploy Plan Integration test
 stages:
-- Deploy DR ORCA Buckets:
-    manual: true
-    final: false
-    jobs:
-    - Deploy DR ORCA buckets
-- Deploy Cumulus buckets and Cumulus and Orca modules:
-    manual: true
-    final: false
-    jobs:
-    - Deploy Cumulus buckets and Cumulus and Orca modules
+# - Deploy DR ORCA Buckets:
+#     manual: true
+#     final: false
+#     jobs:
+#     - Deploy DR ORCA buckets
+# - Deploy Cumulus buckets and Cumulus and Orca modules:
+#     manual: true
+#     final: false
+#     jobs:
+#     - Deploy Cumulus buckets and Cumulus and Orca modules
 - Run Ingest Integration Tests:
     manual: true
     final: false
     jobs:
     - Run Ingest Integration tests
 
-#job for deploying ORCA buckets in DR account
-Deploy DR ORCA buckets:
-  key: DDROB
-  other:
-    clean-working-dir: true
-  docker:
-    image: maven.earthdata.nasa.gov/cumulus_orca
-    volumes:
-      ${bamboo.working.directory}: ${bamboo.working.directory}
-      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
-  tasks:
-  - checkout:
-      force-clean-build: 'true'
-      description: Checkout Default Repository
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-
-        #!/bin/bash
-        bash integration_test/input-validation.sh
-        . ./integration_test/shared/setup-dr-buckets.sh
-        bash integration_test/deployment-dr-buckets.sh
+# #job for deploying ORCA buckets in DR account
+# Deploy DR ORCA buckets:
+#   key: DDROB
+#   other:
+#     clean-working-dir: true
+#   docker:
+#     image: maven.earthdata.nasa.gov/cumulus_orca
+#     volumes:
+#       ${bamboo.working.directory}: ${bamboo.working.directory}
+#       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+#   tasks:
+#   - checkout:
+#       force-clean-build: 'true'
+#       description: Checkout Default Repository
+#   - script:
+#       interpreter: SHELL
+#       scripts:
+#       - |-
+#         #!/bin/bash
+#         bash integration_test/input-validation.sh
+#         . ./integration_test/shared/setup-dr-buckets.sh
+#         bash integration_test/deployment-dr-buckets.sh
          
-#job for deploying ORCA buckets, Cumulus and ORCA modules
-Deploy Cumulus buckets and Cumulus and Orca modules:
-  key: DOBM
-  other:
-    clean-working-dir: true
-  docker:
-    image: maven.earthdata.nasa.gov/cumulus_orca
-    volumes:
-      ${bamboo.working.directory}: ${bamboo.working.directory}
-      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
-  tasks:
-  - checkout:
-      force-clean-build: 'true'
-      description: Checkout Default Repository
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-
-        #!/bin/bash
-        . ./integration_test/shared/setup-orca.sh
-        bash integration_test/deployment-orca.sh
+# #job for deploying ORCA buckets, Cumulus and ORCA modules
+# Deploy Cumulus buckets and Cumulus and Orca modules:
+#   key: DOBM
+#   other:
+#     clean-working-dir: true
+#   docker:
+#     image: maven.earthdata.nasa.gov/cumulus_orca
+#     volumes:
+#       ${bamboo.working.directory}: ${bamboo.working.directory}
+#       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+#   tasks:
+#   - checkout:
+#       force-clean-build: 'true'
+#       description: Checkout Default Repository
+#   - script:
+#       interpreter: SHELL
+#       scripts:
+#       - |-
+#         #!/bin/bash
+#         . ./integration_test/shared/setup-orca.sh
+#         bash integration_test/deployment-orca.sh
 
 #job for running ingest integration tests
 Run Ingest Integration tests:
@@ -86,6 +86,7 @@ Run Ingest Integration tests:
       scripts:
       - |-
         #!/bin/bash
+        . ./integration_test/shared/setup-orca.sh
         export orca_API_DEPLOYMENT_INVOKE_URL=$bamboo_orca_API_DEPLOYMENT_INVOKE_URL
         export orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN=$bamboo_orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN
         export orca_RECOVERY_BUCKET_NAME=$bamboo_orca_RECOVERY_BUCKET_NAME
