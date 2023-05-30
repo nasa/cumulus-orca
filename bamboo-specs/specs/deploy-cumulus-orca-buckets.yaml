@@ -87,9 +87,6 @@ Run Ingest Integration tests:
       - |-
         #!/bin/bash
         . ./integration_test/shared/setup-orca.sh
-        export orca_API_DEPLOYMENT_INVOKE_URL=$bamboo_orca_API_DEPLOYMENT_INVOKE_URL
-        export orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN=$bamboo_orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN
-        export orca_RECOVERY_BUCKET_NAME=$bamboo_orca_RECOVERY_BUCKET_NAME
         cd integration_test/workflow_tests && bash bin/run_tests.sh
   
 variables:
