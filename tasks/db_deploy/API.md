@@ -4,6 +4,7 @@
   * [handler](#db_deploy.handler)
   * [task](#db_deploy.task)
   * [app\_db\_exists](#db_deploy.app_db_exists)
+  * [reset\_user\_password](#db_deploy.reset_user_password)
   * [app\_schema\_exists](#db_deploy.app_schema_exists)
   * [app\_version\_table\_exists](#db_deploy.app_version_table_exists)
   * [get\_migration\_version](#db_deploy.get_migration_version)
@@ -179,6 +180,22 @@ Checks to see if the ORCA application database exists.
 **Returns**:
 
 - `True/False` _bool_ - True if database exists.
+
+<a name="db_deploy.reset_user_password"></a>
+#### reset\_user\_password
+
+```python
+@retry_operational_error(MAX_RETRIES)
+reset_user_password(connection: Connection, config: PostgresConnectionInfo, user_name: str)
+```
+
+Resets the ORCA user password.
+
+**Arguments**:
+
+- `connection` _sqlalchemy.future.Connection_ - Database connection object.
+- `config` - Dictionary of connection information.
+- `user_name` - Username for the application user
 
 <a name="db_deploy.app_schema_exists"></a>
 #### app\_schema\_exists

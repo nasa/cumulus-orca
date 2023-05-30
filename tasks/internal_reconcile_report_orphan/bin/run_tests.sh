@@ -70,12 +70,6 @@ bandit -r src test
 check_returncode $? "ERROR: Potential security or code issues found."
 
 
-## Check code third party libraries for CVE issues
-echo "INFO: Running checks on third party libraries ..."
-safety check -r requirements.txt -r requirements-dev.txt
-check_returncode $? "ERROR: Potential security issues third party libraries."
-
-
 ## Run unit tests and check Coverage
 echo "INFO: Running unit and coverage tests ..."
 
@@ -84,5 +78,5 @@ coverage run --source src -m pytest
 check_returncode $? "ERROR: Unit tests encountered failures."
 
 # Unit tests expected to cover minimum of 80%.
-coverage report 
+coverage report --fail-under=80
 check_returncode $? "ERROR: Unit tests coverage is less than 80%"

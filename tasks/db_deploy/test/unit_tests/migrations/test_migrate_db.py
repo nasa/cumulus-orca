@@ -89,9 +89,9 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 else:
                     mock_migrate_v5_to_v6.assert_not_called()
 
-                # Reset for next loop
-                mock_migrate_v1_to_v2.reset_mock()
-                mock_migrate_v2_to_v3.reset_mock()
-                mock_migrate_v3_to_v4.reset_mock()
-                mock_migrate_v4_to_v5.reset_mock()
-                mock_migrate_v5_to_v6.reset_mock()
+            # Reset for next loop
+            mock_migrate_v1_to_v2.reset_mock()
+            mock_migrate_v2_to_v3.reset_mock()
+            mock_migrate_v3_to_v4.reset_mock()
+            mock_migrate_v4_to_v5.reset_mock()
+            mock_migrate_v5_to_v6.reset_mock()

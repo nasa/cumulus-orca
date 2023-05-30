@@ -44,8 +44,24 @@ if [[ ! $bamboo_RELEASE_FLAG == true ]]; then
   exit 0
 fi
 
+export url="https://github.com/nasa/cumulus-orca/releases/download/v$bamboo_ORCA_VERSION/cumulus-orca-terraform.zip"
+curl_result=$(curl -Is "$url" | head -1)
+# Remove the ' ^M' that curl tacks on to the results.
+curl_result=${curl_result::${#curl_result}-2}
+# debug step for showing hidden characters.
+# echo $curl_result | cat -v
+# 302 is found, 404 for not found
+if [ "$curl_result" == "HTTP/2 302" ]; then
+  echo "$url already exists. Exiting."
+  exit 1
+elif [ "$curl_result" == "HTTP/2 404" ]; then
+  echo "$url has not been released. Proceeding."
+else
+  echo "Unexpected response from $url: $curl_result"
+  exit 1
+fi
+
 ## Release the Code
-## TODO: Make this more robust. Check for errors see if release already created, etc.
 cd dist
 
 # Create Release
@@ -60,8 +76,14 @@ export RELEASE_URL=$(curl \
     | sed -e 's/.*\(https.*\)\"\,/\1/' \
     | sed -e 's/api/uploads/')
 
-# Release Package
-echo $RELEASE_URL
+# Release URL is created only if there is valid github token
+if [[ ! $RELEASE_URL ]]; then
+  echo "RELEASE_URL is empty. This may be caused by an invalid 'GITHUB_TOKEN'. Exiting"
+  exit 1
+else
+  echo "$RELEASE_URL has not been released. Proceeding."
+fi
+
 curl \
     -X POST \
     -H "Authorization: token $bamboo_SECRET_GITHUB_TOKEN" \
@@ -71,3 +93,5 @@ curl \
 check_returncode $? "Error during curl command."
 
 cd ..
+
+exit 0

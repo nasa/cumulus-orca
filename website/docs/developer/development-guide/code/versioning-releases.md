@@ -1,3 +1,4 @@
+
 ---
 id: versioning-releases
 title:  ORCA Versioning and Releases
@@ -14,13 +15,13 @@ versioning can be found [here](https://semver.org/).
 ### Create a release branch
 
 From develop, create a new release branch from develop following the
-`release-MAJOR.MINOR.x`. For example, `release-1.14.1`. Push this branch 
+`release-MAJOR.MINOR.x`. For example, `release-1.14.1`. Push this branch
 to github if you created it locally.
 
 ### Update CHANGELOG.md
 
-Update the [CHANGELOG.md](https://github.com/nasa/cumulus-orca/blob/master/CHANGELOG.md). 
-Put a header under the 'Unreleased' section with the new version number and 
+Update the [CHANGELOG.md](https://github.com/nasa/cumulus-orca/blob/master/CHANGELOG.md).
+Put a header under the 'Unreleased' section with the new version number and
 the date.
 
 ### Create a git tag for the release
@@ -48,7 +49,7 @@ bamboo deployment plan.
 1. If you have updated the `bamboo.yaml` config file, you will need to import the updated spec file from Bamboo specs UI. Under `Specs` section, click on the `Set up Specs Repository`. On the `Project Type`, select `Build Project` and then `ORCA`. On the Specs repository, select the repository host as `orca-develop`. Note that choosing the wrong repository branch will cause issues in deployment. `ORCA repo` repository host is for `master` branch and `orca test branch` host is for `feature/ORCA-test-bamboo` branch used for testing and prototyping. Contact `Venku Jayanti` from CI/CD team for additional support.
 1. In the ORCA project (https://ci.earthdata.nasa.gov/browse/ORCA-OI), scroll to the top left of the page where it indicates `Plan branch`. From the `Plan branch` dropdown menu, select the release branch you created for the release which should be in the format `release-X.X.X`.
 1. Once inside the release branch page, scroll to the top right of the page and click `Actions`-> `Configure branch`.
-1. On the `Plan branch configuration` page, under `Plan branch configuration`, enable 'Change Trigger'. Set the 
+1. On the `Plan branch configuration` page, under `Plan branch configuration`, enable 'Change Trigger'. Set the
    Trigger type to manual, and this will prevent commits to the branch from triggering the build plan.
 1. Click on the `Variables` tab.
 Ensure that you are on your branch plan and not the master plan. Click on the `Choose from inherited variables` dropdown menu.
@@ -64,23 +65,41 @@ Ensure that you are on your branch plan and not the master plan. Click on the `C
 
 Bamboo will build and run unit tests against that tagged release.
 
+## Publish Documentation
+
+1. Go to the [`Release ORCA Documentation` plan under ORCA](https://ci.earthdata.nasa.gov/browse/ORCA-ROD)
+1. Click the `Create plan branch` button next to the `Plan branch` selector.
+1. Choose your release branch and click `Create`.
+Make sure to replace your bamboo github variables before running the pipeline.
+1. Click on the `Variables` tab.
+Ensure that you are on your branch plan and not the master plan. Click on the `Choose from inherited variables` dropdown menu.
+   except in special cases such as incompatible backport branches. Then add and set the following variables:
+     * SECRET_GITHUB_EMAIL: `<secret github email>`
+     * SECRET_GITHUB_TOKEN: `<secret github token>`
+     * SECRET_GITHUB_USER: `<secret github user>`
+   
+   Contact ORCA team to know values of the three github variables.
+1. Run the branch using the 'Run' button in the top right.
+1. Click on the `Tests` tab, followed by the `Release ORCA Documentation.` link.
+1. Hit the play button next to the `Release Stage` and run the stage.
+
 ## Finalizing ORCA release on github
 
 The release is automated in Bamboo, but the step must be manually started. If
 you set the `RELEASE_FLAG` to `true` and the build steps passed, you will
-be able to run the manual 'Release' step in Bamboo. Make sure to use the `ORCA Integrator` plan under ORCA on bamboo website for performing a release.
+be able to run the manual 'Release' step in Bamboo. Make sure to use the `ORCA Integrator` plan under ORCA on bamboo website for performing a code release.
 
 The CI release scripts will create a release based on the release version tag,
 as well as uploading release artifacts to the Github release for the Terraform
 modules provided by Cumulus. The Terraform release artifacts include:
 
-* A multi-module Terraform .zip artifact containing filtered copies of the 
+* A multi-module Terraform .zip artifact containing filtered copies of the
   tf-modules, packages, and tasks directories for use as Terraform module sources.
 
 Just make sure to verify the appropriate .zip files are present on Github after
 the release process is complete.
 
-**Merge the base branch back into develop and master**
+## Merge the base branch back into develop and master
 
 If this is the latest version, you need to merge the version update changes back into master, then synchronize master and develop.
 
@@ -88,10 +107,10 @@ If this is the latest version, you need to merge the version update changes back
 1. Once complete, create a PR to merge master into develop.
    This should only contain changes from the release process.
 
-:::note Note: 
+:::note Note:
 
-Do not squash this merge. Doing so will make the "compare" view from step 4 
-show an incorrect diff, because the tag is linked to a specific commit on the 
+Do not squash this merge. Doing so will make the "compare" view from step 4
+show an incorrect diff, because the tag is linked to a specific commit on the
 base branch.
 
 :::
@@ -128,7 +147,16 @@ DO NOT RUN THE RELEASE STAGE FROM `PROTOTYPE-LATEST`
 Comment the release stage out in `bamboo.yaml` at the top of the file, and under `stages:`. Note that indentation is not a reliable indicator of block length, so make sure that all release code, including `repositories`, `triggers`, and `branches`, are commented out.
 :::
 
-You will use the `ORCA Deploy Plan` bamboo plan for deploying the resources. 
+An EC2 key pair must be created using the AWS CLI if you are using a new `PREFIX`. Make sure to save the generated private key for connecting to this instance later.
+
+```bash
+aws ec2 create-key-pair --key-name <PREFIX> --query 'KeyMaterial' --output text > <PREFIX>.pem
+```
+:::note
+Make sure your AWS is configured to use the cumulus sandbox account by using that account's AWS access keys before creating the EC2 key pair.
+:::
+
+You will use the `ORCA Deploy Plan` bamboo plan for deploying the resources.
 
 After hitting the play button on `Deploy DR ORCA Buckets` stage in bamboo plan, but before hitting `Run` in the popup, replace the following variables with yours.
 
@@ -154,7 +182,7 @@ Some of these buckets have cross-account IAM policies attached so that they can 
 Hitting 'play' next to `Deploy DR ORCA buckets`, `Deploy Dev RDS Stack` and `Deploy Dev Cumulus and ORCA Stack` brings up a checkbox list to run multiple jobs at once. Note that none of the checkboxes should be checked.
 :::
 
-The Cumulus and TF buckets as well as dynamoDB table in cumulus OU account are created automatically in the Bamboo `Deploy Cumulus buckets and Cumulus and Orca modules` stage. 
+The Cumulus and TF buckets as well as dynamoDB table in cumulus OU account are created automatically in the Bamboo `Deploy Cumulus buckets and Cumulus and Orca modules` stage.
 These are the buckets that will be created in cumulus OU account:
 
 - `<PREFIX>-internal`
@@ -180,7 +208,7 @@ After hitting the play button on `Deploy Cumulus buckets and Cumulus and Orca mo
 - EARTHDATA_CLIENT_PASSWORD
 - CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION
 
-This is because some variables are sensitive and some will vary depending upon the user running the pipeline. Hitting 'play' next to any of the deployment and cleanup stages brings up a checkbox list to run multiple jobs at once. Note that none of the checkboxes should be checked.
+This is because some variables are sensitive and some will vary depending upon the user running the pipeline. Hitting 'play' next to any of the deployment stages brings up a checkbox list to run multiple jobs at once. Note that none of the checkboxes should be checked.
 
 The above buckets can also be created manually if desired by the user. Make sure to use the proper AWS access keys for configuration before running the commands.
 
@@ -204,20 +232,16 @@ The dynamodb table and bucket versioning can be created manually as well.
     --versioning-configuration Status=Enabled
 ```
 
-An EC2 key pair can be created using the AWS CLI. Make sure to save the generated private key for connecting to this instance later.
-
-```bash
-aws ec2 create-key-pair --key-name <PREFIX> --query 'KeyMaterial' --output text > <PREFIX>.pem
-```
-:::note
-Make sure your AWS is configured to use the cumulus sandbox account by using that account's AWS access keys before creating the EC2 key pair.
-:::
-
 A new earthdata application will need to be created if not done previously which will give the values for `EARTHDATA_CLIENT_ID` and `EARTHDATA_CLIENT_PASSWORD`. If you already have the application, use the existing values. `CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION` is the branch you want to check out in the [deployment repo](https://git.earthdata.nasa.gov/projects/ORCA/repos/cumulus-orca-deploy-template/browse) such as `v11.1.1-v4.0.1`.
 
 Note that the jobs may need to be run multiple times to get past deployment errors if there is one. If an error is raised saying `Cloudwatch log groups already exist`, then manually delete all the cloudwatch log groups and corresponding lambdas having the same name as the log groups from the AWS console and retry running the job.
 
-`Clean up ORCA buckets and modules` and `Clean up DR ORCA buckets` can be run in sequence to remove most of the resources created by the deployment stages.
+The `ORCA Cleanup Plan` has two stages named `Clean up ORCA buckets and modules` and `Clean up DR ORCA buckets` which can be run in sequence to remove most of the resources created by the deployment stages. Remember to add the following AWS secrets keys for both Cumulus and DR accounts while running the pipeline.
+
+- CUMULUS_AWS_ACCESS_KEY_ID
+- CUMULUS_AWS_SECRET_ACCESS_KEY
+- DR_AWS_ACCESS_KEY_ID
+- DR_AWS_SECRET_ACCESS_KEY
+
 State buckets and lock tables will be left intact to aid in any cleanup issues/debugging.
-Additionally, Cumulus's RDS module will automatically create a final-snapshot `PREFIX-cumulus-rds-serverless-default-cluster-final-snapshot` that must be manually deleted.
 To verify cleanup, check the stage logs for errors, and [check the AWS environment for additional resources](https://docs.aws.amazon.com/ARG/latest/userguide/find-resources-to-tag.html) with the tag `Deployment=PREFIX`.

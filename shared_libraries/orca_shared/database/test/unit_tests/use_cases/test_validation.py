@@ -57,9 +57,11 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
         self
     ):
         """
-        A password of length 12 should be sufficient.
+        A password must have lower case and upper case letters,
+        a number between 0 and 9, a special character and
+        length of 12.
         """
-        password = "123456789012"  # nosec
+        password = "%123456789aA"  # nosec
         context = Mock()
         logger = Mock()
         _validate_password(password, context, logger)
@@ -77,6 +79,63 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
                     _validate_password(password, context, logger)
                 self.assertEqual(str(cm.exception),
                                  f"{context} password must be at least 12 characters long.")
+
+    def test_validate_password_number_missing_raises_error(self):
+        """
+        A password without a number should be rejected.
+        """
+        password = "abcdefghijkl"  # nosec
+        context = Mock()
+        logger = Mock()
+        with self.assertRaises(Exception) as cm:
+            _validate_password(password, context, logger)
+        self.assertEqual(
+            str(cm.exception),
+            f"{context} password must contain a digit between 0 and 9."
+        )
+
+    def test_validate_password_upper_case_missing_raises_error(self):
+        """
+        A password without an upper case letter should be rejected.
+        """
+        password = "abcdfghijkl123"  # nosec
+        context = Mock()
+        logger = Mock()
+        with self.assertRaises(Exception) as cm:
+            _validate_password(password, context, logger)
+        self.assertEqual(
+            str(cm.exception),
+            f"{context} password must contain an upper case letter."
+        )
+
+    def test_validate_password_lower_case_missing_raises_error(self):
+        """
+        A password without a lower case letter should be rejected.
+        """
+        password = "ABCDEFGHIJ1@"  # nosec
+        context = Mock()
+        logger = Mock()
+        with self.assertRaises(Exception) as cm:
+            _validate_password(password, context, logger)
+        self.assertEqual(
+            str(cm.exception),
+            f"{context} password must contain a lower case letter."
+        )
+
+    def test_validate_password_special_character_missing_raises_error(self):
+        """
+        A password without a special character should be rejected.
+        """
+        password = "Abcdfghijkl123"  # nosec
+        special_characters = "‘~!@#$%^&*()_-+={}[]\\/<>,.;?':| "
+        context = Mock()
+        logger = Mock()
+        with self.assertRaises(Exception) as cm:
+            _validate_password(password, context, logger)
+        self.assertEqual(
+            str(cm.exception),
+            f"{context} password must contain a special character from {special_characters}"
+        )
 
     def test_validate_postgres_name_happy_path(
         self

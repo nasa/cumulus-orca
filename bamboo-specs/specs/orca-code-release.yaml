@@ -4,8 +4,13 @@
 version: 2
 plan:
   project-key: ORCA
+<<<<<<< HEAD
   key: OIT
   name: ORCA Integrator Test
+=======
+  key: OI
+  name: ORCA Integrator
+>>>>>>> develop
 stages:
 - Setup Env:
     manual: false
@@ -200,7 +205,11 @@ Release ORCA Code:
       description: Create Release Files and Release in GitHub
 
 variables:
+<<<<<<< HEAD
   ORCA_VERSION: 4.0.3
+=======
+  ORCA_VERSION: 6.0.2
+>>>>>>> develop
   RELEASE_FLAG: 'false'
   REPORT_BUILD_STATUS: 'true'
   SECRET_GITHUB_EMAIL: BAMSCRT@0@0@HYUkicwfEqt17JZaZuGYmtmRHrnDySiT+kQkBQa7/Rg7IQgl1lUvbncMUu0Wx2k1ayHojNkh2TdOlF0kJ5tw6Q== #encrypted
@@ -208,7 +217,11 @@ variables:
   SECRET_GITHUB_USER: BAMSCRT@0@0@fFtitNITDsAjJqK2ZXjhnBZ96z2775QLzGR1Xz557gSl8HxxBaTD3Fbmp+HUbpfx  #encrypted
  
 repositories:
+<<<<<<< HEAD
 - orca test 2: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact ci/cd team with any issues.
+=======
+- orca-develop: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact ci/cd team with any issues.
+>>>>>>> develop
     scope: global
 triggers:
 - polling: # Does not actually poll, as we do not have webhooks enabled.

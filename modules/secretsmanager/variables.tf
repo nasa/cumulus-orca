@@ -39,6 +39,11 @@ variable "db_name" {
 }
 
 ## variables related to iam roles
+variable "gql_ecs_task_execution_role_arn" {
+  type        = string
+  description = "The ARN of the role used by the ECS Task runnger."
+}
+
 variable "restore_object_role_arn" {
   type        = string
   description = "AWS ARN of the restore_object_role."

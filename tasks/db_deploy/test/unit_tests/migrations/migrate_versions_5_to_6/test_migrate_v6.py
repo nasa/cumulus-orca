@@ -118,13 +118,13 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                     len(execution_order), len(mock_conn_enter.method_calls)
                 )
 
-                # Reset the mocks for next loop
-                mock_create_admin_uri.reset_mock()
-                mock_create_engine.reset_mock()
-                mock_storage_class_table_sql.reset_mock()
-                mock_storage_class_data_sql.reset_mock()
-                mock_add_files_storage_class_id_column_sql.reset_mock()
-                mock_add_mismatch_storage_class_columns_sql.reset_mock()
-                mock_add_phantom_storage_class_column_sql.reset_mock()
-                mock_schema_versions_data_sql.reset_mock()
-                mock_text.reset_mock()
+            # Reset the mocks for next loop
+            mock_create_admin_uri.reset_mock()
+            mock_create_engine.reset_mock()
+            mock_storage_class_table_sql.reset_mock()
+            mock_storage_class_data_sql.reset_mock()
+            mock_add_files_storage_class_id_column_sql.reset_mock()
+            mock_add_mismatch_storage_class_columns_sql.reset_mock()
+            mock_add_phantom_storage_class_column_sql.reset_mock()
+            mock_schema_versions_data_sql.reset_mock()
+            mock_text.reset_mock()

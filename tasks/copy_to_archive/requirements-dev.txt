@@ -1,15 +1,13 @@
-cumulus-process==0.8.0
 boto3==1.18.40
-pytest==6.1.2
-coverage==5.3
-fastjsonschema==2.15.0
-moto[sqs]==2.0.6
+pytest==6.2.5
 aws_lambda_powertools==1.31.0
+coverage==5.3
+fastjsonschema~=2.15.1
+moto[sqs]==2.0.6
 
 ## Additional validation libraries
 ## ---------------------------------------------------------------------------
 bandit==1.7.0
-safety==2.3.1
 flake8==4.0.1
 black==21.12b0
 isort==5.10.1

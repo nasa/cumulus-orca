@@ -225,8 +225,8 @@ class TestRequestStatusForGranuleUnit(
                 self.assertEqual(1, mock_create_http_error_dict.call_count)
                 self.assertEqual(mock_create_http_error_dict.return_value, result)
 
-                mock_create_http_error_dict.reset_mock()
-                mock_task.reset_mock()
+            mock_create_http_error_dict.reset_mock()
+            mock_task.reset_mock()
 
     # noinspection PyPep8Naming
     @patch("request_status_for_granule.create_http_error_dict")
@@ -468,16 +468,20 @@ class TestRequestStatusForGranuleUnit(
         granule_id = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
 
-        expected_result = [{"job_id": job_id}]
-        mock_engine = Mock()
-        mock_engine.begin.return_value = Mock()
+        expected_result = {"job_id": job_id}
+
+        mock_execute_result = Mock()
+        mock_execute_result.mappings = Mock(return_value=copy.deepcopy([expected_result]))
+        mock_execute = Mock()
+        mock_execute.return_value = mock_execute_result
         mock_connection = Mock()
-        mock_connection.execute.return_value = copy.deepcopy(expected_result)
-        mock_engine.begin.return_value.__enter__ = Mock()
-        mock_engine.begin.return_value.__enter__.return_value = mock_connection
-        mock_engine.begin.return_value.__exit__ = Mock(
-            return_value=False
-        )  # required for "with", but untestable.
+        mock_connection.execute = mock_execute
+        mock_exit = Mock(return_value=False)
+        mock_enter = Mock()
+        mock_enter.__enter__ = Mock(return_value=mock_connection)
+        mock_enter.__exit__ = mock_exit
+        mock_engine = Mock()
+        mock_engine.begin = Mock(return_value=mock_enter)
 
         result = request_status_for_granule.get_most_recent_job_id_for_granule(
             granule_id, mock_engine
@@ -487,6 +491,7 @@ class TestRequestStatusForGranuleUnit(
             mock_sql.return_value,
             [{"granule_id": granule_id}],
         )
+        mock_execute_result.mappings.assert_called_once_with()
 
         self.assertEqual(job_id, result)
 
@@ -508,15 +513,18 @@ class TestRequestStatusForGranuleUnit(
             ),
         }
 
-        mock_engine = Mock()
-        mock_engine.begin.return_value = Mock()
+        mock_execute_result = Mock()
+        mock_execute_result.mappings = Mock(return_value=copy.deepcopy([expected_result]))
+        mock_execute = Mock()
+        mock_execute.return_value = mock_execute_result
         mock_connection = Mock()
-        mock_connection.execute.return_value = [copy.deepcopy(expected_result)]
-        mock_engine.begin.return_value.__enter__ = Mock()
-        mock_engine.begin.return_value.__enter__.return_value = mock_connection
-        mock_engine.begin.return_value.__exit__ = Mock(
-            return_value=False
-        )  # required for "with", but untestable.
+        mock_connection.execute = mock_execute
+        mock_exit = Mock(return_value=False)
+        mock_enter = Mock()
+        mock_enter.__enter__ = Mock(return_value=mock_connection)
+        mock_enter.__exit__ = mock_exit
+        mock_engine = Mock()
+        mock_engine.begin = Mock(return_value=mock_enter)
 
         result = request_status_for_granule.get_job_entry_for_granule(
             granule_id, job_id, mock_engine
@@ -531,6 +539,7 @@ class TestRequestStatusForGranuleUnit(
                 }
             ],
         )
+        mock_execute_result.mappings.assert_called_once_with()
 
         self.assertEqual(expected_result, result)
 
@@ -542,24 +551,25 @@ class TestRequestStatusForGranuleUnit(
         granule_id = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
 
-        expected_result = [
-            {
+        expected_result = [{
                 request_status_for_granule.OUTPUT_FILENAME_KEY: uuid.uuid4().__str__(),
                 request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY: uuid.uuid4().__str__(),
                 request_status_for_granule.OUTPUT_STATUS_KEY: uuid.uuid4().__str__(),
                 request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY: uuid.uuid4().__str__(),
-            }
-        ]
+            }]
 
-        mock_engine = Mock()
-        mock_engine.begin.return_value = Mock()
+        mock_execute_result = Mock()
+        mock_execute_result.mappings = Mock(return_value=copy.deepcopy(expected_result))
+        mock_execute = Mock()
+        mock_execute.return_value = mock_execute_result
         mock_connection = Mock()
-        mock_connection.execute.return_value = copy.deepcopy(expected_result)
-        mock_engine.begin.return_value.__enter__ = Mock()
-        mock_engine.begin.return_value.__enter__.return_value = mock_connection
-        mock_engine.begin.return_value.__exit__ = Mock(
-            return_value=False
-        )  # required for "with", but untestable.
+        mock_connection.execute = mock_execute
+        mock_exit = Mock(return_value=False)
+        mock_enter = Mock()
+        mock_enter.__enter__ = Mock(return_value=mock_connection)
+        mock_enter.__exit__ = mock_exit
+        mock_engine = Mock()
+        mock_engine.begin = Mock(return_value=mock_enter)
 
         result = request_status_for_granule.get_file_entries_for_granule_in_job(
             granule_id, job_id, mock_engine
@@ -574,6 +584,7 @@ class TestRequestStatusForGranuleUnit(
                 }
             ],
         )
+        mock_execute_result.mappings.assert_called_once_with()
 
         self.assertEqual(expected_result, result)
 
@@ -622,21 +633,20 @@ class TestRequestStatusForGranuleUnit(
 
         db_connect_info = Mock()
 
-        mock_engine = Mock()
-        mock_engine.begin.return_value = Mock()
-        mock_connection = Mock()
-        mock_connection.execute.side_effect = [
-            # job
-            [
-                {
-                    request_status_for_granule.OUTPUT_GRANULE_ID_KEY: granule_id,
-                    request_status_for_granule.OUTPUT_JOB_ID_KEY: job_id,
-                    request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: request_time,
-                    request_status_for_granule.OUTPUT_COMPLETION_TIME_KEY: None,
-                }
-            ],
-            # files
-            [
+        mock_execute_result0 = Mock()
+        mock_execute_result1 = Mock()
+        mock_execute_result0.mappings = Mock(
+            return_value=[
+                    {
+                        request_status_for_granule.OUTPUT_GRANULE_ID_KEY: granule_id,
+                        request_status_for_granule.OUTPUT_JOB_ID_KEY: job_id,
+                        request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: request_time,
+                        request_status_for_granule.OUTPUT_COMPLETION_TIME_KEY: None,
+                    }
+                ]
+            )
+        mock_execute_result1.mappings = Mock(
+            return_value=[
                 {
                     request_status_for_granule.OUTPUT_FILENAME_KEY:
                         filename_0,
@@ -656,14 +666,19 @@ class TestRequestStatusForGranuleUnit(
                         status_1,
                     request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY:
                         error_1,
-                },
-            ],
-        ]
-        mock_engine.begin.return_value.__enter__ = Mock()
-        mock_engine.begin.return_value.__enter__.return_value = mock_connection
-        mock_engine.begin.return_value.__exit__ = Mock(
-            return_value=False
-        )  # required for "with", but untestable.
+                }
+            ]
+        )
+
+        mock_execute = Mock(side_effect=[mock_execute_result0, mock_execute_result1])
+        mock_connection = Mock()
+        mock_connection.execute = mock_execute
+        mock_exit = Mock(return_value=False)
+        mock_enter = Mock()
+        mock_enter.__enter__ = Mock(return_value=mock_connection)
+        mock_enter.__exit__ = mock_exit
+        mock_engine = Mock()
+        mock_engine.begin = Mock(return_value=mock_enter)
         mock_get_user_connection.return_value = mock_engine
 
         result = request_status_for_granule.task(

@@ -3,8 +3,13 @@
 version: 2
 plan:
   project-key: ORCA
+<<<<<<< HEAD
   key: OCPT
   name: ORCA Cleanup Plan TEST
+=======
+  key: OCP
+  name: ORCA Cleanup Plan
+>>>>>>> develop
 stages:
 - Clean up ORCA buckets and modules:
     manual: true
@@ -71,7 +76,11 @@ variables:
   BRANCH_NAME: ${bamboo.planRepository.branchName}
  
 repositories:
+<<<<<<< HEAD
 - orca test 2:
+=======
+- orca-develop:
+>>>>>>> develop
     scope: global
 triggers:
 - polling: # Does not actually poll, as we do not have webhooks enabled.

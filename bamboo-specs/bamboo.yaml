@@ -1,8 +1,8 @@
 ---
 !include 'specs/deploy-cumulus-orca-buckets.yaml'
----
-!include 'specs/orca-cleanup.yaml'
----
-!include 'specs/orca-test-artifact.yaml'
+# ---
+# !include 'specs/orca-cleanup.yaml'
+# ---
+# !include 'specs/orca-test-artifact.yaml'
 # ---
 # !include 'specs/orca-documentation-release.yaml'

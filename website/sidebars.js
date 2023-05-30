@@ -40,6 +40,7 @@ module.exports = {
                 'developer/development-guide/code/postgres-tests',
                 'developer/development-guide/code/orca-logging',
                 'developer/development-guide/code/parallel-scripting',
+                'developer/development-guide/code/postgres-tips',
             ],
             "Developing Documentation": [
                 'developer/development-guide/documentation/contrib-documentation-intro',
@@ -56,6 +57,7 @@ module.exports = {
         'developer/deployment-guide/deployment',
         'developer/deployment-guide/deployment-environment',
         'developer/deployment-guide/deployment-s3-bucket',
+        'developer/deployment-guide/deployment-s3-credentials',
         'developer/deployment-guide/deployment-with-cumulus',
         'developer/deployment-guide/deployment-upgrading-orca',
         'developer/deployment-guide/recovery-workflow',

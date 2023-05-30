@@ -1,14 +1,13 @@
 aws_lambda_powertools==1.31.0
-SQLAlchemy==1.4.11
+SQLAlchemy~=2.0.5
 fastjsonschema==2.15.0
 ../../shared_libraries[database]
-pytest==6.1.2
+pytest==6.2.5
 coverage==5.3
 
 ## Additional validation libraries
 ## ---------------------------------------------------------------------------
 bandit==1.7.0
-safety==2.3.1
 flake8==4.0.1
 black==21.12b0
 isort==5.10.1

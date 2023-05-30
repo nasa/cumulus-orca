@@ -107,12 +107,11 @@ def get_most_recent_job_id_for_granule(
                 ],
             )
     except Exception as err:
-        # Can't use f"" because '{}' of bug in CumulusLogger.
-        LOGGER.error("DbError: {err}", err=str(err))
+        LOGGER.error(f"DbError: {err}")
         raise
 
     row = None
-    for row in results:
+    for row in results.mappings():
         break
 
     if row is None:
@@ -169,12 +168,11 @@ def get_job_entry_for_granule(
                 ],
             )
     except Exception as err:
-        # Can't use f"" because of '{}' bug in CumulusLogger.
-        LOGGER.error("DbError: {err}", err=str(err))
+        LOGGER.error(f"DbError: {err}")
         raise
 
     row = None
-    for row in results:
+    for row in results.mappings():
         break
 
     if row is None:
@@ -236,12 +234,11 @@ def get_file_entries_for_granule_in_job(
                 ],
             )
     except Exception as err:
-        # Can't use f"" because of '{}' bug in CumulusLogger.
-        LOGGER.error("DbError: {err}", err=str(err))
+        LOGGER.error(f"DbError: {err}")
         raise
 
     rows = []
-    for row in results:
+    for row in results.mappings():
         rows.append(
             {
                 OUTPUT_FILENAME_KEY: row[OUTPUT_FILENAME_KEY],

@@ -22,16 +22,75 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
     Since this means that GraphQL will return these entities, 
     make sure they do not contain any fields that clients should not see.
   - `resolvers` should catch and convert any exceptions to `dataTypes`.
-    When returning an `ExceptionStrawberryType` there should always be a `message` property 
+    When returning an `ExceptionGraphqlType` there should always be a `message` property 
     with a human-friendly explanation of the error.
 - `resolvers` are called by `queries` or `mutations`.
 - `queries` and `mutations` are standard GraphQL components, mapped to in the `graphql` package.
 - `graphql` is run via the `webserver` package.
 
-## Local Testing
+## Testing
+### Local Testing
+- Install the test version of psycopg2 by running `pip install psycopg2-binary` in your venv.
+  This will satisfy the `psycopg2` requirement.
 - Entry point is `src/adapters/webserver/main.py`, 
-  which will start the developer UI at http://127.0.0.1:5000/graphql by default
-- If running via Docker, use the command `docker run -d -p 5000:5000 imageName` replacing `imageName` with the name of your built image.
+  which will start the developer UI at http://localhost:5000/graphql by default
+  - Make sure to set the following environment variables:
+    - `DB_CONNECT_INFO` = {"admin_database": "postgres", "admin_password": "{your admin password}", "admin_username": "postgres", "host": "localhost", "port": "5432", "user_database": "{PREFIX}_orca", "user_password": "{your user password}", "user_username": "{PREFIX}_orcauser"}
+      - Replacing placeholders in `{brackets}` with proper values.
+- If running via Docker
+  - Set all environment variables in an `env` file.
+    - Do NOT check this file into Github. Ideally, store this file outside the cloned repository.
+  - Use the command `docker run -d -p 5000:5000 --env-file path/to/env imageName` 
+    - Replace `imageName` with the name of your built image.
+    - Replace `path/to/env` with the path to the env file you created in the previous step.
+- The GraphQL URL is `http://localhost:5000/graphql`
+
+If you need to install the production version of psycopg2 for local testing:
+1. In terminal, run `brew install libpq`.
+2. Open `$HOME/.bash_profile` in a text editor.
+3. Add the following to the bottom of the file:
+   ```shell
+   # Setting PATH for pg_config and paths for other psycopg2 requirements
+   PATH="/usr/local/Cellar/libpq/15.1/bin/:${PATH}"
+   export PATH
+   export LDFLAGS="-L/usr/local/opt/openssl/lib"
+   export CPPFLAGS="-I/usr/local/opt/openssl/include"
+   ```
+4. Relaunch your terminal/IDE. `pip install psycopg2` can now install psycopg2 in your venv.
+
+### AWS Testing
+1. If you wish to enable the developer GUI, add/modify the "ORCA_ENV" 
+   in the `environment` section in your Terraform's `aws_ecs_task_definition` to include
+   ```json
+   {
+     "name": "ORCA_ENV",
+     "value": "development"
+   }
+   ```
+   then redeploy.
+
+2. Get your `PREFIX-CumulusECSCluster` ec2 instance ID.
+   This can be retrieved via the AWS GUI, or by running
+   ```shell
+   aws ec2 describe-instances --filters Name=instance-state-name,Values=running Name=tag:Name,Values={PREFIX}-CumulusECSCluster --query "Reservations[*].Instances[*].InstanceId" --output text
+   ```
+   replacing `{PREFIX}` with your prefix.
+
+3. Run the following bash command, 
+   replacing `i-00000000000000000` with your `PREFIX-CumulusECSCluster` ec2 instance ID.
+   ```shell
+   aws ssm start-session --target i-00000000000000000 --document-name AWS-StartPortForwardingSession --parameters portNumber=22,localPortNumber=6868
+   ```
+4. In a separate bash, run the following command,
+   replacing `/blah/prefix.pem` with the path to your local `.pem` file for your installation and
+   replacing `internal-PREFIX-gql-a-0000000000.us-west-2.elb.amazonaws.com` with the DNS name of your `PREFIX-gql-a` Application Load Balancer.
+   ```shell
+   ssh -p 6868 -L 5000:internal-PREFIX-gql-a-0000000000.us-west-2.elb.amazonaws.com:5000 -i "/blah/prefix.pem" -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" ec2-user@127.0.0.1
+   ```
+5. The GraphQL URL is `http://localhost:5000/graphql`
+
+### Test Code
+- If the developer UI is enabled, you can access it at your GraphQL URL in a web browser.
 - If using the developer UI, queries can be converted to code-friendly representations using the following code:
   ```python
   query = """query {
@@ -53,7 +112,7 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
   import json
   import requests
   
-  endpoint = "http://0.0.0.0:5000/graphql/"
+  endpoint = "http://localhost:5000/graphql/"
   headers = {}
   
   r = requests.post(endpoint, json=json_body, headers=headers)
@@ -62,6 +121,7 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
   else:
       raise Exception(f"Query failed to run with a {r.status_code}.")
   ```
+  If needed, replace the `endpoint` with your GraphQL URL.
 
 ## Deployment
 Compiled packages are stored at the [NASA Github packages page](https://github.com/orgs/nasa/packages/container/package/cumulus-orca%2Fgraphql).
@@ -87,7 +147,7 @@ Once a new version is ready for deployment, perform the following steps:
 ### Customer-Accessible Schemas
 See [ORCA API Reference](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api) 
 for customer-centric API documentation.
-# todo: add recommendation to docs to ALWAYS request ErrorStrawberryTypeInterface with __typename and message properties
+# todo: add recommendation to docs to ALWAYS request ErrorGraphqlTypeInterface with __typename and message properties
 
 ### Orca-Internal Schemas
 todo

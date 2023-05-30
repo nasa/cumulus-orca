@@ -5,7 +5,7 @@ function check_returncode () {
   ## Args:
   ##   $1 - Return Code from command
   ##   $2 - Error message if failure occurs.
-  let RC=$1
+  RC=$1
   MESSAGE=$2
   if [ $RC -ne 0 ]; then
       >&2 echo "$MESSAGE"

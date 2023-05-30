@@ -5,6 +5,7 @@
   * [task](#extract_filepaths_for_granule.task)
   * [get\_regex\_buckets](#extract_filepaths_for_granule.get_regex_buckets)
   * [should\_exclude\_files\_type](#extract_filepaths_for_granule.should_exclude_files_type)
+  * [set\_optional\_event\_property](#extract_filepaths_for_granule.set_optional_event_property)
   * [handler](#extract_filepaths_for_granule.handler)
 
 <a id="extract_filepaths_for_granule"></a>
@@ -30,7 +31,7 @@ Exception to be raised if any errors occur
 #### task
 
 ```python
-def task(event)
+def task(task_input: Dict[str, Any], config: Dict[str, Any])
 ```
 
 Task called by the handler to perform the work.
@@ -39,7 +40,8 @@ This task will parse the input, removing the granuleId and file keys for a granu
 
 **Arguments**:
 
-- `event` _dict_ - passed through from the handler
+- `task_input` - See schemas/input.json
+- `config` - See schemas/config.json
   
 
 **Returns**:
@@ -56,7 +58,7 @@ This task will parse the input, removing the granuleId and file keys for a granu
 #### get\_regex\_buckets
 
 ```python
-def get_regex_buckets(event) -> Dict[str, str]
+def get_regex_buckets(config: Dict[str, Any]) -> Dict[str, str]
 ```
 
 Gets a dict of regular expressions and the corresponding archive bucket for files
@@ -64,7 +66,7 @@ matching the regex.
 
 **Arguments**:
 
-- `event` _dict_ - passed through from the handler
+- `config` - See schemas/config.json
   
 
 **Returns**:
@@ -96,50 +98,43 @@ Tests whether or not file is included in {excludedFileExtensions} from copy_to_a
 
   True if file should be excluded from copy, False otherwise.
 
+<a id="extract_filepaths_for_granule.set_optional_event_property"></a>
+
+#### set\_optional\_event\_property
+
+```python
+def set_optional_event_property(event: Dict[str,
+                                            Any], target_path_cursor: Dict,
+                                target_path_segments: List) -> None
+```
+
+Sets the optional variable value from event if present, otherwise sets to None.
+
+**Arguments**:
+
+- `event` - See schemas/input.json.
+- `target_path_cursor` - Cursor of the current section to check.
+- `target_path_segments` - The path to the current cursor.
+
+**Returns**:
+
+  None
+
 <a id="extract_filepaths_for_granule.handler"></a>
 
 #### handler
 
 ```python
 @LOGGER.inject_lambda_context
-def handler(event: Dict[str, Union[str, int]], context: LambdaContext)
+def handler(event: Dict[str, Dict[str, Any]], context: LambdaContext)
 ```
 
 Lambda handler. Extracts the key's for a granule from an input dict.
 
 **Arguments**:
 
-- `event` _dict_ - A dict with the following keys:
-  
-  granules (list(dict)): A list of dict with the following keys:
-- `granuleId` _string_ - The id of a granule.
-  files (list(dict)): list of dict with the following keys:
-- `key` _string_ - The key of the file to be returned.
-  other dictionary keys may be included, but are not used.
-  other dictionary keys may be included, but are not used.
-  
-- `Example` - {
-                "event": {
-                  "granules": [
-                    {
-                      "granuleId": "granxyz",
-                      "recoveryBucketOverride": "test-recovery-bucket",
-                      "version": "006",
-                      "files": [
-                        {
-                          "fileName": "file1",
-                          "key": "key1",
-                          "source": "s3://dr-test-sandbox-protected/file1",
-                          "type": "metadata"
-                        }
-                      ]
-                    }
-                  ]
-                }
-              }
-  
-- `context` - This object provides information about the lambda invocation, function,
-  and execution env.
+- `event` - Event passed into the step from the aws workflow.
+  See schemas/input.json and schemas/config.json for more information.
   
 
 **Returns**:

@@ -81,7 +81,7 @@ data "aws_iam_policy_document" "orca_kms_key_policy" {
 
     principals {
       type        = "AWS"
-      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current_account.account_id}:root"]
+      identifiers = ["arn:aws:iam::${local.account_id}:root"]
     }
   }
   statement {
@@ -97,7 +97,7 @@ data "aws_iam_policy_document" "orca_kms_key_policy" {
 
     principals {
       type        = "AWS"
-      identifiers = [var.restore_object_role_arn]
+      identifiers = [var.restore_object_role_arn, var.gql_ecs_task_execution_role_arn]
     }
   }
 }

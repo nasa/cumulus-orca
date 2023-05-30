@@ -52,12 +52,12 @@ class StorageAdapterRDBMS(OrphansPageStorageInterface)
 #### \_\_init\_\_
 
 ```python
-def __init__(connection_uri: str)
+def __init__(connection_uri: URL)
 ```
 
 **Arguments**:
 
-- `connection_uri` - The URI connection string.
+- `connection_uri` - The DB connection URL.
 
 <a id="src.adapters.storage.rdbms.StorageAdapterRDBMS.get_orphans_page"></a>
 

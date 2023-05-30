@@ -307,22 +307,6 @@ buckets = {
 
 :::
 
-### Modifying cumulus-tf/main.tf
-
-To use the Orca API, add the following line within the Cumulus module:
-
-```
-module "cumulus" {
-
-  ...
-
-  orca_api_uri = module.orca.orca_api_deployment_invoke_url
-  
-  ...
-  
-}
-```
-
 ## Define the ORCA Workflows
 
 The ORCA Ingest Workflows follows each step listed below. Adding the 
@@ -546,7 +530,7 @@ variables is shown in the table below.
 | `db_name`                                              | string       | The name of the Orca database within the RDS cluster. Any `-` in `prefix` will be replaced with `_`.                           | PREFIX_orca |
 | `db_user_name`                                         | string       | The name of the application user for the Orca database. Any `-` in `prefix` will be replaced with `_`.                         | PREFIX_orcauser |
 | `log_level`                                            | string       | Sets the verbose of powertools logger. Must be one of 'INFO', 'DEBUG', 'WARN', 'ERROR'. Defaults to 'INFO'.                    | "INFO" |
-| `orca_default_recovery_type`                           | string       | The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'                                               | "Standard" |
+| `orca_default_recovery_type`                           | string       | The Tier for the restore request. Valid values are 'Standard', 'Bulk', 'Expedited'                                               | "Standard" |
 | `orca_default_storage_class`                           | string       | The [class of storage](../../operator/storage-classes.md) to use when ingesting files. Can be overridden by collection config. | "GLACIER" |
 | `orca_delete_old_reconcile_jobs_frequency_cron`        | string       | Frequency cron for running the delete_old_reconcile_jobs lambda.                                                               | "cron(0 0 ? * SUN *)" |
 | `orca_ingest_lambda_memory_size`                       | number       | Amount of memory in MB the ORCA copy_to_archive lambda can use at runtime.                                                     | 2240 |
@@ -578,6 +562,7 @@ accessed using terraform dot syntax in the format of `module.orca.variable_name`
 | Output Variable                                         | Description                                             |
 | --------------------------------------------------------|---------------------------------------------------------|
 | `orca_api_deployment_invoke_url`                        | The URL to invoke the ORCA Cumulus reconciliation API gateway. Excludes the resource path |
+| `orca_graphql_load_balancer_dns_name`                   | The DNS Name of the Application Load Balancer that handles access to ORCA GraphQL. |
 | `orca_lambda_copy_to_archive_arn`                       | AWS ARN of the ORCA copy_to_archive lambda. |
 | `orca_lambda_extract_filepaths_for_granule_arn`         | AWS ARN of the ORCA extract_filepaths_for_granule lambda. |
 | `orca_lambda_orca_catalog_reporting_arn`                | AWS ARN of the ORCA orca_catalog_reporting lambda. |
@@ -588,6 +573,7 @@ accessed using terraform dot syntax in the format of `module.orca.variable_name`
 | `orca_lambda_post_copy_request_to_queue_arn`            | AWS ARN of the ORCA post_copy_request_to_queue lambda. |
 | `orca_lambda_orca_catalog_reporting_arn`                | AWS ARN of the ORCA orca_catalog_reporting lambda. |
 | `orca_secretsmanager_arn`                               | The Amazon Resource Name (ARN) of the AWS secretsmanager |
+| `orca_sfn_recovery_workflow_arn`                        | The ARN of the recovery step function. |
 | `orca_sqs_archive_recovery_queue_arn`                   | The ARN of the archive-recovery-queue SQS |
 | `orca_sqs_archive_recovery_queue_id`                    | The URL of the archive-recovery-queue SQS |
 | `orca_sqs_metadata_queue_arn`                           | The ARN of the metadata-queue SQS |
@@ -640,14 +626,15 @@ For more information, see the documentation on the
   "granuleId": "^.*$",
   "provider_path": "L0A_HR_RAW/",
   "meta": {
-    "granuleRecoveryWorkflow": "OrcaRecoveryWorkflow",
-    "excludedFileExtensions": [".cmr", ".xml", ".met"],
     "s3MultipartChunksizeMb": 400,
-    "defaultBucketOverride": "prod_orca_worm",
-    "defaultRecoveryTypeOverride": "Standard",
-    "defaultStorageClassOverride": "DEEP_ARCHIVE"
+    "granuleRecoveryWorkflow": "OrcaRecoveryWorkflow",
+    "orca": {
+      "excludedFileExtensions": [".cmr", ".xml", ".met"],
+      "defaultBucketOverride": "prod_orca_worm",
+      "defaultRecoveryTypeOverride": "Standard",
+      "defaultStorageClassOverride": "DEEP_ARCHIVE"
+    }
   },
-  ...
 }
 ```
 ## Enable `Recover Granule` Button
@@ -660,4 +647,3 @@ Here is an sample command to run the Cumulus Dashboard locally.
 ```bash
 APIROOT=https://uttm5y1jcj.execute-api.us-west-2.amazonaws.com:8000/dev ENABLE_RECOVERY=true npm run serve
 ```
-

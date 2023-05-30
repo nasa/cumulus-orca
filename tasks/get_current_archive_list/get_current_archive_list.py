@@ -202,11 +202,13 @@ def create_job(
                     }
                 ],
             )
+            for sql_result in rows.mappings():
+                job_id = sql_result["id"]
     except Exception as sql_ex:
         LOGGER.error(f"Error while creating job: {sql_ex}")
         raise
 
-    return rows.fetchone()["id"]
+    return job_id
 
 
 def create_job_sql() -> text:  # pragma: no cover
@@ -419,6 +421,15 @@ def trigger_csv_load_from_s3_sql() -> text:  # pragma: no cover
     SQL for telling postgres where/how to copy in the s3 inventory data.
     """
     return text(
+        # table_name
+        # column_list
+        # options
+        # bucket
+        # file_path
+        # aws region
+        # access_key
+        # secret_key
+        # session_token
         """
         SELECT aws_s3.table_import_from_s3(
             's3_import',

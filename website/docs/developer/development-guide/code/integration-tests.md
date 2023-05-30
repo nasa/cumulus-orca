@@ -43,15 +43,20 @@ As tests are run in parallel, it is generally good practice to have one test-per
 3. Set the following environment variables:
    1. `orca_API_DEPLOYMENT_INVOKE_URL` Output from the ORCA TF module. ex: `https://0000000000.execute-api.us-west-2.amazonaws.com`
    2. `orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN` ARN of the copy_to_archive step function. ex: `arn:aws:states:us-west-2:000000000000:stateMachine:PREFIX-OrcaCopyToArchiveWorkflow`
-4. Run the following bash command, 
-   replacing `i-00000000000000000` with your ec2 instance name, 
+   3. `orca_RECOVERY_BUCKET_NAME` S3 bucket name where the recovered files will be archived. ex: `test-orca-primary`
+4. 
+   Get your Cumulus EC2 instance ID using the following AWS CLI command using your `<PREFIX>`.
+   ```shell
+   aws ec2 describe-instances --filters Name=instance-state-name,Values=running Name=tag:Name,Values={PREFIX}-CumulusECSCluster --query "Reservations[*].Instances[*].InstanceId" --output text
+   ```
+   Then run the following bash command, 
+   replacing `i-00000000000000000` with your `PREFIX-CumulusECSCluster` ec2 instance ID, 
    and `0000000000.execute-api.us-west-2.amazonaws.com` with your API Gateway identifier:
 
    ```shell
    
    aws ssm start-session --target i-00000000000000000 --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters '{"host":["0000000000.execute-api.us-west-2.amazonaws.com"],"portNumber":["443"], "localPortNumber":["8000"]}'
    ```
-
 5. In the root folder `workflow_tests`, run the following command:
    ```shell
    bin/run_tests.sh
@@ -86,6 +91,8 @@ Documentation below assumes that the following are applied.
   :::
 - Initially, automated validation will not include checking Cloudwatch logs. Logs will be available for 7 days to help manually identify any errors and troubleshoot problems. In the future, automating searches for key phrases in Cloudwatch logs as validation may be used for identifying point-of-failure in processes.
 - Integration tests should be run on a regular cadence. Initial suggestion is once every 1-2 weeks.
+- Ingest test assumes that for the large 191GB file testing, the file is already present in the source bucket. This is because uploading the file to source bucket will take long time and delay integration test.
+- Ingest tests only work if the catalog is cleaned between runs. Make sure to remove the recovered files from your orca recovery bucket as well as catalog after running the tests.
 
 Some broad categories of tests are shown below.
 
@@ -112,7 +119,7 @@ Further research should be done to identify how to perform these tests.
 ### Error Paths
 
 These tests verify that when an error is expected, a proper error is returned/raised.
-For example, several entries in our [API](../../../developer/api/api-gateway.md) should properly return a 404 error code if the entry does not exist in the database.
+For example, several entries in our [API](../../../developer/api/api.md) should properly return a 404 error code if the entry does not exist in the database.
 The test should fail if the API returns the error in a dictionary instead of an HTTP status code, or the API returns any other error code.
 
 ## What Not to Test
@@ -142,7 +149,7 @@ This is a list of tests that should be created for existing Orca architecture. T
      Prior to release or periodically, an S3 Inventory report should be generated through AWS mechanisms to validate the schema and style of the test report being used.
      :::
   1. Post a mocked-up manifest to the report bucket.
-  1. Retry calls to the [Internal Reconcile Report API](../../../developer/api/api-gateway.md/#internal-reconcile-report-jobs-api) until job is complete.
+  1. Retry calls to the [Internal Reconcile Report API](../../../developer/api/api.md/#internal-reconcile-report-jobs-api) until job is complete.
   1. Check that job is successful, and expected errors can be retrieved through the API.
      :::warning
      If the catalog is not reset prior to this test, or other tests run in parallel, other errors may be present.
@@ -161,11 +168,6 @@ This is a list of tests that should be created for existing Orca architecture. T
      :::tip
      Include a large (bigger than 250 Gb) file to make sure timeouts do not prevent ingest.
      :::
-     :::tip
-     Test ingesting from Glacier buckets as well as regular buckets.
-     Make sure that Glacier data is less than 24 hours old.
-     If older, data will be moved out of `recovered` and `pre-archival` states, and ingest will incur additional costs and time penalties, possibly beyond timeout limits.
-     :::
   1. Call the OrcaCopyToArchiveWorkflow to ingest the granules to Orca.
      :::tip
      Make sure to cover excludedFileExtensions being set, being unset, and excluding/allowing proper files in either case.
@@ -175,7 +177,7 @@ This is a list of tests that should be created for existing Orca architecture. T
      Future work will allow us to target multiple buckets with ingest.
      :::
   1. Check the StepFunction status until status is completed.
-  1. Call the [Catalog API](../../../developer/api/api-gateway.md/#catalog-reporting-api) to make sure entries are found.
+  1. Call the [Catalog API](../../../developer/api/api.md/#catalog-reporting-api) to make sure entries are found.
   1. Verify that the files are present in the proper Orca bucket.
 - [Security](#security-paths):
   1. Follow the Happy test up to calling the workflow.
@@ -199,7 +201,7 @@ This is a list of tests that should be created for existing Orca architecture. T
      May require additional tests.
      Ignored files will not be listed in output.
      :::
-  1. Retry calls to the [Recovery Granules API](../../../developer/api/api-gateway.md/#recovery-granules-api) until entries are found, and status is `complete`.
+  1. Retry calls to the [Recovery Granules API](../../../developer/api/api.md/#recovery-granules-api) until entries are found, and status is `complete`.
      :::warning
      Recovery may take up to 4 hours.
      :::

@@ -117,7 +117,7 @@ def task(
     try:
         max_retries = int(os.environ[OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY])
     except KeyError:
-        LOGGER.warn(
+        LOGGER.warning(
             f"{OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY} is not set. "
             f"Defaulting to a value of {DEFAULT_MAX_REQUEST_RETRIES}"
         )
@@ -127,7 +127,7 @@ def task(
     try:
         retry_sleep_secs = float(os.environ[OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY])
     except KeyError:
-        LOGGER.warn(
+        LOGGER.warning(
             f"{OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY} is not set. "
             f"Defaulting to a value of {DEFAULT_RESTORE_RETRY_SLEEP_SECS} seconds."
         )
@@ -148,7 +148,7 @@ def task(
     try:
         exp_days = int(os.environ[OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY])
     except KeyError:
-        LOGGER.warn(
+        LOGGER.warning(
             f"{OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY} is not set. Defaulting "
             f"to a value of {DEFAULT_RESTORE_EXPIRE_DAYS} days."
         )
@@ -222,7 +222,7 @@ def get_default_archive_bucket_name(config: Dict[str, Any]) -> str:
         if default_bucket is not None:
             return default_bucket
     except KeyError:
-        LOGGER.warn(f"{CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY} is not set.")
+        LOGGER.warning(f"{CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY} is not set.")
     return str(os.environ[OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY])
 
 
@@ -302,6 +302,8 @@ def inner_task(
         # Initialize the granule copy, file array, and timestamp variables
         files = []
         time_stamp = datetime.now(timezone.utc).isoformat()
+        if len(granule[GRANULE_KEYS_KEY]) == 0:
+            LOGGER.warning(f"No files given for granule '{granule[GRANULE_GRANULE_ID_KEY]}'")
         # Loop through the granule files and find the ones to restore
         for keys in granule[GRANULE_KEYS_KEY]:
             # Get the file key (path/filename)
@@ -606,8 +608,9 @@ def restore_object(
         Bucket=db_archive_bucket_key, Key=key, RestoreRequest=request
     )
     if restore_result["ResponseMetadata"]["HTTPStatusCode"] == 200:
-        LOGGER.info(f"File '{key}' in bucket '{db_archive_bucket_key}' has already been recovered"
-                    "Sending to archive recovery SQS")
+        LOGGER.info(
+            f"File '{key}' in bucket '{db_archive_bucket_key}' has already been recovered. "
+            "Sending to archive recovery SQS.")
         # Create message format for sending to archive recovery SQS
         message = {
                     "Records": [
@@ -701,7 +704,8 @@ def handler(event: Dict[str, Any], context: LambdaContext):  # pylint: disable-m
             ORCA_DEFAULT_BUCKET
                 The bucket to use if destBucket is not set.
         Args:
-            event: See schemas/input.json.
+            event: Event passed into the step from the aws workflow.
+                See schemas/input.json and schemas/config.json for more information.
             context: This object provides information about the lambda invocation, function,
                 and execution env.
         Returns:
@@ -712,7 +716,6 @@ def handler(event: Dict[str, Any], context: LambdaContext):  # pylint: disable-m
             will be included in the message, with 'success' = False for
             the files for which the restore request failed to submit.
     """
-
     # set the optional variables to None if not configured
     try:
         set_optional_event_property(event, event.get(EVENT_OPTIONAL_VALUES_KEY, {}), [])
@@ -721,13 +724,13 @@ def handler(event: Dict[str, Any], context: LambdaContext):  # pylint: disable-m
         raise ex
 
     try:
-        _VALIDATE_INPUT(event["input"])
+        _VALIDATE_INPUT(event[EVENT_INPUT_KEY])
     except JsonSchemaException as json_schema_exception:
         LOGGER.error(json_schema_exception)
         raise
 
     try:
-        _VALIDATE_CONFIG(event["config"])
+        _VALIDATE_CONFIG(event[EVENT_CONFIG_KEY])
     except JsonSchemaException as json_schema_exception:
         LOGGER.error(json_schema_exception)
         raise

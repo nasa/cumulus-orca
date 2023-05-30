@@ -5,6 +5,7 @@ LABEL maintainer="Rizbi Hassan" \
 
 ENV NODE_VERSION="16.x"
 ENV TERRAFORM_VERSION "0.13.6"
+ENV PYTHON_VERSION "3.9.16"
 
 # Add NodeJS and Yarn repos & update package index
 RUN \
@@ -14,10 +15,20 @@ curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64b
 amazon-linux-extras install epel -y && \
 yum update -y
 
-# install Python 3, pip, CLI utilities, session manager and other tools
+# install pip, Python 3.9, CLI utilities, session manager and other tools
 RUN \
-yum install -y jq gcc git make openssl wget zip unzip tar python3-devel nodejs yarn python3-pip awscli session-manager-plugin.rpm procps parallel && \
-pip3 install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org pydoc-markdown bandit safety flake8 black isort
+yum install -y jq gcc git make openssl openssl-devel wget zip unzip bzip2-devel libffi-devel ncurses-devel sqlite-devel readline-devel uuid-devel libuuid-devel gdbm-devel xz-devel tar nodejs yarn awscli session-manager-plugin.rpm procps parallel && \
+yum groupinstall -y "Development Tools" && \
+# Install Python 3.9
+wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz && \
+tar xvf Python-${PYTHON_VERSION}.tgz && \
+cd Python-*/ && \
+./configure --enable-optimizations --enable-loadable-sqlite-extensions --enable-ipv6 && \
+make altinstall && \
+ln -sf /usr/local/bin/python3.9 /usr/local/bin/python3 && \
+ln -sf /url/local/bin/pip3.9 /usr/local/bin/pip3 && \
+rm -f Python-${PYTHON_VERSION}.tgz && \
+rm -rf Python-${PYTHON_VERSION}
 
 # Install Terraform
 RUN \

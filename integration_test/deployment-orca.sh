@@ -3,23 +3,9 @@ set -ex
 
 source integration_test/shared/orca-terraform.sh
 
-if aws s3api head-bucket --bucket ${bamboo_PREFIX}-tf-state;then
-    echo "terraform state bucket already present. Using existing state file"
-else
-    echo "Something went wrong when checking terraform state bucket. Creating ..."
-    aws s3api create-bucket --bucket ${bamboo_PREFIX}-tf-state  --region ${bamboo_AWS_DEFAULT_REGION} --create-bucket-configuration LocationConstraint=${bamboo_AWS_DEFAULT_REGION}
-    
-    aws s3api put-bucket-versioning \
-    --bucket ${bamboo_PREFIX}-tf-state \
-    --versioning-configuration Status=Enabled
-
-    aws dynamodb create-table \
-      --table-name ${bamboo_PREFIX}-tf-locks \
-      --attribute-definitions AttributeName=LockID,AttributeType=S \
-      --key-schema AttributeName=LockID,KeyType=HASH \
-      --billing-mode PAY_PER_REQUEST \
-      --region ${bamboo_AWS_DEFAULT_REGION}
-fi
+export AWS_ACCESS_KEY_ID=$bamboo_CUMULUS_AWS_ACCESS_KEY_ID
+export AWS_SECRET_ACCESS_KEY=$bamboo_CUMULUS_AWS_SECRET_ACCESS_KEY
+export AWS_DEFAULT_REGION=$bamboo_CUMULUS_AWS_DEFAULT_REGION
 
 cd integration_test
 echo "Deploying Cumulus S3 buckets and dynamoDB table"
