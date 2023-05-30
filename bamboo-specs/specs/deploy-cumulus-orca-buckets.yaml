@@ -3,8 +3,8 @@
 version: 2
 plan:
   project-key: ORCA
-  key: ODPT
-  name: ORCA Deploy Plan TEST
+  key: ODPIT
+  name: ORCA Deploy Plan Integration test
 stages:
 - Deploy DR ORCA Buckets:
     manual: true
