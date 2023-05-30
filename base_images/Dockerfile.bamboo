@@ -18,7 +18,6 @@ yum update -y
 # install pip, Python 3.9, CLI utilities, session manager and other tools
 RUN \
 yum install -y jq gcc git make openssl openssl-devel wget zip unzip bzip2-devel libffi-devel ncurses-devel sqlite-devel readline-devel uuid-devel libuuid-devel gdbm-devel xz-devel tar nodejs yarn awscli session-manager-plugin.rpm procps parallel && \
-pip3 install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org bandit flake8 black isort && \
 yum groupinstall -y "Development Tools" && \
 # Install Python 3.9
 wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz && \
@@ -29,7 +28,8 @@ make altinstall && \
 ln -sf /usr/local/bin/python3.9 /usr/local/bin/python3 && \
 ln -sf /url/local/bin/pip3.9 /usr/local/bin/pip3 && \
 rm -f Python-${PYTHON_VERSION}.tgz && \
-rm -rf Python-${PYTHON_VERSION}
+rm -rf Python-${PYTHON_VERSION} $$ \
+pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org bandit flake8 black isort
 
 # Install Terraform
 RUN \
