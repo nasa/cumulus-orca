@@ -1,58 +1,26 @@
-# ------------------------------------------------------------------------------------------------
 #bamboo plan for deploying cumulus, ORCA and relevant buckets.
 ---
 version: 2
 plan:
   project-key: ORCA
-  key: ODPT
-  name: ORCA Deploy Plan Test
+  key: ODP
+  name: ORCA Deploy Plan
 stages:
-# - Ingest Integration test:
-#     manual: true
-#     final: false
-#     jobs:
-#     - Ingest Integration tests
 - Deploy DR ORCA Buckets:
     manual: true
     final: false
     jobs:
     - Deploy DR ORCA buckets
-# - Ingest Integration test:
-#     manual: false
-#     final: false
-#     jobs:
-#     - Ingest Integration tests
-- Clean up ORCA buckets and modules:
+- Deploy Cumulus buckets and Cumulus and Orca modules:
     manual: true
     final: false
     jobs:
-    - Clean up ORCA buckets and modules
-- Clean up DR ORCA buckets:
+    - Deploy Cumulus buckets and Cumulus and Orca modules
+- Run Ingest Integration Tests:
     manual: true
     final: false
     jobs:
-    - Clean up DR ORCA buckets
-
-# Job for ingest integration tests
-# Ingest Integration tests:
-#   key: IIT
-#   other:
-#     clean-working-dir: true
-#   docker:
-#     image: maven.earthdata.nasa.gov/cumulus_orca
-#     volumes:
-#       ${bamboo.working.directory}: ${bamboo.working.directory}
-#       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
-#   tasks:
-#   - checkout:
-#       force-clean-build: 'true'
-#       description: Checkout Default Repository
-#   - script:
-#       interpreter: SHELL
-#       scripts:
-#       - |-
-#         #!/bin/bash
-#         bash integration_test/ingest/ingest-integration-tests.sh
+    - Run Ingest Integration tests
 
 #job for deploying ORCA buckets in DR account
 Deploy DR ORCA buckets:
@@ -73,56 +41,13 @@ Deploy DR ORCA buckets:
       scripts:
       - |-
         #!/bin/bash
-        aws s3 ls
+        bash integration_test/input-validation.sh
+        . ./integration_test/shared/setup-dr-buckets.sh
+        bash integration_test/deployment-dr-buckets.sh
          
 #job for deploying ORCA buckets, Cumulus and ORCA modules
-# Deploy Cumulus buckets and Cumulus and Orca modules:
-#   key: DOBM
-#   other:
-#     clean-working-dir: true
-#     # Some plugin configurations are not supported by YAML Specs
-#   docker:
-#     image: maven.earthdata.nasa.gov/cumulus_orca
-#     volumes:
-#       ${bamboo.working.directory}: ${bamboo.working.directory}
-#       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
-#   tasks:
-#   - checkout:
-#       force-clean-build: 'true'
-#       description: Checkout Default Repository
-#   - script:
-#       interpreter: SHELL
-#       scripts:
-#       - |-
-#         #!/bin/bash
-#         . ./integration_test/shared/setup-orca.sh
-#         bash integration_test/deployment-orca.sh
-
-# Job for ingest integration tests
-# Ingest Integration tests:
-#   key: IIT
-#   other:
-#     clean-working-dir: true
-#   docker:
-#     image: maven.earthdata.nasa.gov/cumulus_orca
-#     volumes:
-#       ${bamboo.working.directory}: ${bamboo.working.directory}
-#       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
-#   tasks:
-#   - checkout:
-#       force-clean-build: 'true'
-#       description: Checkout Default Repository
-#   - script:
-#       interpreter: SHELL
-#       scripts:
-#       - |-
-#         #!/bin/bash
-#         . ./integration_test/shared/setup-orca.sh
-#         bash integration_test/ingest/ingest-integration-tests.sh
-
-# Job for cleaning up ORCA buckets, Cumulus, and ORCA modules
-Clean up ORCA buckets and modules:
-  key: CDROB
+Deploy Cumulus buckets and Cumulus and Orca modules:
+  key: DOBM
   other:
     clean-working-dir: true
   docker:
@@ -139,13 +64,14 @@ Clean up ORCA buckets and modules:
       scripts:
       - |-
         #!/bin/bash
-        echo "test cleanup 1"
-# Job for cleaning up ORCA buckets, Cumulus, and ORCA modules
-Clean up DR ORCA buckets:
-  key: COBM
+        . ./integration_test/shared/setup-orca.sh
+        bash integration_test/deployment-orca.sh
+
+#job for running ingest integration tests
+Run Ingest Integration tests:
+  key: RIIT
   other:
     clean-working-dir: true
-    # Some plugin configurations are not supported by YAML Specs
   docker:
     image: maven.earthdata.nasa.gov/cumulus_orca
     volumes:
@@ -155,16 +81,19 @@ Clean up DR ORCA buckets:
   - checkout:
       force-clean-build: 'true'
       description: Checkout Default Repository
-
   - script:
       interpreter: SHELL
       scripts:
       - |-
         #!/bin/bash
-        echo "test cleanup 2"
+        export orca_API_DEPLOYMENT_INVOKE_URL=$bamboo_orca_API_DEPLOYMENT_INVOKE_URL
+        export orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN=$bamboo_orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN
+        export orca_RECOVERY_BUCKET_NAME=$bamboo_orca_RECOVERY_BUCKET_NAME
+        bash . ./integration_test/workflow_tests/bin/run_tests.sh
+
+  
 variables:
   DEPLOYMENT: sandbox
-  ORCA_VERSION: 4.0.3
   AWS_DEFAULT_REGION: us-west-2
   CUMULUS_AWS_DEFAULT_REGION: us-west-2
   CUMULUS_AWS_ACCESS_KEY_ID: REPLACE ME
@@ -182,9 +111,13 @@ variables:
   EARTHDATA_CLIENT_PASSWORD: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
   BRANCH_NAME: ${bamboo.planRepository.branchName}
   CMR_OAUTH_PROVIDER: earthdata
+  orca_API_DEPLOYMENT_INVOKE_URL: test
+  orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN: test
+  orca_RECOVERY_BUCKET_NAME: test
+
  
 repositories:
-- orca test 2: #this is created by CICD team from https://ci.earthdata.nasa.gov/. Contact ci/cd team with any issues.
+- orca test 2
     scope: global
 triggers:
 - polling: # Does not actually poll, as we do not have webhooks enabled.
