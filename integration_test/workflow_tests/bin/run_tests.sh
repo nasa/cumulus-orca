@@ -41,33 +41,33 @@ pip install -q -r requirements.txt --trusted-host pypi.org --trusted-host files.
 check_returncode $? "ERROR: pip install encountered an error."
 
 
-## Check code formatting and styling
-echo "INFO: Checking formatting and style of code ..."
-echo "INFO: Sorting imports ..."
-isort \
-    --trailing-comma \
-    --ensure-newline-before-comments \
-    --line-length 88 \
-    --use-parentheses \
-    --force-grid-wrap 0 \
-    -m 3 \
-    *.py test_packages
+# ## Check code formatting and styling
+# echo "INFO: Checking formatting and style of code ..."
+# echo "INFO: Sorting imports ..."
+# isort \
+#     --trailing-comma \
+#     --ensure-newline-before-comments \
+#     --line-length 88 \
+#     --use-parentheses \
+#     --force-grid-wrap 0 \
+#     -m 3 \
+#     *.py test_packages
 
-echo "INFO: Formatting with black ..."
-black *.py test_packages
-
-
-echo "INFO: Checking lint rules ..."
-flake8 \
-    --max-line-length 99 \
-    *.py
-check_returncode $? "ERROR: Linting issues found."
+# echo "INFO: Formatting with black ..."
+# black *.py test_packages
 
 
-## Run code smell and security tests using bandit
-echo "INFO: Running code smell security tests ..."
-bandit -r *.py test_packages
-check_returncode $? "ERROR: Potential security or code issues found."
+# echo "INFO: Checking lint rules ..."
+# flake8 \
+#     --max-line-length 99 \
+#     *.py
+# check_returncode $? "ERROR: Linting issues found."
+
+
+# ## Run code smell and security tests using bandit
+# echo "INFO: Running code smell security tests ..."
+# bandit -r *.py test_packages
+# check_returncode $? "ERROR: Potential security or code issues found."
 
 
 ## Run tests

@@ -3,13 +3,8 @@
 version: 2
 plan:
   project-key: ORCA
-<<<<<<< HEAD
   key: RODT
   name: Release ORCA Documentation Test
-=======
-  key: ROD
-  name: Release ORCA Documentation
->>>>>>> develop
 stages:
 - Release Stage:
     manual: true
@@ -81,11 +76,7 @@ variables:
   SECRET_GITHUB_TOKEN: BAMSCRT@0@0@4vfO1paRwG9p5BgLR57uvW7pCn53thrfpsMTm94fO2Q=
   SECRET_GITHUB_USER: BAMSCRT@0@0@VkGOQemUQPEvmBYT3dDRgw==
 repositories:
-<<<<<<< HEAD
 - orca test 2:
-=======
-- orca-develop:
->>>>>>> develop
     scope: global
 triggers:
 - polling: # Does not actually poll, as we do not have webhooks enabled.
