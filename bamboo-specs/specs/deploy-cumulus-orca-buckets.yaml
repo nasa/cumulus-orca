@@ -117,7 +117,7 @@ variables:
 
  
 repositories:
-- orca test 2
+- orca test 2:
     scope: global
 triggers:
 - polling: # Does not actually poll, as we do not have webhooks enabled.
