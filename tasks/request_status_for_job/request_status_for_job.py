@@ -113,7 +113,7 @@ def get_granule_status_entries_for_job_sql() -> text:  # pragma: no cover
     return text(  # nosec
         f"""
                 SELECT
-                    collection_id as "{OUTPUT_COLLECTION_ID_KEY}
+                    collection_id as "{OUTPUT_COLLECTION_ID_KEY}",
                     granule_id as "{OUTPUT_GRANULE_ID_KEY}",
                     recovery_status.value AS "{OUTPUT_STATUS_KEY}"
                 FROM

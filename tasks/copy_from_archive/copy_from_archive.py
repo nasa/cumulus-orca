@@ -15,8 +15,10 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 # noinspection PyPackageRequirements
 from boto3.s3.transfer import MB, TransferConfig
+
 # noinspection PyPackageRequirements
 from botocore.client import BaseClient
+
 # noinspection PyPackageRequirements
 from botocore.exceptions import ClientError
 from orca_shared.recovery import shared_recovery
