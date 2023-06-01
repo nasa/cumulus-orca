@@ -265,7 +265,7 @@ def get_metadata_sql() -> text:  # pragma: no cover
     return text(
         """
             SELECT
-                job_id, collection_id, granule_id, filename, restore_destination, 
+                job_id, collection_id, granule_id, filename, restore_destination,
                 multipart_chunksize_mb
             FROM
                 recovery_file
