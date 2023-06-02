@@ -1121,8 +1121,6 @@ Gets AWS region variable from the runtime environment variable.
 
 #### COLLECTION\_ID\_KEY
 
-todo: Add note to migration notes about clearing queue
-
 <a id="orca_shared.recovery.shared_recovery.create_status_for_job"></a>
 
 #### create\_status\_for\_job

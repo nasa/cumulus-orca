@@ -50,7 +50,7 @@ CONFIG_JOB_ID_KEY = "asyncOperationId"
 CONFIG_COLLECTION_KEY = "collection"
 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
 
-GRANULE_COLLECTION_ID_KEY = "collectionId"  # todo: Higher 'collections' list?
+GRANULE_COLLECTION_ID_KEY = "collectionId"
 GRANULE_GRANULE_ID_KEY = "granuleId"
 GRANULE_KEYS_KEY = "keys"
 GRANULE_RECOVER_FILES_KEY = "recoverFiles"

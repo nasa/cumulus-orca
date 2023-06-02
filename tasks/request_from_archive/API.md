@@ -24,13 +24,9 @@ Description:  Lambda function that makes a restore request from archive bucket f
 
 #### GRANULE\_COLLECTION\_ID\_KEY
 
-todo: Higher 'collections' list?
-
 <a id="request_from_archive.FILE_PROCESSED_KEY"></a>
 
 #### FILE\_PROCESSED\_KEY
-
-todo: Rename key in schema to avoid user confusion
 
 <a id="request_from_archive.RestoreRequestError"></a>
 
