@@ -4,7 +4,7 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 for additional information on environment setup and [running/creating tests](https://nasa.github.io/cumulus-orca/docs/developer/development-guide/code/integration-tests).
 
 ## Ingest Integration Test in Bamboo
-The `ORCA Deploy Plan` under ORCA project in Bamboo includes the ingest integration test which will run automatically once ORCA deployment is successful. Make sure to add the following three variables as well while running the deploy plan.
+The `ORCA Deploy Plan` under ORCA project in Bamboo includes the ingest integration test which will run automatically once ORCA deployment is successful. Make sure to add the following three variables as well while running the deploy plan. See [ORCA deployment doc](https://github.com/nasa/cumulus-orca/blob/master/website/docs/developer/development-guide/code/versioning-releases.md#deploying-orca-buckets-rds-cluster-and-cumulus-orca-modules-via-bamboo) for more information.
 
 - ORCA_RECOVERY_BUCKET_NAME
 - ORCA_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN

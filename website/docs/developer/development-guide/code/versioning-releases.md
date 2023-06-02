@@ -207,7 +207,7 @@ After hitting the play button on `Deploy Cumulus buckets and Cumulus and Orca mo
 - EARTHDATA_CLIENT_ID
 - EARTHDATA_CLIENT_PASSWORD
 - CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION
-- ORCA_RECOVERY_BUCKET_NAME
+- ORCA_RECOVERY_BUCKET_NAME (Name of the bucket outside of ORCA that files will be recovered to. For example, PREFIX-orca-primary)
 - ORCA_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN
 - ORCA_API_DEPLOYMENT_INVOKE_URL
 
