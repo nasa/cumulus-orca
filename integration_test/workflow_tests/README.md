@@ -3,6 +3,13 @@
 Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/development-guide/code/contrib-code-intro)
 for additional information on environment setup and [running/creating tests](https://nasa.github.io/cumulus-orca/docs/developer/development-guide/code/integration-tests).
 
+## Ingest Integration Test in Bamboo
+The `ORCA Deploy Plan` under ORCA project in Bamboo includes the ingest integration test which will run automatically once ORCA deployment is successful. Make sure to add the following three variables as well while running the deploy plan.
+
+- ORCA_RECOVERY_BUCKET_NAME
+- ORCA_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN
+- ORCA_API_DEPLOYMENT_INVOKE_URL
+
 ## Test cleanup
 
 1. Connect to NASA VPN. In two separate terminals, run the following commands. Remember to replace the variables inside <>.
@@ -16,3 +23,7 @@ aws ssm start-session --target <EC2_INSTANCE_ID> --document-name AWS-StartPortFo
 2. Export `orca_RECOVERY_BUCKET_NAME`, `SOURCE_BUCKET_NAME` and `DB_CONNECT_INFO_SECRET_ARN` variables locally.
 
 3. Make sure the SSM and SSH connections are still active. Then run `python cleanup/test-cleanup.py` from integration_test directory.
+
+:::note
+Since the cleanup script requires connection to AWS SSM as well as to the database, running the cleanup script in Bamboo is not compatible at the moment.
+:::

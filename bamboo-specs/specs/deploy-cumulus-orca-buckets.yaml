@@ -1,4 +1,4 @@
-#bamboo plan for deploying cumulus, ORCA and relevant buckets.
+#bamboo plan for deploying cumulus, ORCA and relevant buckets and then running integration tests.
 ---
 version: 2
 plan:
@@ -16,7 +16,7 @@ stages:
     final: false
     jobs:
     - Deploy Cumulus buckets and Cumulus and Orca modules
-- Run Ingest Integration Tests:
+- Run Integration Tests:
     manual: false
     final: true
     jobs:
@@ -89,6 +89,7 @@ Run Ingest Integration tests:
         . ./integration_test/shared/setup-orca.sh
         cd integration_test/workflow_tests
         bash bin/run_tests.sh
+
 variables:
   DEPLOYMENT: sandbox
   AWS_DEFAULT_REGION: us-west-2
@@ -111,6 +112,7 @@ variables:
   ORCA_API_DEPLOYMENT_INVOKE_URL: REPLACE ME
   ORCA_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN: REPLACE ME
   ORCA_RECOVERY_BUCKET_NAME: REPLACE ME
+
  
 repositories:
 - orca-develop:

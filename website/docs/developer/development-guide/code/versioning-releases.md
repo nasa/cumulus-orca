@@ -207,6 +207,9 @@ After hitting the play button on `Deploy Cumulus buckets and Cumulus and Orca mo
 - EARTHDATA_CLIENT_ID
 - EARTHDATA_CLIENT_PASSWORD
 - CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION
+- ORCA_RECOVERY_BUCKET_NAME
+- ORCA_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN
+- ORCA_API_DEPLOYMENT_INVOKE_URL
 
 This is because some variables are sensitive and some will vary depending upon the user running the pipeline. Hitting 'play' next to any of the deployment stages brings up a checkbox list to run multiple jobs at once. Note that none of the checkboxes should be checked.
 
@@ -234,7 +237,7 @@ The dynamodb table and bucket versioning can be created manually as well.
 
 A new earthdata application will need to be created if not done previously which will give the values for `EARTHDATA_CLIENT_ID` and `EARTHDATA_CLIENT_PASSWORD`. If you already have the application, use the existing values. `CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION` is the branch you want to check out in the [deployment repo](https://git.earthdata.nasa.gov/projects/ORCA/repos/cumulus-orca-deploy-template/browse) such as `v11.1.1-v4.0.1`.
 
-Note that the jobs may need to be run multiple times to get past deployment errors if there is one. If an error is raised saying `Cloudwatch log groups already exist`, then manually delete all the cloudwatch log groups and corresponding lambdas having the same name as the log groups from the AWS console and retry running the job.
+Note that the jobs may need to be run multiple times to get past deployment errors if there is one. If an error is raised saying `Cloudwatch log groups already exist`, then manually delete all the cloudwatch log groups and corresponding lambdas having the same name as the log groups from the AWS console and retry running the job. If the deployment is successful, the pipeline will run ingest integration tests automatically in the next step.
 
 The `ORCA Cleanup Plan` has two stages named `Clean up ORCA buckets and modules` and `Clean up DR ORCA buckets` which can be run in sequence to remove most of the resources created by the deployment stages. Remember to add the following AWS secrets keys for both Cumulus and DR accounts while running the pipeline.
 
