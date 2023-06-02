@@ -288,9 +288,9 @@ def update_file_sql() -> text:  # pragma: no cover
         UPDATE recovery_file
         SET status_id = :status_id, last_update = :last_update, completion_time = :completion_time,
             error_message = :error_message
-        WHERE job_id = :job_id 
-            AND collection_id = :collection_id 
-            AND granule_id = :granule_id 
+        WHERE job_id = :job_id
+            AND collection_id = :collection_id
+            AND granule_id = :granule_id
             AND filename = :filename"""
     )
 

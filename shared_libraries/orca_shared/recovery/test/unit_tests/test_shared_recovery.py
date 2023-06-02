@@ -255,4 +255,3 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                     uuid.uuid4().__str__(),
                 )
             self.assertEqual("Error message is required.", str(cm.exception))
-

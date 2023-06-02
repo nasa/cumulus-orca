@@ -132,7 +132,7 @@ def get_most_recent_job_id_for_granule_sql() -> text:  # pragma: no cover
                 recovery_job
             WHERE
                 collection_id = :collection_id
-                granule_id = :granule_id
+                AND granule_id = :granule_id
             ORDER BY
                  request_time DESC
             LIMIT 1"""
@@ -209,8 +209,8 @@ def get_job_entry_for_granule_sql() -> text:  # pragma: no cover
                     recovery_job
                 WHERE
                     collection_id = :collection_id
-                    granule_id = :granule_id
-                    job_id = :job_id"""
+                    AND granule_id = :granule_id
+                    AND job_id = :job_id"""
     )
 
 
