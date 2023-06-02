@@ -1,4 +1,4 @@
-#bamboo plan for deploying cumulus, ORCA and relevant buckets.
+#bamboo plan for deploying cumulus, ORCA and relevant buckets and then running integration tests.
 ---
 version: 2
 plan:
@@ -16,6 +16,11 @@ stages:
     final: false
     jobs:
     - Deploy Cumulus buckets and Cumulus and Orca modules
+- Run Integration Tests:
+    manual: false
+    final: true
+    jobs:
+    - Run Ingest Integration tests
 
 #job for deploying ORCA buckets in DR account
 Deploy DR ORCA buckets:
@@ -61,6 +66,30 @@ Deploy Cumulus buckets and Cumulus and Orca modules:
         #!/bin/bash
         . ./integration_test/shared/setup-orca.sh
         bash integration_test/deployment-orca.sh
+
+#job for running ingest integration tests
+Run Ingest Integration tests:
+  key: RIIT
+  other:
+    clean-working-dir: true
+  docker:
+    image: maven.earthdata.nasa.gov/cumulus_orca
+    volumes:
+      ${bamboo.working.directory}: ${bamboo.working.directory}
+      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+  tasks:
+  - checkout:
+      force-clean-build: 'true'
+      description: Checkout Default Repository
+  - script:
+      interpreter: SHELL
+      scripts:
+      - |-
+        #!/bin/bash
+        . ./integration_test/shared/setup-orca.sh
+        cd integration_test/workflow_tests
+        bash bin/run_tests.sh
+
 variables:
   DEPLOYMENT: sandbox
   AWS_DEFAULT_REGION: us-west-2
@@ -80,6 +109,10 @@ variables:
   EARTHDATA_CLIENT_PASSWORD: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
   BRANCH_NAME: ${bamboo.planRepository.branchName}
   CMR_OAUTH_PROVIDER: earthdata
+  ORCA_API_DEPLOYMENT_INVOKE_URL: REPLACE ME
+  ORCA_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN: REPLACE ME
+  ORCA_RECOVERY_BUCKET_NAME: REPLACE ME
+
  
 repositories:
 - orca-develop:

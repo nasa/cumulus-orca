@@ -29,7 +29,6 @@ ln -sf /usr/local/bin/python3.9 /usr/local/bin/python3 && \
 ln -sf /url/local/bin/pip3.9 /usr/local/bin/pip3 && \
 rm -f Python-${PYTHON_VERSION}.tgz && \
 rm -rf Python-${PYTHON_VERSION}
-
 # Install Terraform
 RUN \
 wget "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" && \
