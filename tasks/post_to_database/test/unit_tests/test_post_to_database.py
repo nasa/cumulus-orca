@@ -69,6 +69,7 @@ class TestPostToDatabase(
         self, mock_create_status_for_job_and_files: MagicMock
     ):
         job_id = uuid.uuid4().__str__()
+        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         request_time = datetime.datetime.now(datetime.timezone.utc).isoformat()
         archive_destination = uuid.uuid4().__str__()
@@ -92,6 +93,7 @@ class TestPostToDatabase(
 
         values = {
             shared_recovery.JOB_ID_KEY: job_id,
+            shared_recovery.COLLECTION_ID_KEY: collection_id,
             shared_recovery.GRANULE_ID_KEY: granule_id,
             shared_recovery.REQUEST_TIME_KEY: request_time,
             shared_recovery.ARCHIVE_DESTINATION_KEY: archive_destination,
@@ -109,7 +111,8 @@ class TestPostToDatabase(
         post_to_database.send_record_to_database(record, mock_engine)
 
         mock_create_status_for_job_and_files.assert_called_once_with(
-            job_id, granule_id, request_time, archive_destination, files, mock_engine
+            job_id, collection_id, granule_id, request_time, archive_destination, files,
+            mock_engine
         )
 
     def test_send_record_to_database_create_status_for_job_and_files_errors_for_missing_properties(
@@ -119,6 +122,7 @@ class TestPostToDatabase(
         No missing properties should be allowed
         """
         job_id = uuid.uuid4().__str__()
+        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         request_time = datetime.datetime.now(datetime.timezone.utc).isoformat()
         archive_destination = uuid.uuid4().__str__()
@@ -135,6 +139,7 @@ class TestPostToDatabase(
         ]
         values = {
             shared_recovery.JOB_ID_KEY: job_id,
+            shared_recovery.COLLECTION_ID_KEY: collection_id,
             shared_recovery.GRANULE_ID_KEY: granule_id,
             shared_recovery.REQUEST_TIME_KEY: request_time,
             shared_recovery.ARCHIVE_DESTINATION_KEY: archive_destination,
@@ -168,6 +173,7 @@ class TestPostToDatabase(
         self, mock_update_status_for_file: MagicMock
     ):
         job_id = uuid.uuid4().__str__()
+        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         filename = uuid.uuid4().__str__()
         last_update = datetime.datetime.now(datetime.timezone.utc).isoformat()
@@ -176,6 +182,7 @@ class TestPostToDatabase(
         error_message = uuid.uuid4().__str__()
         values = {
             shared_recovery.JOB_ID_KEY: job_id,
+            shared_recovery.COLLECTION_ID_KEY: collection_id,
             shared_recovery.GRANULE_ID_KEY: granule_id,
             shared_recovery.FILENAME_KEY: filename,
             shared_recovery.LAST_UPDATE_KEY: last_update,
@@ -196,6 +203,7 @@ class TestPostToDatabase(
 
         mock_update_status_for_file.assert_called_once_with(
             job_id,
+            collection_id,
             granule_id,
             filename,
             last_update,
@@ -218,6 +226,7 @@ class TestPostToDatabase(
         }
 
         job_id = uuid.uuid4().__str__()
+        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         filename = uuid.uuid4().__str__()
         last_update = datetime.datetime.now(datetime.timezone.utc).isoformat()
@@ -226,6 +235,7 @@ class TestPostToDatabase(
         error_message = uuid.uuid4().__str__()
         values = {
             shared_recovery.JOB_ID_KEY: job_id,
+            shared_recovery.COLLECTION_ID_KEY: collection_id,
             shared_recovery.GRANULE_ID_KEY: granule_id,
             shared_recovery.FILENAME_KEY: filename,
             shared_recovery.LAST_UPDATE_KEY: last_update,
@@ -264,6 +274,7 @@ class TestPostToDatabase(
                     [
                         call(
                             expected_values[shared_recovery.JOB_ID_KEY],
+                            expected_values[shared_recovery.COLLECTION_ID_KEY],
                             expected_values[shared_recovery.GRANULE_ID_KEY],
                             expected_values[shared_recovery.FILENAME_KEY],
                             expected_values[shared_recovery.LAST_UPDATE_KEY],
@@ -281,6 +292,7 @@ class TestPostToDatabase(
         self, mock_create_job_sql: MagicMock, mock_create_file_sql: MagicMock
     ):
         job_id = uuid.uuid4().__str__()
+        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         request_time = uuid.uuid4().__str__()
         archive_destination = uuid.uuid4().__str__()
@@ -330,7 +342,8 @@ class TestPostToDatabase(
         mock_engine.begin.return_value.__exit__ = Mock(return_value=False)
 
         post_to_database.create_status_for_job_and_files(
-            job_id, granule_id, request_time, archive_destination, files, mock_engine
+            job_id, collection_id, granule_id, request_time, archive_destination, files,
+            mock_engine
         )
 
         mock_connection.execute.assert_has_calls(
@@ -340,6 +353,7 @@ class TestPostToDatabase(
                     [
                         {
                             "job_id": job_id,
+                            "collection_id": collection_id,
                             "granule_id": granule_id,
                             "status_id": OrcaStatus.PENDING.value,
                             "request_time": request_time,
@@ -353,6 +367,7 @@ class TestPostToDatabase(
                     [
                         {
                             "job_id": job_id,
+                            "collection_id": collection_id,
                             "granule_id": granule_id,
                             "filename": filename0,
                             "key_path": key_path0,
@@ -366,6 +381,7 @@ class TestPostToDatabase(
                         },
                         {
                             "job_id": job_id,
+                            "collection_id": collection_id,
                             "granule_id": granule_id,
                             "filename": filename1,
                             "key_path": key_path1,
@@ -394,6 +410,7 @@ class TestPostToDatabase(
         If no files present for granule, job+granule should be marked as error.
         """
         job_id = uuid.uuid4().__str__()
+        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         request_time = uuid.uuid4().__str__()
         archive_destination = uuid.uuid4().__str__()
@@ -408,7 +425,8 @@ class TestPostToDatabase(
         mock_engine.begin.return_value.__exit__ = Mock(return_value=False)
 
         post_to_database.create_status_for_job_and_files(
-            job_id, granule_id, request_time, archive_destination, files, mock_engine
+            job_id, collection_id, granule_id, request_time, archive_destination, files,
+            mock_engine
         )
 
         mock_connection.execute.assert_has_calls(
@@ -418,6 +436,7 @@ class TestPostToDatabase(
                     [
                         {
                             "job_id": job_id,
+                            "collection_id": collection_id,
                             "granule_id": granule_id,
                             "status_id": OrcaStatus.FAILED.value,
                             "request_time": request_time,
@@ -440,6 +459,7 @@ class TestPostToDatabase(
         If all files failed, job should be marked as such.
         """
         job_id = uuid.uuid4().__str__()
+        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         request_time = uuid.uuid4().__str__()
         archive_destination = uuid.uuid4().__str__()
@@ -513,7 +533,8 @@ class TestPostToDatabase(
         mock_engine.begin.return_value.__exit__ = Mock(return_value=False)
 
         post_to_database.create_status_for_job_and_files(
-            job_id, granule_id, request_time, archive_destination, files, mock_engine
+            job_id, collection_id, granule_id, request_time, archive_destination, files,
+            mock_engine
         )
 
         mock_connection.execute.assert_has_calls(
@@ -523,6 +544,7 @@ class TestPostToDatabase(
                     [
                         {
                             "job_id": job_id,
+                            "collection_id": collection_id,
                             "granule_id": granule_id,
                             "status_id": OrcaStatus.FAILED.value,
                             "request_time": request_time,
@@ -536,6 +558,7 @@ class TestPostToDatabase(
                     [
                         {
                             "job_id": job_id,
+                            "collection_id": collection_id,
                             "granule_id": granule_id,
                             "filename": filename0,
                             "key_path": key_path0,
@@ -549,6 +572,7 @@ class TestPostToDatabase(
                         },
                         {
                             "job_id": job_id,
+                            "collection_id": collection_id,
                             "granule_id": granule_id,
                             "filename": filename1,
                             "key_path": key_path1,
@@ -562,6 +586,7 @@ class TestPostToDatabase(
                         },
                         {
                             "job_id": job_id,
+                            "collection_id": collection_id,
                             "granule_id": granule_id,
                             "filename": filename2,
                             "key_path": key_path2,
@@ -584,6 +609,7 @@ class TestPostToDatabase(
         Only 'PENDING' and 'FAILED' should be allowed on initial creation.
         """
         job_id = uuid.uuid4().__str__()
+        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         request_time = uuid.uuid4().__str__()
         archive_destination = uuid.uuid4().__str__()
@@ -617,7 +643,8 @@ class TestPostToDatabase(
 
             with self.assertRaises(ValueError) as cm:
                 post_to_database.create_status_for_job_and_files(
-                    job_id, granule_id, request_time, archive_destination, files, Mock()
+                    job_id, collection_id, granule_id, request_time, archive_destination, files,
+                    Mock()
                 )
             self.assertEqual(
                 f"Status ID '{status.value}' not allowed for new status.",
@@ -630,6 +657,7 @@ class TestPostToDatabase(
         self, mock_update_job_sql: MagicMock, mock_update_file_sql: MagicMock
     ):
         job_id = uuid.uuid4().__str__()
+        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         filename = uuid.uuid4().__str__()
         last_update = uuid.uuid4().__str__()
@@ -646,6 +674,7 @@ class TestPostToDatabase(
 
         post_to_database.update_status_for_file(
             job_id,
+            collection_id,
             granule_id,
             filename,
             last_update,
@@ -664,13 +693,14 @@ class TestPostToDatabase(
                         "completion_time": completion_time,
                         "error_message": error_message,
                         "job_id": job_id,
+                        "collection_id": collection_id,
                         "granule_id": granule_id,
                         "filename": filename,
                     },
                 ),
                 call(
                     mock_update_job_sql.return_value,
-                    {"job_id": job_id, "granule_id": granule_id},
+                    {"job_id": job_id, "collection_id": collection_id, "granule_id": granule_id},
                 ),
             ]
         )

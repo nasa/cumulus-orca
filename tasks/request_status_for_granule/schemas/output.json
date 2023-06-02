@@ -5,8 +5,12 @@
 	"description": "The output from the request_status Lambda when retrieving status for a particular granule. If multiple jobs match the information given, only the most recent will be returned.",
 	"type": "object",
 	"properties": {
+		"collectionId": {
+			"description": "The ID of the collection containing the granule retrieved.",
+			"type": "string"
+		},
 		"granuleId": {
-			"description": "The unique ID of the granule to retrieve status for.",
+			"description": "The ID of the granule retrieved.",
 			"type": "string"
 		},
 		"asyncOperationId": {

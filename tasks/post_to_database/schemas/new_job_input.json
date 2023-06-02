@@ -9,8 +9,12 @@
 			"description": "The unique ID of the asyncOperation.",
 			"type": "string"
 		},
+		"collectionId": {
+			"description": "The ID of the collection containing the granule.",
+			"type": "string"
+		},
 		"granuleId": {
-			"description": "The unique ID of the granule to retrieve status for.",
+			"description": "The ID of the granule to retrieve status for.",
 			"type": "string"
 		},
 		"requestTime": {
@@ -74,5 +78,5 @@
 			"uniqueItems": true
 		}
 	},
-	"required": [ "jobId", "granuleId", "requestTime", "archiveDestination", "files" ]
+	"required": [ "jobId", "collectionId", "granuleId", "requestTime", "archiveDestination", "files" ]
 }

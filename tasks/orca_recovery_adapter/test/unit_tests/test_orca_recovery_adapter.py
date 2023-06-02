@@ -245,6 +245,7 @@ class TestOrcaRecoveryAdapter(TestCase):
         granules = [
             {
                 "recoveryBucketOverride": uuid.uuid4().__str__(),
+                "collectionId": uuid.uuid4().__str__(),
                 "granuleId": uuid.uuid4().__str__(),
                 "files": [
                     {
@@ -286,6 +287,7 @@ class TestOrcaRecoveryAdapter(TestCase):
         mock_task.return_value = {
             "granules": [
                 {
+                    "collectionId": uuid.uuid4().__str__(),
                     "granuleId": uuid.uuid4().__str__(),
                     "recoverFiles": [
                         {
@@ -315,6 +317,7 @@ class TestOrcaRecoveryAdapter(TestCase):
     def test_handler_rejects_bad_output(self, mock_task: MagicMock):
         granules = [
             {
+                "collectionId": uuid.uuid4().__str__(),
                 "granuleId": uuid.uuid4().__str__(),
                 "files": [
                     {

@@ -98,6 +98,7 @@ class TestCopyFromArchive(TestCase):
         default_multipart_chunksize_mb = randint(1, 10000)  # nosec
 
         file0_job_id = uuid.uuid4().__str__()
+        file0_collection_id = uuid.uuid4().__str__()
         file0_granule_id = uuid.uuid4().__str__()
         file0_input_filename = uuid.uuid4().__str__()
         file0_source_bucket = uuid.uuid4().__str__()
@@ -107,6 +108,7 @@ class TestCopyFromArchive(TestCase):
         file0_message_receipt = uuid.uuid4().__str__()
 
         file1_job_id = uuid.uuid4().__str__()
+        file1_collection_id = uuid.uuid4().__str__()
         file1_granule_id = uuid.uuid4().__str__()
         file1_input_filename = uuid.uuid4().__str__()
         file1_source_bucket = uuid.uuid4().__str__()
@@ -120,6 +122,7 @@ class TestCopyFromArchive(TestCase):
 
         file0 = {
             copy_from_archive.INPUT_JOB_ID_KEY: file0_job_id,
+            copy_from_archive.INPUT_COLLECTION_ID_KEY: file0_collection_id,
             copy_from_archive.INPUT_GRANULE_ID_KEY: file0_granule_id,
             copy_from_archive.INPUT_FILENAME_KEY: file0_input_filename,
             copy_from_archive.FILE_SUCCESS_KEY: False,
@@ -132,6 +135,7 @@ class TestCopyFromArchive(TestCase):
         }
         file1 = {
             copy_from_archive.INPUT_JOB_ID_KEY: file1_job_id,
+            copy_from_archive.INPUT_COLLECTION_ID_KEY: file1_collection_id,
             copy_from_archive.INPUT_GRANULE_ID_KEY: file1_granule_id,
             copy_from_archive.INPUT_FILENAME_KEY: file1_input_filename,
             copy_from_archive.FILE_SUCCESS_KEY: False,
@@ -186,6 +190,7 @@ class TestCopyFromArchive(TestCase):
             [
                 call(
                     file0_job_id,
+                    file0_collection_id,
                     file0_granule_id,
                     file0_input_filename,
                     copy_from_archive.shared_recovery.OrcaStatus.SUCCESS,
@@ -194,6 +199,7 @@ class TestCopyFromArchive(TestCase):
                 ),
                 call(
                     file1_job_id,
+                    file1_collection_id,
                     file1_granule_id,
                     file1_input_filename,
                     copy_from_archive.shared_recovery.OrcaStatus.SUCCESS,
@@ -231,6 +237,7 @@ class TestCopyFromArchive(TestCase):
         received_message_queue_url = uuid.uuid4().__str__()
 
         file0_job_id = uuid.uuid4().__str__()
+        file0_collection_id = uuid.uuid4().__str__()
         file0_granule_id = uuid.uuid4().__str__()
         file0_input_filename = uuid.uuid4().__str__()
         file0_source_bucket = uuid.uuid4().__str__()
@@ -241,6 +248,7 @@ class TestCopyFromArchive(TestCase):
         error_message = uuid.uuid4().__str__()
 
         file1_job_id = uuid.uuid4().__str__()
+        file1_collection_id = uuid.uuid4().__str__()
         file1_granule_id = uuid.uuid4().__str__()
         file1_input_filename = uuid.uuid4().__str__()
         file1_source_bucket = uuid.uuid4().__str__()
@@ -253,6 +261,7 @@ class TestCopyFromArchive(TestCase):
 
         failed_file = {
             copy_from_archive.INPUT_JOB_ID_KEY: file0_job_id,
+            copy_from_archive.INPUT_COLLECTION_ID_KEY: file0_collection_id,
             copy_from_archive.INPUT_GRANULE_ID_KEY: file0_granule_id,
             copy_from_archive.INPUT_FILENAME_KEY: file0_input_filename,
             copy_from_archive.FILE_SUCCESS_KEY: False,
@@ -264,6 +273,7 @@ class TestCopyFromArchive(TestCase):
         }
         successful_file = {
             copy_from_archive.INPUT_JOB_ID_KEY: file1_job_id,
+            copy_from_archive.INPUT_COLLECTION_ID_KEY: file1_collection_id,
             copy_from_archive.INPUT_GRANULE_ID_KEY: file1_granule_id,
             copy_from_archive.INPUT_FILENAME_KEY: file1_input_filename,
             copy_from_archive.FILE_SUCCESS_KEY: False,
@@ -331,6 +341,7 @@ class TestCopyFromArchive(TestCase):
                 [
                     call(
                         file1_job_id,
+                        file1_collection_id,
                         file1_granule_id,
                         file1_input_filename,
                         copy_from_archive.shared_recovery.OrcaStatus.SUCCESS,
@@ -339,6 +350,7 @@ class TestCopyFromArchive(TestCase):
                     ),
                     call(
                         file0_job_id,
+                        file0_collection_id,
                         file0_granule_id,
                         file0_input_filename,
                         copy_from_archive.shared_recovery.OrcaStatus.FAILED,
@@ -365,6 +377,7 @@ class TestCopyFromArchive(TestCase):
         """
         file0 = {
             copy_from_archive.INPUT_JOB_ID_KEY: uuid.uuid4().__str__(),
+            copy_from_archive.INPUT_COLLECTION_ID_KEY: uuid.uuid4().__str__(),
             copy_from_archive.INPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
             copy_from_archive.INPUT_FILENAME_KEY: uuid.uuid4().__str__(),
             copy_from_archive.INPUT_SOURCE_KEY_KEY: uuid.uuid4().__str__(),
@@ -377,6 +390,7 @@ class TestCopyFromArchive(TestCase):
         }
         file1 = {
             copy_from_archive.INPUT_JOB_ID_KEY: uuid.uuid4().__str__(),
+            copy_from_archive.INPUT_COLLECTION_ID_KEY: uuid.uuid4().__str__(),
             copy_from_archive.INPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
             copy_from_archive.INPUT_FILENAME_KEY: uuid.uuid4().__str__(),
             copy_from_archive.INPUT_SOURCE_KEY_KEY: uuid.uuid4().__str__(),

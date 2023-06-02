@@ -25,6 +25,7 @@ OS_ENVIRON_RETRY_BACKOFF_KEY = "RETRY_BACKOFF"
 OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY = "DB_CONNECT_INFO_SECRET_ARN"  # nosec
 
 JOB_ID_KEY = "jobId"
+COLLECTION_ID_KEY = "collectionId"
 GRANULE_ID_KEY = "granuleId"
 FILENAME_KEY = "filename"
 RESTORE_DESTINATION_KEY = "restoreDestination"
@@ -76,6 +77,7 @@ def task(
     for row in rows:
         # Get the values needed for the call to update the status
         job_id = row[JOB_ID_KEY]
+        collection_id = row[COLLECTION_ID_KEY]
         granule_id = row[GRANULE_ID_KEY]
         filename = row[FILENAME_KEY]
 
@@ -84,6 +86,7 @@ def task(
             try:
                 shared_recovery.update_status_for_file(
                     job_id,
+                    collection_id,
                     granule_id,
                     filename,
                     shared_recovery.OrcaStatus.STAGED,
@@ -175,7 +178,8 @@ def query_db(
         A list of dict containing the following keys, matching the input
         format from copy_from_archive:
             "jobId" (str):
-            "granuleId"(str):
+            "collectionId: (str):
+            "granuleId" (str):
             "filename" (str):
             "restoreDestination" (str):
             "s3MultipartChunksizeMb" (str):
@@ -215,14 +219,16 @@ def query_db(
                 row_dict = {
                     JOB_ID_KEY:
                         row[0],
-                    GRANULE_ID_KEY:
+                    COLLECTION_ID_KEY:
                         row[1],
-                    FILENAME_KEY:
+                    GRANULE_ID_KEY:
                         row[2],
-                    RESTORE_DESTINATION_KEY:
+                    FILENAME_KEY:
                         row[3],
-                    MULTIPART_CHUNKSIZE_MB_KEY:
+                    RESTORE_DESTINATION_KEY:
                         row[4],
+                    MULTIPART_CHUNKSIZE_MB_KEY:
+                        row[5],
                     SOURCE_KEY_KEY:
                         key_path,
                     TARGET_KEY_KEY:
@@ -247,7 +253,7 @@ def query_db(
     return rows
 
 
-def get_metadata_sql() -> text:
+def get_metadata_sql() -> text:  # pragma: no cover
     """
     Query for finding metadata based on key_path and status_id.
 
@@ -259,7 +265,8 @@ def get_metadata_sql() -> text:
     return text(
         """
             SELECT
-                job_id, granule_id, filename, restore_destination, multipart_chunksize_mb
+                job_id, collection_id, granule_id, filename, restore_destination,
+                multipart_chunksize_mb
             FROM
                 recovery_file
             WHERE

@@ -3,6 +3,7 @@
     {
       "body": {
         "jobId": "fake-job-id",
+        "collectionId": "fake-collection-id",
         "granuleId": "fake-granule-id",
         "filename": "fake-filename",
         "sourceKey": "fake-source-key",
