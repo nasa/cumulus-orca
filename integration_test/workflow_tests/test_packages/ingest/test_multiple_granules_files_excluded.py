@@ -1,5 +1,4 @@
 import json
-import logging
 import time
 import uuid
 from unittest import TestCase, mock
@@ -10,7 +9,10 @@ import boto3
 from botocore.exceptions import ClientError
 
 import helpers
+from custom_logger import CustomLoggerAdapter
 
+#Set the logger
+logging = CustomLoggerAdapter.set_logger("Ingest TestMultipleGranulesFilesExcluded")
 
 class TestMultipleGranules(TestCase):
     def test_multiple_granules_files_excluded_passes(self):
@@ -38,7 +40,6 @@ class TestMultipleGranules(TestCase):
             # Upload the randomized file to source bucket
             boto3.client('s3').upload_file("file1.hdf",
                                             bucket_name, key_name)
-
             copy_to_archive_input = {
                 "payload": {
                     "granules": [

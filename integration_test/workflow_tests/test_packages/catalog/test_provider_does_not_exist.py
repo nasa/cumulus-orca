@@ -1,11 +1,13 @@
 import json
-import logging
 import time
 import uuid
 from unittest import TestCase
 
 import helpers
+from custom_logger import CustomLoggerAdapter
 
+#Set the logger
+logging = CustomLoggerAdapter.set_logger("Ingest TestProviderDoesNotExist")
 
 class TestProviderDoesNotExist(TestCase):
     def test_provider_does_not_exist_returns_empty_granules_list(self):

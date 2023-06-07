@@ -1,5 +1,4 @@
 import json
-import logging
 import time
 import uuid
 from unittest import TestCase, mock
@@ -7,7 +6,10 @@ from unittest import TestCase, mock
 import boto3
 
 import helpers
+from custom_logger import CustomLoggerAdapter
 
+#Set the logger
+logging = CustomLoggerAdapter.set_logger("Ingest TestMultipleGranulesSameIdDifferentCollections")
 
 class TestMultipleGranulesSameIdDifferentCollections(TestCase):
 
