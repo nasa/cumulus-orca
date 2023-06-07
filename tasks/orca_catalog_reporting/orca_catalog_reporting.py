@@ -103,7 +103,7 @@ def query_db(
         )
 
         granules = []
-        for sql_result in sql_results:
+        for sql_result in sql_results.mappings():
             granules.append(
                 {
                     "providerId": sql_result["provider_id"],
