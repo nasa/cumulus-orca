@@ -32,6 +32,10 @@ and includes an additional section for migration notes.
   - For Recovery Jobs, it is only added to [output](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-jobs-api-output).
   - For Recovery Granules, it is now required on [input](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-granules-api-input) and will be returned on [output](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-granules-api-output).
 
+## [8.0.1]
+### Added
+- *ORCA-693* Fixed sqlalchemy query issue in orca_catalog_reporting lambda.
+
 ## [8.0.0]
 ### Added
 - *ORCA-554*, *ORCA-561*, *ORCA-579*, *ORCA-581*
