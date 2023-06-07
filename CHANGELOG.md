@@ -15,6 +15,10 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 
+## [8.0.1]
+### Added
+- *ORCA-693* Fixed sqlalchemy query issue in orca_catalog_reporting lambda.
+
 ## [8.0.0]
 ### Added
 - *ORCA-554*, *ORCA-561*, *ORCA-579*, *ORCA-581*
