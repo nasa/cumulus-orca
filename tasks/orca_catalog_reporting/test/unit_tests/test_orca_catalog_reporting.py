@@ -424,6 +424,7 @@ class TestOrcaCatalogReportingUnit(
                 }
             ],
         )
+        mock_execute_result.mappings.assert_called_once_with()
         mock_exit.assert_called_once_with(None, None, None)
         mock_get_catalog_sql.assert_called_once_with()
         self.assertEqual(
