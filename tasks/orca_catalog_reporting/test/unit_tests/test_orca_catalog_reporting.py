@@ -385,7 +385,11 @@ class TestOrcaCatalogReportingUnit(
             "last_update": returned_last_update,
             "files": returned_files,
         }
-        mock_execute = Mock(return_value=[returned_row0])
+        mock_execute_result = Mock()
+        mock_execute_result.mappings = Mock(return_value=[returned_row0])
+        mock_execute = Mock()
+        mock_execute.return_value = mock_execute_result
+        mock_connection = Mock()
         mock_connection = Mock()
         mock_connection.execute = mock_execute
         mock_exit = Mock(return_value=False)
