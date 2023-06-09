@@ -113,7 +113,7 @@ def get_state_machine_execution_results(
     start = datetime.datetime.utcnow()
     while True:
         # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/stepfunctions.html#SFN.Client.describe_execution
-        logging.debug("Getting execution description...")
+        logging.debug(f"Getting execution description from {execution_arn}")
         execution_state = boto3.client("stepfunctions").describe_execution(
             executionArn=execution_arn
         )
