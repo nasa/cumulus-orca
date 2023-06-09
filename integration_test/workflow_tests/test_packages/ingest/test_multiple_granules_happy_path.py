@@ -265,26 +265,3 @@ class TestMultipleGranulesHappyPath(TestCase):
         except Exception as ex:
             logging.error(ex)
             raise
-
-
-# import logging
-
-# class CustomAdapter(logging.LoggerAdapter):
-#     def process(self, msg, kwargs):
-#         my_context = kwargs.pop('my_context', self.extra['my_context'])
-#         return '[%s] %s' % (my_context, msg), kwargs
-
-#     def set_logger(group_name):
-
-#         logger = logging.getLogger(__name__)
-#         syslog = logging.StreamHandler()
-#         logger.addHandler(syslog)
-#         adapter = CustomAdapter(logger,{'my_context': group_name})
-#         return adapter
-
-# logger = CustomAdapter.set_logger("Ingest test logger")
-# logger.setLevel(logging.INFO)
-
-# logger.info('The sky is so blue')
-# logger.error("test")
-# logger.critical("test critical")
