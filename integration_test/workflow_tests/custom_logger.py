@@ -8,6 +8,7 @@ class CustomLoggerAdapter(logging.LoggerAdapter):
         my_context = kwargs.pop('my_context', self.extra['my_context'])
         return f"[{my_context}] {msg}", kwargs
 
+    @staticmethod
     def set_logger(group_name):
         logger = logging.getLogger(__name__)
         syslog = logging.StreamHandler()

@@ -8,11 +8,13 @@ import boto3
 import helpers
 from custom_logger import CustomLoggerAdapter
 
-#Set the logger
-logging = CustomLoggerAdapter.set_logger("Ingest TestNoGranules")
+# Set the logger
+logging = CustomLoggerAdapter.set_logger(__name__)
+
 
 class TestNoGranules(TestCase):
     def test_no_granules_passes(self):
+        self.maxDiff = None
         """
         If no granules are provided, should not store anything in DB.
         """
@@ -71,13 +73,14 @@ class TestNoGranules(TestCase):
             )
 
             # Let the catalog update
-            time.sleep(1)
+            time.sleep(10)
             catalog_output = helpers.post_to_api(
                 my_session,
                 helpers.api_url + "/catalog/reconcile/",
                 data=json.dumps(
                     {
                         "pageIndex": 0,
+                        "collectionId": [collection_name + "___" + collection_version],
                         "providerId": [provider_id],
                         "endTimestamp": int((time.time() + 5) * 1000),
                     }
@@ -85,7 +88,8 @@ class TestNoGranules(TestCase):
                 headers={"Host": helpers.aws_api_name},
             )
             self.assertEqual(
-                200, catalog_output.status_code, "Error occurred while contacting API."
+                200, catalog_output.status_code, f"Error occurred while contacting API: "
+                                                 f"{catalog_output.content}"
             )
             self.assertEqual(
                 {"granules": [], "anotherPage": False},

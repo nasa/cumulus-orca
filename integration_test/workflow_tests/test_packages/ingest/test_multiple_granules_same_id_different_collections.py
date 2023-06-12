@@ -8,8 +8,9 @@ import boto3
 import helpers
 from custom_logger import CustomLoggerAdapter
 
-#Set the logger
-logging = CustomLoggerAdapter.set_logger("Ingest TestMultipleGranulesSameIdDifferentCollections")
+# Set the logger
+logging = CustomLoggerAdapter.set_logger(__name__)
+
 
 class TestMultipleGranulesSameIdDifferentCollections(TestCase):
 
@@ -36,7 +37,7 @@ class TestMultipleGranulesSameIdDifferentCollections(TestCase):
             cumulus_bucket_name = "orca-sandbox-s3-provider"
             recovery_bucket_name = helpers.recovery_bucket_name
             excluded_filetype = []
-            name_1 = uuid.uuid4().__str__() + ".hdf"    # refers to file1.hdf
+            name_1 = uuid.uuid4().__str__() + ".hdf"  # refers to file1.hdf
             key_name_1 = "test/" + uuid.uuid4().__str__() + "/" + name_1
             # Upload the randomized file to source bucket
             boto3.client('s3').upload_file(
@@ -226,7 +227,7 @@ class TestMultipleGranulesSameIdDifferentCollections(TestCase):
                 raise
 
             # Let the catalog update
-            time.sleep(1)
+            time.sleep(10)
             # noinspection PyArgumentList
             catalog_output = helpers.post_to_api(
                 my_session,
@@ -234,6 +235,10 @@ class TestMultipleGranulesSameIdDifferentCollections(TestCase):
                 data=json.dumps(
                     {
                         "pageIndex": 0,
+                        "collectionId": [
+                            collection_name_1 + "___" + collection_version_1,
+                            collection_name_2 + "___" + collection_version_2,
+                        ],
                         "granuleId": [
                             granule_id,
                         ],
@@ -243,7 +248,8 @@ class TestMultipleGranulesSameIdDifferentCollections(TestCase):
                 headers={"Host": helpers.aws_api_name},
             )
             self.assertEqual(
-                200, catalog_output.status_code, "Error occurred while contacting API."
+                200, catalog_output.status_code, f"Error occurred while contacting API: "
+                                                 f"{catalog_output.content}"
             )
             expected_catalog_output_granules = [{
                 "providerId": provider_id,
@@ -265,7 +271,7 @@ class TestMultipleGranulesSameIdDifferentCollections(TestCase):
                 ],
                 "ingestDate": mock.ANY,
                 "lastUpdate": mock.ANY
-                },
+            },
                 {
                     "providerId": provider_id,
                     "collectionId": collection_name_2 + "___" + collection_version_2,

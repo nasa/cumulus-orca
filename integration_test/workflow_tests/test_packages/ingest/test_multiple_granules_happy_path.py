@@ -8,8 +8,9 @@ import boto3
 import helpers
 from custom_logger import CustomLoggerAdapter
 
-#Set the logger
-logging = CustomLoggerAdapter.set_logger("Ingest TestMultipleGranulesHappyPath")
+# Set the logger
+logging = CustomLoggerAdapter.set_logger(__name__)
+
 
 class TestMultipleGranulesHappyPath(TestCase):
 
@@ -51,10 +52,10 @@ class TestMultipleGranulesHappyPath(TestCase):
                 # file for large file test
                 # Since this file is 191GB, it should already exist in the source bucket.
                 name_2 = "ancillary_data_input_forcing_ECCO_V4r4.tar.gz"
-                key_name_2 = "test/" + "PODAAC/SWOT/" + name_2
+                key_name_2 = "PODAAC/SWOT/" + name_2  # todo: Make sure cleanup gets this in ORCA bucket.
             else:
                 name_2 = uuid.uuid4().__str__() + ".hdf"  # refers to file1.hdf
-                key_name_2 = uuid.uuid4().__str__() + "/" + name_2
+                key_name_2 = "test/" + uuid.uuid4().__str__() + "/" + name_2
                 # Upload the randomized file to source bucket
                 boto3.client('s3').upload_file(
                     "file1.hdf", cumulus_bucket_name, key_name_2
@@ -184,7 +185,7 @@ class TestMultipleGranulesHappyPath(TestCase):
                 raise
 
             # Let the catalog update
-            time.sleep(1)
+            time.sleep(10)
             # noinspection PyArgumentList
             catalog_output = helpers.post_to_api(
                 my_session,
@@ -192,6 +193,7 @@ class TestMultipleGranulesHappyPath(TestCase):
                 data=json.dumps(
                     {
                         "pageIndex": 0,
+                        "collectionId": [collection_name + "___" + collection_version],
                         "granuleId": [
                             granule_id_1,
                             granule_id_2,
@@ -202,7 +204,8 @@ class TestMultipleGranulesHappyPath(TestCase):
                 headers={"Host": helpers.aws_api_name},
             )
             self.assertEqual(
-                200, catalog_output.status_code, "Error occurred while contacting API."
+                200, catalog_output.status_code, f"Error occurred while contacting API: "
+                                                 f"{catalog_output.content}"
             )
             expected_catalog_output_granules = [{
                 "providerId": provider_id,
