@@ -6,11 +6,9 @@ import logging
 import os
 import random
 import time
-import unittest
-from typing import Callable, Text, TypeVar, Union, List, Dict
+from typing import Callable, Dict, List, Text, TypeVar, Union
 
 import boto3
-import testtools
 from dataclasses_json import dataclass_json
 from requests import Session
 from requests.adapters import (
@@ -162,11 +160,14 @@ class RecoveryRequestRecord:
     async_operation_id: str
 
 
+recovery_request_record_directory = "RecoveryRecords"
+
+
 def create_recovery_request_record(
     file_record_name: str,
     recovery_request_record: RecoveryRequestRecord
 ) -> None:
-    path = "RecoveryRecords/" + file_record_name + ".json"
+    path = f"{recovery_request_record_directory}/" + file_record_name + ".json"
     os.makedirs(os.path.dirname(path), exist_ok=True)
     file = open(path, "x")
     file.write(RecoveryRequestRecord.to_json(recovery_request_record))
@@ -176,7 +177,8 @@ def create_recovery_request_record(
 def read_recovery_request_record(
     file_record_name: str,
 ) -> RecoveryRequestRecord:
-    file = open("RecoveryRecords/" + file_record_name + ".json", "r")
+    path = f"{recovery_request_record_directory}/" + file_record_name + ".json"
+    file = open(path, "r")
     s = file.read()
     return RecoveryRequestRecord.from_json(s)
 

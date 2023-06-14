@@ -1,7 +1,7 @@
 import json
 import time
 import uuid
-from typing import List, Dict
+from typing import Dict, List
 from unittest import TestCase, mock
 
 import boto3
@@ -12,12 +12,14 @@ from custom_logger import CustomLoggerAdapter
 # Set the logger
 logger = CustomLoggerAdapter.set_logger(__name__)
 
+recovery_request_record_happy_path_filename = "RecoveryHappyPath"
+
 
 class TestMultipleGranulesHappyPath(TestCase):
 
     def test_multiple_granules_happy_path(self):
         self.maxDiff = None
-        use_large_file = False  # This should not be checked in with any value other than `True`
+        use_large_file = True  # This should not be checked in with any value other than `True`
         """
         - If multiple granules are provided, should store them in DB as well as in recovery bucket.
         - Files stored in GLACIER are also ingest-able.
@@ -283,7 +285,7 @@ class TestMultipleGranulesHappyPath(TestCase):
         # noinspection PyTypeChecker
         recovery_request_record = helpers.RecoveryRequestRecord([
             helpers.RecoveryRequestGranule(collection_id, granule_id, [
-                helpers.RecoveryRequestFile(file_name, file_key, orca_bucket_name, None)
+                helpers.RecoveryRequestFile(file_name, file_key, orca_bucket_name, target_bucket)
             ])
         ], None)
         step_function_results = self.initiate_recovery(
@@ -335,7 +337,8 @@ class TestMultipleGranulesHappyPath(TestCase):
 
         recovery_request_record.async_operation_id = actual_output["asyncOperationId"]
 
-        helpers.create_recovery_request_record("RecoveryHappyPath", recovery_request_record)
+        helpers.create_recovery_request_record(recovery_request_record_happy_path_filename,
+                                               recovery_request_record)
 
     @staticmethod
     def initiate_recovery(
