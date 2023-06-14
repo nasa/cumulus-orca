@@ -9,7 +9,7 @@ import helpers
 from custom_logger import CustomLoggerAdapter
 
 # Set the logger
-logging = CustomLoggerAdapter.set_logger(__name__)
+logger = CustomLoggerAdapter.set_logger(__name__)
 
 
 class TestNoGranules(TestCase):
@@ -97,5 +97,5 @@ class TestNoGranules(TestCase):
                 "Expected empty granule list not returned.",
             )
         except Exception as ex:
-            logging.error(ex)
+            logger.error(ex)
             raise

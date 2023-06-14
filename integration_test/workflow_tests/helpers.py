@@ -1,12 +1,17 @@
+import dataclasses
 import datetime
 import functools
+import json
 import logging
 import os
 import random
 import time
-from typing import Callable, Text, TypeVar, Union
+import unittest
+from typing import Callable, Text, TypeVar, Union, List, Dict
 
 import boto3
+import testtools
+from dataclasses_json import dataclass_json
 from requests import Session
 from requests.adapters import (
     DEFAULT_POOLBLOCK,
@@ -21,6 +26,9 @@ API_LOCAL_PORT = "8000"
 
 # os.env keys
 orca_api_deployment_invoke_url = os.environ["orca_API_DEPLOYMENT_INVOKE_URL"]
+orca_recovery_step_function_arn = os.environ[  # todo: add to bamboo
+    "orca_RECOVERY_STEP_FUNCTION_ARN"
+]
 orca_copy_to_archive_step_function_arn = os.environ[
     "orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN"
 ]
@@ -29,6 +37,7 @@ recovery_bucket_name = os.environ["orca_RECOVERY_BUCKET_NAME"]
 # helpful pre-constructed values
 aws_api_name = orca_api_deployment_invoke_url.replace("https://", "")
 api_url = f"https://{aws_api_name}:{API_LOCAL_PORT}/orca"
+buckets: Dict[str, Dict[str, str]] = json.loads(os.environ["orca_BUCKETS"])  # todo: add to bamboo
 
 MAX_RETRIES = 3  # number of times to retry.
 BACKOFF_FACTOR = 2  # Value of the factor used to backoff
@@ -81,8 +90,8 @@ def retry_error(
                     else:
                         # perform exponential delay
                         backoff_time = (
-                            backoff_in_seconds * backoff_factor ** total_retries
-                            + random.uniform(0, 1)  # nosec
+                                backoff_in_seconds * backoff_factor ** total_retries
+                                + random.uniform(0, 1)  # nosec
                         )
                         logging.warning(
                             f"Encountered Error on attempt {total_retries}. "
@@ -112,7 +121,8 @@ def get_state_machine_execution_results(
 ):
     start = datetime.datetime.utcnow()
     while True:
-        # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/stepfunctions.html#SFN.Client.describe_execution
+        # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services
+        # /stepfunctions.html#SFN.Client.describe_execution
         logging.debug(f"Getting execution description from {execution_arn}")
         execution_state = boto3.client("stepfunctions").describe_execution(
             executionArn=execution_arn
@@ -121,11 +131,54 @@ def get_state_machine_execution_results(
             return execution_state
 
         if (
-            datetime.datetime.utcnow() - start
+                datetime.datetime.utcnow() - start
         ).total_seconds() > maximum_duration_seconds:
             raise TimeoutError()
 
         time.sleep(retry_interval_seconds)
+
+
+@dataclass_json
+@dataclasses.dataclass
+class RecoveryRequestFile:
+    file_name: str
+    file_key: str
+    orca_bucket_name: str
+    target_bucket_name: str
+
+
+@dataclass_json
+@dataclasses.dataclass
+class RecoveryRequestGranule:
+    collection_id: str
+    granule_id: str
+    files: List[RecoveryRequestFile]
+
+
+@dataclass_json
+@dataclasses.dataclass
+class RecoveryRequestRecord:
+    granules: List[RecoveryRequestGranule]
+    async_operation_id: str
+
+
+def create_recovery_request_record(
+    file_record_name: str,
+    recovery_request_record: RecoveryRequestRecord
+) -> None:
+    path = "RecoveryRecords/" + file_record_name + ".json"
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    file = open(path, "x")
+    file.write(RecoveryRequestRecord.to_json(recovery_request_record))
+    file.close()
+
+
+def read_recovery_request_record(
+    file_record_name: str,
+) -> RecoveryRequestRecord:
+    file = open("RecoveryRecords/" + file_record_name + ".json", "r")
+    s = file.read()
+    return RecoveryRequestRecord.from_json(s)
 
 
 @retry_error()

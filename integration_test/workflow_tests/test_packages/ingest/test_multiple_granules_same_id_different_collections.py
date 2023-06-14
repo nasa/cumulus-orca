@@ -9,7 +9,7 @@ import helpers
 from custom_logger import CustomLoggerAdapter
 
 # Set the logger
-logging = CustomLoggerAdapter.set_logger(__name__)
+logger = CustomLoggerAdapter.set_logger(__name__)
 
 
 class TestMultipleGranulesSameIdDifferentCollections(TestCase):
@@ -223,7 +223,7 @@ class TestMultipleGranulesSameIdDifferentCollections(TestCase):
                     )
                     s3_versions.append(head_object_output["VersionId"])
             except Exception as ex:
-                logging.error(ex)
+                logger.error(ex)
                 raise
 
             # Let the catalog update
@@ -310,5 +310,5 @@ class TestMultipleGranulesSameIdDifferentCollections(TestCase):
                 "Expected API output not returned."
             )
         except Exception as ex:
-            logging.error(ex)
+            logger.error(ex)
             raise
