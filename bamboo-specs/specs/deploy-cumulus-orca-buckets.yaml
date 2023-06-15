@@ -4,7 +4,7 @@ version: 2
 plan:
   project-key: ORCA
   key: PL
-  name: ORCA Deploy Plan
+  name: Prototype ORCA Deploy Plan
 stages:
 - Deploy DR ORCA Buckets:
     manual: true

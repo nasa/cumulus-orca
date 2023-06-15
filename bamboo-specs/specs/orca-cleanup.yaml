@@ -4,7 +4,7 @@ version: 2
 plan:
   project-key: ORCA
   key: OCP
-  name: ORCA Cleanup Plan
+  name: Prototype ORCA Cleanup Plan
 stages:
 - Clean up ORCA buckets and modules:
     manual: true

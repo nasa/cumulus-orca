@@ -4,7 +4,7 @@ version: 2
 plan:
   project-key: ORCA
   key: ROD
-  name: Release ORCA Documentation
+  name: Prototype Release ORCA Documentation
 stages:
 - Release Stage:
     manual: true

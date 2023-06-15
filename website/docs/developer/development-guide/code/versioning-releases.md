@@ -135,7 +135,6 @@ You should reset `feature/ORCA-test-bamboo` before using it.
 1. Rename `feature/ORCA-test-bamboo` to `feature/ORCA-test-bamboo-old`
 1. Create a new branch based off of your branch named `feature/ORCA-test-bamboo`
 1. In the new branch's `bamboo-specs/specs`:
-   Change plan's `name` to `prototype-latest`.
    In each `plan` element, change `OI`/`ODP` in `key` values to `PL`
 :::
 
