@@ -4,7 +4,7 @@
 version: 2
 plan:
   project-key: ORCA
-  key: OI
+  key: PL
   name: ORCA Integrator
 stages:
 - Setup Env:

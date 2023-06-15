@@ -134,17 +134,9 @@ For testing purposes, you should use your feature branch in cumulus-orca github 
 You should reset `feature/ORCA-test-bamboo` before using it.
 1. Rename `feature/ORCA-test-bamboo` to `feature/ORCA-test-bamboo-old`
 1. Create a new branch based off of your branch named `feature/ORCA-test-bamboo`
-1. In the new branch's `bamboo.yaml`:
-   Delete all but one of the plans and the `ORCA-ODP` plan.
+1. In the new branch's `bamboo-specs/specs`:
    Change plan's `name` to `prototype-latest`.
-   In each `repositories` element, change `orca-develop` to `orca test branch`.
    In each `plan` element, change `OI`/`ODP` in `key` values to `PL`
-:::
-
-:::warning
-`prototype-latest` exposes an ordering issue where the release stage must be run before deployment/integration checks can be run.
-DO NOT RUN THE RELEASE STAGE FROM `PROTOTYPE-LATEST`
-Comment the release stage out in `bamboo.yaml` at the top of the file, and under `stages:`. Note that indentation is not a reliable indicator of block length, so make sure that all release code, including `repositories`, `triggers`, and `branches`, are commented out.
 :::
 
 An EC2 key pair must be created using the AWS CLI if you are using a new `PREFIX`. Make sure to save the generated private key for connecting to this instance later.
