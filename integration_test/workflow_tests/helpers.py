@@ -24,7 +24,7 @@ API_LOCAL_PORT = "8000"
 
 # os.env keys
 orca_api_deployment_invoke_url = os.environ["orca_API_DEPLOYMENT_INVOKE_URL"]
-orca_recovery_step_function_arn = os.environ[  # todo: add to bamboo
+orca_recovery_step_function_arn = os.environ[
     "orca_RECOVERY_STEP_FUNCTION_ARN"
 ]
 orca_copy_to_archive_step_function_arn = os.environ[

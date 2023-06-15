@@ -88,7 +88,7 @@ Run Ingest Integration tests:
         #!/bin/bash
         . ./integration_test/shared/setup-orca.sh
         cd integration_test/workflow_tests
-        bash bin/run_tests.sh
+        bash bin/run_tests.sh primary
 
 variables:
   DEPLOYMENT: sandbox
@@ -110,6 +110,7 @@ variables:
   BRANCH_NAME: ${bamboo.planRepository.branchName}
   CMR_OAUTH_PROVIDER: earthdata
   ORCA_API_DEPLOYMENT_INVOKE_URL: REPLACE ME
+  ORCA_RECOVERY_STEP_FUNCTION_ARN: REPLACE ME
   ORCA_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN: REPLACE ME
   ORCA_RECOVERY_BUCKET_NAME: REPLACE ME
 
