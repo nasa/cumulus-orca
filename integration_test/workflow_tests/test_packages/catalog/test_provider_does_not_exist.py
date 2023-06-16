@@ -26,6 +26,7 @@ class TestProviderDoesNotExist(TestCase):
                 data=json.dumps(
                     {
                         "pageIndex": 0,
+                        "collectionId": [uuid.uuid4().__str__() + "___" + uuid.uuid4().__str__()],
                         "providerId": [uuid.uuid4().__str__()],
                         "endTimestamp": int((time.time() + 5) * 1000),
                     }
@@ -33,7 +34,8 @@ class TestProviderDoesNotExist(TestCase):
                 headers={"Host": helpers.aws_api_name},
             )
             self.assertEqual(
-                200, catalog_output.status_code, "Error occurred while contacting API."
+                200, catalog_output.status_code, f"Error occurred while contacting API: "
+                                                 f"{catalog_output.content}"
             )
             self.assertEqual(
                 {"granules": [], "anotherPage": False},

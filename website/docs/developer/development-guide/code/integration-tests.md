@@ -36,8 +36,9 @@ As tests are run in parallel, it is generally good practice to have one test-per
 2. Connect to the NASA vpn.
 3. Set the following environment variables:
    1. `orca_API_DEPLOYMENT_INVOKE_URL` Output from the ORCA TF module. ex: `https://0000000000.execute-api.us-west-2.amazonaws.com`
-   2. `orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN` ARN of the copy_to_archive step function. ex: `arn:aws:states:us-west-2:000000000000:stateMachine:PREFIX-OrcaCopyToArchiveWorkflow`
-   3. `orca_RECOVERY_BUCKET_NAME` S3 bucket name where the recovered files will be archived. ex: `test-orca-primary`
+   2. `orca_RECOVERY_STEP_FUNCTION_ARN` ARN of the recovery step function. ex: `arn:aws:states:us-west-2:000000000000:stateMachine:PREFIX-OrcaRecoveryWorkflow`
+   3. `orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN` ARN of the copy_to_archive step function. ex: `arn:aws:states:us-west-2:000000000000:stateMachine:PREFIX-OrcaCopyToArchiveWorkflow`
+   4. `orca_RECOVERY_BUCKET_NAME` S3 bucket name where the recovered files will be archived. ex: `test-orca-primary`
 4. 
    Get your Cumulus EC2 instance ID using the following AWS CLI command using your `<PREFIX>`.
    ```shell

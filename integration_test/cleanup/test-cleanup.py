@@ -21,19 +21,19 @@ source_object_results = s3.list_objects_v2(
 )
 source_filenames = []
 for item in source_object_results['Contents']:
-    files = item['Key']
-    source_filenames.append(files)
+    file_key = item['Key']
+    source_filenames.append(file_key)
 LOGGER.info(source_filenames)
 
 # grab the objects to be deleted from recovery bucket
 recovery_object_results = s3.list_objects_v2(
     Bucket=recovery_bucket_name,
-    Prefix='test'
+    # Prefix='test'  # Large file PODAAC/SWOT/ancillary_data_input_forcing_ECCO_V4r4.tar.gz is stored outside of the 'test' directory.
 )
 recovery_filenames = []
 for item in recovery_object_results['Contents']:
-    files = item['Key']
-    recovery_filenames.append(files)
+    file_key = item['Key']
+    recovery_filenames.append(file_key)
 LOGGER.info(recovery_filenames)
 
 # Delete objects from source and recovery buckets
