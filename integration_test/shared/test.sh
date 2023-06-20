@@ -1,6 +1,5 @@
 #!/bin/bash
-set -ex
-cwd=$(pwd)
+
 echo "Hello"
 export orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN="arn:aws:states:${bamboo_AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:stateMachine:{$bamboo_PREFIX}-OrcaCopyToArchiveWorkflow"
 export orca_RECOVERY_STEP_FUNCTION_ARN="arn:aws:states:${bamboo_AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:stateMachine:{$bamboo_PREFIX}-OrcaRecoveryWorkflow"
