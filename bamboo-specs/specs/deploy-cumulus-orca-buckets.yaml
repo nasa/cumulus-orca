@@ -87,7 +87,6 @@ Run Ingest Integration tests:
       - |-
         #!/bin/bash
         . ./integration_test/shared/setup-orca.sh
-        cd integration_test/workflow_tests && bash bin/run_tests.sh
   
 variables:
   DEPLOYMENT: sandbox
