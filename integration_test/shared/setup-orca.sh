@@ -7,8 +7,8 @@ export AWS_DEFAULT_REGION=$bamboo_CUMULUS_AWS_DEFAULT_REGION
 
 export AWS_ACCOUNT_ID=$(aws sts get-caller-identity | jq -r '.Account')
 
-export orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN="arn:aws:states:${bamboo_AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:stateMachine:{$bamboo_PREFIX}-OrcaCopyToArchiveWorkflow"
-export orca_RECOVERY_STEP_FUNCTION_ARN="arn:aws:states:${bamboo_AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:stateMachine:{$bamboo_PREFIX}-OrcaRecoveryWorkflow"
+export orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN="arn:aws:states:${bamboo_AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:stateMachine:${bamboo_PREFIX}-OrcaCopyToArchiveWorkflow"
+export orca_RECOVERY_STEP_FUNCTION_ARN="arn:aws:states:${bamboo_AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:stateMachine:${bamboo_PREFIX}-OrcaRecoveryWorkflow"
 
 echo $orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN
 echo $orca_RECOVERY_STEP_FUNCTION_ARN
