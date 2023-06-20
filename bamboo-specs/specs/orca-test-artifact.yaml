@@ -37,13 +37,6 @@ Test stage job:
         export AWS_SECRET_ACCESS_KEY=$bamboo_CUMULUS_AWS_SECRET_ACCESS_KEY
         export AWS_DEFAULT_REGION=$bamboo_CUMULUS_AWS_DEFAULT_REGION
         . ./integration_test/shared/test.sh
-        aws s3 ls > s3_list.txt
-
-  artifacts:
-    -
-      name: S3 List
-      pattern: 's3_list.txt'
-      shared: true
 Validate test job:
   key: VTJ
   other:
