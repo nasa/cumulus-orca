@@ -8,7 +8,7 @@ export AWS_SECRET_ACCESS_KEY=$bamboo_CUMULUS_AWS_SECRET_ACCESS_KEY
 export AWS_DEFAULT_REGION=$bamboo_CUMULUS_AWS_DEFAULT_REGION
 
 cd integration_test
-echo "Deploying Cumulus S3 buckets and dynamoDB table"
+echo "Deploying Cumulus S3 buckets"
 terraform apply \
   -auto-approve \
   -input=false
