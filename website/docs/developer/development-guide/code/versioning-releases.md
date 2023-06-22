@@ -208,8 +208,6 @@ After hitting the play button on `Deploy Cumulus buckets and Cumulus and Orca mo
 - EARTHDATA_CLIENT_PASSWORD
 - CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION
 - ORCA_RECOVERY_BUCKET_NAME (Name of the bucket outside of ORCA that files will be recovered to. For example, PREFIX-orca-primary)
-- ORCA_RECOVERY_STEP_FUNCTION_ARN
-- ORCA_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN
 - ORCA_API_DEPLOYMENT_INVOKE_URL
 
 This is because some variables are sensitive and some will vary depending upon the user running the pipeline. Hitting 'play' next to any of the deployment stages brings up a checkbox list to run multiple jobs at once. Note that none of the checkboxes should be checked.
