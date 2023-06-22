@@ -165,6 +165,7 @@ resource "aws_s3_bucket_policy" "orca-reports-policy" {
 }
 
 resource "aws_s3_bucket" "orca-primary" {
+  # If bucket name is updated, also update orca_RECOVERY_BUCKET_NAME in integration_test/shared/setup_orca.sh
   bucket = "PREFIX-orca-primary"
   force_destroy = true
   tags = {
