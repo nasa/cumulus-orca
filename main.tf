@@ -1,3 +1,11 @@
+provider "aws" {
+  region = var.aws_region
+
+  ignore_tags {
+    key_prefixes = ["gsfc-ngap"]
+  }
+}
+
 ## Local Variables
 locals {
   db_name      = lower(var.db_name != null ? var.db_name : replace("${var.prefix}_orca", "-", "_"))

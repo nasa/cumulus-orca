@@ -1,6 +1,12 @@
 ## Variables obtained by Cumulus deployment
 ## Should exist in https://github.com/nasa/cumulus-template-deploy/blob/master/cumulus-tf/variables.tf
 ## REQUIRED
+variable "aws_region" {  # todo: Add to docs
+  type        = string
+  description = "AWS Region to create resources in."
+}
+
+
 variable "buckets" {
   type        = map(object({ name = string, type = string }))
   description = "S3 bucket locations for the various storage types being used."
