@@ -110,8 +110,6 @@ variables:
   BRANCH_NAME: ${bamboo.planRepository.branchName}
   CMR_OAUTH_PROVIDER: earthdata
   ORCA_API_DEPLOYMENT_INVOKE_URL: REPLACE ME
-  ORCA_RECOVERY_BUCKET_NAME: REPLACE ME
-
  
 repositories:
 - orca-develop:
