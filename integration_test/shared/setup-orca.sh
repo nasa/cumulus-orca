@@ -73,20 +73,10 @@ export orca_RECOVERY_BUCKET_NAME="${bamboo_PREFIX}-orca-primary"
 
 terraform init -input=false
 
-#data persistence tf module
-cd ../data-persistence-tf
-mv terraform.tfvars.example terraform.tfvars
-#replacing terraform.tf with proper values
-sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g; s/us-east-1/'"$bamboo_AWS_DEFAULT_REGION"'/g' terraform.tf.example > terraform.tf
-terraform init -input=false
-
-cd ../cumulus-tf
-#replacing .tf files with proper values
-sed 's/PREFIX/'"$bamboo_PREFIX"'/g' terraform.tfvars.example > terraform.tfvars
-sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g; s/us-east-1/'"$bamboo_AWS_DEFAULT_REGION"'/g' terraform.tf.example > terraform.tf
-terraform init -input=false
-
 cd ../..
+# Init ORCA
+terraform init -input=false
+
 # Remove all prevent_destroy properties
 for f in $(find cumulus-orca-deploy-template -name '*.tf');
 do

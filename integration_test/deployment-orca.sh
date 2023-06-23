@@ -18,7 +18,6 @@ cd ..
 cd cumulus-orca-deploy-template/rds-cluster-tf
 perform_terraform_command_rds_cluster "apply"
 
-export RDS_USER_ACCESS_SECRET_ARN=$(terraform output admin_db_login_secret_arn)
 export DB_HOST_ENDPOINT=$(terraform output rds_endpoint)
 export RDS_SECURITY_GROUP=$(terraform output security_group_id)
 #-------------------------------------------------------------------

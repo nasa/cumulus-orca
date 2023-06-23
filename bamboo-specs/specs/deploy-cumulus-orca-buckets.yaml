@@ -105,10 +105,7 @@ variables:
   DB_ADMIN_USERNAME: postgres
   DB_ADMIN_PASSWORD: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
   DB_USER_PASSWORD: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
-  EARTHDATA_CLIENT_ID: REPLACE ME
-  EARTHDATA_CLIENT_PASSWORD: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
   BRANCH_NAME: ${bamboo.planRepository.branchName}
-  CMR_OAUTH_PROVIDER: earthdata
   ORCA_API_DEPLOYMENT_INVOKE_URL: REPLACE ME
  
 repositories:
