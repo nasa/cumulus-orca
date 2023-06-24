@@ -128,7 +128,7 @@ To delete a published tag to re-tag, follow these steps:
 
 ## Deploying ORCA buckets, RDS cluster and Cumulus ORCA modules via bamboo
 
-For testing purposes, you should use your feature branch in cumulus-orca github repo and [`prototype-latest`](https://ci.earthdata.nasa.gov/browse/ORCA-PL) bamboo plan so that it does not affect the ORCA github `develop` branch. The `prototype-latest` bamboo plan is linked to `feature/ORCA-test-bamboo` github branch as the default branch under cumulus-orca repo. In addition, if changes are made to the bamboo spec file `bamboo.yaml` in this default branch, you have to manually import the bamboo spec by choosing `orca test branch` as the linked repo.
+For testing purposes, you should use your feature branch in cumulus-orca github repo and [`Test ORCA Deploy Plan`](https://ci.earthdata.nasa.gov/browse/ORCA-PL) bamboo plan so that it does not affect the ORCA github `develop` branch. The `prototype-latest` bamboo plan is linked to `feature/ORCA-test-bamboo` github branch as the default branch under cumulus-orca repo. In addition, if changes are made to the bamboo spec file `bamboo.yaml` in this default branch, you have to manually import the bamboo spec by choosing `orca test branch` as the linked repo.
 
 :::warning
 You should reset `feature/ORCA-test-bamboo` before using it.

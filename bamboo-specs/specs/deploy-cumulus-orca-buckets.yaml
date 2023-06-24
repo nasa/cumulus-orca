@@ -4,7 +4,7 @@ version: 2
 plan:
   project-key: ORCA
   key: PL
-  name: Prototype ORCA Deploy Plan
+  name: Test ORCA Deploy Plan
 stages:
 - Deploy DR ORCA Buckets:
     manual: true
@@ -112,7 +112,7 @@ variables:
   ORCA_API_DEPLOYMENT_INVOKE_URL: REPLACE ME
  
 repositories:
-- orca-develop:
+- orca test branch:
     scope: global
 triggers:
 - polling: # Does not actually poll, as we do not have webhooks enabled.
