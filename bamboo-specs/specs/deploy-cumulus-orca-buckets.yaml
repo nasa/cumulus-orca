@@ -3,7 +3,7 @@
 version: 2
 plan:
   project-key: ORCA
-  key: PL
+  key: TODP
   name: Test ORCA Deploy Plan
 stages:
 - Deploy DR ORCA Buckets:
