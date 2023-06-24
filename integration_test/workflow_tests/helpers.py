@@ -35,7 +35,7 @@ recovery_bucket_name = os.environ["orca_RECOVERY_BUCKET_NAME"]
 # helpful pre-constructed values
 aws_api_name = orca_api_deployment_invoke_url.replace("https://", "")
 api_url = f"https://{aws_api_name}:{API_LOCAL_PORT}/orca"
-buckets: Dict[str, Dict[str, str]] = json.loads(os.environ["orca_BUCKETS"])  # todo: add to bamboo
+buckets: Dict[str, Dict[str, str]] = json.loads(os.environ["orca_BUCKETS"])
 
 MAX_RETRIES = 3  # number of times to retry.
 BACKOFF_FACTOR = 2  # Value of the factor used to backoff
