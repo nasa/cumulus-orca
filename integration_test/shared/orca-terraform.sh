@@ -31,6 +31,7 @@ function perform_terraform_command_orca () {
     -auto-approve \
     -lock=false \
     -input=false \
+    -var "aws_region=$bamboo_AWS_DEFAULT_REGION" \
     -var "buckets=$orca_BUCKETS" \
     -var "lambda_subnet_ids=[\"$AWS_SUBNET_ID1\", \"$AWS_SUBNET_ID2\", \"$AWS_SUBNET_ID3\"]" \
     -var "permissions_boundary_arn=arn:aws:iam::$AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY" \
