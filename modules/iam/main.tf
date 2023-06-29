@@ -149,7 +149,7 @@ resource "aws_iam_role_policy" "restore_object_role_policy" {
 
 
 # Step functions
-# copied from TODO (tf-modules/ingest/iam.tf)
+# copied from (cumulus/tf-modules/ingest/iam.tf) todo: Strip back and personalize for each step-function
 data "aws_iam_policy_document" "states_assume_role_policy" {
   statement {
     actions = ["sts:AssumeRole"]
