@@ -20,8 +20,10 @@ and includes an additional section for migration notes.
   - *ORCA-683* `collectionId` added to [Recovery Job status](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-jobs-api-output) output.
   - *ORCA-684* `collectionId` added to [Recovery Granule status](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-granules-api) input and output.
   - *ORCA-672*, *ORCA-671* `collectionId` added as input to `extract_filepaths_for_granule`, `request_from_archive`, and the recovery workflow.
+- *ORCA-700* Added variable `aws_region` to Terraform variables.
 
 ### Changed
+- *ORCA-700* Removed Cumulus Workflow wrapper from step-functions. No anticipated customer impact.
 
 ### Migration Notes
 - Changes have been made to SQS message processing that are not backwards compatible. Halt ingest and wait for the `PREFIX-orca-status-update-queue.fifo` queue to empty before applying update.
@@ -31,6 +33,69 @@ and includes an additional section for migration notes.
 - `collectionId` properties have been added to [Recovery Jobs](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-jobs-api) and [Recovery Granules](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-granules-api) API.
   - For Recovery Jobs, it is only added to [output](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-jobs-api-output).
   - For Recovery Granules, it is now required on [input](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-granules-api-input) and will be returned on [output](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-granules-api-output).
+- Update the `orca.tf` file to include `aws_region`. See example below.
+  ```terraform
+  ## ORCA Module
+  ## =============================================================================
+  module "orca" {
+    source = "https://github.com/nasa/cumulus-orca/releases/download/v6.0.0/cumulus-orca-terraform.zip//modules"
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  aws_region               = var.region
+  buckets                  = var.buckets
+  lambda_subnet_ids        = var.lambda_subnet_ids
+  permissions_boundary_arn = var.permissions_boundary_arn
+  prefix                   = var.prefix
+  system_bucket            = var.system_bucket
+  vpc_id                   = var.vpc_id
+  workflow_config          = module.cumulus.workflow_config
+
+  ## OPTIONAL
+  tags        = local.tags
+
+  ## --------------------------
+  ## ORCA Variables
+  ## --------------------------
+  ## REQUIRED
+  db_admin_password        = var.db_admin_password
+  db_user_password         = var.db_user_password
+  db_host_endpoint         = var.db_host_endpoint
+  dlq_subscription_email   = var.dlq_subscription_email
+  orca_default_bucket      = var.orca_default_bucket
+  orca_reports_bucket_name = var.orca_reports_bucket_name
+  rds_security_group_id    = var.rds_security_group_id
+  s3_access_key            = var.s3_access_key
+  s3_secret_key            = var.s3_secret_key
+
+  ## OPTIONAL
+  db_admin_username                                    = "postgres"
+  default_multipart_chunksize_mb                       = 250
+  internal_report_queue_message_retention_time_seconds = 432000
+  orca_default_recovery_type                           = "Standard"
+  orca_default_storage_class                           = "GLACIER"
+  orca_delete_old_reconcile_jobs_frequency_cron        = "cron(0 0 ? * SUN *)"
+  orca_ingest_lambda_memory_size                       = 2240
+  orca_ingest_lambda_timeout                           = 720
+  orca_internal_reconciliation_expiration_days         = 30
+  orca_recovery_buckets                                = []
+  orca_recovery_complete_filter_prefix                 = ""
+  orca_recovery_expiration_days                        = 5
+  orca_recovery_lambda_memory_size                     = 128
+  orca_recovery_lambda_timeout                         = 720
+  orca_recovery_retry_limit                            = 3
+  orca_recovery_retry_interval                         = 1
+  orca_recovery_retry_backoff                          = 2
+  s3_inventory_queue_message_retention_time_seconds    = 432000
+  s3_report_frequency                                  = "Daily"
+  sqs_delay_time_seconds                               = 0
+  sqs_maximum_message_size                             = 262144
+  staged_recovery_queue_message_retention_time_seconds = 432000
+  status_update_queue_message_retention_time_seconds   = 777600
+  vpc_endpoint_id                                      = null
+  }
+  ```
 
 ## [8.0.1]
 ### Added
