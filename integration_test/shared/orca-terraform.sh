@@ -21,7 +21,6 @@ function perform_terraform_command_rds_cluster () {
     -var "permissions_boundary_arn=arn:aws:iam::$AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
 }
 
-# todo: Deploy ecs-standalone-tf
 function perform_terraform_command_ecs () {
   ## Performs the given Terraform command with environment variables.
   ## 
