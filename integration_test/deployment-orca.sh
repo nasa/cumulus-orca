@@ -14,19 +14,19 @@ terraform apply \
   -input=false
 cd ..
 
-# Deploy rds-cluster-tf via terraform
-cd cumulus-orca-deploy-template/rds-cluster-tf
+# Deploy cumulus-rds-tf via terraform
+cd cumulus-orca-deploy-template/terraform-aws-cumulus/tf-modules/cumulus-rds-tf
 perform_terraform_command_rds_cluster "apply"
 
 export DB_HOST_ENDPOINT=$(terraform output rds_endpoint)
 export RDS_SECURITY_GROUP=$(terraform output security_group_id)
+cd ../../../..
 #-------------------------------------------------------------------
 
-# Deploy data-persistence via terraform
-cd ../data-persistence-tf
-perform_terraform_command_data_persistence "apply"
-#-------------------------------------------------------------------
+# Deploy ecs-standalone-tf
+cd cumulus-orca-deploy-template/ecs-standalone-tf
+perform_terraform_command_ecs "apply"
+cd ../..
 
-# Deploy cumulus-tf via terraform
-cd ../cumulus-tf
-perform_terraform_command_cumulus "apply"
+# Deploy orca via terraform
+perform_terraform_command_orca "apply"

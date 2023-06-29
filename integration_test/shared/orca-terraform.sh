@@ -7,7 +7,6 @@ function perform_terraform_command_rds_cluster () {
   terraform $1 \
     -auto-approve \
     -input=false \
-    -var-file="terraform.tfvars" \
     -var "prefix=$bamboo_PREFIX" \
     -var "region=$bamboo_AWS_DEFAULT_REGION" \
     -var "subnets=[\"$AWS_SUBNET_ID1\", \"$AWS_SUBNET_ID2\", \"$AWS_SUBNET_ID3\"]" \
@@ -17,8 +16,29 @@ function perform_terraform_command_rds_cluster () {
     -var "cluster_identifier=$bamboo_PREFIX-cumulus-rds-serverless-default-cluster" \
     -var "deletion_protection=false"\
     -var "provision_user_database=false"\
+    -var "tags= { "Deployment" = "$bamboo_PREFIX" }"\
     -var "engine_version=$bamboo_RDS_ENGINE_VERSION" \
     -var "permissions_boundary_arn=arn:aws:iam::$AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
+}
+
+# todo: Deploy ecs-standalone-tf
+function perform_terraform_command_ecs () {
+  ## Performs the given Terraform command with environment variables.
+  ## 
+  ## Args:
+  ##   $1 - The command to run in Terraform. Either "apply" or "destroy"
+  echo "${1}ing ecs module in $bamboo_DEPLOYMENT"
+  terraform $1 \
+    -auto-approve \
+    -input=false \
+    -var "prefix=$bamboo_PREFIX" \
+    -var "buckets=$orca_BUCKETS" \
+    -var "key_name=$bamboo_PREFIX-key-pair" \
+    -var "rds_security_group_id=$RDS_SECURITY_GROUP" \
+    -var "vpc_id=$VPC_ID" \
+    -var "permissions_boundary_arn=arn:aws:iam::$AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY" \
+    -var "ecs_cluster_instance_subnet_ids=[\"$AWS_SUBNET_ID1\", \"$AWS_SUBNET_ID2\", \"$AWS_SUBNET_ID3\"]" \
+    -var "system_bucket=$bamboo_PREFIX-internal"
 }
 
 function perform_terraform_command_orca () {

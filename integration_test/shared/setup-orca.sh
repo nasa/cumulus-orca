@@ -10,6 +10,16 @@ export orca_API_DEPLOYMENT_INVOKE_URL=$bamboo_ORCA_API_DEPLOYMENT_INVOKE_URL
 # buckets structure tied to buckets.tf.template and dr-buckets.tf.template
 export orca_BUCKETS='{"protected": {"name": "'$bamboo_PREFIX'-protected", "type": "protected"}, "internal": {"name": "'$bamboo_PREFIX'-internal", "type": "internal"}, "private": {"name": "'$bamboo_PREFIX'-private", "type": "private"}, "public": {"name": "'$bamboo_PREFIX'-public", "type": "public"}, "orca_default": {"name": "'$bamboo_PREFIX'-orca-primary", "type": "orca"}}'
 
+# Setting environment variables with proper values
+export AWS_ACCOUNT_ID=$(aws sts get-caller-identity | jq -r '.Account')
+export VPC_ID=$(aws ec2 describe-vpcs | jq -r '.Vpcs | to_entries | .[] | .value.VpcId')
+export AWS_SUBNET_ID1=$(aws ec2 describe-subnets --filters "Name=availability-zone,Values=us-west-2a"| jq -r '.Subnets | .[] | select (.Tags | .[] | .Value | contains ("Private application ")) | .SubnetId ')
+export AWS_SUBNET_ID2=$(aws ec2 describe-subnets --filters "Name=availability-zone,Values=us-west-2b"| jq -r '.Subnets | .[] | select (.Tags | .[] | .Value | contains ("Private application ")) | .SubnetId ')
+export AWS_SUBNET_ID3=$(aws ec2 describe-subnets --filters "Name=availability-zone,Values=us-west-2c"| jq -r '.Subnets | .[] | select (.Tags | .[] | .Value | contains ("Private application ")) | .SubnetId ')
+export orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN="arn:aws:states:${bamboo_AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:stateMachine:${bamboo_PREFIX}-OrcaCopyToArchiveWorkflow"
+export orca_RECOVERY_STEP_FUNCTION_ARN="arn:aws:states:${bamboo_AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:stateMachine:${bamboo_PREFIX}-OrcaRecoveryWorkflow"
+export orca_RECOVERY_BUCKET_NAME="${bamboo_PREFIX}-orca-primary"
+
 #remove old files from bamboo as they throw error
 rm *.tf
 
@@ -34,6 +44,10 @@ fi
 git clone --branch ${bamboo_BRANCH_NAME} --single-branch https://github.com/nasa/cumulus-orca.git
 echo "Cloned Orca, branch ${bamboo_BRANCH_NAME}"
 
+# Init ORCA
+echo "inside orca"
+terraform init -input=false
+
 cd integration_test
 #replace prefix with bamboo prefix variable
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' buckets.tf.template > buckets.tf
@@ -55,27 +69,18 @@ git clone --branch $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION --single-branch 
 echo "cloned Cumulus, branch $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION"
 
 #rds-cluster-tf module
-cd cumulus-orca-deploy-template/rds-cluster-tf
-echo "inside rds-cluster-tf"
-mv terraform.tfvars.example terraform.tfvars
-
-#replacing terraform.tf and environment variables with proper values
-sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g; s/us-east-1/'"$bamboo_AWS_DEFAULT_REGION"'/g' terraform.tf.example > terraform.tf
-export AWS_ACCOUNT_ID=$(aws sts get-caller-identity | jq -r '.Account')
-export VPC_ID=$(aws ec2 describe-vpcs | jq -r '.Vpcs | to_entries | .[] | .value.VpcId')
-export AWS_SUBNET_ID1=$(aws ec2 describe-subnets --filters "Name=availability-zone,Values=us-west-2a"| jq -r '.Subnets | .[] | select (.Tags | .[] | .Value | contains ("Private application ")) | .SubnetId ')
-export AWS_SUBNET_ID2=$(aws ec2 describe-subnets --filters "Name=availability-zone,Values=us-west-2b"| jq -r '.Subnets | .[] | select (.Tags | .[] | .Value | contains ("Private application ")) | .SubnetId ')
-export AWS_SUBNET_ID3=$(aws ec2 describe-subnets --filters "Name=availability-zone,Values=us-west-2c"| jq -r '.Subnets | .[] | select (.Tags | .[] | .Value | contains ("Private application ")) | .SubnetId ')
-export orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN="arn:aws:states:${bamboo_AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:stateMachine:${bamboo_PREFIX}-OrcaCopyToArchiveWorkflow"
-export orca_RECOVERY_STEP_FUNCTION_ARN="arn:aws:states:${bamboo_AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:stateMachine:${bamboo_PREFIX}-OrcaRecoveryWorkflow"
-export orca_RECOVERY_BUCKET_NAME="${bamboo_PREFIX}-orca-primary"
-
-
+rds_path="cumulus-orca-deploy-template/terraform-aws-cumulus/tf-modules/cumulus-rds-tf"
+cd "$rds_path"
+echo "inside $rds_path"
 terraform init -input=false
+cd ../../../..
 
+# ecs-standalong module
+ecs_path="cumulus-orca-deploy-template/ecs-standalone-tf"
+cd "$ecs_path"
+echo "inside $ecs_path"
+terraform init -input=false
 cd ../..
-# Init ORCA
-terraform init -input=false
 
 # Remove all prevent_destroy properties
 for f in $(find cumulus-orca-deploy-template -name '*.tf');
