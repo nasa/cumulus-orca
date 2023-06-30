@@ -35,6 +35,7 @@ module.exports = {
                 'developer/development-guide/code/clean-architecture',
                 'developer/development-guide/code/versioning-releases',
                 'developer/development-guide/code/linting',
+                'developer/development-guide/code/local-debugging',
                 'developer/development-guide/code/unit-tests',
                 'developer/development-guide/code/integration-tests',
                 'developer/development-guide/code/postgres-tests',
