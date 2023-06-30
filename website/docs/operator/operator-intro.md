@@ -6,8 +6,7 @@ description: Provides ORCA documentation for Operators and Data Managers.
 
 ## Purpose
 
-Operator Docs are an augmentation to Cumulus documentation and Data 
-Cookbooks. These documents will walk step-by-step through common ORCA 
+These documents will walk step-by-step through common ORCA 
 activities.
 
 ## What Is an Operator
