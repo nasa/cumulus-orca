@@ -33,6 +33,7 @@ else
     --bucket ${bamboo_PREFIX}-tf-state \
     --versioning-configuration Status=Enabled
 
+    echo "Deploying dynamoDB table"
     aws dynamodb create-table \
       --table-name ${bamboo_PREFIX}-tf-locks \
       --attribute-definitions AttributeName=LockID,AttributeType=S \
