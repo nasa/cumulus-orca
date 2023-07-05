@@ -130,6 +130,17 @@ To delete a published tag to re-tag, follow these steps:
 
 For testing purposes, you should use your feature branch in cumulus-orca github repo and [`Test ORCA Deploy Plan`](https://ci.earthdata.nasa.gov/browse/ORCA-TODP) bamboo plan so that it does not affect the ORCA github `develop` branch. The `Test ORCA Deploy Plan` bamboo plan is linked to `feature/ORCA-test-bamboo` github branch as the default branch under cumulus-orca repo.
 
+:::warning
+You should reset `feature/ORCA-test-bamboo` before using it.
+1. Rename `feature/ORCA-test-bamboo` to `feature/ORCA-test-bamboo-old`
+1. Create a new branch based off of your branch named `feature/ORCA-test-bamboo`
+1. In the new branch's `bamboo.yaml`:
+   Delete all but one of the plans and the `ORCA-ODP` plan.
+   Change plan's `name` to `Test ORCA Deploy Plan`.
+   In each `repositories` element, change `orca-develop` to `orca test branch`.
+   In each `plan` element, change `OI`/`ODP` in `key` values to `TODP`.
+:::
+
 From the `feature/ORCA-test-bamboo` plan branch in bamboo, click on `Create plan branch` and enter your branch name which should appear in the dropdown menu. Select your branch and click `Create`. Make sure the branch is enabled. Finally, save the plan configuration and run your feature branch for testing. If you are updating your bamboo spec yaml file, note that the change will not be accepted by bamboo if you are in your feature branch. You must checkout to the `feature/ORCA-test-bamboo` branch first, merge develop branch into this branch to make sure it is up to date, commit your yaml file changes and then import from Bamboo Specs UI for that change to occur. This is because the spec file change can only be done in the default branch which is `feature/ORCA-test-bamboo` in this case. However, any other code changes can be done in your feature branch and bamboo will accept that.
 
 
