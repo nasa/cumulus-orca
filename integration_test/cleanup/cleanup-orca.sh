@@ -5,25 +5,24 @@ set -ex
 
 source integration_test/shared/orca-terraform.sh
 
-cd cumulus-orca-deploy-template/cumulus-tf
-# Destroy cumulus-tf via terraform
-perform_terraform_command_cumulus "destroy"
+# Destroy orca via terraform
+perform_terraform_command_orca "destroy"
+
+cd cumulus-orca-deploy-template/ecs-standalone-tf
+# Destroy ecs-standalone-tf via terraform
+perform_terraform_command_ecs "destroy"
 cd ../..
 
-cd cumulus-orca-deploy-template/data-persistence-tf
-# Destroy data-persistence via terraform
-perform_terraform_command_data_persistence "destroy"
-cd ../..
-
-cd cumulus-orca-deploy-template/rds-cluster-tf
-# Destroy rds-cluster-tf via terraform
+cd cumulus-orca-deploy-template/terraform-aws-cumulus/tf-modules/cumulus-rds-tf
+# Destroy rds via terraform
 perform_terraform_command_rds_cluster "destroy"
-cd ../..
+cd ../../../..
 
 cd integration_test
 echo "Destroying Cumulus S3 buckets and dynamoDB table"
 terraform destroy \
   -auto-approve \
   -input=false
+cd ..
 
 aws rds delete-db-cluster-snapshot --db-cluster-snapshot-identifier ${bamboo_PREFIX}-cumulus-rds-serverless-default-cluster-final-snapshot
