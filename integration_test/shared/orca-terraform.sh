@@ -3,7 +3,7 @@ function perform_terraform_command_rds_cluster () {
   ## 
   ## Args:
   ##   $1 - The command to run in Terraform. Either "apply" or "destroy"
-  echo "${1}ing rds-cluster-tf module in $bamboo_DEPLOYMENT"
+  echo "${1}ing cumulus-rds-tf module in $bamboo_DEPLOYMENT"
   terraform $1 \
     -auto-approve \
     -input=false \
@@ -16,7 +16,6 @@ function perform_terraform_command_rds_cluster () {
     -var "cluster_identifier=$bamboo_PREFIX-cumulus-rds-serverless-default-cluster" \
     -var "deletion_protection=false"\
     -var "provision_user_database=false"\
-    -var "tags= { "Deployment" = "$bamboo_PREFIX" }"\
     -var "engine_version=$bamboo_RDS_ENGINE_VERSION" \
     -var "permissions_boundary_arn=arn:aws:iam::$AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY"
 }
