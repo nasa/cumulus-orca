@@ -48,6 +48,15 @@ echo "Cloned Orca, branch ${bamboo_BRANCH_NAME}"
 # Init ORCA
 cd cumulus-orca
 echo "inside orca"
+#configuring S3 backend
+echo "terraform {
+  backend \"s3\" {
+    bucket = \"${bamboo_PREFIX}-tf-state\"
+    region = \"${bamboo_AWS_DEFAULT_REGION}\"
+    key    = \"terraform.tfstate\"
+    dynamodb_table = \"${bamboo_PREFIX}-tf-locks\"
+  }
+}" >> terraform.tf
 terraform init -input=false
 cd ..
 
@@ -76,6 +85,15 @@ echo "cloned Cumulus, branch $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION"
 rds_path="cumulus-orca-deploy-template/terraform-aws-cumulus/tf-modules/cumulus-rds-tf"
 cd "$rds_path"
 echo "inside $rds_path"
+#configuring S3 backend
+echo "terraform {
+  backend \"s3\" {
+    bucket = \"${bamboo_PREFIX}-tf-state\"
+    region = \"${bamboo_AWS_DEFAULT_REGION}\"
+    key    = \"terraform.tfstate\"
+    dynamodb_table = \"${bamboo_PREFIX}-tf-locks\"
+  }
+}" >> terraform.tf
 terraform init -input=false
 cd ../../../..
 
@@ -83,6 +101,15 @@ cd ../../../..
 ecs_path="cumulus-orca-deploy-template/ecs-standalone-tf"
 cd "$ecs_path"
 echo "inside $ecs_path"
+#configuring S3 backend
+echo "terraform {
+  backend \"s3\" {
+    bucket = \"${bamboo_PREFIX}-tf-state\"
+    region = \"${bamboo_AWS_DEFAULT_REGION}\"
+    key    = \"terraform.tfstate\"
+    dynamodb_table = \"${bamboo_PREFIX}-tf-locks\"
+  }
+}" >> terraform.tf
 terraform init -input=false
 cd ../..
 
