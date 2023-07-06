@@ -29,4 +29,6 @@ perform_terraform_command_ecs "apply"
 cd ../..
 
 # Deploy orca via terraform
+cd cumulus-orca
 perform_terraform_command_orca "apply"
+cd ..

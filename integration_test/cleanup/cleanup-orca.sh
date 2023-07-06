@@ -6,7 +6,9 @@ set -ex
 source integration_test/shared/orca-terraform.sh
 
 # Destroy orca via terraform
+cd cumulus-orca
 perform_terraform_command_orca "destroy"
+cd ..
 
 cd cumulus-orca-deploy-template/ecs-standalone-tf
 # Destroy ecs-standalone-tf via terraform

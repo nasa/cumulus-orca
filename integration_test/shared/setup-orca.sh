@@ -46,9 +46,12 @@ git clone --branch ${bamboo_BRANCH_NAME} --single-branch https://github.com/nasa
 echo "Cloned Orca, branch ${bamboo_BRANCH_NAME}"
 
 # Init ORCA
+cd cumulus-orca
 echo "inside orca"
 terraform init -input=false
+cd ..
 
+# todo: integration_test folder exists at root AND in cumulus-orca. Just use one.
 cd integration_test
 #replace prefix with bamboo prefix variable
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' buckets.tf.template > buckets.tf
