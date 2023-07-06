@@ -32,7 +32,7 @@ function perform_terraform_command_ecs () {
     -var "prefix=$bamboo_PREFIX" \
     -var "buckets=$orca_BUCKETS" \
     -var "key_name=$bamboo_PREFIX-key-pair" \
-    -var "rds_security_group_id=$RDS_SECURITY_GROUP" \
+    -var "rds_security_group=$RDS_SECURITY_GROUP" \
     -var "vpc_id=$VPC_ID" \
     -var "permissions_boundary_arn=arn:aws:iam::$AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY" \
     -var "ecs_cluster_instance_subnet_ids=[\"$AWS_SUBNET_ID1\", \"$AWS_SUBNET_ID2\", \"$AWS_SUBNET_ID3\"]" \
