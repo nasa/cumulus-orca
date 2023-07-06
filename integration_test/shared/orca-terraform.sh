@@ -31,7 +31,7 @@ function perform_terraform_command_ecs () {
     -input=false \
     -var "prefix=$bamboo_PREFIX" \
     -var "buckets=$orca_BUCKETS" \
-    -var "key_name=$bamboo_PREFIX-key-pair" \
+    -var "key_name=$bamboo_PREFIX" \
     -var "rds_security_group=$RDS_SECURITY_GROUP" \
     -var "vpc_id=$VPC_ID" \
     -var "permissions_boundary_arn=arn:aws:iam::$AWS_ACCOUNT_ID:policy/$bamboo_ROLE_BOUNDARY" \
