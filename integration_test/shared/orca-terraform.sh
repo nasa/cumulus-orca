@@ -25,6 +25,7 @@ function perform_terraform_command_ecs () {
   ## 
   ## Args:
   ##   $1 - The command to run in Terraform. Either "apply" or "destroy"
+  terraform init -input=false
   echo "${1}ing ecs module in $bamboo_DEPLOYMENT"
   terraform $1 \
     -auto-approve \

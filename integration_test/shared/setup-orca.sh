@@ -97,7 +97,7 @@ echo "terraform {
 terraform init -input=false
 cd ../../../..
 
-# ecs-standalong module
+# ecs-standalone module
 ecs_path="cumulus-orca-deploy-template/ecs-standalone-tf"
 cd "$ecs_path"
 echo "inside $ecs_path"
