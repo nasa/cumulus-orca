@@ -6,6 +6,25 @@ resource "aws_s3_bucket" "internal" {
     Application = "ORCA"
   }
 }
+# todo: Either commit to us-west-2 and remove user's ability to change it, or make 797873946194 variable with instructions.
+data "aws_iam_policy_document" "internal-policy-json" {
+ statement {
+   principals {
+     type        = "AWS"
+     identifiers = ["arn:aws:iam::797873946194:root"]
+    }
+    actions = [
+                "s3:PutObject",
+    ]
+    resources = [
+                "arn:aws:s3:::PREFIX-internal/PREFIX-lb-gql-a-logs/AWSLogs/236859827343/*"
+                ]
+  }
+}
+resource "aws_s3_bucket_policy" "internal-policy" {
+  bucket = aws_s3_bucket.internal.id
+  policy = data.aws_iam_policy_document.internal-policy-json.json
+}
 resource "aws_s3_bucket" "public" {
   bucket = "PREFIX-public"
   force_destroy = true
