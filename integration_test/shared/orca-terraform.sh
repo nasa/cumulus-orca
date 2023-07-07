@@ -61,7 +61,7 @@ function perform_terraform_command_orca () {
     -var "db_admin_password=$bamboo_DB_ADMIN_PASSWORD" \
     -var "db_user_password=$bamboo_DB_USER_PASSWORD" \
     -var "db_host_endpoint=$DB_HOST_ENDPOINT" \
-    -var "dlq_subscription_email=dummy" \
+    -var "dlq_subscription_email=rhassan@contractor.usgs.gov" \
     -var "orca_default_bucket=$bamboo_PREFIX-orca-primary" \
     -var "orca_reports_bucket_name=$bamboo_PREFIX-orca-reports" \
     -var "rds_security_group_id=$RDS_SECURITY_GROUP" \
