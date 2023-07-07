@@ -30,5 +30,7 @@ cd ../..
 
 # Deploy orca via terraform
 cd cumulus-orca
+# todo: Only build once. Reuse for various stages/jobs
+bin/build_tasks.sh
 perform_terraform_command_orca "apply"
 cd ..
