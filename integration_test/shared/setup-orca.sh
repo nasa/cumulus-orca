@@ -53,7 +53,7 @@ echo "terraform {
   backend \"s3\" {
     bucket = \"${bamboo_PREFIX}-tf-state\"
     region = \"${bamboo_AWS_DEFAULT_REGION}\"
-    key    = \"${bamboo_PREFIX}\orca\terraform.tfstate\"
+    key    = \"${bamboo_PREFIX}/orca/terraform.tfstate\"
     dynamodb_table = \"${bamboo_PREFIX}-tf-locks\"
   }
 }" >> terraform.tf
@@ -70,7 +70,7 @@ echo "terraform {
   backend \"s3\" {
     bucket = \"${bamboo_PREFIX}-tf-state\"
     region = \"${bamboo_AWS_DEFAULT_REGION}\"
-    key    = \"${bamboo_PREFIX}\buckets\terraform.tfstate\"
+    key    = \"${bamboo_PREFIX}/buckets/terraform.tfstate\"
     dynamodb_table = \"${bamboo_PREFIX}-tf-locks\"
   }
 }" >> terraform.tf
@@ -90,7 +90,7 @@ echo "terraform {
   backend \"s3\" {
     bucket = \"${bamboo_PREFIX}-tf-state\"
     region = \"${bamboo_AWS_DEFAULT_REGION}\"
-    key    = \"${bamboo_PREFIX}\rds\terraform.tfstate\"
+    key    = \"${bamboo_PREFIX}/rds/terraform.tfstate\"
     dynamodb_table = \"${bamboo_PREFIX}-tf-locks\"
   }
 }" >> terraform.tf
@@ -106,7 +106,7 @@ echo "terraform {
   backend \"s3\" {
     bucket = \"${bamboo_PREFIX}-tf-state\"
     region = \"${bamboo_AWS_DEFAULT_REGION}\"
-    key    = \"${bamboo_PREFIX}\ecs\terraform.tfstate\"
+    key    = \"${bamboo_PREFIX}/ecs/terraform.tfstate\"
     dynamodb_table = \"${bamboo_PREFIX}-tf-locks\"
   }
 }" >> terraform.tf
