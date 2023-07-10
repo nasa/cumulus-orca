@@ -30,7 +30,7 @@ cd ../..
 
 # Deploy orca via terraform
 cd cumulus-orca
-# todo: Only build once. Reuse for various stages/jobs
+# todo: Only build once. Reuse for various stages/jobs https://bugs.earthdata.nasa.gov/browse/ORCA-706
 # todo: Add parallelism here and elsewhere. Could be building ORCA while other modules are deployed.
 bin/build_tasks.sh
 perform_terraform_command_orca "apply"
