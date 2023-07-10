@@ -8,7 +8,7 @@ source integration_test/shared/orca-terraform.sh
 # Destroy orca via terraform
 cd cumulus-orca
 # todo: Only build once. Reuse for various stages/jobs https://bugs.earthdata.nasa.gov/browse/ORCA-706
-# todo: Add parallelism here and elsewhere. Could be building ORCA while other modules are destroyed.
+# todo: Add parallelism here and elsewhere. Could be building ORCA while other modules are destroyed. https://bugs.earthdata.nasa.gov/browse/ORCA-707
 bin/build_tasks.sh
 perform_terraform_command_orca "destroy"
 cd ..
