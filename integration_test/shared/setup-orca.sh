@@ -60,7 +60,7 @@ echo "terraform {
 terraform init -input=false
 cd ..
 
-# todo: integration_test folder exists at root AND in cumulus-orca. Just use one.
+# todo: integration_test folder exists at root AND in cumulus-orca. Just use one. https://bugs.earthdata.nasa.gov/browse/ORCA-708
 cd integration_test
 #replace prefix with bamboo prefix variable
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' buckets.tf.template > buckets.tf
