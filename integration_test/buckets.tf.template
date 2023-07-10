@@ -8,7 +8,7 @@ resource "aws_s3_bucket" "internal" {
     Application = "ORCA"
   }
 }
-# todo: Either commit to us-west-2 and remove user's ability to change it, or make 797873946194 variable with instructions.
+# todo: Either commit to us-west-2 and remove user's ability to change it, or make 797873946194 variable with instructions. https://bugs.earthdata.nasa.gov/browse/ORCA-704
 # See https://awstip.com/export-alb-log-data-to-amazon-s3-22e5b5d38d9e for why this isn't a simple account ID.
 data "aws_iam_policy_document" "internal-policy-json" {
  statement {
