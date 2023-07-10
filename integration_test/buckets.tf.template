@@ -1,3 +1,5 @@
+data "aws_caller_identity" "current_account" {}
+
 resource "aws_s3_bucket" "internal" {
   bucket = "PREFIX-internal"
   force_destroy = true
