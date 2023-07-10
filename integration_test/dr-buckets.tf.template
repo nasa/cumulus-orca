@@ -30,7 +30,7 @@ data "aws_iam_policy_document" "orca-archive-worm-policy-json" {
  statement {
     principals {
       type        = "AWS"
-      identifiers = ["arn:aws:iam::236859827343:root"]
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current_account.account_id}:root"]
       }
       actions = [
                   "s3:PutObject*"
@@ -79,7 +79,7 @@ data "aws_iam_policy_document" "orca-reports-policy-json" {
   statement {
     principals {
       type        = "AWS"
-      identifiers = ["arn:aws:iam::236859827343:root"]
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current_account.account_id}:root"]
     }
     actions = [
         "s3:GetObject*",
@@ -179,7 +179,7 @@ data "aws_iam_policy_document" "orca-primary-policy-json" {
  statement {
    principals {
      type        = "AWS"
-     identifiers = ["arn:aws:iam::236859827343:root"]
+     identifiers = ["arn:aws:iam::${data.aws_caller_identity.current_account.account_id}:root"]
     }
     actions = [
                 "s3:GetObject*",
@@ -201,7 +201,7 @@ data "aws_iam_policy_document" "orca-primary-policy-json" {
  statement {
     principals {
       type        = "AWS"
-      identifiers = ["arn:aws:iam::236859827343:root"]
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current_account.account_id}:root"]
       }
       actions = [
                   "s3:PutObject*"

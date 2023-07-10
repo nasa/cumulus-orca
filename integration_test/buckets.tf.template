@@ -7,6 +7,7 @@ resource "aws_s3_bucket" "internal" {
   }
 }
 # todo: Either commit to us-west-2 and remove user's ability to change it, or make 797873946194 variable with instructions.
+# See https://awstip.com/export-alb-log-data-to-amazon-s3-22e5b5d38d9e for why this isn't a simple account ID.
 data "aws_iam_policy_document" "internal-policy-json" {
  statement {
    principals {
@@ -17,7 +18,7 @@ data "aws_iam_policy_document" "internal-policy-json" {
                 "s3:PutObject",
     ]
     resources = [
-                "arn:aws:s3:::PREFIX-internal/PREFIX-lb-gql-a-logs/AWSLogs/236859827343/*"
+                "arn:aws:s3:::PREFIX-internal/PREFIX-lb-gql-a-logs/AWSLogs/${data.aws_caller_identity.current_account.account_id}/*"
                 ]
   }
 }
