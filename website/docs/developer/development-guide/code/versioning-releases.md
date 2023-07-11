@@ -233,12 +233,14 @@ Note that the jobs may need to be run multiple times to get past deployment erro
 After hitting the play button on `Run Ingest Integration tests`, but before hitting `Run` in the popup, replace the following variables with yours:
 - ORCA_API_DEPLOYMENT_INVOKE_URL
 
-The `ORCA Cleanup Plan` has two stages named `Clean up ORCA buckets and modules` and `Clean up DR ORCA buckets` which can be run in sequence to remove most of the resources created by the deployment stages. Remember to add the following AWS secrets keys before running the pipeline.
+The `ORCA Cleanup Plan` has two stages named `Clean up ORCA buckets and modules` and `Clean up DR ORCA buckets` which can be run in sequence to remove most of the resources created by the deployment stages. Remember to add the following variables before running the pipeline.
 
+- PREFIX
 - CUMULUS_AWS_ACCESS_KEY_ID
 - CUMULUS_AWS_SECRET_ACCESS_KEY
 - DR_AWS_ACCESS_KEY_ID
 - DR_AWS_SECRET_ACCESS_KEY
+- CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION
 
 State buckets and lock tables will be left intact to aid in any cleanup issues/debugging.
 To verify cleanup, check the stage logs for errors, and [check the AWS environment for additional resources](https://docs.aws.amazon.com/ARG/latest/userguide/find-resources-to-tag.html) with the tag `Deployment=PREFIX`.
