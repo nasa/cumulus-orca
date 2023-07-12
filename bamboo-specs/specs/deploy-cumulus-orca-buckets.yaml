@@ -66,6 +66,11 @@ Deploy Cumulus buckets and Cumulus and Orca modules:
         #!/bin/bash
         . ./integration_test/shared/setup-orca.sh
         bash integration_test/deployment-orca.sh
+  artifacts:
+  - name: EC2KeyPair
+    pattern: 'EC2KeyPair.pem'
+    shared: true
+    required: true
 
 #job for running ingest integration tests
 Run Ingest Integration tests:
@@ -88,6 +93,15 @@ Run Ingest Integration tests:
         #!/bin/bash
         . ./integration_test/shared/setup-orca.sh
         cd integration_test/workflow_tests
+        
+        rds_endpoint=$(aws rds describe-db-cluster-endpoints --db-cluster-identifier $bamboo_PREFIX-cumulus-rds-serverless-default-cluster --query 'DBClusterEndpoints[].Endpoint | [0]' --output text)
+        ec2_instance_id=$(aws ec2 describe-instances --filters Name=instance-state-name,Values=running Name=tag:Name,Values=$bamboo_PREFIX-CumulusECSCluster --query "Reservations[*].Instances[*].InstanceId" --output text)
+        
+        (ssh -p 6868 -L 5432:$rds_endpoint:5432 -i "../../EC2_KEY_PAIR.pem" -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" ec2-user@127.0.0.1) &
+        sleep 5
+        (aws ssm start-session --target $ec2_instance_id --document-name AWS-StartPortForwardingSession --parameters portNumber=22,localPortNumber=6868) &
+        sleep 5
+
         bash bin/run_tests.sh primary
 
 variables:

@@ -7,6 +7,10 @@ export AWS_ACCESS_KEY_ID=$bamboo_CUMULUS_AWS_ACCESS_KEY_ID
 export AWS_SECRET_ACCESS_KEY=$bamboo_CUMULUS_AWS_SECRET_ACCESS_KEY
 export AWS_DEFAULT_REGION=$bamboo_CUMULUS_AWS_DEFAULT_REGION
 
+# Create EC2 Key Pair for ECS instance.
+aws ec2 delete-key-pair --key-name $bamboo_PREFIX
+aws ec2 create-key-pair --key-name $bamboo_PREFIX --query 'KeyMaterial' --output text > EC2KeyPair.pem
+
 cd integration_test
 echo "Deploying Cumulus S3 buckets"
 terraform apply \
