@@ -221,9 +221,6 @@ After hitting the play button on `Deploy Cumulus buckets and Cumulus and Orca mo
 
 Note that the jobs may need to be run multiple times to get past deployment errors if there is one. If an error is raised saying `Cloudwatch log groups already exist`, then manually delete all the cloudwatch log groups and corresponding lambdas having the same name as the log groups from the AWS console and retry running the job. If the deployment is successful, the pipeline will run ingest integration tests automatically in the next step.
 
-After hitting the play button on `Run Ingest Integration tests`, but before hitting `Run` in the popup, replace the following variables with yours:
-- ORCA_API_DEPLOYMENT_INVOKE_URL
-
 The `ORCA Cleanup Plan` has two stages named `Clean up ORCA buckets and modules` and `Clean up DR ORCA buckets` which can be run in sequence to remove most of the resources created by the deployment stages. Remember to add the following variables before running the pipeline.
 
 - PREFIX
