@@ -11,11 +11,9 @@ The `ORCA Deploy Plan` under ORCA project in Bamboo includes the integration tes
 1. Connect to NASA VPN. In two separate terminals, run the following commands. Remember to replace the variables inside <>.
 
 ```
-ssh -p 6868 -L 5432:<RDS ENDPOINT>:5432 -i "<PATH TO EC2_KEY_PAIR.pem>" -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" ec2-user@127.0.0.1
+aws ssm start-session --target <EC2 INSTANCE ID> --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters '{"host":["<API GATEWAY ID>.execute-api.us-west-2.amazonaws.com"],"portNumber":["443"], "localPortNumber":["8000"]}'
 ```
-```
-aws ssm start-session --target <EC2 INSTANCE ID> --document-name AWS-StartPortForwardingSession --parameters portNumber=22,localPortNumber=6868
-```
+
 2. Export `orca_RECOVERY_BUCKET_NAME`, `SOURCE_BUCKET_NAME` and `DB_CONNECT_INFO_SECRET_ARN` variables locally.
 
 3. Make sure the SSM and SSH connections are still active. Then run `python cleanup/test-cleanup.py` from integration_test directory.
