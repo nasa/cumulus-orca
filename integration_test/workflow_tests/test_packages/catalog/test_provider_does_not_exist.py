@@ -28,7 +28,7 @@ class TestProviderDoesNotExist(TestCase):
                         "pageIndex": 0,
                         "collectionId": [uuid.uuid4().__str__() + "___" + uuid.uuid4().__str__()],
                         "providerId": [uuid.uuid4().__str__()],
-                        "endTimestamp": int((time.time() + 120) * 1000),
+                        "endTimestamp": int((time.time() + 5) * 1000),
                     }
                 ),
                 headers={"Host": helpers.aws_api_name},

@@ -29,7 +29,7 @@ class TestMultipleGranules(TestCase):
             provider_id = uuid.uuid4().__str__()
             provider_name = uuid.uuid4().__str__()
             # noinspection PyPep8Naming
-            createdAt_time = int((time.time() + 120) * 1000)
+            createdAt_time = int((time.time() + 5) * 1000)
             collection_name = uuid.uuid4().__str__()
             collection_version = uuid.uuid4().__str__()
             recovery_bucket_name = helpers.recovery_bucket_name
@@ -141,7 +141,7 @@ class TestMultipleGranules(TestCase):
                         "pageIndex": 0,
                         "collectionId": [collection_name + "___" + collection_version],
                         "granuleId": [granule_id],
-                        "endTimestamp": int((time.time() + 120) * 1000),
+                        "endTimestamp": int((time.time() + 5) * 1000),
                     }
                 ),
                 headers={"Host": helpers.aws_api_name},

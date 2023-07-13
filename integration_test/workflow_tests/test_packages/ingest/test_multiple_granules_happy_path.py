@@ -34,7 +34,7 @@ class TestMultipleGranulesHappyPath(TestCase):
             provider_id = uuid.uuid4().__str__()
             provider_name = uuid.uuid4().__str__()
             # noinspection PyPep8Naming
-            createdAt_time = int((time.time() + 120) * 1000)
+            createdAt_time = int((time.time() + 5) * 1000)
             collection_name = uuid.uuid4().__str__()
             collection_version = uuid.uuid4().__str__()
             collection_id = collection_name + "___" + collection_version
@@ -202,7 +202,7 @@ class TestMultipleGranulesHappyPath(TestCase):
                             granule_id_1,
                             granule_id_2,
                         ],
-                        "endTimestamp": int((time.time() + 120) * 1000),
+                        "endTimestamp": int((time.time() + 5) * 1000),
                     }
                 ),
                 headers={"Host": helpers.aws_api_name},

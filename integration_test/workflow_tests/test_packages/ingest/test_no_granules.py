@@ -82,7 +82,7 @@ class TestNoGranules(TestCase):
                         "pageIndex": 0,
                         "collectionId": [collection_name + "___" + collection_version],
                         "providerId": [provider_id],
-                        "endTimestamp": int((time.time() + 120) * 1000),
+                        "endTimestamp": int((time.time() + 5) * 1000),
                     }
                 ),
                 headers={"Host": helpers.aws_api_name},
