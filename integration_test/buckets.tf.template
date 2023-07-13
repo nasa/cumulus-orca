@@ -1,3 +1,5 @@
+data "aws_caller_identity" "current_account" {}
+
 resource "aws_s3_bucket" "internal" {
   bucket = "PREFIX-internal"
   force_destroy = true
@@ -5,6 +7,26 @@ resource "aws_s3_bucket" "internal" {
     Deployment = "PREFIX"
     Application = "ORCA"
   }
+}
+# todo: Either commit to us-west-2 and remove user's ability to change it, or make 797873946194 variable with instructions. https://bugs.earthdata.nasa.gov/browse/ORCA-704
+# See https://awstip.com/export-alb-log-data-to-amazon-s3-22e5b5d38d9e for why this isn't a simple account ID.
+data "aws_iam_policy_document" "internal-policy-json" {
+ statement {
+   principals {
+     type        = "AWS"
+     identifiers = ["arn:aws:iam::797873946194:root"]
+    }
+    actions = [
+                "s3:PutObject",
+    ]
+    resources = [
+                "arn:aws:s3:::PREFIX-internal/PREFIX-lb-gql-a-logs/AWSLogs/${data.aws_caller_identity.current_account.account_id}/*"
+                ]
+  }
+}
+resource "aws_s3_bucket_policy" "internal-policy" {
+  bucket = aws_s3_bucket.internal.id
+  policy = data.aws_iam_policy_document.internal-policy-json.json
 }
 resource "aws_s3_bucket" "public" {
   bucket = "PREFIX-public"
