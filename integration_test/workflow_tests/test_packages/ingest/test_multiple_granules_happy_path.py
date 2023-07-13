@@ -183,7 +183,7 @@ class TestMultipleGranulesHappyPath(TestCase):
                         "GLACIER",
                         head_object_output["StorageClass"]
                     )
-                    s3_versions.append(head_object_output["VersionId"])
+                    s3_versions.append(head_object_output.get("VersionId", "null"))
             except Exception as ex:
                 logger.error(ex)
                 raise

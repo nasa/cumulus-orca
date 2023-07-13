@@ -8,7 +8,7 @@ The `ORCA Deploy Plan` under ORCA project in Bamboo includes the integration tes
 
 ## Test cleanup
 
-1. Connect to NASA VPN. In two separate terminals, run the following commands. Remember to replace the variables inside <>.
+1. Connect to NASA VPN. Run the following command. Remember to replace the variables inside <>.
 
 ```
 aws ssm start-session --target <EC2 INSTANCE ID> --document-name AWS-StartPortForwardingSessionToRemoteHost --parameters '{"host":["<API GATEWAY ID>.execute-api.us-west-2.amazonaws.com"],"portNumber":["443"], "localPortNumber":["8000"]}'

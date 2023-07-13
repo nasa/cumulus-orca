@@ -144,7 +144,7 @@ class TestOverrideStorageClassHappyPath(TestCase):
                         "DEEP_ARCHIVE",
                         head_object_output["StorageClass"]
                     )
-                    s3_versions.append(head_object_output["VersionId"])
+                    s3_versions.append(head_object_output.get("VersionId", "null"))
             except Exception as ex:
                 logger.error(ex)
                 raise
@@ -202,10 +202,11 @@ class TestOverrideStorageClassHappyPath(TestCase):
                 catalog_output_json,
                 "Expected API output not returned.",
             )
+            actual_catalog_output_granules = catalog_output_json["granules"]
             # Make sure all given granules are present without checking order.
             self.assertCountEqual(
                 expected_catalog_output_granules,
-                catalog_output_json["granules"],
+                actual_catalog_output_granules,
                 "Expected API output not returned."
             )
         except Exception as ex:
