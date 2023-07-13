@@ -92,7 +92,7 @@ Run Ingest Integration tests:
       - |-
         #!/bin/bash
         . ./integration_test/shared/setup-orca.sh
-        . ./integration_tests/setup-workflow-tests.sh
+        . ./integration_test/setup-workflow-tests.sh
         cd integration_test/workflow_tests
         bash bin/run_tests.sh primary
 

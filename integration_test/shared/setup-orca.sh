@@ -121,6 +121,3 @@ do
 done;
 
 cd "${cwd}"
-
-pwd
-ls
