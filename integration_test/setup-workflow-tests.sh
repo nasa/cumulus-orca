@@ -1,5 +1,6 @@
 #!/bin/bash
 set -ex
+cwd=$(pwd)
 
 #rds_endpoint=$(aws rds describe-db-cluster-endpoints --db-cluster-identifier $bamboo_PREFIX-cumulus-rds-serverless-default-cluster --query 'DBClusterEndpoints[].Endpoint | [0]' --output text)
 ec2_instance_id=$(aws ec2 describe-instances --filters Name=instance-state-name,Values=running Name=tag:Name,Values=${bamboo_PREFIX}-CumulusECSCluster --query "Reservations[*].Instances[*].InstanceId" --output text)
@@ -14,3 +15,5 @@ export orca_API_DEPLOYMENT_INVOKE_URL="${api_gateway_id}.execute-api.${bamboo_CU
 sleep 5
 #(aws ssm start-session --target $ec2_instance_id --document-name AWS-StartPortForwardingSession --parameters portNumber=22,localPortNumber=6868) &
 #sleep 5
+
+cd "${cwd}"
