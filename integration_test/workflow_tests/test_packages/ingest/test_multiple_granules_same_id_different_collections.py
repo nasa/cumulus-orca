@@ -28,7 +28,7 @@ class TestMultipleGranulesSameIdDifferentCollections(TestCase):
             provider_id = uuid.uuid4().__str__()
             provider_name = uuid.uuid4().__str__()
             # noinspection PyPep8Naming
-            createdAt_time = int((time.time() + 5) * 1000)
+            createdAt_time = int((time.time() + 120) * 1000)
             collection_name_1 = uuid.uuid4().__str__()
             collection_version_1 = uuid.uuid4().__str__()
             collection_name_2 = uuid.uuid4().__str__()
@@ -242,7 +242,7 @@ class TestMultipleGranulesSameIdDifferentCollections(TestCase):
                         "granuleId": [
                             granule_id,
                         ],
-                        "endTimestamp": int((time.time() + 5) * 1000),
+                        "endTimestamp": int((time.time() + 120) * 1000),
                     }
                 ),
                 headers={"Host": helpers.aws_api_name},
