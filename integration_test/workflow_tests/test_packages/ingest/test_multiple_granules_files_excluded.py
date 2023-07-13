@@ -37,7 +37,7 @@ class TestMultipleGranules(TestCase):
             bucket_name = "orca-sandbox-s3-provider"
             excluded_filetype = [".hdf"]
             file_name = uuid.uuid4().__str__() + ".hdf"  # refers to file1.hdf
-            key_name = uuid.uuid4().__str__() + "/" + file_name
+            key_name = "test/" + uuid.uuid4().__str__() + "/" + file_name
             execution_id = uuid.uuid4().__str__()
 
             # Upload the randomized file to source bucket
