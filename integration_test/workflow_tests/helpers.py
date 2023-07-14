@@ -8,7 +8,6 @@ import random
 import time
 from typing import Callable, Dict, List, Text, TypeVar, Union
 
-import boto3
 from dataclasses_json import dataclass_json
 from requests import Session
 from requests.adapters import (
