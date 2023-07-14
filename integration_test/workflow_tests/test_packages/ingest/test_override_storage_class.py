@@ -23,6 +23,7 @@ class TestOverrideStorageClassHappyPath(TestCase):
             # Set up Orca API resources
             # ---
             my_session = helpers.create_session()
+            boto3_session = boto3.Session()
             granule_id_1 = uuid.uuid4().__str__()
             provider_id = uuid.uuid4().__str__()
             provider_name = uuid.uuid4().__str__()
@@ -41,7 +42,7 @@ class TestOverrideStorageClassHappyPath(TestCase):
             execution_id = uuid.uuid4().__str__()
 
             # Upload the randomized file to source bucket
-            boto3.client('s3').upload_file(
+            boto3_session.client('s3').upload_file(
                 "file1.hdf", cumulus_bucket_name, key_name_1
             )
 
@@ -103,12 +104,12 @@ class TestOverrideStorageClassHappyPath(TestCase):
                 ]
             }
 
-            execution_info = boto3.client("stepfunctions").start_execution(
+            execution_info = boto3_session.client("stepfunctions").start_execution(
                 stateMachineArn=helpers.orca_copy_to_archive_step_function_arn,
                 input=json.dumps(copy_to_archive_input, indent=4),
             )
 
-            step_function_results = helpers.get_state_machine_execution_results(
+            step_function_results = helpers.get_state_machine_execution_results(boto3_session, 
                 execution_info["executionArn"],
                 maximum_duration_seconds=30,
             )
@@ -133,7 +134,7 @@ class TestOverrideStorageClassHappyPath(TestCase):
                     # and cross-account access is no longer granted,
                     # use boto3.Session(profile_name="yourAWSConfigureProfileName").client(...
                     # to use a differently configured aws access key
-                    head_object_output = boto3.client("s3").head_object(
+                    head_object_output = boto3_session.client("s3").head_object(
                         Bucket=recovery_bucket_name, Key=key)
                     self.assertEqual(
                         200,
@@ -150,7 +151,7 @@ class TestOverrideStorageClassHappyPath(TestCase):
                 raise
 
             # Let the catalog update
-            time.sleep(10)
+            time.sleep(30)
             # noinspection PyArgumentList
             catalog_output = helpers.post_to_api(
                 my_session,

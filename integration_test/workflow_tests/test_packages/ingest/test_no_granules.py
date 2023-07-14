@@ -22,6 +22,7 @@ class TestNoGranules(TestCase):
             # Set up Orca API resources
             # ---
             my_session = helpers.create_session()
+            boto3_session = boto3.Session()
 
             provider_id = uuid.uuid4().__str__()
             provider_name = uuid.uuid4().__str__()
@@ -51,12 +52,12 @@ class TestNoGranules(TestCase):
                 "granules": [], "copied_to_orca": []
             }
 
-            execution_info = boto3.client("stepfunctions").start_execution(
+            execution_info = boto3_session.client("stepfunctions").start_execution(
                 stateMachineArn=helpers.orca_copy_to_archive_step_function_arn,
                 input=json.dumps(copy_to_archive_input, indent=4),
             )
 
-            step_function_results = helpers.get_state_machine_execution_results(
+            step_function_results = helpers.get_state_machine_execution_results(boto3_session, 
                 execution_info["executionArn"],
                 maximum_duration_seconds=30,
             )
@@ -73,7 +74,7 @@ class TestNoGranules(TestCase):
             )
 
             # Let the catalog update
-            time.sleep(10)
+            time.sleep(30)
             catalog_output = helpers.post_to_api(
                 my_session,
                 helpers.api_url + "/catalog/reconcile/",

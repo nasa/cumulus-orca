@@ -29,6 +29,7 @@ class TestMultipleGranulesHappyPath(TestCase):
             # Set up Orca API resources
             # ---
             my_session = helpers.create_session()
+            boto3_session = boto3.Session()
             granule_id_1 = uuid.uuid4().__str__()
             granule_id_2 = uuid.uuid4().__str__()
             provider_id = uuid.uuid4().__str__()
@@ -47,7 +48,7 @@ class TestMultipleGranulesHappyPath(TestCase):
             file_1_hash = uuid.uuid4().__str__()
             file_1_hash_type = uuid.uuid4().__str__()
             # Upload the randomized file to source bucket
-            boto3.client('s3').upload_file(
+            boto3_session.client('s3').upload_file(
                 "file1.hdf", cumulus_bucket_name, key_name_1
             )
             execution_id = uuid.uuid4().__str__()
@@ -61,7 +62,7 @@ class TestMultipleGranulesHappyPath(TestCase):
                 name_2 = uuid.uuid4().__str__() + ".hdf"  # refers to file1.hdf
                 key_name_2 = "test/" + uuid.uuid4().__str__() + "/" + name_2
                 # Upload the randomized file to source bucket
-                boto3.client('s3').upload_file(
+                boto3_session.client('s3').upload_file(
                     "file1.hdf", cumulus_bucket_name, key_name_2
                 )
             copy_to_archive_input = {
@@ -142,14 +143,15 @@ class TestMultipleGranulesHappyPath(TestCase):
                 ]
             }
 
-            execution_info = boto3.client("stepfunctions").start_execution(
+            execution_info = boto3_session.client("stepfunctions").start_execution(
                 stateMachineArn=helpers.orca_copy_to_archive_step_function_arn,
                 input=json.dumps(copy_to_archive_input, indent=4),
             )
 
-            step_function_results = helpers.get_state_machine_execution_results(
-                execution_info["executionArn"]
-            )
+            step_function_results = helpers.get_state_machine_execution_results(boto3_session,
+                                                                                execution_info[
+                                                                                    "executionArn"]
+                                                                                )
 
             self.assertEqual(
                 "SUCCEEDED",
@@ -172,7 +174,7 @@ class TestMultipleGranulesHappyPath(TestCase):
                     # and cross-account access is no longer granted,
                     # use boto3.Session(profile_name="yourAWSConfigureProfileName").client(...
                     # to use a differently configured aws access key
-                    head_object_output = boto3.client("s3").head_object(
+                    head_object_output = boto3_session.client("s3").head_object(
                         Bucket=recovery_bucket_name, Key=key)
                     self.assertEqual(
                         200,
@@ -189,7 +191,7 @@ class TestMultipleGranulesHappyPath(TestCase):
                 raise
 
             # Let the catalog update
-            time.sleep(10)
+            time.sleep(30)
             # noinspection PyArgumentList
             catalog_output = helpers.post_to_api(
                 my_session,
@@ -272,13 +274,14 @@ class TestMultipleGranulesHappyPath(TestCase):
 
             # recovery check
             self.partial_test_recovery_happy_path(
+                boto3_session,
                 collection_id, granule_id_1, name_1, key_name_1, recovery_bucket_name)
         except Exception as ex:
             logger.error(ex)
             raise
 
     def partial_test_recovery_happy_path(
-        self, collection_id: str, granule_id: str, file_name: str,
+        self, boto3_session, collection_id: str, granule_id: str, file_name: str,
         file_key: str, orca_bucket_name: str
     ):
         target_bucket = helpers.buckets["private"]["name"]
@@ -289,6 +292,7 @@ class TestMultipleGranulesHappyPath(TestCase):
             ])
         ], None)
         step_function_results = self.initiate_recovery(
+            boto3_session=boto3_session,
             recovery_request_record=recovery_request_record,
             file_bucket_maps=[
                 {
@@ -342,6 +346,7 @@ class TestMultipleGranulesHappyPath(TestCase):
 
     @staticmethod
     def initiate_recovery(
+        boto3_session,
         recovery_request_record: helpers.RecoveryRequestRecord, file_bucket_maps: List[Dict],
     ):
         recovery_step_function_input = {
@@ -367,16 +372,17 @@ class TestMultipleGranulesHappyPath(TestCase):
             }
         }
 
-        logger.info("Sending event to recovery step function.")
+        logger.info(f"Sending event to recovery step function")
         logger.info(recovery_step_function_input)
 
-        execution_info = boto3.client("stepfunctions").start_execution(
+        execution_info = boto3_session.client("stepfunctions").start_execution(
             stateMachineArn=helpers.orca_recovery_step_function_arn,
             input=json.dumps(recovery_step_function_input, indent=4),
         )
 
-        step_function_results = helpers.get_state_machine_execution_results(
-            execution_info["executionArn"]
-        )
+        step_function_results = helpers.get_state_machine_execution_results(boto3_session,
+                                                                            execution_info[
+                                                                                "executionArn"]
+                                                                            )
 
         return step_function_results
