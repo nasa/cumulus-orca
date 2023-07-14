@@ -193,11 +193,7 @@ class TestMultipleGranulesHappyPath(TestCase):
             # Let the catalog update
             time.sleep(30)
             # noinspection PyArgumentList
-            catalog_output = helpers.post_to_api(
-                my_session,
-                helpers.api_url + "/catalog/reconcile/",
-                data=json.dumps(
-                    {
+            catalog_input = {
                         "pageIndex": 0,
                         "collectionId": [collection_id],
                         "granuleId": [
@@ -206,6 +202,11 @@ class TestMultipleGranulesHappyPath(TestCase):
                         ],
                         "endTimestamp": int((time.time() + 5) * 1000),
                     }
+            catalog_output = helpers.post_to_api(
+                my_session,
+                helpers.api_url + "/catalog/reconcile/",
+                data=json.dumps(
+                    catalog_input
                 ),
                 headers={"Host": helpers.aws_api_name},
             )
@@ -225,7 +226,7 @@ class TestMultipleGranulesHappyPath(TestCase):
                         "cumulusArchiveLocation": cumulus_bucket_name,
                         "orcaArchiveLocation": recovery_bucket_name,
                         "keyPath": key_name_1,
-                        "sizeBytes": 205640819682 if use_large_file else 6,
+                        "sizeBytes": 6,
                         "hash": file_1_hash, "hashType": file_1_hash_type,
                         "storageClass": "GLACIER",
                         "version": s3_versions[0],
@@ -246,7 +247,7 @@ class TestMultipleGranulesHappyPath(TestCase):
                             "cumulusArchiveLocation": cumulus_bucket_name,
                             "orcaArchiveLocation": recovery_bucket_name,
                             "keyPath": key_name_2,
-                            "sizeBytes": 6,
+                            "sizeBytes": 205640819682 if use_large_file else 6,
                             "hash": None, "hashType": None,
                             "storageClass": "GLACIER",
                             "version": s3_versions[1],
@@ -269,7 +270,7 @@ class TestMultipleGranulesHappyPath(TestCase):
             self.assertCountEqual(
                 expected_catalog_output_granules,
                 catalog_output_json["granules"],
-                "Expected API output granules not returned."
+                f"Expected API output granules not returned. Request: {catalog_input}"
             )
 
             # recovery check
