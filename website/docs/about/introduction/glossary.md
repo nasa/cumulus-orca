@@ -42,7 +42,7 @@ resources you have in AWS.
 
 For more information, see the [AWS User Guide](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html).
 
-### Cloud Nofification Mechanism (CNM)
+### Cloud Notification Mechanism (CNM)
 An interface mechanism to support cloud-based ingest messaging. For more
 information, see [PO.DAAC's CNM Schema](https://github.com/podaac/cloud-notification-message-schema).
 
@@ -175,7 +175,7 @@ For more information, see [npmjs.com](https://www.npmjs.com/).
 ## O
 ### Operator
 Refers to those tasked with monitoring, configuring or otherwise utilizing
-umulus in an operational deployment.
+Cumulus/ORCA in an operational deployment.
 
 ### ORCA
 Operational Recovery Cloud Archive. See [https://github.com/nasa/cumulus-orca](https://github.com/nasa/cumulus-orca)

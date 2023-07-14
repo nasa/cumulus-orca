@@ -330,7 +330,7 @@ variable "vpc_endpoint_id" {
 
 variable "log_level" {
   type        = string
-  description = "Sets the verbose of powertools logger. Must be one of 'INFO', 'DEBUG', 'WARN', 'ERROR'. Defaults to 'INFO'."
+  description = "sets the verbose of PowerTools logger. Must be one of 'INFO', 'DEBUG', 'WARN', 'ERROR'. Defaults to 'INFO'."
   default     = "INFO"
   validation {
     condition     = contains(["INFO", "DEBUG", "WARN", "ERROR"], var.log_level)

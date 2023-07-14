@@ -34,7 +34,6 @@ ORCA documentation sections with the exception of the `templates` directory.
 ```sh
 docs
 ├── about
-├── cookbook
 ├── developer
 ├── operator
 └── templates
@@ -55,18 +54,7 @@ docs/about
 ├── architecture
 ├── introduction
 ├── team
-└── tips
 ```
-
-
-#### `docs/cookbook`
-
-The `docs/cookbook` subdirectory contains all documentation related to the
-[**ORCA Cookbooks**](../../../cookbook/cookbook-intro.md)
-documentation and navigation. This directory contains information
-related to ORCA cookbooks and real world implementations of the ORCA codebase
-in Cumulus. Under the `docs/cookbook` directory, information is broken up based
-on the sidebar menu layout.
 
 
 #### `docs/developer`

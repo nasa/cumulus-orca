@@ -51,9 +51,17 @@ Lambdas should be built and tested within individual Virtual Environments.
    pip install boto3
    pip install -r requirements.txt
    ```
+   :::tip
+   If you receive 403 errors while attempting to run `pip install` commands, try adding `--trusted-host pypi.org --trusted-host files.pythonhosted.org` to the end of the command.
+   For example: `pip install -r requirements.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org`
+   :::
 1. Install additional development requirements.
    ```commandline
    pip install coverage
    pip install pylint
    pip install -r requirements-dev.txt
    ```
+
+:::tip
+See [Local Debugging](local-debugging.md) for running local code against AWS.
+:::

@@ -363,7 +363,7 @@ The following table lists the fields in the output:
 | anotherPage      | `Boolean`       | Indicates if more results can be retrieved on another page.                                    |           
 | orphans          | `Array[Object]` | An array representing each orphan if available.                                                |
 | keyPath          | `str`           | Key path and filename of the object in S3 bucket.                                              |
-| s3Etag           | `str`           | etag of the object in S3 bucket.                                                               |
+| s3Etag           | `str`           | ETag of the object in S3 bucket.                                                               |
 | s3FileLastUpdate | `int`           | The time, in milliseconds since 1 January 1970 UTC, of last update of the object in S3 bucket. |
 | s3SizeInBytes    | `int`           | Size in bytes of the object in S3 bucket.                                                      |
 | s3StorageClass   | `str`           | AWS storage class the object is in the S3 bucket.                                              |
@@ -515,7 +515,7 @@ The following table lists the fields in the output:
 | granuleId             | `str`           | Cumulus granuleID value from the ORCA catalog.                                                                    |
 | filename              | `str`           | Filename of the object from the ORCA catalog.                                                                     |
 | keyPath               | `str`           | key path and filename of the object in the ORCA catalog.                                                          |  
-| orcaEtag              | `str`           | etag of the object as reported in the ORCA catalog.                                                               |
+| orcaEtag              | `str`           | ETag of the object as reported in the ORCA catalog.                                                               |
 | orcaGranuleLastUpdate | `int`           | The time, in milliseconds since 1 January 1970 UTC, of last update of the object as reported in the ORCA catalog. |
 | orcaSizeInBytes       | `int`           | Size in bytes of the object as reported in the ORCA catalog.                                                      |
 | orcaStorageClass      | `str`           | AWS storage class the object is in the Orca catalog.                                                              |
@@ -621,8 +621,8 @@ The following table lists the fields in the output:
 | granuleId             | `str`           | Cumulus granuleID value from the ORCA catalog.                                                                    |
 | filename              | `str`           | Filename of the object from the ORCA catalog.                                                                     |
 | keyPath               | `str`           | key path and filename of the object in the ORCA catalog.                                                          |  
-| orcaEtag              | `str`           | etag of the object as reported in the ORCA catalog.                                                               |
-| s3Etag                | `str`           | etag of the object as reported in the S3 bucket                                                                   |
+| orcaEtag              | `str`           | ETag of the object as reported in the ORCA catalog.                                                               |
+| s3Etag                | `str`           | ETag of the object as reported in the S3 bucket                                                                   |
 | orcaGranuleLastUpdate | `int8`          | The time, in milliseconds since 1 January 1970 UTC, of last update of the object as reported in the ORCA catalog. |
 | s3FileLastUpdate      | `int8`          | The time, in milliseconds since 1 January 1970 UTC, that information was updated in the S3 bucket.                |
 | orcaSizeInBytes       | `int8`          | Size in bytes of the object as reported in the ORCA catalog.                                                      |
@@ -695,8 +695,8 @@ The following table lists the fields in the output:
 | filename               | `str`           | Filename of the object from the ORCA catalog.                                                                     |
 | keyPath                | `str`           | key path and filename of the object in the ORCA catalog.                                                          |
 | cumulusArchiveLocation | `str`           | Expected S3 bucket the object is located in Cumulus. From the ORCA catalog.                                       |
-| orcaEtag               | `str`           | etag of the object as reported in the ORCA catalog.                                                               |
-| s3Etag                 | `str`           | etag of the object as reported in the S3 bucket                                                                   |
+| orcaEtag               | `str`           | ETag of the object as reported in the ORCA catalog.                                                               |
+| s3Etag                 | `str`           | ETag of the object as reported in the S3 bucket                                                                   |
 | orcaGranuleLastUpdate  | `int`           | The time, in milliseconds since 1 January 1970 UTC, of last update of the object as reported in the ORCA catalog. |
 | s3FileLastUpdate       | `int`           | The time, in milliseconds since 1 January 1970 UTC, that information was updated in the S3 bucket.                |
 | orcaSizeInBytes        | `int`           | Size in bytes of the object as reported in the ORCA catalog.                                                      |

@@ -14,15 +14,8 @@ ORCA README documents in the [ORCA main repository](https://github.com/nasa/cumu
 ORCA is built to attach to a Cumulus deployment. Cumulus documentation
 can be found [here](https://nasa.github.io/cumulus/docs/cumulus-docs-readme).
 
-## ORCA Cookbooks
-The cookbooks are documents containing examples and explanations of
-workflows in the ORCA framework.
-
-The cookbooks can be found [here](../../cookbook/cookbook-intro.md).
-
 ## Operator Documents
-Operator documents are an addition ORCA developer documentation and
-Cookbooks. These documents provide instructions for common ORCA
+These documents provide instructions for common ORCA
 activities.
 
 The operator documents can be found [here](../../operator/operator-intro.md).
