@@ -8,7 +8,6 @@ import random
 import time
 from typing import Callable, Dict, List, Text, TypeVar, Union
 
-import boto3
 from dataclasses_json import dataclass_json
 from requests import Session
 from requests.adapters import (
@@ -115,14 +114,14 @@ def create_session() -> Session:
 
 
 def get_state_machine_execution_results(
-    execution_arn, retry_interval_seconds=5, maximum_duration_seconds=600
+    boto3_session, execution_arn, retry_interval_seconds=5, maximum_duration_seconds=600
 ):
     start = datetime.datetime.utcnow()
     while True:
         # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services
         # /stepfunctions.html#SFN.Client.describe_execution
         logging.debug(f"Getting execution description from {execution_arn}")
-        execution_state = boto3.client("stepfunctions").describe_execution(
+        execution_state = boto3_session.client("stepfunctions").describe_execution(
             executionArn=execution_arn
         )
         if execution_state["status"] != "RUNNING":

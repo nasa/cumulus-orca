@@ -505,7 +505,7 @@ end user to better adjust ORCA for their specific environment.
 
 #### Cumulus Optional Variables
 
-The following variables should be present already in the `cumulus-tf/terrafor.tfvars`
+The following variables should be present already in the `cumulus-tf/terraform.tfvars`
 file. The variables can be set with proper values for your environment in the
 `cumulus-tf/terraform.tfvars` file. It is recommended that the `region` variable
 is set to the proper AWS region for deployments.
@@ -531,7 +531,7 @@ variables is shown in the table below.
 | `metadata_queue_message_retention_time_seconds`        | number       | Number of seconds the metadata-queue fifo SQS retains a message.                                                               | 777600 |
 | `db_name`                                              | string       | The name of the Orca database within the RDS cluster. Any `-` in `prefix` will be replaced with `_`.                           | PREFIX_orca |
 | `db_user_name`                                         | string       | The name of the application user for the Orca database. Any `-` in `prefix` will be replaced with `_`.                         | PREFIX_orcauser |
-| `log_level`                                            | string       | Sets the verbose of powertools logger. Must be one of 'INFO', 'DEBUG', 'WARN', 'ERROR'. Defaults to 'INFO'.                    | "INFO" |
+| `log_level`                                            | string       | sets the verbose of PowerTools logger. Must be one of 'INFO', 'DEBUG', 'WARN', 'ERROR'. Defaults to 'INFO'.                    | "INFO" |
 | `orca_default_recovery_type`                           | string       | The Tier for the restore request. Valid values are 'Standard', 'Bulk', 'Expedited'                                               | "Standard" |
 | `orca_default_storage_class`                           | string       | The [class of storage](../../operator/storage-classes.md) to use when ingesting files. Can be overridden by collection config. | "GLACIER" |
 | `orca_delete_old_reconcile_jobs_frequency_cron`        | string       | Frequency cron for running the delete_old_reconcile_jobs lambda.                                                               | "cron(0 0 ? * SUN *)" |

@@ -243,7 +243,7 @@ details in the following sections.
 The building block view shows the static decomposition of the system
 into building blocks (modules, components, subsystems, classes,
 interfaces, packages, libraries, frameworks, layers, partitions, tiers,
-functions, macros, operations, datas structures, ...) as well as their
+functions, macros, operations, data structures, ...) as well as their
 dependencies (relationships, associations, ...)
 
 This view is mandatory for every architecture documentation. In analogy
