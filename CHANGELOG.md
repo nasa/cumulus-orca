@@ -24,6 +24,7 @@ and includes an additional section for migration notes.
 
 ### Changed
 - *ORCA-700* Removed Cumulus Workflow wrapper from step-functions. No anticipated customer impact.
+- *ORCA-709* Updated terraform AWS provider to version 5. This is to support Cumulus and CIRRUS changes.
 
 ### Migration Notes
 - Changes have been made to SQS message processing that are not backwards compatible. Halt ingest and wait for the `PREFIX-orca-status-update-queue.fifo` queue to empty before applying update.
