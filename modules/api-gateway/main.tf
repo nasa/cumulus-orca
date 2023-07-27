@@ -21,6 +21,28 @@ resource "aws_api_gateway_rest_api" "orca_api" {
   }
 }
 
+# TODO: This policy should be tightened up to only allow traffic from the Cumulus and DR VPC users
+#       for now, this has been left open to prevent any breakage and resolve a deployment issue.
+# .     See ORCA-721
+data "aws_iam_policy_document" "orca_api_policy" {
+  statement {
+    resources = ["*"]
+    actions   = ["execute-api:Invoke"]
+    effect = "Allow"
+
+    principals {
+      type        = "*"
+      identifiers = ["*"]
+    }
+
+  }
+}
+
+resource "aws_api_gateway_rest_api_policy" "orca_api_policy" {
+  rest_api_id = aws_api_gateway_rest_api.orca_api.id
+  policy      = data.aws_iam_policy_document.orca_api_policy.json
+}
+
 #API details for orca_catalog_reporting lambda
 resource "aws_api_gateway_resource" "orca_catalog_reporting_api_resource_catalog" {
   path_part   = "catalog"
@@ -505,5 +527,6 @@ resource "aws_api_gateway_deployment" "orca_api_deployment" {
     aws_api_gateway_integration.internal_reconcile_report_job_api_integration,
     aws_api_gateway_integration.internal_reconcile_report_orphan_api_integration,
     aws_api_gateway_integration.internal_reconcile_report_phantom_api_integration,
-  aws_api_gateway_integration.internal_reconcile_report_mismatch_api_integration]
+    aws_api_gateway_integration.internal_reconcile_report_mismatch_api_integration
+  ]
 }
