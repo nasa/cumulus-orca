@@ -46,7 +46,10 @@ data "aws_iam_policy_document" "gql_task_execution_policy_document" {
     actions = [
       "secretsmanager:GetSecretValue"
     ]
-    resources = [var.db_connect_info_secret_arn]
+    resources = [
+      var.db_connect_info_secret_arn,
+      var.s3_access_credentials_secret_arn
+    ]
   }
 }
 
@@ -235,6 +238,16 @@ resource "aws_ecs_task_definition" "gql_task" {
         "awslogs-group": "${var.prefix}_orca_graph_ql",
         "awslogs-stream-prefix": "ecs"
       }
+    },
+    "HealthCheck": {
+      "Command": [
+        "CMD-SHELL",
+	      "curl --fail http://localhost:5000/healthz || exit 1"
+      ],
+      "StartPeriod": 30,
+      "Interval": 60,
+      "Timeout": 5,
+      "Retries": 3
     }
   }
 ]
