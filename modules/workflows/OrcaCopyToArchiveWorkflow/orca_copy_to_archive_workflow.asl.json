@@ -14,11 +14,11 @@
         },
         "optionalValues": {
           "config": {
-            "excludedFileExtensions": "event.meta.collection.meta.orca.excludedFileExtensions",
-            "s3MultipartChunksizeMb": "event.meta.collection.meta.s3MultipartChunksizeMb",
-            "providerName": "event.meta.provider.name}",
-            "defaultBucketOverride": "event.meta.collection.meta.orca.defaultBucketOverride",
-            "defaultStorageClassOverride": "event.meta.collection.meta.orca.defaultStorageClassOverride"
+            "excludedFileExtensions": "$.meta.collection.meta.orca.excludedFileExtensions",
+            "s3MultipartChunksizeMb": "$.meta.collection.meta.s3MultipartChunksizeMb",
+            "providerName": "$.meta.provider.name}",
+            "defaultBucketOverride": "$.meta.collection.meta.orca.defaultBucketOverride",
+            "defaultStorageClassOverride": "$.meta.collection.meta.orca.defaultStorageClassOverride"
           }
         }
       },
