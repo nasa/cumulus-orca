@@ -29,7 +29,7 @@ and includes an additional section for migration notes.
 
 ### Security
 
-## [8.1.0]
+## [8.1.0] 2023-08-02
 
 ### Added
 
@@ -120,13 +120,13 @@ and includes an additional section for migration notes.
   }
   ```
 
-## [8.0.1]
+## [8.0.1] 2023-06-07
 
 ### Added
 
 - *ORCA-693* Fixed sqlalchemy query issue in orca_catalog_reporting lambda.
 
-## [8.0.0]
+## [8.0.0] 2023-05-24
 
 ### Added
 
@@ -172,13 +172,13 @@ and includes an additional section for migration notes.
 
   Update `db_user_password` variable in your `cumulus-tf/terraform.tfvars` file to match the new password requirement and then run terraform. `db_deploy` lambda will automatically update your new password.
 
-## [7.0.1]
+## [7.0.1] 2023-02-13
 
 ### Changed
 
 - *ORCA-632* Fixed a bug where `excludedFileExtensions` was a required property in collection config. Restored default behavior of defaulting to an empty list.
 
-## [7.0.0]
+## [7.0.0] 2021-01-06
 
 ### Changed
 
@@ -277,7 +277,7 @@ and includes an additional section for migration notes.
   }
   ```
 
-## [6.0.3]
+## [6.0.3] 2023-02-28
 
 ### Changed
 
@@ -288,19 +288,19 @@ and includes an additional section for migration notes.
 - If you installed 6.x without an ORCA base or updated from an ORCA version earlier than 5.1.0, you may be seeing `Missing Authentication Token` errors when contacting the ORCA API for recovery and reconciliation information. After deploying this version, open your API Gateway in AWS and click `Actions` -> `Deploy API` -> `Deployment stage` = `orca` -> `Deploy`.
   - If you do not see these errors when requesting recovery status, then no action is required.
 
-## [6.0.2]
+## [6.0.2] 2022-10-18
 
 ### Changed
 
 - *ORCA-570* Fixed an error that could prevent deployment of the database on fresh installations.
 
-## [6.0.1]
+## [6.0.1] 2022-10-12
 
 ### Changed
 
 - *ORCA-566* Shortened S3 inventory report name due to length limitation causing errors when a user's naming schema is long.
 
-## [6.0.0]
+## [6.0.0] 2022-09-15
 
 ### Changed
 
@@ -342,7 +342,7 @@ and includes an additional section for migration notes.
       }
       ```
 
-## [5.1.0]
+## [5.1.0] 2022-08-11
 
 ### Changed
 
@@ -444,7 +444,7 @@ and includes an additional section for migration notes.
   }
   ```
 
-## [5.0.0]
+## [5.0.0] 2022-06-17
 
 ### Added
 
@@ -595,19 +595,19 @@ variable "s3_secret_key" {
 
 - Updated Docusaurus to version 2.0.0.beta-21 to resolve security issues.
 
-## [4.0.3]
+## [4.0.3] 2022-06-02
 
 ### Fixed
 
 - Fixed bug where `db_admin_username` had to be lower-case.
 
-## [4.0.2]
+## [4.0.2] 2022-05-18
 
 ### Fixed
 
 - Fixed bug where `db_admin_username` was not set as the owner of new databases.
 
-## [4.0.1]
+## [4.0.1] 2022-02-16
 
 ### Fixed
 
@@ -616,7 +616,7 @@ variable "s3_secret_key" {
   to prevent db_deploy lambda from firing prematurely.
 
 
-## [4.0.0]
+## [4.0.0] 2022-02-15
 
 ### Removed
 
@@ -761,7 +761,7 @@ variable "rds_security_group_id" {
   ```
 
 
-## [3.0.2]
+## [3.0.2] 2021-10-14
 
 ### Migration Notes
 
