@@ -177,20 +177,43 @@ def reset_user_password(connection: Connection, config: PostgresConnectionInfo,
         config: Dictionary of connection information.
         user_name: Username for the application user
     """
+    # SQL for checking user exists
+    check_user_sql = text(
+        f"""
+        SELECT EXISTS(
+            SELECT
+                usename
+            FROM
+                pg_user
+            WHERE
+                usename = '{user_name}'
+        );
+        """
+    )
+
     # SQL for resetting user password
     reset_user_password_sql = text(
         f"""
-            ALTER ROLE "{user_name}" WITH ENCRYPTED PASSWORD :user_password
+        ALTER ROLE {user_name} 
+            WITH ENCRYPTED PASSWORD :user_password ;
         """
     )
 
     # Run the query
-    connection.execute(
-        reset_user_password_sql, {"user_password": config.user_password}
-    )
-    connection.commit()
+    results = connection.execute(check_user_sql)
+    for row in results.fetchall():
+        user_exists = row[0]
 
-    LOGGER.info(f"Password for {config.user_username} has been reset")
+    if user_exists:
+        # Run the update
+        connection.execute(
+            reset_user_password_sql, {"user_password": config.user_password}
+        )
+        connection.commit()
+        LOGGER.info(f"Password for {config.user_username} has been reset")
+
+    else:
+        LOGGER.warn(f"User {config.user_username} does not exist! No password reset performed.")
 
 
 def app_schema_exists(connection: Connection) -> bool:
