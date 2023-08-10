@@ -40,6 +40,8 @@ def add_collection_id_to_recovery_job_and_recovery_file_sql() -> text:
     """
     return text(  # nosec
         """
+        -- Remove old constraints and add collection_id
+        -- ##############################################
         ALTER TABLE orca.recovery_file
             DROP CONSTRAINT IF EXISTS FK_recovery_file_recoverjob,
             DROP CONSTRAINT IF EXISTS PK_recovery_file,
@@ -48,11 +50,27 @@ def add_collection_id_to_recovery_job_and_recovery_file_sql() -> text:
             DROP CONSTRAINT IF EXISTS PK_recovery_job,
             ADD COLUMN IF NOT EXISTS collection_id text;
 
-        UPDATE orca.recovery_file SET collection_id = granules.collection_id
-            FROM orca.granules WHERE granules.cumulus_granule_id = recovery_file.granule_id;
-        UPDATE orca.recovery_job SET collection_id = granules.collection_id
-            FROM orca.granules WHERE granules.cumulus_granule_id = recovery_job.granule_id;
+        -- Populate the collection_id column setting
+        -- non-matches to a value of "UNKNOWN"
+        -- ##############################################
+        UPDATE orca.recovery_file
+            SET collection_id = granules.collection_id
+            FROM orca.granules 
+            WHERE granules.cumulus_granule_id = recovery_file.granule_id;
+        UPDATE orca.recovery_file
+            SET collection_id = 'UNKNOWN'
+            WHERE collection_id IS NULL;
 
+        UPDATE orca.recovery_job
+            SET collection_id = granules.collection_id
+            FROM orca.granules 
+            WHERE granules.cumulus_granule_id = recovery_job.granule_id;
+        UPDATE orca.recovery_job
+            SET collection_id = 'UNKNOWN'
+            WHERE collection_id IS NULL;
+
+        -- Add in new Primary Key constraints
+        -- ##############################################
         ALTER TABLE orca.recovery_file
             ALTER COLUMN collection_id SET NOT NULL,
             ADD CONSTRAINT PK_recovery_file
@@ -60,6 +78,9 @@ def add_collection_id_to_recovery_job_and_recovery_file_sql() -> text:
         ALTER TABLE orca.recovery_job
             ALTER COLUMN collection_id SET NOT NULL,
             ADD CONSTRAINT PK_recovery_job PRIMARY KEY (job_id, collection_id, granule_id);
+
+        -- Add in new Foreign Key constraints
+        -- ##############################################
         ALTER TABLE orca.recovery_file
             ADD CONSTRAINT FK_recovery_file_recoverjob
                 FOREIGN KEY (job_id, collection_id, granule_id)
