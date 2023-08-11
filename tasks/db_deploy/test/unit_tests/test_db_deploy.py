@@ -39,9 +39,13 @@ class TestDbDeployFunctions(unittest.TestCase):
         context = Mock()
         config = PostgresConnectionInfo(  # nosec
             admin_database_name="admin_db",
-            admin_username="admin", admin_password="admin123",
-            user_username="user56789012", user_password="pass56789012",
-            user_database_name="user_db", host="aws.postgresrds.host", port="5432"
+            admin_username="admin",
+            admin_password="admin123",
+            user_username="user56789012",
+            user_password="pass56789012",
+            user_database_name="user_db",
+            host="aws.postgresrds.host",
+            port="5432",
         )
         mock_get_configuration.return_value = config
 
@@ -74,9 +78,13 @@ class TestDbDeployFunctions(unittest.TestCase):
         ]
         config = PostgresConnectionInfo(  # nosec
             admin_database_name="admin_db",
-            admin_username="admin", admin_password="admin123",
-            user_username="user56789012", user_password="pass56789012",
-            user_database_name="user_db", host="aws.postgresrds.host", port="5432"
+            admin_username="admin",
+            admin_password="admin123",
+            user_username="user56789012",
+            user_password="pass56789012",
+            user_database_name="user_db",
+            host="aws.postgresrds.host",
+            port="5432",
         )
         mock_get_configuration.return_value = config
         context = Mock()
@@ -114,9 +122,13 @@ class TestDbDeployFunctions(unittest.TestCase):
         mock_app_db_exists.return_value = False
         config = PostgresConnectionInfo(  # nosec
             admin_database_name="admin_db",
-            admin_username="admin", admin_password="admin123",
-            user_username="user56789012", user_password="pass56789012",
-            user_database_name="user_db", host="aws.postgresrds.host", port="5432"
+            admin_username="admin",
+            admin_password="admin123",
+            user_username="user56789012",
+            user_password="pass56789012",
+            user_database_name="user_db",
+            host="aws.postgresrds.host",
+            port="5432",
         )
         orca_buckets = ["orca_worm", "orca_versioned", "orca_special"]
 
@@ -124,9 +136,7 @@ class TestDbDeployFunctions(unittest.TestCase):
         db_deploy.task(config, orca_buckets)
 
         # Check function calls
-        mock_create_admin_uri.assert_called_once_with(
-            config, db_deploy.LOGGER
-        )
+        mock_create_admin_uri.assert_called_once_with(config, db_deploy.LOGGER)
         mock_create_engine.assert_called_once_with(
             mock_create_admin_uri.return_value, future=True
         )
@@ -160,9 +170,13 @@ class TestDbDeployFunctions(unittest.TestCase):
         mock_schema_exists.return_value = False
         config = PostgresConnectionInfo(  # nosec
             admin_database_name="admin_db",
-            admin_username="admin", admin_password="admin123",
-            user_username="user56789012", user_password="pass56789012",
-            user_database_name="user_db", host="aws.postgresrds.host", port="5432"
+            admin_username="admin",
+            admin_password="admin123",
+            user_username="user56789012",
+            user_password="pass56789012",
+            user_database_name="user_db",
+            host="aws.postgresrds.host",
+            port="5432",
         )
         orca_buckets = ["orca_worm", "orca_versioned", "orca_special"]
 
@@ -170,7 +184,9 @@ class TestDbDeployFunctions(unittest.TestCase):
         mock_fresh_install.assert_called_with(config, orca_buckets)
         mock_reset_user_password.assert_called_once_with(
             mock_create_engine.return_value.connect.return_value.__enter__.return_value,
-            config, config.user_username)
+            config,
+            config.user_username,
+        )
 
     @patch("db_deploy.create_engine")
     @patch("db_deploy.create_admin_uri")
@@ -199,9 +215,13 @@ class TestDbDeployFunctions(unittest.TestCase):
         mock_migration_version.return_value = 1
         config = PostgresConnectionInfo(  # nosec
             admin_database_name="admin_db",
-            admin_username="admin", admin_password="admin123",
-            user_username="user56789012", user_password="pass56789012",
-            user_database_name="user_db", host="aws.postgresrds.host", port="5432"
+            admin_username="admin",
+            admin_password="admin123",
+            user_username="user56789012",
+            user_password="pass56789012",
+            user_database_name="user_db",
+            host="aws.postgresrds.host",
+            port="5432",
         )
         orca_buckets = ["orca_worm", "orca_versioned", "orca_special"]
 
@@ -209,7 +229,9 @@ class TestDbDeployFunctions(unittest.TestCase):
         mock_perform_migration.assert_called_with(1, config, orca_buckets)
         mock_reset_user_password.assert_called_once_with(
             mock_create_engine.return_value.connect.return_value.__enter__.return_value,
-            config, config.user_username)
+            config,
+            config.user_username,
+        )
 
     @patch("db_deploy.create_engine")
     @patch("db_deploy.create_admin_uri")
@@ -239,9 +261,13 @@ class TestDbDeployFunctions(unittest.TestCase):
         message = "Current ORCA schema version detected. No migration needed!"
         config = PostgresConnectionInfo(  # nosec
             admin_database_name="admin_db",
-            admin_username="admin", admin_password="admin123",
-            user_username="user56789012", user_password="pass56789012",
-            user_database_name="user_db", host="aws.postgresrds.host", port="5432"
+            admin_username="admin",
+            admin_password="admin123",
+            user_username="user56789012",
+            user_password="pass56789012",
+            user_database_name="user_db",
+            host="aws.postgresrds.host",
+            port="5432",
         )
         orca_buckets = ["orca_worm", "orca_versioned", "orca_special"]
 
@@ -249,7 +275,9 @@ class TestDbDeployFunctions(unittest.TestCase):
         mock_logger_info.assert_called_with(message)
         mock_reset_user_password.assert_called_once_with(
             mock_create_engine.return_value.connect.return_value.__enter__.return_value,
-            config, config.user_username)
+            config,
+            config.user_username,
+        )
 
     def test_app_db_exists_happy_path(self):
         """

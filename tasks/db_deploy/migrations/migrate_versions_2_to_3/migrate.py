@@ -11,7 +11,9 @@ from sqlalchemy import create_engine
 import migrations.migrate_versions_2_to_3.migrate_sql as sql
 
 
-def migrate_versions_2_to_3(config: PostgresConnectionInfo, is_latest_version: bool) -> None:
+def migrate_versions_2_to_3(
+    config: PostgresConnectionInfo, is_latest_version: bool
+) -> None:
     """
     Performs the migration of the ORCA schema from version 2 to version 3 of
     the ORCA schema.
@@ -20,8 +22,9 @@ def migrate_versions_2_to_3(config: PostgresConnectionInfo, is_latest_version: b
         is_latest_version: Flag to determine if version 3 is the latest schema version.
     """
     # Get the admin engine to the app database
-    user_admin_engine = \
-        create_engine(create_admin_uri(config, LOGGER, config.user_database_name), future=True)
+    user_admin_engine = create_engine(
+        create_admin_uri(config, LOGGER, config.user_database_name), future=True
+    )
 
     # Create new objects, users, roles, etc.
     with user_admin_engine.connect() as connection:

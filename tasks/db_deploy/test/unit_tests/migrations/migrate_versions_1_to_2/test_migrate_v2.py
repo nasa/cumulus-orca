@@ -24,9 +24,13 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         # todo: Use randomized values on a per-test basis.
         self.config = PostgresConnectionInfo(  # nosec
             admin_database_name="admin_db",
-            admin_username="admin", admin_password="admin123",
-            user_username="user56789012", user_password="pass56789012",
-            user_database_name="user_db", host="aws.postgresrds.host", port="5432"
+            admin_username="admin",
+            admin_password="admin123",
+            user_username="user56789012",
+            user_password="pass56789012",
+            user_database_name="user_db",
+            host="aws.postgresrds.host",
+            port="5432",
         )
 
     def tearDown(self):
@@ -223,7 +227,9 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 # Check that items were called in the proper order
                 mock_conn_enter = mock_create_engine().connect().__enter__()
                 mock_conn_enter.assert_has_calls(execution_order, any_order=False)
-                self.assertEqual(len(execution_order), len(mock_conn_enter.method_calls))
+                self.assertEqual(
+                    len(execution_order), len(mock_conn_enter.method_calls)
+                )
 
             # Reset the mocks for next loop
             mock_create_admin_uri.reset_mock()
@@ -263,10 +269,14 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 with self.assertRaises(Exception) as cm:
                     migrate.migrate_versions_1_to_2(
                         PostgresConnectionInfo(
-                            admin_database_name=Mock(), admin_username=Mock(),
+                            admin_database_name=Mock(),
+                            admin_username=Mock(),
                             admin_password=Mock(),
-                            user_username="orcauser", user_password=bad_password,
-                            user_database_name=Mock(), host=Mock(), port=Mock()
+                            user_username="orcauser",
+                            user_password=bad_password,
+                            user_database_name=Mock(),
+                            host=Mock(),
+                            port=Mock(),
                         ),
                         Mock(),
                     )
@@ -279,10 +289,14 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 with self.assertRaises(Exception) as cm:
                     migrate.migrate_versions_1_to_2(
                         PostgresConnectionInfo(  # nosec
-                            admin_database_name=Mock(), admin_username=Mock(),
+                            admin_database_name=Mock(),
+                            admin_username=Mock(),
                             admin_password=Mock(),
-                            user_username=bad_user_name, user_password="AbCdEfG12345",
-                            user_database_name=Mock(), host=Mock(), port=Mock()
+                            user_username=bad_user_name,
+                            user_password="AbCdEfG12345",
+                            user_database_name=Mock(),
+                            host=Mock(),
+                            port=Mock(),
                         ),
                         Mock(),
                     )
@@ -294,10 +308,14 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
             with self.assertRaises(Exception) as cm:
                 migrate.migrate_versions_1_to_2(
                     PostgresConnectionInfo(  # nosec
-                        admin_database_name=Mock(), admin_username=Mock(),
+                        admin_database_name=Mock(),
+                        admin_username=Mock(),
                         admin_password=Mock(),
-                        user_username=bad_user_name, user_password="AbCdEfG12345",
-                        user_database_name=Mock(), host=Mock(), port=Mock()
+                        user_username=bad_user_name,
+                        user_password="AbCdEfG12345",
+                        user_database_name=Mock(),
+                        host=Mock(),
+                        port=Mock(),
                     ),
                     Mock(),
                 )
