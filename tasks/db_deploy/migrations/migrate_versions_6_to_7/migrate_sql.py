@@ -35,9 +35,7 @@ def schema_versions_data_sql() -> text:  # pragma: no cover
 
 
 def add_collection_id_to_recovery_job_and_recovery_file_sql() -> text:
-    """
-
-    """
+    """ """
     return text(  # nosec
         """
         -- Remove old constraints and add collection_id
@@ -55,7 +53,7 @@ def add_collection_id_to_recovery_job_and_recovery_file_sql() -> text:
         -- ##############################################
         UPDATE orca.recovery_file
             SET collection_id = granules.collection_id
-            FROM orca.granules 
+            FROM orca.granules
             WHERE granules.cumulus_granule_id = recovery_file.granule_id;
         UPDATE orca.recovery_file
             SET collection_id = 'UNKNOWN'
@@ -63,7 +61,7 @@ def add_collection_id_to_recovery_job_and_recovery_file_sql() -> text:
 
         UPDATE orca.recovery_job
             SET collection_id = granules.collection_id
-            FROM orca.granules 
+            FROM orca.granules
             WHERE granules.cumulus_granule_id = recovery_job.granule_id;
         UPDATE orca.recovery_job
             SET collection_id = 'UNKNOWN'

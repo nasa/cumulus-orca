@@ -59,7 +59,7 @@ black *.py install migrations test
 
 echo "INFO: Checking lint rules ..."
 flake8 \
-    --max-line-length 99 \
+    --max-line-length 120 \
     *.py install migrations test
 check_returncode $? "ERROR: Linting issues found."
 

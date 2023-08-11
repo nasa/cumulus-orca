@@ -97,8 +97,9 @@ def task(config: PostgresConnectionInfo, orca_buckets: List[str]) -> None:
             return
 
     # Create the engine
-    user_admin_engine = \
-        create_engine(create_admin_uri(config, LOGGER, config.user_database_name), future=True)
+    user_admin_engine = create_engine(
+        create_admin_uri(config, LOGGER, config.user_database_name), future=True
+    )
 
     # Connect as admin user to config["user_database"] database.
     with user_admin_engine.connect() as connection:
@@ -167,8 +168,9 @@ def app_db_exists(connection: Connection, db_name: str) -> bool:
 
 
 @retry_operational_error(MAX_RETRIES)
-def reset_user_password(connection: Connection, config: PostgresConnectionInfo,
-                        user_name: str):
+def reset_user_password(
+    connection: Connection, config: PostgresConnectionInfo, user_name: str
+):
     """
     Resets the ORCA user password.
 
@@ -179,14 +181,14 @@ def reset_user_password(connection: Connection, config: PostgresConnectionInfo,
     """
     # SQL for checking user exists
     check_user_sql = text(
-        f"""
+        """
         SELECT EXISTS(
             SELECT
                 usename
             FROM
                 pg_user
             WHERE
-                usename = '{user_name}'
+                usename = :user_name
         );
         """
     )
@@ -194,13 +196,13 @@ def reset_user_password(connection: Connection, config: PostgresConnectionInfo,
     # SQL for resetting user password
     reset_user_password_sql = text(
         f"""
-        ALTER ROLE {user_name} 
+        ALTER ROLE {user_name}
             WITH ENCRYPTED PASSWORD :user_password ;
         """
     )
 
     # Run the query
-    results = connection.execute(check_user_sql)
+    results = connection.execute(check_user_sql, {"user_name": user_name})
     for row in results.fetchall():
         user_exists = row[0]
 
@@ -213,7 +215,9 @@ def reset_user_password(connection: Connection, config: PostgresConnectionInfo,
         LOGGER.info(f"Password for {config.user_username} has been reset")
 
     else:
-        LOGGER.warn(f"User {config.user_username} does not exist! No password reset performed.")
+        LOGGER.warn(
+            f"User {config.user_username} does not exist! No password reset performed."
+        )
 
 
 def app_schema_exists(connection: Connection) -> bool:
