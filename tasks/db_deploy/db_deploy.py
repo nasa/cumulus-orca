@@ -61,7 +61,7 @@ def handler(
 
     # Get the ORCA bucket list
     orca_buckets = event.get("orcaBuckets", None)
-    if type(orca_buckets) != list or len(orca_buckets) == 0:
+    if not isinstance(orca_buckets, list) or len(orca_buckets) == 0:
         raise ValueError("orcaBuckets must be a valid list of ORCA S3 bucket names.")
 
     return task(config, orca_buckets)
