@@ -8,7 +8,7 @@ description: Instructions on creating an environment for working with lambdas.
 1. Familiarize yourself with [contributing to these documents](../documentation/documentation-intro.md) prior to modifying/testing code.
    Updating documentation is a shared responsibility.
 1. git clone https://github.com/nasa/cumulus-orca
-1. Install [Python 3.8.X](https://www.python.org/downloads/) and restart if needed.
+1. Install [Python 3.9.X](https://www.python.org/downloads/) and restart if needed.
    Make sure Python is added to your PATH.
 1. Install the AWS client. View the [official documentation](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html) if needed.
     ```commandline
