@@ -43,10 +43,7 @@ class TestCopyToArchiveAdapter(TestCase):
         }
         mock_payload = Mock()
         mock_payload.read = Mock(return_value=json.dumps(payload))
-        response = {
-            "StatusCode": 200,
-            "Payload": mock_payload
-        }
+        response = {"StatusCode": 200, "Payload": mock_payload}
 
         mock_invoke = Mock(return_value=response)
         mock_lambda_client = Mock()
@@ -67,27 +64,30 @@ class TestCopyToArchiveAdapter(TestCase):
             "config": mock_config,
         }
 
-        with patch.dict(os.environ,
-                        {
-                            copy_to_archive_adapter.OS_ENVIRON_COPY_TO_ARCHIVE_ARN_KEY:
-                                copy_to_archive_arn
-                        }):
+        with patch.dict(
+            os.environ,
+            {
+                copy_to_archive_adapter.OS_ENVIRON_COPY_TO_ARCHIVE_ARN_KEY: copy_to_archive_arn
+            },
+        ):
             result = copy_to_archive_adapter.task(event, None)
 
         mock_boto3_config.assert_called_once_with(
-            read_timeout=600, retries={'total_max_attempts': 1}
+            read_timeout=600, retries={"total_max_attempts": 1}
         )
         mock_boto3_client.assert_called_once_with(
-            "lambda",
-            config=mock_boto3_config.return_value
+            "lambda", config=mock_boto3_config.return_value
         )
         mock_invoke.assert_called_once_with(
             FunctionName=copy_to_archive_arn,
             InvocationType="RequestResponse",  # Synchronous
-            Payload=json.dumps({
-                copy_to_archive_adapter.ORCA_INPUT_KEY: mock_input,
-                copy_to_archive_adapter.ORCA_CONFIG_KEY: mock_config
-            }, indent=4).encode("utf-8")
+            Payload=json.dumps(
+                {
+                    copy_to_archive_adapter.ORCA_INPUT_KEY: mock_input,
+                    copy_to_archive_adapter.ORCA_CONFIG_KEY: mock_config,
+                },
+                indent=4,
+            ).encode("utf-8"),
         )
         mock_payload.read.assert_called_once_with()
         self.assertEqual(payload, result)
@@ -107,7 +107,7 @@ class TestCopyToArchiveAdapter(TestCase):
         error_message = uuid.uuid4().__str__()
         response = {
             "StatusCode": 201,  # We only expect 200, so even 201 should fail.
-            "FunctionError": error_message
+            "FunctionError": error_message,
         }
 
         mock_invoke = Mock(return_value=response)
@@ -129,28 +129,31 @@ class TestCopyToArchiveAdapter(TestCase):
             "config": mock_config,
         }
 
-        with patch.dict(os.environ,
-                        {
-                            copy_to_archive_adapter.OS_ENVIRON_COPY_TO_ARCHIVE_ARN_KEY:
-                                copy_to_archive_arn
-                        }):
+        with patch.dict(
+            os.environ,
+            {
+                copy_to_archive_adapter.OS_ENVIRON_COPY_TO_ARCHIVE_ARN_KEY: copy_to_archive_arn
+            },
+        ):
             with self.assertRaises(Exception) as cm:
                 copy_to_archive_adapter.task(event, None)
 
         mock_boto3_config.assert_called_once_with(
-            read_timeout=600, retries={'total_max_attempts': 1}
+            read_timeout=600, retries={"total_max_attempts": 1}
         )
         mock_boto3_client.assert_called_once_with(
-            "lambda",
-            config=mock_boto3_config.return_value
+            "lambda", config=mock_boto3_config.return_value
         )
         mock_invoke.assert_called_once_with(
             FunctionName=copy_to_archive_arn,
             InvocationType="RequestResponse",  # Synchronous
-            Payload=json.dumps({
-                copy_to_archive_adapter.ORCA_INPUT_KEY: mock_input,
-                copy_to_archive_adapter.ORCA_CONFIG_KEY: mock_config
-            }, indent=4).encode("utf-8")
+            Payload=json.dumps(
+                {
+                    copy_to_archive_adapter.ORCA_INPUT_KEY: mock_input,
+                    copy_to_archive_adapter.ORCA_CONFIG_KEY: mock_config,
+                },
+                indent=4,
+            ).encode("utf-8"),
         )
         self.assertEqual(str(cm.exception), error_message)
 
@@ -201,13 +204,15 @@ class TestCopyToArchiveAdapter(TestCase):
                             "checksum": uuid.uuid4().__str__(),
                             "checksumType": uuid.uuid4().__str__(),
                         }
-                    ]
+                    ],
                 },
             ],
             "copied_to_orca": [uuid.uuid4().__str__()],
         }
 
-        result = copy_to_archive_adapter.handler(handler_input_event, handler_input_context)
+        result = copy_to_archive_adapter.handler(
+            handler_input_event, handler_input_context
+        )
         mock_task.assert_called_once_with(expected_task_input, handler_input_context)
 
         self.assertEqual(mock_task.return_value, result["payload"])
@@ -260,5 +265,8 @@ class TestCopyToArchiveAdapter(TestCase):
         with self.assertRaises(ValidationError) as cm:
             copy_to_archive_adapter.handler(handler_input_event, handler_input_context)
         self.assertTrue(
-            str(cm.exception).startswith("output schema: 'files' is a required property"))
+            str(cm.exception).startswith(
+                "output schema: 'files' is a required property"
+            )
+        )
         mock_task.assert_called_once_with(expected_task_input, handler_input_context)

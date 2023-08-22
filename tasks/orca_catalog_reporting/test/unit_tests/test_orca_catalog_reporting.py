@@ -349,7 +349,7 @@ class TestOrcaCatalogReportingUnit(
         self.assertEqual(
             {
                 "anotherPage": True,
-                "granules": granules[0: orca_catalog_reporting.PAGE_SIZE],
+                "granules": granules[0 : orca_catalog_reporting.PAGE_SIZE],  # noqa: 203
             },
             result,
         )

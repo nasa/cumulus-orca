@@ -16,9 +16,9 @@ class TestSharedReconciliationLibraries(unittest.TestCase):
     """
 
     @patch("orca_shared.reconciliation.shared_reconciliation.validate_postgres_name")
-    def test_get_partition_name_from_bucket_name_happy_path(self,
-                                                            mock_validate_name: MagicMock
-                                                            ):
+    def test_get_partition_name_from_bucket_name_happy_path(
+        self, mock_validate_name: MagicMock
+    ):
         """
         Should replace dashes with underscores.
         Leave this test hardcoded to avoid unintentional deviations from DB.
@@ -27,9 +27,11 @@ class TestSharedReconciliationLibraries(unittest.TestCase):
             "apple-banana_-lemon"
         )
         expected_result = "reconcile_s3_object_apple_banana__lemon"
-        mock_validate_name.assert_called_once_with(expected_result,
-                                                   f"Partition name '{expected_result}'",
-                                                   shared_reconciliation.LOGGER)
+        mock_validate_name.assert_called_once_with(
+            expected_result,
+            f"Partition name '{expected_result}'",
+            shared_reconciliation.LOGGER,
+        )
         self.assertEqual(expected_result, result)
 
     @patch("orca_shared.reconciliation.shared_reconciliation.internal_update_job")
@@ -55,7 +57,9 @@ class TestSharedReconciliationLibraries(unittest.TestCase):
                     mock_job_id,
                     status,
                     unittest.mock.ANY,
-                    unittest.mock.ANY if end_time_present.__contains__(status) else None,
+                    unittest.mock.ANY
+                    if end_time_present.__contains__(status)
+                    else None,
                     mock_error_message if status == OrcaStatus.ERROR else None,
                     mock_engine,
                 )
