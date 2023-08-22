@@ -46,6 +46,7 @@ and includes an additional section for migration notes.
 - *ORCA-709* Updated terraform AWS provider to version 5. This is to support Cumulus and CIRRUS changes.
 - *ORCA-714* Fixed new deployment errors with API Gateway by adding an IAM policy and tying it to the GW.
 - *ORCA-716* Fixed Deployment issues with GraphQL tasks by adding permission and health check.
+- *ORCA-726* Updated Docusarus and Node version to latest LTS releases to fix security issues.
 
 ### Migration Notes
 
