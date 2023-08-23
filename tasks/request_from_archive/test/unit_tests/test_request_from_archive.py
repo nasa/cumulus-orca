@@ -39,11 +39,19 @@ class TestRequestFromArchive(unittest.TestCase):
 
     def tearDown(self):
         os.environ.pop("PREFIX", None)
-        os.environ.pop(request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY, None)
+        os.environ.pop(
+            request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY, None
+        )
         os.environ.pop(request_from_archive.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY, None)
-        os.environ.pop(request_from_archive.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY, None)
-        os.environ.pop(request_from_archive.OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY, None)
-        os.environ.pop(request_from_archive.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY, None)
+        os.environ.pop(
+            request_from_archive.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY, None
+        )
+        os.environ.pop(
+            request_from_archive.OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY, None
+        )
+        os.environ.pop(
+            request_from_archive.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY, None
+        )
         os.environ.pop(request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY, None)
 
     @patch("request_from_archive.get_default_archive_bucket_name")
@@ -73,17 +81,20 @@ class TestRequestFromArchive(unittest.TestCase):
         archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
         os.environ[
-            request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
+            request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY
+        ] = db_queue_url
         os.environ[
             request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
-            ] = archive_recovery_queue_url
+        ] = archive_recovery_queue_url
         os.environ[
             request_from_archive.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
         ] = max_retries.__str__()
         os.environ[
             request_from_archive.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
         ] = retry_sleep_secs.__str__()
-        os.environ[request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY] = recovery_type
+        os.environ[
+            request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY
+        ] = recovery_type
         os.environ[
             request_from_archive.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
         ] = exp_days.__str__()
@@ -95,10 +106,8 @@ class TestRequestFromArchive(unittest.TestCase):
         mock_inner_task.assert_called_once_with(
             {
                 request_from_archive.EVENT_CONFIG_KEY: {
-                    request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY:
-                        mock_get_default_archive_bucket_name.return_value,
-                    request_from_archive.CONFIG_JOB_ID_KEY:
-                        job_id,
+                    request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_archive_bucket_name.return_value,  # noqa: E501
+                    request_from_archive.CONFIG_JOB_ID_KEY: job_id,
                 },
             },
             max_retries,
@@ -106,7 +115,7 @@ class TestRequestFromArchive(unittest.TestCase):
             mock_get_archive_recovery_type(config),
             exp_days,
             db_queue_url,
-            archive_recovery_queue_url
+            archive_recovery_queue_url,
         )
 
     @patch("request_from_archive.get_default_archive_bucket_name")
@@ -134,14 +143,18 @@ class TestRequestFromArchive(unittest.TestCase):
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
         archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
-        os.environ[request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
+        os.environ[
+            request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY
+        ] = db_queue_url
         os.environ[
             request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
-            ] = archive_recovery_queue_url
+        ] = archive_recovery_queue_url
         os.environ[
             request_from_archive.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
         ] = retry_sleep_secs.__str__()
-        os.environ[request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY] = recovery_type
+        os.environ[
+            request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY
+        ] = recovery_type
         os.environ[
             request_from_archive.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
         ] = exp_days.__str__()
@@ -153,10 +166,8 @@ class TestRequestFromArchive(unittest.TestCase):
         mock_inner_task.assert_called_once_with(
             {
                 request_from_archive.EVENT_CONFIG_KEY: {
-                    request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY:
-                        mock_get_default_archive_bucket_name.return_value,
-                    request_from_archive.CONFIG_JOB_ID_KEY:
-                        job_id,
+                    request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_archive_bucket_name.return_value,  # noqa: E501
+                    request_from_archive.CONFIG_JOB_ID_KEY: job_id,
                 },
             },
             request_from_archive.DEFAULT_MAX_REQUEST_RETRIES,
@@ -164,7 +175,7 @@ class TestRequestFromArchive(unittest.TestCase):
             mock_get_archive_recovery_type(config),
             exp_days,
             db_queue_url,
-            archive_recovery_queue_url
+            archive_recovery_queue_url,
         )
 
     @patch("request_from_archive.get_default_archive_bucket_name")
@@ -194,13 +205,17 @@ class TestRequestFromArchive(unittest.TestCase):
 
         os.environ[
             request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
-            ] = archive_recovery_queue_url
-        os.environ[request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
+        ] = archive_recovery_queue_url
+        os.environ[
+            request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY
+        ] = db_queue_url
 
         os.environ[
             request_from_archive.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
         ] = max_retries.__str__()
-        os.environ[request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY] = recovery_type
+        os.environ[
+            request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY
+        ] = recovery_type
         os.environ[
             request_from_archive.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
         ] = exp_days.__str__()
@@ -212,10 +227,8 @@ class TestRequestFromArchive(unittest.TestCase):
         mock_inner_task.assert_called_once_with(
             {
                 request_from_archive.EVENT_CONFIG_KEY: {
-                    request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY:
-                        mock_get_default_archive_bucket_name.return_value,
-                    request_from_archive.CONFIG_JOB_ID_KEY:
-                        job_id,
+                    request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_archive_bucket_name.return_value,  # noqa: E501
+                    request_from_archive.CONFIG_JOB_ID_KEY: job_id,
                 },
             },
             max_retries,
@@ -223,7 +236,7 @@ class TestRequestFromArchive(unittest.TestCase):
             mock_get_archive_recovery_type(config),
             exp_days,
             db_queue_url,
-            archive_recovery_queue_url
+            archive_recovery_queue_url,
         )
 
     @patch("request_from_archive.get_default_archive_bucket_name")
@@ -253,16 +266,20 @@ class TestRequestFromArchive(unittest.TestCase):
 
         os.environ[
             request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
-            ] = archive_recovery_queue_url
+        ] = archive_recovery_queue_url
 
-        os.environ[request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
+        os.environ[
+            request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY
+        ] = db_queue_url
         os.environ[
             request_from_archive.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
         ] = max_retries.__str__()
         os.environ[
             request_from_archive.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
         ] = retry_sleep_secs.__str__()
-        os.environ[request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY] = recovery_type
+        os.environ[
+            request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY
+        ] = recovery_type
 
         request_from_archive.task(mock_event)
 
@@ -271,10 +288,8 @@ class TestRequestFromArchive(unittest.TestCase):
         mock_inner_task.assert_called_once_with(
             {
                 request_from_archive.EVENT_CONFIG_KEY: {
-                    request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY:
-                        mock_get_default_archive_bucket_name.return_value,
-                    request_from_archive.CONFIG_JOB_ID_KEY:
-                        job_id,
+                    request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_archive_bucket_name.return_value,  # noqa: E501
+                    request_from_archive.CONFIG_JOB_ID_KEY: job_id,
                 },
             },
             max_retries,
@@ -282,7 +297,7 @@ class TestRequestFromArchive(unittest.TestCase):
             mock_get_archive_recovery_type(config),
             request_from_archive.DEFAULT_RESTORE_EXPIRE_DAYS,
             db_queue_url,
-            archive_recovery_queue_url
+            archive_recovery_queue_url,
         )
 
     @patch("request_from_archive.get_default_archive_bucket_name")
@@ -312,17 +327,20 @@ class TestRequestFromArchive(unittest.TestCase):
         job_id = uuid.uuid4()
 
         os.environ[
-            request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = db_queue_url
+            request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY
+        ] = db_queue_url
         os.environ[
             request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
-            ] = archive_recovery_queue_url
+        ] = archive_recovery_queue_url
         os.environ[
             request_from_archive.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
         ] = max_retries.__str__()
         os.environ[
             request_from_archive.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
         ] = retry_sleep_secs.__str__()
-        os.environ[request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY] = recovery_type
+        os.environ[
+            request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY
+        ] = recovery_type
         os.environ[
             request_from_archive.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
         ] = exp_days.__str__()
@@ -335,10 +353,8 @@ class TestRequestFromArchive(unittest.TestCase):
         mock_inner_task.assert_called_once_with(
             {
                 request_from_archive.EVENT_CONFIG_KEY: {
-                    request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY:
-                        mock_get_default_archive_bucket_name.return_value,
-                    request_from_archive.CONFIG_JOB_ID_KEY:
-                        job_id.__str__(),
+                    request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: mock_get_default_archive_bucket_name.return_value,  # noqa: E501
+                    request_from_archive.CONFIG_JOB_ID_KEY: job_id.__str__(),
                 },
             },
             max_retries,
@@ -346,7 +362,7 @@ class TestRequestFromArchive(unittest.TestCase):
             mock_get_archive_recovery_type(config),
             exp_days,
             db_queue_url,
-            archive_recovery_queue_url
+            archive_recovery_queue_url,
         )
 
     # noinspection PyUnusedLocal
@@ -388,8 +404,7 @@ class TestRequestFromArchive(unittest.TestCase):
             request_from_archive.FILE_FILENAME_KEY: file_key_0,
             request_from_archive.FILE_KEY_PATH_KEY: file_key_0,
             request_from_archive.FILE_RESTORE_DESTINATION_KEY: file_dest_bucket_0,
-            request_from_archive.FILE_MULTIPART_CHUNKSIZE_MB_KEY:
-                collection_multipart_chunksize_mb,
+            request_from_archive.FILE_MULTIPART_CHUNKSIZE_MB_KEY: collection_multipart_chunksize_mb,  # noqa: E501
             request_from_archive.FILE_STATUS_ID_KEY: OrcaStatus.PENDING.value,
             request_from_archive.FILE_REQUEST_TIME_KEY: mock.ANY,
             request_from_archive.FILE_LAST_UPDATE_KEY: mock.ANY,
@@ -403,8 +418,7 @@ class TestRequestFromArchive(unittest.TestCase):
             request_from_archive.FILE_FILENAME_KEY: file_key_1,
             request_from_archive.FILE_KEY_PATH_KEY: file_key_1,
             request_from_archive.FILE_RESTORE_DESTINATION_KEY: file_dest_bucket_1,
-            request_from_archive.FILE_MULTIPART_CHUNKSIZE_MB_KEY:
-                collection_multipart_chunksize_mb,
+            request_from_archive.FILE_MULTIPART_CHUNKSIZE_MB_KEY: collection_multipart_chunksize_mb,  # noqa: E501
             request_from_archive.FILE_STATUS_ID_KEY: OrcaStatus.PENDING.value,
             request_from_archive.FILE_REQUEST_TIME_KEY: mock.ANY,
             request_from_archive.FILE_LAST_UPDATE_KEY: mock.ANY,
@@ -444,8 +458,7 @@ class TestRequestFromArchive(unittest.TestCase):
             request_from_archive.EVENT_CONFIG_KEY: {
                 request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: archive_bucket_name,
                 request_from_archive.CONFIG_JOB_ID_KEY: job_id,
-                request_from_archive.CONFIG_MULTIPART_CHUNKSIZE_MB_KEY:
-                    collection_multipart_chunksize_mb,
+                request_from_archive.CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: collection_multipart_chunksize_mb,  # noqa: E501
             },
             request_from_archive.EVENT_INPUT_KEY: {
                 request_from_archive.INPUT_GRANULES_KEY: [granule0, granule1]
@@ -466,7 +479,7 @@ class TestRequestFromArchive(unittest.TestCase):
             recovery_type,
             restore_expire_days,
             db_queue_url,
-            archive_recovery_queue_url
+            archive_recovery_queue_url,
         )
 
         # Compare to orca_shared to verify schema.
@@ -479,22 +492,15 @@ class TestRequestFromArchive(unittest.TestCase):
                     archive_bucket_name,
                     [
                         {
-                            request_from_archive.FILE_PROCESSED_KEY:
-                                False,  # This value is changed by process_granule.
-                            shared_recovery.FILENAME_KEY:
-                                file_key_0,
-                            shared_recovery.KEY_PATH_KEY:
-                                file_key_0,
-                            shared_recovery.RESTORE_DESTINATION_KEY:
-                                file_dest_bucket_0,
-                            shared_recovery.MULTIPART_CHUNKSIZE_KEY:
-                                collection_multipart_chunksize_mb,
-                            shared_recovery.STATUS_ID_KEY:
-                                OrcaStatus.PENDING.value,
-                            shared_recovery.REQUEST_TIME_KEY:
-                                mock.ANY,
-                            shared_recovery.LAST_UPDATE_KEY:
-                                mock.ANY,
+                            # This value is changed by process_granule.
+                            request_from_archive.FILE_PROCESSED_KEY: False,
+                            shared_recovery.FILENAME_KEY: file_key_0,
+                            shared_recovery.KEY_PATH_KEY: file_key_0,
+                            shared_recovery.RESTORE_DESTINATION_KEY: file_dest_bucket_0,
+                            shared_recovery.MULTIPART_CHUNKSIZE_KEY: collection_multipart_chunksize_mb,  # noqa: E501
+                            shared_recovery.STATUS_ID_KEY: OrcaStatus.PENDING.value,
+                            shared_recovery.REQUEST_TIME_KEY: mock.ANY,
+                            shared_recovery.LAST_UPDATE_KEY: mock.ANY,
                         }
                     ],
                     db_queue_url,
@@ -506,22 +512,15 @@ class TestRequestFromArchive(unittest.TestCase):
                     archive_bucket_name,
                     [
                         {
-                            request_from_archive.FILE_PROCESSED_KEY:
-                                False,  # This value is changed by process_granule.
-                            shared_recovery.FILENAME_KEY:
-                                file_key_1,
-                            shared_recovery.KEY_PATH_KEY:
-                                file_key_1,
-                            shared_recovery.RESTORE_DESTINATION_KEY:
-                                file_dest_bucket_1,
-                            shared_recovery.MULTIPART_CHUNKSIZE_KEY:
-                                collection_multipart_chunksize_mb,
-                            shared_recovery.STATUS_ID_KEY:
-                                OrcaStatus.PENDING.value,
-                            shared_recovery.REQUEST_TIME_KEY:
-                                mock.ANY,
-                            shared_recovery.LAST_UPDATE_KEY:
-                                mock.ANY,
+                            # This value is changed by process_granule.
+                            request_from_archive.FILE_PROCESSED_KEY: False,
+                            shared_recovery.FILENAME_KEY: file_key_1,
+                            shared_recovery.KEY_PATH_KEY: file_key_1,
+                            shared_recovery.RESTORE_DESTINATION_KEY: file_dest_bucket_1,
+                            shared_recovery.MULTIPART_CHUNKSIZE_KEY: collection_multipart_chunksize_mb,  # noqa: E501
+                            shared_recovery.STATUS_ID_KEY: OrcaStatus.PENDING.value,
+                            shared_recovery.REQUEST_TIME_KEY: mock.ANY,
+                            shared_recovery.LAST_UPDATE_KEY: mock.ANY,
                         }
                     ],
                     db_queue_url,
@@ -541,7 +540,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     recovery_type,
                     job_id,
                     db_queue_url,
-                    archive_recovery_queue_url
+                    archive_recovery_queue_url,
                 ),
                 call(
                     mock_s3_cli,
@@ -553,7 +552,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     recovery_type,
                     job_id,
                     db_queue_url,
-                    archive_recovery_queue_url
+                    archive_recovery_queue_url,
                 ),
             ]
         )
@@ -602,21 +601,22 @@ class TestRequestFromArchive(unittest.TestCase):
             request_from_archive.FILE_KEY_KEY: file_key_0,
             request_from_archive.FILE_DEST_BUCKET_KEY: file_dest_bucket_0,
         }
-        file_0_error_message = f"File '{file_key_0}' from bucket '{archive_bucket_name}' " \
-                               f"is in storage class 'DEEP_ARCHIVE' " \
-                               f"which is incompatible with recovery type 'Expedited'"
+        file_0_error_message = (
+            f"File '{file_key_0}' from bucket '{archive_bucket_name}' "
+            f"is in storage class 'DEEP_ARCHIVE' "
+            f"which is incompatible with recovery type 'Expedited'"
+        )
         expected_file0_output = {
             request_from_archive.FILE_PROCESSED_KEY: True,
             request_from_archive.FILE_FILENAME_KEY: file_key_0,
             request_from_archive.FILE_KEY_PATH_KEY: file_key_0,
             request_from_archive.FILE_RESTORE_DESTINATION_KEY: file_dest_bucket_0,
-            request_from_archive.FILE_MULTIPART_CHUNKSIZE_MB_KEY:
-                collection_multipart_chunksize_mb,
+            request_from_archive.FILE_MULTIPART_CHUNKSIZE_MB_KEY: collection_multipart_chunksize_mb,  # noqa: E501
             request_from_archive.FILE_STATUS_ID_KEY: OrcaStatus.FAILED.value,
             request_from_archive.FILE_REQUEST_TIME_KEY: mock.ANY,
             request_from_archive.FILE_LAST_UPDATE_KEY: mock.ANY,
             request_from_archive.FILE_ERROR_MESSAGE_KEY: file_0_error_message,
-            request_from_archive.FILE_COMPLETION_TIME_KEY: mock.ANY
+            request_from_archive.FILE_COMPLETION_TIME_KEY: mock.ANY,
         }
         file_1 = {
             request_from_archive.FILE_KEY_KEY: file_key_1,
@@ -627,8 +627,7 @@ class TestRequestFromArchive(unittest.TestCase):
             request_from_archive.FILE_FILENAME_KEY: file_key_1,
             request_from_archive.FILE_KEY_PATH_KEY: file_key_1,
             request_from_archive.FILE_RESTORE_DESTINATION_KEY: file_dest_bucket_1,
-            request_from_archive.FILE_MULTIPART_CHUNKSIZE_MB_KEY:
-                collection_multipart_chunksize_mb,
+            request_from_archive.FILE_MULTIPART_CHUNKSIZE_MB_KEY: collection_multipart_chunksize_mb,  # noqa: E501
             request_from_archive.FILE_STATUS_ID_KEY: OrcaStatus.PENDING.value,
             request_from_archive.FILE_REQUEST_TIME_KEY: mock.ANY,
             request_from_archive.FILE_LAST_UPDATE_KEY: mock.ANY,
@@ -668,8 +667,7 @@ class TestRequestFromArchive(unittest.TestCase):
             request_from_archive.EVENT_CONFIG_KEY: {
                 request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: archive_bucket_name,
                 request_from_archive.CONFIG_JOB_ID_KEY: job_id,
-                request_from_archive.CONFIG_MULTIPART_CHUNKSIZE_MB_KEY:
-                    collection_multipart_chunksize_mb,
+                request_from_archive.CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: collection_multipart_chunksize_mb,  # noqa: E501
             },
             request_from_archive.EVENT_INPUT_KEY: {
                 request_from_archive.INPUT_GRANULES_KEY: [granule0, granule1]
@@ -693,7 +691,7 @@ class TestRequestFromArchive(unittest.TestCase):
             recovery_type,
             restore_expire_days,
             db_queue_url,
-            archive_recovery_queue_url
+            archive_recovery_queue_url,
         )
 
         # Compare to orca_shared to verify schema.
@@ -706,26 +704,16 @@ class TestRequestFromArchive(unittest.TestCase):
                     archive_bucket_name,
                     [
                         {
-                            request_from_archive.FILE_PROCESSED_KEY:
-                                True,
-                            shared_recovery.FILENAME_KEY:
-                                file_key_0,
-                            shared_recovery.KEY_PATH_KEY:
-                                file_key_0,
-                            shared_recovery.RESTORE_DESTINATION_KEY:
-                                file_dest_bucket_0,
-                            shared_recovery.MULTIPART_CHUNKSIZE_KEY:
-                                collection_multipart_chunksize_mb,
-                            shared_recovery.STATUS_ID_KEY:
-                                OrcaStatus.FAILED.value,
-                            shared_recovery.REQUEST_TIME_KEY:
-                                mock.ANY,
-                            shared_recovery.LAST_UPDATE_KEY:
-                                mock.ANY,
-                            shared_recovery.ERROR_MESSAGE_KEY:
-                                file_0_error_message,
-                            shared_recovery.COMPLETION_TIME_KEY:
-                                mock.ANY,
+                            request_from_archive.FILE_PROCESSED_KEY: True,
+                            shared_recovery.FILENAME_KEY: file_key_0,
+                            shared_recovery.KEY_PATH_KEY: file_key_0,
+                            shared_recovery.RESTORE_DESTINATION_KEY: file_dest_bucket_0,
+                            shared_recovery.MULTIPART_CHUNKSIZE_KEY: collection_multipart_chunksize_mb,  # noqa: E501
+                            shared_recovery.STATUS_ID_KEY: OrcaStatus.FAILED.value,
+                            shared_recovery.REQUEST_TIME_KEY: mock.ANY,
+                            shared_recovery.LAST_UPDATE_KEY: mock.ANY,
+                            shared_recovery.ERROR_MESSAGE_KEY: file_0_error_message,
+                            shared_recovery.COMPLETION_TIME_KEY: mock.ANY,
                         }
                     ],
                     db_queue_url,
@@ -737,22 +725,15 @@ class TestRequestFromArchive(unittest.TestCase):
                     archive_bucket_name,
                     [
                         {
-                            request_from_archive.FILE_PROCESSED_KEY:
-                                False,  # This value is changed by process_granule.
-                            shared_recovery.FILENAME_KEY:
-                                file_key_1,
-                            shared_recovery.KEY_PATH_KEY:
-                                file_key_1,
-                            shared_recovery.RESTORE_DESTINATION_KEY:
-                                file_dest_bucket_1,
-                            shared_recovery.MULTIPART_CHUNKSIZE_KEY:
-                                collection_multipart_chunksize_mb,
-                            shared_recovery.STATUS_ID_KEY:
-                                OrcaStatus.PENDING.value,
-                            shared_recovery.REQUEST_TIME_KEY:
-                                mock.ANY,
-                            shared_recovery.LAST_UPDATE_KEY:
-                                mock.ANY,
+                            # This value is changed by process_granule.
+                            request_from_archive.FILE_PROCESSED_KEY: False,
+                            shared_recovery.FILENAME_KEY: file_key_1,
+                            shared_recovery.KEY_PATH_KEY: file_key_1,
+                            shared_recovery.RESTORE_DESTINATION_KEY: file_dest_bucket_1,
+                            shared_recovery.MULTIPART_CHUNKSIZE_KEY: collection_multipart_chunksize_mb,  # noqa: E501
+                            shared_recovery.STATUS_ID_KEY: OrcaStatus.PENDING.value,
+                            shared_recovery.REQUEST_TIME_KEY: mock.ANY,
+                            shared_recovery.LAST_UPDATE_KEY: mock.ANY,
                         }
                     ],
                     db_queue_url,
@@ -772,7 +753,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     recovery_type,
                     job_id,
                     db_queue_url,
-                    archive_recovery_queue_url
+                    archive_recovery_queue_url,
                 ),
                 call(
                     mock_s3_cli,
@@ -784,7 +765,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     recovery_type,
                     job_id,
                     db_queue_url,
-                    archive_recovery_queue_url
+                    archive_recovery_queue_url,
                 ),
             ]
         )
@@ -836,8 +817,7 @@ class TestRequestFromArchive(unittest.TestCase):
             request_from_archive.FILE_FILENAME_KEY: file_key_0,
             request_from_archive.FILE_KEY_PATH_KEY: file_key_0,
             request_from_archive.FILE_RESTORE_DESTINATION_KEY: file_dest_bucket_0,
-            request_from_archive.FILE_MULTIPART_CHUNKSIZE_MB_KEY:
-                collection_multipart_chunksize_mb,
+            request_from_archive.FILE_MULTIPART_CHUNKSIZE_MB_KEY: collection_multipart_chunksize_mb,  # noqa: E501
             request_from_archive.FILE_STATUS_ID_KEY: OrcaStatus.PENDING.value,
             "request_time": mock.ANY,
             "last_update": mock.ANY,
@@ -891,8 +871,7 @@ class TestRequestFromArchive(unittest.TestCase):
             request_from_archive.EVENT_CONFIG_KEY: {
                 request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: archive_bucket_name,
                 request_from_archive.CONFIG_JOB_ID_KEY: job_id,
-                request_from_archive.CONFIG_MULTIPART_CHUNKSIZE_MB_KEY:
-                    collection_multipart_chunksize_mb,
+                request_from_archive.CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: collection_multipart_chunksize_mb,  # noqa: E501
             },
             request_from_archive.EVENT_INPUT_KEY: {
                 request_from_archive.INPUT_GRANULES_KEY: [granule0, granule1]
@@ -915,7 +894,7 @@ class TestRequestFromArchive(unittest.TestCase):
                 recovery_type,
                 restore_expire_days,
                 db_queue_url,
-                archive_recovery_queue_url
+                archive_recovery_queue_url,
             )
         self.assertEqual(
             f"Unable to send message to QUEUE '{db_queue_url}'", str(cm.exception)
@@ -931,22 +910,15 @@ class TestRequestFromArchive(unittest.TestCase):
                     archive_bucket_name,
                     [
                         {
-                            request_from_archive.FILE_PROCESSED_KEY:
-                            False,  # This value is changed by process_granule.
-                            shared_recovery.FILENAME_KEY:
-                            file_key_0,
-                            shared_recovery.KEY_PATH_KEY:
-                            file_key_0,
-                            shared_recovery.RESTORE_DESTINATION_KEY:
-                            file_dest_bucket_0,
-                            shared_recovery.MULTIPART_CHUNKSIZE_KEY:
-                                collection_multipart_chunksize_mb,
-                            shared_recovery.STATUS_ID_KEY:
-                                OrcaStatus.PENDING.value,
-                            shared_recovery.REQUEST_TIME_KEY:
-                                mock.ANY,
-                            shared_recovery.LAST_UPDATE_KEY:
-                                mock.ANY,
+                            # This value is changed by process_granule.
+                            request_from_archive.FILE_PROCESSED_KEY: False,
+                            shared_recovery.FILENAME_KEY: file_key_0,
+                            shared_recovery.KEY_PATH_KEY: file_key_0,
+                            shared_recovery.RESTORE_DESTINATION_KEY: file_dest_bucket_0,
+                            shared_recovery.MULTIPART_CHUNKSIZE_KEY: collection_multipart_chunksize_mb,  # noqa: E501
+                            shared_recovery.STATUS_ID_KEY: OrcaStatus.PENDING.value,
+                            shared_recovery.REQUEST_TIME_KEY: mock.ANY,
+                            shared_recovery.LAST_UPDATE_KEY: mock.ANY,
                         }
                     ],
                     db_queue_url,
@@ -1005,7 +977,7 @@ class TestRequestFromArchive(unittest.TestCase):
 
         os.environ[
             request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
-            ] = archive_recovery_queue_url
+        ] = archive_recovery_queue_url
         file_0 = {
             request_from_archive.FILE_KEY_KEY: file_key_0,
             request_from_archive.FILE_DEST_BUCKET_KEY: file_dest_bucket_0,
@@ -1015,8 +987,7 @@ class TestRequestFromArchive(unittest.TestCase):
             request_from_archive.FILE_FILENAME_KEY: file_key_0,
             request_from_archive.FILE_KEY_PATH_KEY: file_key_0,
             request_from_archive.FILE_RESTORE_DESTINATION_KEY: file_dest_bucket_0,
-            request_from_archive.FILE_MULTIPART_CHUNKSIZE_MB_KEY:
-                collection_multipart_chunksize_mb,
+            request_from_archive.FILE_MULTIPART_CHUNKSIZE_MB_KEY: collection_multipart_chunksize_mb,  # noqa: E501
             request_from_archive.FILE_STATUS_ID_KEY: OrcaStatus.PENDING.value,
             request_from_archive.FILE_REQUEST_TIME_KEY: mock.ANY,
             request_from_archive.FILE_LAST_UPDATE_KEY: mock.ANY,
@@ -1030,8 +1001,7 @@ class TestRequestFromArchive(unittest.TestCase):
             request_from_archive.FILE_FILENAME_KEY: file_key_1,
             request_from_archive.FILE_KEY_PATH_KEY: file_key_1,
             request_from_archive.FILE_RESTORE_DESTINATION_KEY: file_dest_bucket_1,
-            request_from_archive.FILE_MULTIPART_CHUNKSIZE_MB_KEY:
-                collection_multipart_chunksize_mb,
+            request_from_archive.FILE_MULTIPART_CHUNKSIZE_MB_KEY: collection_multipart_chunksize_mb,  # noqa: E501
             request_from_archive.FILE_STATUS_ID_KEY: OrcaStatus.PENDING.value,
             request_from_archive.FILE_REQUEST_TIME_KEY: mock.ANY,
             request_from_archive.FILE_LAST_UPDATE_KEY: mock.ANY,
@@ -1040,30 +1010,19 @@ class TestRequestFromArchive(unittest.TestCase):
         missing_file = {
             request_from_archive.FILE_KEY_KEY: missing_file_key,
             request_from_archive.FILE_DEST_BUCKET_KEY: missing_file_dest_bucket,
-            request_from_archive.FILE_MULTIPART_CHUNKSIZE_MB_KEY:
-                collection_multipart_chunksize_mb,
+            request_from_archive.FILE_MULTIPART_CHUNKSIZE_MB_KEY: collection_multipart_chunksize_mb,  # noqa: E501
         }
         expected_missing_file_output = {
-            request_from_archive.FILE_PROCESSED_KEY:
-                True,
-            request_from_archive.FILE_FILENAME_KEY:
-                missing_file_key,
-            request_from_archive.FILE_KEY_PATH_KEY:
-                missing_file_key,
-            request_from_archive.FILE_RESTORE_DESTINATION_KEY:
-                missing_file_dest_bucket,
-            request_from_archive.FILE_MULTIPART_CHUNKSIZE_MB_KEY:
-                collection_multipart_chunksize_mb,
-            request_from_archive.FILE_STATUS_ID_KEY:
-                OrcaStatus.FAILED.value,
-            request_from_archive.FILE_REQUEST_TIME_KEY:
-                mock.ANY,
-            request_from_archive.FILE_LAST_UPDATE_KEY:
-                mock.ANY,
-            request_from_archive.FILE_ERROR_MESSAGE_KEY:
-                f"'{missing_file_key}' does not exist in '{archive_bucket_name}' bucket",
-            request_from_archive.FILE_COMPLETION_TIME_KEY:
-                mock.ANY,
+            request_from_archive.FILE_PROCESSED_KEY: True,
+            request_from_archive.FILE_FILENAME_KEY: missing_file_key,
+            request_from_archive.FILE_KEY_PATH_KEY: missing_file_key,
+            request_from_archive.FILE_RESTORE_DESTINATION_KEY: missing_file_dest_bucket,
+            request_from_archive.FILE_MULTIPART_CHUNKSIZE_MB_KEY: collection_multipart_chunksize_mb,  # noqa: E501
+            request_from_archive.FILE_STATUS_ID_KEY: OrcaStatus.FAILED.value,
+            request_from_archive.FILE_REQUEST_TIME_KEY: mock.ANY,
+            request_from_archive.FILE_LAST_UPDATE_KEY: mock.ANY,
+            request_from_archive.FILE_ERROR_MESSAGE_KEY: f"'{missing_file_key}' does not exist in '{archive_bucket_name}' bucket",  # noqa: E501
+            request_from_archive.FILE_COMPLETION_TIME_KEY: mock.ANY,
         }
 
         expected_input_granule_files = [
@@ -1088,8 +1047,7 @@ class TestRequestFromArchive(unittest.TestCase):
             request_from_archive.EVENT_CONFIG_KEY: {
                 request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: archive_bucket_name,
                 request_from_archive.CONFIG_JOB_ID_KEY: job_id,
-                request_from_archive.CONFIG_MULTIPART_CHUNKSIZE_MB_KEY:
-                    collection_multipart_chunksize_mb,
+                request_from_archive.CONFIG_MULTIPART_CHUNKSIZE_MB_KEY: collection_multipart_chunksize_mb,  # noqa: E501
             },
             request_from_archive.EVENT_INPUT_KEY: {
                 request_from_archive.INPUT_GRANULES_KEY: [granule]
@@ -1121,7 +1079,7 @@ class TestRequestFromArchive(unittest.TestCase):
             recovery_type,
             restore_expire_days,
             db_queue_url,
-            archive_recovery_queue_url
+            archive_recovery_queue_url,
         )
 
         mock_create_status_for_job.assert_called_once_with(
@@ -1132,62 +1090,38 @@ class TestRequestFromArchive(unittest.TestCase):
             # Compare to orca_shared to verify schema.
             [
                 {
-                    request_from_archive.FILE_PROCESSED_KEY:
-                        False,  # This value is changed by process_granule.
-                    shared_recovery.FILENAME_KEY:
-                        file_key_0,
-                    shared_recovery.KEY_PATH_KEY:
-                        file_key_0,
-                    shared_recovery.RESTORE_DESTINATION_KEY:
-                        file_dest_bucket_0,
-                    shared_recovery.MULTIPART_CHUNKSIZE_KEY:
-                        collection_multipart_chunksize_mb,
-                    shared_recovery.STATUS_ID_KEY:
-                        OrcaStatus.PENDING.value,
-                    shared_recovery.REQUEST_TIME_KEY:
-                        mock.ANY,
-                    shared_recovery.LAST_UPDATE_KEY:
-                        mock.ANY,
+                    # This value is changed by process_granule.
+                    request_from_archive.FILE_PROCESSED_KEY: False,
+                    shared_recovery.FILENAME_KEY: file_key_0,
+                    shared_recovery.KEY_PATH_KEY: file_key_0,
+                    shared_recovery.RESTORE_DESTINATION_KEY: file_dest_bucket_0,
+                    shared_recovery.MULTIPART_CHUNKSIZE_KEY: collection_multipart_chunksize_mb,
+                    shared_recovery.STATUS_ID_KEY: OrcaStatus.PENDING.value,
+                    shared_recovery.REQUEST_TIME_KEY: mock.ANY,
+                    shared_recovery.LAST_UPDATE_KEY: mock.ANY,
                 },
                 {
-                    request_from_archive.FILE_PROCESSED_KEY:
-                        True,  # Set to `True` when not found.
-                    shared_recovery.FILENAME_KEY:
-                        missing_file_key,
-                    shared_recovery.KEY_PATH_KEY:
-                        missing_file_key,
-                    shared_recovery.RESTORE_DESTINATION_KEY:
-                        missing_file_dest_bucket,
-                    shared_recovery.MULTIPART_CHUNKSIZE_KEY:
-                        collection_multipart_chunksize_mb,
-                    shared_recovery.STATUS_ID_KEY:
-                        OrcaStatus.FAILED.value,
-                    shared_recovery.REQUEST_TIME_KEY:
-                        mock.ANY,
-                    shared_recovery.LAST_UPDATE_KEY:
-                        mock.ANY,
-                    shared_recovery.ERROR_MESSAGE_KEY:
-                        f"'{missing_file_key}' does not exist in '{archive_bucket_name}' bucket",
-                    shared_recovery.COMPLETION_TIME_KEY:
-                        mock.ANY,
+                    request_from_archive.FILE_PROCESSED_KEY: True,  # Set to `True` when not found.
+                    shared_recovery.FILENAME_KEY: missing_file_key,
+                    shared_recovery.KEY_PATH_KEY: missing_file_key,
+                    shared_recovery.RESTORE_DESTINATION_KEY: missing_file_dest_bucket,
+                    shared_recovery.MULTIPART_CHUNKSIZE_KEY: collection_multipart_chunksize_mb,
+                    shared_recovery.STATUS_ID_KEY: OrcaStatus.FAILED.value,
+                    shared_recovery.REQUEST_TIME_KEY: mock.ANY,
+                    shared_recovery.LAST_UPDATE_KEY: mock.ANY,
+                    shared_recovery.ERROR_MESSAGE_KEY: f"'{missing_file_key}' does not exist in '{archive_bucket_name}' bucket",  # noqa: E501
+                    shared_recovery.COMPLETION_TIME_KEY: mock.ANY,
                 },
                 {
-                    request_from_archive.FILE_PROCESSED_KEY:
-                        False,  # This value is changed by process_granule.
-                    shared_recovery.FILENAME_KEY:
-                        file_key_1,
-                    shared_recovery.KEY_PATH_KEY:
-                        file_key_1,
-                    shared_recovery.RESTORE_DESTINATION_KEY:
-                        file_dest_bucket_1,
-                    shared_recovery.MULTIPART_CHUNKSIZE_KEY:
-                        collection_multipart_chunksize_mb,
-                    shared_recovery.STATUS_ID_KEY:
-                        OrcaStatus.PENDING.value,
-                    shared_recovery.REQUEST_TIME_KEY:
-                        mock.ANY,
-                    shared_recovery.LAST_UPDATE_KEY:
-                        mock.ANY,
+                    # This value is changed by process_granule.
+                    request_from_archive.FILE_PROCESSED_KEY: False,
+                    shared_recovery.FILENAME_KEY: file_key_1,
+                    shared_recovery.KEY_PATH_KEY: file_key_1,
+                    shared_recovery.RESTORE_DESTINATION_KEY: file_dest_bucket_1,
+                    shared_recovery.MULTIPART_CHUNKSIZE_KEY: collection_multipart_chunksize_mb,
+                    shared_recovery.STATUS_ID_KEY: OrcaStatus.PENDING.value,
+                    shared_recovery.REQUEST_TIME_KEY: mock.ANY,
+                    shared_recovery.LAST_UPDATE_KEY: mock.ANY,
                 },
             ],
             db_queue_url,
@@ -1202,7 +1136,7 @@ class TestRequestFromArchive(unittest.TestCase):
             recovery_type,
             job_id,
             db_queue_url,
-            archive_recovery_queue_url
+            archive_recovery_queue_url,
         )
         self.assertEqual(
             {
@@ -1236,7 +1170,9 @@ class TestRequestFromArchive(unittest.TestCase):
     def test_get_default_archive_bucket_name_returns_default_bucket_if_no_override(
         self,
     ):
-        bucket = os.environ[request_from_archive.OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY]
+        bucket = os.environ[
+            request_from_archive.OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY
+        ]
         result = request_from_archive.get_default_archive_bucket_name({})
         self.assertEqual(bucket, result)
 
@@ -1250,7 +1186,9 @@ class TestRequestFromArchive(unittest.TestCase):
     def test_get_default_archive_bucket_name_returns_default_bucket_if_none_override(
         self,
     ):
-        bucket = os.environ[request_from_archive.OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY]
+        bucket = os.environ[
+            request_from_archive.OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY
+        ]
         result = request_from_archive.get_default_archive_bucket_name(
             {
                 request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: None,
@@ -1266,14 +1204,18 @@ class TestRequestFromArchive(unittest.TestCase):
         clear=True,
     )
     def test_get_default_archive_bucket_name_returns_env_bucket_if_no_other(self):
-        bucket = os.environ[request_from_archive.OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY]
+        bucket = os.environ[
+            request_from_archive.OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY
+        ]
         result = request_from_archive.get_default_archive_bucket_name(
             {request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: None}
         )
         self.assertEqual(bucket, result)
 
     def test_get_default_archive_bucket_name_no_bucket_raises_error(self):
-        os.environ.pop(request_from_archive.OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY, None)
+        os.environ.pop(
+            request_from_archive.OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY, None
+        )
         with self.assertRaises(KeyError) as cm:
             request_from_archive.get_default_archive_bucket_name(
                 {request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: None}
@@ -1306,10 +1248,13 @@ class TestRequestFromArchive(unittest.TestCase):
         """
         Returns the value in config if valid, overriding other values.
         """
-        config = {request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: "Bulk"}
+        config = {
+            request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: "Bulk"
+        }
         result = request_from_archive.get_archive_recovery_type(config)
         self.assertEqual(
-            result, config[request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY]
+            result,
+            config[request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY],
         )
 
     @patch("request_from_archive.LOGGER.error")
@@ -1320,7 +1265,9 @@ class TestRequestFromArchive(unittest.TestCase):
         Raises ValueError if invalid config value.
         """
         recovery_type = uuid.uuid4().__str__()  # nosec
-        config = {request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: recovery_type}
+        config = {
+            request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: recovery_type
+        }
         with self.assertRaises(ValueError) as ve:
             request_from_archive.get_archive_recovery_type(config)
         self.assertEqual(
@@ -1344,7 +1291,8 @@ class TestRequestFromArchive(unittest.TestCase):
         config = {request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: None}
         result = request_from_archive.get_archive_recovery_type(config)
         self.assertEqual(
-            result, os.environ[request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY]
+            result,
+            os.environ[request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY],
         )
 
     @patch("request_from_archive.LOGGER.error")
@@ -1395,7 +1343,7 @@ class TestRequestFromArchive(unittest.TestCase):
 
         os.environ[
             request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
-            ] = archive_recovery_queue_url
+        ] = archive_recovery_queue_url
 
         granule = {
             request_from_archive.GRANULE_COLLECTION_ID_KEY: collection_id,
@@ -1403,14 +1351,18 @@ class TestRequestFromArchive(unittest.TestCase):
             request_from_archive.GRANULE_RECOVER_FILES_KEY: [
                 {
                     request_from_archive.FILE_PROCESSED_KEY: False,
-                    request_from_archive.FILE_FILENAME_KEY: os.path.basename(file_name_0),
+                    request_from_archive.FILE_FILENAME_KEY: os.path.basename(
+                        file_name_0
+                    ),
                     request_from_archive.FILE_KEY_PATH_KEY: file_name_0,
                     request_from_archive.FILE_RESTORE_DESTINATION_KEY: dest_bucket_0,
                     request_from_archive.FILE_STATUS_ID_KEY: 1,
                 },
                 {
                     request_from_archive.FILE_PROCESSED_KEY: False,
-                    request_from_archive.FILE_FILENAME_KEY: os.path.basename(file_name_1),
+                    request_from_archive.FILE_FILENAME_KEY: os.path.basename(
+                        file_name_1
+                    ),
                     request_from_archive.FILE_KEY_PATH_KEY: file_name_1,
                     request_from_archive.FILE_RESTORE_DESTINATION_KEY: dest_bucket_1,
                     request_from_archive.FILE_STATUS_ID_KEY: 1,
@@ -1428,7 +1380,7 @@ class TestRequestFromArchive(unittest.TestCase):
             recovery_type,
             job_id,
             db_queue_url,
-            archive_recovery_queue_url
+            archive_recovery_queue_url,
         )
 
         self.assertTrue(
@@ -1452,7 +1404,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     1,
                     job_id,
                     recovery_type,
-                    archive_recovery_queue_url
+                    archive_recovery_queue_url,
                 ),
                 call(
                     mock_s3,
@@ -1462,7 +1414,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     1,
                     job_id,
                     recovery_type,
-                    archive_recovery_queue_url
+                    archive_recovery_queue_url,
                 ),
             ]
         )
@@ -1490,14 +1442,16 @@ class TestRequestFromArchive(unittest.TestCase):
 
         os.environ[
             request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
-            ] = archive_recovery_queue_url
+        ] = archive_recovery_queue_url
 
         granule = {
             request_from_archive.GRANULE_COLLECTION_ID_KEY: collection_id,
             request_from_archive.GRANULE_GRANULE_ID_KEY: granule_id,
             request_from_archive.GRANULE_RECOVER_FILES_KEY: [
                 {
-                    request_from_archive.FILE_FILENAME_KEY: os.path.basename(file_name_0),
+                    request_from_archive.FILE_FILENAME_KEY: os.path.basename(
+                        file_name_0
+                    ),
                     request_from_archive.FILE_KEY_PATH_KEY: file_name_0,
                     request_from_archive.FILE_RESTORE_DESTINATION_KEY: dest_bucket_0,
                     request_from_archive.FILE_PROCESSED_KEY: False,
@@ -1518,7 +1472,7 @@ class TestRequestFromArchive(unittest.TestCase):
             recovery_type,
             job_id,
             db_queue_url,
-            archive_recovery_queue_url
+            archive_recovery_queue_url,
         )
 
         self.assertTrue(
@@ -1536,7 +1490,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     1,
                     job_id,
                     recovery_type,
-                    archive_recovery_queue_url
+                    archive_recovery_queue_url,
                 ),
                 call(
                     mock_s3,
@@ -1546,7 +1500,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     2,
                     job_id,
                     recovery_type,
-                    archive_recovery_queue_url
+                    archive_recovery_queue_url,
                 ),
             ]
         )
@@ -1581,17 +1535,19 @@ class TestRequestFromArchive(unittest.TestCase):
 
         os.environ[
             request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
-            ] = archive_recovery_queue_url
+        ] = archive_recovery_queue_url
         os.environ[
             request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY
-            ] = db_queue_url
+        ] = db_queue_url
 
         granule = {
             request_from_archive.GRANULE_COLLECTION_ID_KEY: collection_id,
             request_from_archive.GRANULE_GRANULE_ID_KEY: granule_id,
             request_from_archive.GRANULE_RECOVER_FILES_KEY: [
                 {
-                    request_from_archive.FILE_FILENAME_KEY: os.path.basename(file_name_0),
+                    request_from_archive.FILE_FILENAME_KEY: os.path.basename(
+                        file_name_0
+                    ),
                     request_from_archive.FILE_KEY_PATH_KEY: file_name_0,
                     request_from_archive.FILE_RESTORE_DESTINATION_KEY: dest_bucket_0,
                     request_from_archive.FILE_PROCESSED_KEY: False,
@@ -1614,7 +1570,7 @@ class TestRequestFromArchive(unittest.TestCase):
                 recovery_type,
                 job_id,
                 db_queue_url,
-                archive_recovery_queue_url
+                archive_recovery_queue_url,
             )
             self.fail("Error not Raised.")
         # except request_from_archive.RestoreRequestError:
@@ -1639,7 +1595,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     1,
                     job_id,
                     recovery_type,
-                    archive_recovery_queue_url
+                    archive_recovery_queue_url,
                 ),
                 call(
                     mock_s3,
@@ -1649,7 +1605,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     2,
                     job_id,
                     recovery_type,
-                    archive_recovery_queue_url
+                    archive_recovery_queue_url,
                 ),
                 call(
                     mock_s3,
@@ -1659,7 +1615,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     3,
                     job_id,
                     recovery_type,
-                    archive_recovery_queue_url
+                    archive_recovery_queue_url,
                 ),
             ]
         )
@@ -1672,7 +1628,7 @@ class TestRequestFromArchive(unittest.TestCase):
             file_name_0,
             OrcaStatus.FAILED,
             str(expected_error),
-            db_queue_url
+            db_queue_url,
         )
         mock_logger_error.assert_has_calls(
             [
@@ -1718,14 +1674,16 @@ class TestRequestFromArchive(unittest.TestCase):
 
         os.environ[
             request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
-            ] = archive_recovery_queue_url
+        ] = archive_recovery_queue_url
 
         granule = {
             request_from_archive.GRANULE_COLLECTION_ID_KEY: collection_id,
             request_from_archive.GRANULE_GRANULE_ID_KEY: granule_id,
             request_from_archive.GRANULE_RECOVER_FILES_KEY: [
                 {
-                    request_from_archive.FILE_FILENAME_KEY: os.path.basename(file_name_0),
+                    request_from_archive.FILE_FILENAME_KEY: os.path.basename(
+                        file_name_0
+                    ),
                     request_from_archive.FILE_KEY_PATH_KEY: file_name_0,
                     request_from_archive.FILE_RESTORE_DESTINATION_KEY: dest_bucket_0,
                     request_from_archive.FILE_PROCESSED_KEY: False,
@@ -1751,7 +1709,7 @@ class TestRequestFromArchive(unittest.TestCase):
                 recovery_type,
                 job_id,
                 db_queue_url,
-                archive_recovery_queue_url
+                archive_recovery_queue_url,
             )
             self.fail("Error not Raised.")
         # except request_from_archive.RestoreRequestError:
@@ -1776,7 +1734,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     1,
                     job_id,
                     recovery_type,
-                    archive_recovery_queue_url
+                    archive_recovery_queue_url,
                 ),
                 call(
                     mock_s3,
@@ -1786,7 +1744,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     2,
                     job_id,
                     recovery_type,
-                    archive_recovery_queue_url
+                    archive_recovery_queue_url,
                 ),
                 call(
                     mock_s3,
@@ -1796,7 +1754,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     3,
                     job_id,
                     recovery_type,
-                    archive_recovery_queue_url
+                    archive_recovery_queue_url,
                 ),
             ]
         )
@@ -1809,7 +1767,7 @@ class TestRequestFromArchive(unittest.TestCase):
                     file_name_0,
                     OrcaStatus.FAILED,
                     str(expected_error),
-                    db_queue_url
+                    db_queue_url,
                 )
             ]
             * (max_retries + 1)
@@ -1893,7 +1851,7 @@ class TestRequestFromArchive(unittest.TestCase):
             randint(0, 99),  # nosec
             uuid.uuid4().__str__(),
             recovery_type,
-            archive_recovery_queue_url
+            archive_recovery_queue_url,
         )
 
         mock_s3_cli.restore_object.assert_called_once_with(
@@ -1908,7 +1866,8 @@ class TestRequestFromArchive(unittest.TestCase):
     @patch("request_from_archive.shared_recovery.post_entry_to_standard_queue")
     @patch("request_from_archive.LOGGER.info")
     def test_restore_object_200_returned_posts_to_queue(
-            self, mock_logger_info: MagicMock, mock_post_to_queue: MagicMock):
+        self, mock_logger_info: MagicMock, mock_post_to_queue: MagicMock
+    ):
         """
         A 200 indicates that the file is already restored,  and thus cannot
         presently be restored again. Will post to archive recovery queue.
@@ -1927,39 +1886,35 @@ class TestRequestFromArchive(unittest.TestCase):
         }
 
         request_from_archive.restore_object(
-                mock_s3_cli,
-                key,
-                restore_expire_days,
-                archive_bucket_name,
-                2,
-                uuid.uuid4().__str__(),
-                recovery_type,
-                archive_recovery_queue_url
-            )
+            mock_s3_cli,
+            key,
+            restore_expire_days,
+            archive_bucket_name,
+            2,
+            uuid.uuid4().__str__(),
+            recovery_type,
+            archive_recovery_queue_url,
+        )
         message = {
             "Records": [
-                    {
-                        "s3": {
-                            "bucket": {
-                                "name": archive_bucket_name
-                                },
-                            "object": {
-                                "key": key
-                                }
-                            }
-                        }
-                    ]
+                {
+                    "s3": {
+                        "bucket": {"name": archive_bucket_name},
+                        "object": {"key": key},
+                    }
                 }
+            ]
+        }
         mock_post_to_queue.assert_called_once_with(
             message,
-            os.environ[
-                request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
-                ],
-            )
+            os.environ[request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY],
+        )
 
     @patch("request_from_archive.task")
     @patch("request_from_archive.set_optional_event_property")
-    def test_handler_happy_path(self, mock_optional_property: MagicMock, mock_task: MagicMock):
+    def test_handler_happy_path(
+        self, mock_optional_property: MagicMock, mock_task: MagicMock
+    ):
         """
         Happy path for handler.
         """
@@ -1971,8 +1926,8 @@ class TestRequestFromArchive(unittest.TestCase):
             "defaultRecoveryTypeOverride": "Standard",
             "defaultBucketOverride": "test-bucket",
             "s3MultipartChunksizeMb": 123,
-            "asyncOperationId": "123"
-            }
+            "asyncOperationId": "123",
+        }
         mock_task.return_value = {
             "granules": [
                 {
@@ -1980,15 +1935,15 @@ class TestRequestFromArchive(unittest.TestCase):
                     request_from_archive.GRANULE_GRANULE_ID_KEY: "some_granule_id",
                     request_from_archive.GRANULE_RECOVER_FILES_KEY: [
                         {
-                            request_from_archive.FILE_FILENAME_KEY: os.path.basename(file0),
+                            request_from_archive.FILE_FILENAME_KEY: os.path.basename(
+                                file0
+                            ),
                             request_from_archive.FILE_KEY_PATH_KEY: file0,
                             request_from_archive.FILE_RESTORE_DESTINATION_KEY: bucket_name,
                             request_from_archive.FILE_PROCESSED_KEY: True,
                             request_from_archive.FILE_STATUS_ID_KEY: 1,
-                            request_from_archive.FILE_LAST_UPDATE_KEY:
-                                "2021-01-01T23:53:43.097+00:00",
-                            request_from_archive.FILE_REQUEST_TIME_KEY:
-                                "2021-01-01T23:53:43.097+00:00",
+                            request_from_archive.FILE_LAST_UPDATE_KEY: "2021-01-01T23:53:43.097+00:00",  # noqa: E501
+                            request_from_archive.FILE_REQUEST_TIME_KEY: "2021-01-01T23:53:43.097+00:00",  # noqa: E501
                         },
                     ],
                 }
@@ -1998,57 +1953,58 @@ class TestRequestFromArchive(unittest.TestCase):
         context = Mock()
         result = request_from_archive.handler(input_event, context)
 
-        mock_task.assert_called_once_with(
-            input_event
-        )
+        mock_task.assert_called_once_with(input_event)
         mock_optional_property.assert_called_once_with(
-            input_event,
-            input_event[request_from_archive.EVENT_OPTIONAL_VALUES_KEY],
-            [])
+            input_event, input_event[request_from_archive.EVENT_OPTIONAL_VALUES_KEY], []
+        )
         self.assertEqual(mock_task.return_value, result)
 
     @patch("request_from_archive.task")
     @patch("request_from_archive.set_optional_event_property")
-    def test_handler_raises_error_bad_input(self,
-                                            mock_optional_property: MagicMock,
-                                            mock_task: MagicMock
-                                            ):
+    def test_handler_raises_error_bad_input(
+        self, mock_optional_property: MagicMock, mock_task: MagicMock
+    ):
         """
         Tests that expected error is raised on bad input such as missing granuleId.
         """
-        bad_handler_input_event = {"input": {
-            "granules": [
-                {
-                    "collectionId": uuid.uuid4().__str__(),
-                    "version": "integrationGranuleVersion",
-                    "files": [
-                        {
-                            "fileName": "MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
-                            "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
-                            "bucket": "rhrh-orca-primary"
-                        }
-                    ],
-                    "keys": [
-                        {
-                            "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
-                            "destBucket": "rhrh-public"
-                        }
-                    ]
-                }
-            ]
-        }, "config": Mock()}
+        bad_handler_input_event = {
+            "input": {
+                "granules": [
+                    {
+                        "collectionId": uuid.uuid4().__str__(),
+                        "version": "integrationGranuleVersion",
+                        "files": [
+                            {
+                                "fileName": "MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
+                                "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
+                                "bucket": "rhrh-orca-primary",
+                            }
+                        ],
+                        "keys": [
+                            {
+                                "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
+                                "destBucket": "rhrh-public",
+                            }
+                        ],
+                    }
+                ]
+            },
+            "config": Mock(),
+        }
         context = Mock()
         with self.assertRaises(Exception) as ex:
             request_from_archive.handler(bad_handler_input_event, context)
         self.assertEqual(
             str(ex.exception),
-            "data.granules[0] must contain ['collectionId', 'granuleId', 'keys'] properties")
+            "data.granules[0] must contain ['collectionId', 'granuleId', 'keys'] properties",
+        )
         mock_task.assert_not_called()
 
     @patch("request_from_archive.task")
     @patch("request_from_archive.set_optional_event_property")
-    def test_handler_raises_error_bad_output(self, mock_optional_property: MagicMock,
-                                             mock_task: MagicMock):
+    def test_handler_raises_error_bad_output(
+        self, mock_optional_property: MagicMock, mock_task: MagicMock
+    ):
         """
         Tests that expected error is raised on bad output such as missing asyncOperationId.
         """
@@ -2057,8 +2013,8 @@ class TestRequestFromArchive(unittest.TestCase):
             "defaultRecoveryTypeOverride": "Standard",
             "defaultBucketOverride": "test-bucket",
             "s3MultipartChunksizeMb": 123,
-            "asyncOperationId": "123"
-            }
+            "asyncOperationId": "123",
+        }
         context = Mock()
         mock_task.return_value = {
             "granules": [
@@ -2069,14 +2025,11 @@ class TestRequestFromArchive(unittest.TestCase):
                         {
                             "fileName": "test.hdf",
                             "key": "MOD09GQ/006/test.hdf",
-                            "bucket": "rhrh-orca-primary"
+                            "bucket": "rhrh-orca-primary",
                         }
                     ],
                     "keys": [
-                        {
-                            "key": "MOD09GQ/006/test.hdf",
-                            "destBucket": "rhrh-public"
-                        }
+                        {"key": "MOD09GQ/006/test.hdf", "destBucket": "rhrh-public"}
                     ],
                     "recoverFiles": [
                         {
@@ -2089,16 +2042,18 @@ class TestRequestFromArchive(unittest.TestCase):
                             "requestTime": "2022-11-03T18:59:52.807957+00:00",
                             "lastUpdate": "2022-11-03T18:59:52.807957+00:00",
                             "errorMessage": "MOD.hdf' does not exist in 'orca-primary' bucket",
-                            "completionTime": "2022-11-03T18:59:52.807957+00:00"
+                            "completionTime": "2022-11-03T18:59:52.807957+00:00",
                         }
-                    ]
+                    ],
                 }
             ],
-            }
+        }
         with self.assertRaises(Exception) as ex:
             request_from_archive.handler(handler_input_event, context)
         self.assertEqual(
-            str(ex.exception), "data must contain ['granules', 'asyncOperationId'] properties")
+            str(ex.exception),
+            "data must contain ['granules', 'asyncOperationId'] properties",
+        )
 
     @patch("request_from_archive.set_optional_event_property")
     @patch("request_from_archive.shared_recovery.create_status_for_job")
@@ -2107,7 +2062,7 @@ class TestRequestFromArchive(unittest.TestCase):
         self,
         mock_boto3_client: MagicMock,
         mock_create_status_for_job: MagicMock,
-        mock_optional_property: MagicMock
+        mock_optional_property: MagicMock,
     ):
         """
         A full run through with multiple files to verify output schema.
@@ -2158,8 +2113,7 @@ class TestRequestFromArchive(unittest.TestCase):
                 ]
             },
             "config": {
-                request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY:
-                    "my-dr-fake-archive-bucket",
+                request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: "my-dr-fake-archive-bucket",  # noqa: E501
                 request_from_archive.CONFIG_JOB_ID_KEY: job_id,
                 request_from_archive.CONFIG_DEFAULT_RECOVERY_TYPE_OVERRIDE_KEY: "Standard",
             },
@@ -2287,7 +2241,8 @@ class TestRequestFromArchive(unittest.TestCase):
 
     @patch("request_from_archive.LOGGER.info")
     def test_set_optional_event_property(
-        self, mock_logger: MagicMock,
+        self,
+        mock_logger: MagicMock,
     ):
         """
         Tests that set_optional_event_property sets asyncOperationId as the value
@@ -2300,36 +2255,25 @@ class TestRequestFromArchive(unittest.TestCase):
         key2_value = uuid.uuid4().__str__()
         mock_event = {
             "event": {
-                "cumulus_meta": {
-                    "asyncOperationId": key2_value
-                },
+                "cumulus_meta": {"asyncOperationId": key2_value},
                 "meta": {
                     "collection": {
-                        "meta": {
-                            "orca": {
-                                "defaultBucketOverride": key1_value
-                            }
-                        }
+                        "meta": {"orca": {"defaultBucketOverride": key1_value}}
                     }
-                }
+                },
             },
-            "config1": {
-                key2: uuid.uuid4().__str__()
-            }
+            "config1": {key2: uuid.uuid4().__str__()},
         }
         mock_target_path_cursor = {
             "config0": {
-                key0:
-                    "event.meta.collection.meta.orca.defaultRecoveryTypeOverride",
-                key1:
-                    "event.meta.collection.meta.orca.defaultBucketOverride"
+                key0: "event.meta.collection.meta.orca.defaultRecoveryTypeOverride",
+                key1: "event.meta.collection.meta.orca.defaultBucketOverride",
             },
-            "config1": {
-                key2:
-                    "event.cumulus_meta.asyncOperationId"
-            }
+            "config1": {key2: "event.cumulus_meta.asyncOperationId"},
         }
-        request_from_archive.set_optional_event_property(mock_event, mock_target_path_cursor, [])
+        request_from_archive.set_optional_event_property(
+            mock_event, mock_target_path_cursor, []
+        )
 
         # set asyncOperationId to non-null value
         self.assertEqual(None, mock_event["config0"][key0])

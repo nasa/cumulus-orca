@@ -148,12 +148,9 @@ class TestPostToQueueAndTriggerStepFunction(
 
         self.assertEqual(
             {
-                post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_REGION_KEY:
-                    aws_region,
-                post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_NAME_KEY:
-                    bucket_name,
-                post_to_queue_and_trigger_step_function.OUTPUT_MANIFEST_KEY_KEY:
-                    object_key,
+                post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_REGION_KEY: aws_region,  # noqa: E501
+                post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_NAME_KEY: bucket_name,
+                post_to_queue_and_trigger_step_function.OUTPUT_MANIFEST_KEY_KEY: object_key,
             },
             result,
         )
@@ -192,10 +189,8 @@ class TestPostToQueueAndTriggerStepFunction(
         with patch.dict(
             os.environ,
             {
-                post_to_queue_and_trigger_step_function.OS_ENVIRON_TARGET_QUEUE_URL_KEY:
-                    target_queue_url,
-                post_to_queue_and_trigger_step_function.OS_ENVIRON_STEP_FUNCTION_ARN_KEY:
-                    step_function_arn,
+                post_to_queue_and_trigger_step_function.OS_ENVIRON_TARGET_QUEUE_URL_KEY: target_queue_url,  # noqa: E501
+                post_to_queue_and_trigger_step_function.OS_ENVIRON_STEP_FUNCTION_ARN_KEY: step_function_arn,  # noqa: E501
             },
         ):
             post_to_queue_and_trigger_step_function.handler(
@@ -222,10 +217,8 @@ class TestPostToQueueAndTriggerStepFunction(
             with patch.dict(
                 os.environ,
                 {
-                    post_to_queue_and_trigger_step_function.OS_ENVIRON_TARGET_QUEUE_URL_KEY:
-                        target_queue_url,
-                    post_to_queue_and_trigger_step_function.OS_ENVIRON_STEP_FUNCTION_ARN_KEY:
-                        step_function_arn,
+                    post_to_queue_and_trigger_step_function.OS_ENVIRON_TARGET_QUEUE_URL_KEY: target_queue_url,  # noqa: E501
+                    post_to_queue_and_trigger_step_function.OS_ENVIRON_STEP_FUNCTION_ARN_KEY: step_function_arn,  # noqa: E501
                 },
             ):
                 post_to_queue_and_trigger_step_function.handler(
@@ -256,10 +249,8 @@ class TestPostToQueueAndTriggerStepFunction(
             with patch.dict(
                 os.environ,
                 {
-                    post_to_queue_and_trigger_step_function.OS_ENVIRON_TARGET_QUEUE_URL_KEY:
-                        target_queue_url,
-                    post_to_queue_and_trigger_step_function.OS_ENVIRON_STEP_FUNCTION_ARN_KEY:
-                        step_function_arn,
+                    post_to_queue_and_trigger_step_function.OS_ENVIRON_TARGET_QUEUE_URL_KEY: target_queue_url,  # noqa: E501
+                    post_to_queue_and_trigger_step_function.OS_ENVIRON_STEP_FUNCTION_ARN_KEY: step_function_arn,  # noqa: E501
                 },
             ):
                 with self.subTest(key):
@@ -286,10 +277,8 @@ class TestPostToQueueAndTriggerStepFunction(
             with patch.dict(
                 os.environ,
                 {
-                    post_to_queue_and_trigger_step_function.OS_ENVIRON_TARGET_QUEUE_URL_KEY:
-                        target_queue_url,
-                    post_to_queue_and_trigger_step_function.OS_ENVIRON_STEP_FUNCTION_ARN_KEY:
-                        step_function_arn,
+                    post_to_queue_and_trigger_step_function.OS_ENVIRON_TARGET_QUEUE_URL_KEY: target_queue_url,  # noqa: E501
+                    post_to_queue_and_trigger_step_function.OS_ENVIRON_STEP_FUNCTION_ARN_KEY: step_function_arn,  # noqa: E501
                 },
             ):
                 post_to_queue_and_trigger_step_function.handler(
@@ -349,12 +338,9 @@ class TestPostToQueueAndTriggerStepFunction(
         is same as the message received from SQS.
         """
         sqs_body = {
-            post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_REGION_KEY:
-                uuid.uuid4().__str__(),
-            post_to_queue_and_trigger_step_function.OUTPUT_MANIFEST_KEY_KEY:
-                uuid.uuid4().__str__(),
-            post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_NAME_KEY:
-                uuid.uuid4().__str__(),
+            post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_REGION_KEY: uuid.uuid4().__str__(),  # noqa: E501
+            post_to_queue_and_trigger_step_function.OUTPUT_MANIFEST_KEY_KEY: uuid.uuid4().__str__(),  # noqa: E501
+            post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_NAME_KEY: uuid.uuid4().__str__(),  # noqa: E501
         }
         # Send values to the function
         sqs_library.post_to_fifo_queue(
@@ -377,12 +363,9 @@ class TestPostToQueueAndTriggerStepFunction(
         Produces a failure and checks if retries are performed in the SQS library.
         """
         sqs_body = {
-            post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_REGION_KEY:
-                uuid.uuid4().__str__(),
-            post_to_queue_and_trigger_step_function.OUTPUT_MANIFEST_KEY_KEY:
-                uuid.uuid4().__str__(),
-            post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_NAME_KEY:
-                uuid.uuid4().__str__(),
+            post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_REGION_KEY: uuid.uuid4().__str__(),  # noqa: E501
+            post_to_queue_and_trigger_step_function.OUTPUT_MANIFEST_KEY_KEY: uuid.uuid4().__str__(),  # noqa: E501
+            post_to_queue_and_trigger_step_function.OUTPUT_REPORT_BUCKET_NAME_KEY: uuid.uuid4().__str__(),  # noqa: E501
         }
         # url is intentionally set wrong so send_message will fail.
         # Send values to the function

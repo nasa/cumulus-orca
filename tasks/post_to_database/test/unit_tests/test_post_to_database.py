@@ -111,8 +111,13 @@ class TestPostToDatabase(
         post_to_database.send_record_to_database(record, mock_engine)
 
         mock_create_status_for_job_and_files.assert_called_once_with(
-            job_id, collection_id, granule_id, request_time, archive_destination, files,
-            mock_engine
+            job_id,
+            collection_id,
+            granule_id,
+            request_time,
+            archive_destination,
+            files,
+            mock_engine,
         )
 
     def test_send_record_to_database_create_status_for_job_and_files_errors_for_missing_properties(
@@ -342,8 +347,13 @@ class TestPostToDatabase(
         mock_engine.begin.return_value.__exit__ = Mock(return_value=False)
 
         post_to_database.create_status_for_job_and_files(
-            job_id, collection_id, granule_id, request_time, archive_destination, files,
-            mock_engine
+            job_id,
+            collection_id,
+            granule_id,
+            request_time,
+            archive_destination,
+            files,
+            mock_engine,
         )
 
         mock_connection.execute.assert_has_calls(
@@ -414,8 +424,7 @@ class TestPostToDatabase(
         granule_id = uuid.uuid4().__str__()
         request_time = uuid.uuid4().__str__()
         archive_destination = uuid.uuid4().__str__()
-        files = [
-        ]
+        files = []
 
         mock_engine = Mock()
         mock_engine.begin.return_value = Mock()
@@ -425,8 +434,13 @@ class TestPostToDatabase(
         mock_engine.begin.return_value.__exit__ = Mock(return_value=False)
 
         post_to_database.create_status_for_job_and_files(
-            job_id, collection_id, granule_id, request_time, archive_destination, files,
-            mock_engine
+            job_id,
+            collection_id,
+            granule_id,
+            request_time,
+            archive_destination,
+            files,
+            mock_engine,
         )
 
         mock_connection.execute.assert_has_calls(
@@ -441,7 +455,8 @@ class TestPostToDatabase(
                             "status_id": OrcaStatus.FAILED.value,
                             "request_time": request_time,
                             "completion_time": mock_datetime.now(datetime.timezone.utc)
-                            .isoformat().__str__(),
+                            .isoformat()
+                            .__str__(),
                             "archive_destination": archive_destination,
                         }
                     ],
@@ -533,8 +548,13 @@ class TestPostToDatabase(
         mock_engine.begin.return_value.__exit__ = Mock(return_value=False)
 
         post_to_database.create_status_for_job_and_files(
-            job_id, collection_id, granule_id, request_time, archive_destination, files,
-            mock_engine
+            job_id,
+            collection_id,
+            granule_id,
+            request_time,
+            archive_destination,
+            files,
+            mock_engine,
         )
 
         mock_connection.execute.assert_has_calls(
@@ -643,8 +663,13 @@ class TestPostToDatabase(
 
             with self.assertRaises(ValueError) as cm:
                 post_to_database.create_status_for_job_and_files(
-                    job_id, collection_id, granule_id, request_time, archive_destination, files,
-                    Mock()
+                    job_id,
+                    collection_id,
+                    granule_id,
+                    request_time,
+                    archive_destination,
+                    files,
+                    Mock(),
                 )
             self.assertEqual(
                 f"Status ID '{status.value}' not allowed for new status.",
@@ -700,7 +725,11 @@ class TestPostToDatabase(
                 ),
                 call(
                     mock_update_job_sql.return_value,
-                    {"job_id": job_id, "collection_id": collection_id, "granule_id": granule_id},
+                    {
+                        "job_id": job_id,
+                        "collection_id": collection_id,
+                        "granule_id": granule_id,
+                    },
                 ),
             ]
         )

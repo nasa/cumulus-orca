@@ -121,8 +121,12 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         file = {uuid.uuid4().__str__(): uuid.uuid4().__str__()}
         # Send values to the function
         shared_recovery.create_status_for_job(
-            self.job_id, collection_id, self.granule_id, archive_destination, [file],
-            self.db_queue_url
+            self.job_id,
+            collection_id,
+            self.granule_id,
+            archive_destination,
+            [file],
+            self.db_queue_url,
         )
 
         # grabbing queue contents after the message is sent
@@ -130,14 +134,17 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         queue_output_body = json.loads(queue_contents[0].body)
 
         # Testing required fields
-        self.assertEqual({
-            shared_recovery.JOB_ID_KEY: self.job_id,
-            shared_recovery.COLLECTION_ID_KEY: collection_id,
-            shared_recovery.FILES_KEY: [file],
-            shared_recovery.GRANULE_ID_KEY: self.granule_id,
-            shared_recovery.REQUEST_TIME_KEY: mock.ANY,
-            shared_recovery.ARCHIVE_DESTINATION_KEY: archive_destination,
-        }, queue_output_body)
+        self.assertEqual(
+            {
+                shared_recovery.JOB_ID_KEY: self.job_id,
+                shared_recovery.COLLECTION_ID_KEY: collection_id,
+                shared_recovery.FILES_KEY: [file],
+                shared_recovery.GRANULE_ID_KEY: self.granule_id,
+                shared_recovery.REQUEST_TIME_KEY: mock.ANY,
+                shared_recovery.ARCHIVE_DESTINATION_KEY: archive_destination,
+            },
+            queue_output_body,
+        )
 
         # Get the request time
         new_request_time = datetime.fromisoformat(
@@ -164,8 +171,8 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
 
             # Run subtests
             with self.subTest(
-                    request_method=shared_recovery.RequestMethod.UPDATE_FILE,
-                    status_id=status_id,
+                request_method=shared_recovery.RequestMethod.UPDATE_FILE,
+                status_id=status_id,
             ):
 
                 # Send values to the function
@@ -226,7 +233,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                 if status_id == shared_recovery.OrcaStatus.FAILED:
                     self.assertEqual(
                         error_message,
-                        queue_output_body[shared_recovery.ERROR_MESSAGE_KEY]
+                        queue_output_body[shared_recovery.ERROR_MESSAGE_KEY],
                     )
                 else:
                     self.assertNotIn(

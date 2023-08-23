@@ -76,7 +76,9 @@ def task(
     if job_entry[OUTPUT_COMPLETION_TIME_KEY] is None:
         del job_entry[OUTPUT_COMPLETION_TIME_KEY]
 
-    file_entries = get_file_entries_for_granule_in_job(collection_id, granule_id, job_id, engine)
+    file_entries = get_file_entries_for_granule_in_job(
+        collection_id, granule_id, job_id, engine
+    )
     for file_entry in file_entries:
         if file_entry[OUTPUT_ERROR_MESSAGE_KEY] is None:
             del file_entry[OUTPUT_ERROR_MESSAGE_KEY]
@@ -195,7 +197,7 @@ def get_job_entry_for_granule(
 
 
 def get_job_entry_for_granule_sql() -> text:  # pragma: no cover
-    return text(  # nosec
+    return text(
         f"""
                 SELECT
                     collection_id as "{OUTPUT_COLLECTION_ID_KEY}",
@@ -210,7 +212,7 @@ def get_job_entry_for_granule_sql() -> text:  # pragma: no cover
                 WHERE
                     collection_id = :collection_id
                     AND granule_id = :granule_id
-                    AND job_id = :job_id"""
+                    AND job_id = :job_id"""  # nosec
     )
 
 
@@ -266,7 +268,7 @@ def get_file_entries_for_granule_in_job(
 
 
 def get_file_entries_for_granule_in_job_sql() -> text:  # pragma: no cover
-    return text(  # nosec
+    return text(
         f"""
             SELECT
                 recovery_file.filename AS "{OUTPUT_FILENAME_KEY}",
@@ -278,7 +280,7 @@ def get_file_entries_for_granule_in_job_sql() -> text:  # pragma: no cover
             JOIN recovery_status ON recovery_file.status_id=recovery_status.id
             WHERE
                 collection_id = :collection_id AND granule_id = :granule_id AND job_id = :job_id
-            ORDER BY filename desc"""
+            ORDER BY filename desc"""  # nosec
     )
 
 

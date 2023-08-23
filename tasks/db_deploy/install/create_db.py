@@ -17,7 +17,9 @@ from sqlalchemy.future import Connection
 import install.orca_sql as sql
 
 
-def create_fresh_orca_install(config: PostgresConnectionInfo, orca_buckets: List[str]) -> None:
+def create_fresh_orca_install(
+    config: PostgresConnectionInfo, orca_buckets: List[str]
+) -> None:
     """
     This task will create the ORCA roles, users, schema, and tables needed
     by the ORCA application as a fresh installation.
@@ -33,8 +35,9 @@ def create_fresh_orca_install(config: PostgresConnectionInfo, orca_buckets: List
     # Assume the database has been created at this point. Connect to the ORCA
     # database as a superuser and create the roles, users,  schema, and
     # objects.
-    admin_app_connection = \
-        create_engine(create_admin_uri(config, LOGGER, config.user_database_name), future=True)
+    admin_app_connection = create_engine(
+        create_admin_uri(config, LOGGER, config.user_database_name), future=True
+    )
 
     with admin_app_connection.connect() as conn:
         # Create the roles, schema and user

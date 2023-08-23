@@ -49,16 +49,14 @@ class TestRequestStatusForGranuleUnit(
             request_status_for_granule.OUTPUT_JOB_ID_KEY: async_operation_id,
             request_status_for_granule.OUTPUT_FILES_KEY: [
                 {
-                    request_status_for_granule.OUTPUT_FILENAME_KEY:
-                        uuid.uuid4().__str__(),  # nosec
-                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY:
-                        uuid.uuid4().__str__(),  # nosec
-                    request_status_for_granule.OUTPUT_STATUS_KEY:
-                        "staged",
+                    request_status_for_granule.OUTPUT_FILENAME_KEY: uuid.uuid4().__str__(),  # nosec # noqa: E501
+                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY: uuid.uuid4().__str__(),  # nosec # noqa: E501
+                    request_status_for_granule.OUTPUT_STATUS_KEY: "staged",
                 }
             ],
-            request_status_for_granule.OUTPUT_REQUEST_TIME_KEY:
-                random.randint(0, 9999999),  # nosec
+            request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: random.randint(
+                0, 9999999
+            ),  # nosec
         }
 
         event = {
@@ -105,16 +103,14 @@ class TestRequestStatusForGranuleUnit(
             request_status_for_granule.OUTPUT_JOB_ID_KEY: uuid.uuid4().__str__(),  # nosec
             request_status_for_granule.OUTPUT_FILES_KEY: [
                 {
-                    request_status_for_granule.OUTPUT_FILENAME_KEY:
-                        uuid.uuid4().__str__(),  # nosec
-                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY:
-                        uuid.uuid4().__str__(),  # nosec
-                    request_status_for_granule.OUTPUT_STATUS_KEY:
-                        "staged",
+                    request_status_for_granule.OUTPUT_FILENAME_KEY: uuid.uuid4().__str__(),  # nosec # noqa: E501
+                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY: uuid.uuid4().__str__(),  # nosec # noqa: E501
+                    request_status_for_granule.OUTPUT_STATUS_KEY: "staged",
                 }
             ],
-            request_status_for_granule.OUTPUT_REQUEST_TIME_KEY:
-                random.randint(0, 9999999),  # nosec
+            request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: random.randint(
+                0, 9999999
+            ),  # nosec
         }
 
         result = request_status_for_granule.handler(event, context)
@@ -160,7 +156,8 @@ class TestRequestStatusForGranuleUnit(
             HTTPStatus.BAD_REQUEST,
             context.aws_request_id,
             f"data must contain ['{request_status_for_granule.OUTPUT_COLLECTION_ID_KEY}', "
-            f"'{request_status_for_granule.OUTPUT_GRANULE_ID_KEY}'] properties")
+            f"'{request_status_for_granule.OUTPUT_GRANULE_ID_KEY}'] properties",
+        )
         self.assertEqual(mock_create_http_error_dict.return_value, result)
 
     # noinspection PyPep8Naming
@@ -202,31 +199,31 @@ class TestRequestStatusForGranuleUnit(
                     "InternalServerError",
                     HTTPStatus.INTERNAL_SERVER_ERROR,
                     context.aws_request_id,
-                    str(database_exception)
-                )
+                    str(database_exception),
+                ),
             ),
             (
                 request_status_for_granule.JobGranuleCombinationNotFoundException(
-                    async_operation_id, collection_id, granule_id),
+                    async_operation_id, collection_id, granule_id
+                ),
                 mock.call(
                     "NotFound",
                     HTTPStatus.NOT_FOUND,
                     context.aws_request_id,
                     f"No job found for collection '{collection_id}' granule '{granule_id}' "
-                    f"job '{async_operation_id}'."
-                )
+                    f"job '{async_operation_id}'.",
+                ),
             ),
             (
                 request_status_for_granule.JobNotFoundException(
-                    collection_id,
-                    granule_id
+                    collection_id, granule_id
                 ),
                 mock.call(
                     "NotFound",
                     HTTPStatus.NOT_FOUND,
                     context.aws_request_id,
                     f"No job for collection '{collection_id}' granule '{granule_id}'.",
-                )
+                ),
             ),
         ]
 
@@ -237,9 +234,7 @@ class TestRequestStatusForGranuleUnit(
                 result = request_status_for_granule.handler(event, context)
                 # assert_called_once_with does not accept a `call` parameter.
                 # Split into two checks.
-                mock_create_http_error_dict.assert_has_calls(
-                    [exception_and_result[1]]
-                )
+                mock_create_http_error_dict.assert_has_calls([exception_and_result[1]])
                 self.assertEqual(1, mock_create_http_error_dict.call_count)
                 self.assertEqual(mock_create_http_error_dict.return_value, result)
 
@@ -273,16 +268,14 @@ class TestRequestStatusForGranuleUnit(
             request_status_for_granule.OUTPUT_JOB_ID_KEY: async_operation_id,
             request_status_for_granule.OUTPUT_FILES_KEY: [
                 {
-                    request_status_for_granule.OUTPUT_FILENAME_KEY:
-                        uuid.uuid4().__str__(),  # nosec
-                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY:
-                        uuid.uuid4().__str__(),  # nosec
-                    request_status_for_granule.OUTPUT_STATUS_KEY:
-                        "apples",
+                    request_status_for_granule.OUTPUT_FILENAME_KEY: uuid.uuid4().__str__(),  # nosec # noqa: E501
+                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY: uuid.uuid4().__str__(),  # nosec # noqa: E501
+                    request_status_for_granule.OUTPUT_STATUS_KEY: "apples",
                 }
             ],
-            request_status_for_granule.OUTPUT_REQUEST_TIME_KEY:
-                random.randint(0, 9999999),  # nosec
+            request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: random.randint(
+                0, 9999999
+            ),  # nosec
         }
 
         event = {
@@ -306,7 +299,8 @@ class TestRequestStatusForGranuleUnit(
             context.aws_request_id,
             f"data.{request_status_for_granule.OUTPUT_FILES_KEY}[0]."
             f"{request_status_for_granule.OUTPUT_STATUS_KEY} "
-            f"must match pattern ^(pending|success|error|staged)$")
+            f"must match pattern ^(pending|success|error|staged)$",
+        )
         self.assertEqual(mock_create_http_error_dict.return_value, result)
 
     @patch("orca_shared.database.shared_db.get_user_connection")
@@ -462,8 +456,9 @@ class TestRequestStatusForGranuleUnit(
 
         mock_get_job_entry_for_granule.return_value = None
 
-        with self.assertRaises(request_status_for_granule.JobGranuleCombinationNotFoundException) \
-                as cm:
+        with self.assertRaises(
+            request_status_for_granule.JobGranuleCombinationNotFoundException
+        ) as cm:
             request_status_for_granule.task(
                 collection_id, granule_id, db_connect_info, job_id
             )
@@ -489,7 +484,9 @@ class TestRequestStatusForGranuleUnit(
         expected_result = {"job_id": job_id}
 
         mock_execute_result = Mock()
-        mock_execute_result.mappings = Mock(return_value=copy.deepcopy([expected_result]))
+        mock_execute_result.mappings = Mock(
+            return_value=copy.deepcopy([expected_result])
+        )
         mock_execute = Mock()
         mock_execute.return_value = mock_execute_result
         mock_connection = Mock()
@@ -534,7 +531,9 @@ class TestRequestStatusForGranuleUnit(
         }
 
         mock_execute_result = Mock()
-        mock_execute_result.mappings = Mock(return_value=copy.deepcopy([expected_result]))
+        mock_execute_result.mappings = Mock(
+            return_value=copy.deepcopy([expected_result])
+        )
         mock_execute = Mock()
         mock_execute.return_value = mock_execute_result
         mock_connection = Mock()
@@ -573,12 +572,14 @@ class TestRequestStatusForGranuleUnit(
         granule_id = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
 
-        expected_result = [{
+        expected_result = [
+            {
                 request_status_for_granule.OUTPUT_FILENAME_KEY: uuid.uuid4().__str__(),
                 request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY: uuid.uuid4().__str__(),
                 request_status_for_granule.OUTPUT_STATUS_KEY: uuid.uuid4().__str__(),
                 request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY: uuid.uuid4().__str__(),
-            }]
+            }
+        ]
 
         mock_execute_result = Mock()
         mock_execute_result.mappings = Mock(return_value=copy.deepcopy(expected_result))
@@ -661,37 +662,29 @@ class TestRequestStatusForGranuleUnit(
         mock_execute_result1 = Mock()
         mock_execute_result0.mappings = Mock(
             return_value=[
-                    {
-                        request_status_for_granule.OUTPUT_COLLECTION_ID_KEY: collection_id,
-                        request_status_for_granule.OUTPUT_GRANULE_ID_KEY: granule_id,
-                        request_status_for_granule.OUTPUT_JOB_ID_KEY: job_id,
-                        request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: request_time,
-                        request_status_for_granule.OUTPUT_COMPLETION_TIME_KEY: None,
-                    }
-                ]
-            )
+                {
+                    request_status_for_granule.OUTPUT_COLLECTION_ID_KEY: collection_id,
+                    request_status_for_granule.OUTPUT_GRANULE_ID_KEY: granule_id,
+                    request_status_for_granule.OUTPUT_JOB_ID_KEY: job_id,
+                    request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: request_time,
+                    request_status_for_granule.OUTPUT_COMPLETION_TIME_KEY: None,
+                }
+            ]
+        )
         mock_execute_result1.mappings = Mock(
             return_value=[
                 {
-                    request_status_for_granule.OUTPUT_FILENAME_KEY:
-                        filename_0,
-                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY:
-                        restore_destination_0,
-                    request_status_for_granule.OUTPUT_STATUS_KEY:
-                        status_0,
-                    request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY:
-                        error_0,
+                    request_status_for_granule.OUTPUT_FILENAME_KEY: filename_0,
+                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY: restore_destination_0,  # noqa: E501
+                    request_status_for_granule.OUTPUT_STATUS_KEY: status_0,
+                    request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY: error_0,
                 },
                 {
-                    request_status_for_granule.OUTPUT_FILENAME_KEY:
-                        filename_1,
-                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY:
-                        restore_destination_1,
-                    request_status_for_granule.OUTPUT_STATUS_KEY:
-                        status_1,
-                    request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY:
-                        error_1,
-                }
+                    request_status_for_granule.OUTPUT_FILENAME_KEY: filename_1,
+                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY: restore_destination_1,  # noqa: E501
+                    request_status_for_granule.OUTPUT_STATUS_KEY: status_1,
+                    request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY: error_1,
+                },
             ]
         )
 
@@ -719,19 +712,18 @@ class TestRequestStatusForGranuleUnit(
                     {
                         request_status_for_granule.OUTPUT_FILENAME_KEY: filename_0,
                         request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY: error_0,
-                        request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY:
-                            restore_destination_0,
+                        request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY: restore_destination_0,  # noqa: E501
                         request_status_for_granule.OUTPUT_STATUS_KEY: status_0,
                     },
                     {
                         request_status_for_granule.OUTPUT_FILENAME_KEY: filename_1,
-                        request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY:
-                            restore_destination_1,
+                        request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY: restore_destination_1,  # noqa: E501
                         request_status_for_granule.OUTPUT_STATUS_KEY: status_1,
-                    }
+                    },
                 ],
                 request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: request_time,
             },
-            result)
+            result,
+        )
 
         mock_get_user_connection.assert_called_once_with(db_connect_info)

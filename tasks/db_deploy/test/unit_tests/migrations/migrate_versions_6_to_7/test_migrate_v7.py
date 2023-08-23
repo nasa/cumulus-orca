@@ -24,9 +24,13 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         # todo: Use randomized values on a per-test basis.
         self.config = PostgresConnectionInfo(  # nosec
             admin_database_name="admin_db",
-            admin_username="admin", admin_password="admin123",
-            user_username="user56789012", user_password="pass56789012",
-            user_database_name="user_db", host="aws.postgresrds.host", port="5432"
+            admin_username="admin",
+            admin_password="admin123",
+            user_username="user56789012",
+            user_password="pass56789012",
+            user_database_name="user_db",
+            host="aws.postgresrds.host",
+            port="5432",
         )
 
     def tearDown(self):
@@ -37,8 +41,10 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         self.orca_buckets = None
 
     @patch("migrations.migrate_versions_6_to_7.migrate.sql.schema_versions_data_sql")
-    @patch("migrations.migrate_versions_6_to_7."
-           "migrate.sql.add_collection_id_to_recovery_job_and_recovery_file_sql")
+    @patch(
+        "migrations.migrate_versions_6_to_7."
+        "migrate.sql.add_collection_id_to_recovery_job_and_recovery_file_sql"
+    )
     @patch("migrations.migrate_versions_6_to_7.migrate.create_engine")
     @patch("migrations.migrate_versions_6_to_7.migrate.create_admin_uri")
     @patch("migrations.migrate_versions_6_to_7.migrate.sql.text")
@@ -66,8 +72,7 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 mock_create_engine.assert_called_once_with(
                     mock_create_admin_uri.return_value, future=True
                 )
-                mock_add_collection_id_to_recovery_job_and_recovery_file_sql.\
-                    assert_called_once_with()
+                mock_add_collection_id_to_recovery_job_and_recovery_file_sql.assert_called_once_with()
 
                 # Check the text calls occur and in the proper order
                 text_calls = [
@@ -79,7 +84,9 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 execution_order = [
                     call.execute(mock_text("SET ROLE orca_dbo;")),
                     call.execute(mock_text("SET search_path TO orca, public;")),
-                    call.execute(mock_add_collection_id_to_recovery_job_and_recovery_file_sql()),
+                    call.execute(
+                        mock_add_collection_id_to_recovery_job_and_recovery_file_sql()
+                    ),
                 ]
 
                 # Validate logic switch and set the execution order

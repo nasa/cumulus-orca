@@ -31,10 +31,7 @@ class TestOrcaSqlLogic(unittest.TestCase):
                     # These functions take in a string parameter:
                     if name in ["reconcile_s3_object_partition_sql"]:
                         self.assertEqual(
-                            type(
-                                function(uuid.uuid4().__str__())
-                            ),
-                            TextClause
+                            type(function(uuid.uuid4().__str__())), TextClause
                         )
 
                     # All other functions have no parameters passed

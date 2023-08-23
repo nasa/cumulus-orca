@@ -112,7 +112,7 @@ def query_db(
                     PHANTOMS_ORCA_ETAG_KEY: sql_result["orca_etag"],
                     PHANTOMS_ORCA_LAST_UPDATE_KEY: sql_result["orca_last_update"],
                     PHANTOMS_ORCA_SIZE_KEY: sql_result["orca_size"],
-                    PHANTOMS_ORCA_STORAGE_CLASS_KEY: sql_result["orca_storage_class"]
+                    PHANTOMS_ORCA_STORAGE_CLASS_KEY: sql_result["orca_storage_class"],
                 }
             )
         return phantoms

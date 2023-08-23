@@ -51,7 +51,7 @@ case $1 in
             -e "PGPASSWORD=${ADMIN_PASSWORD}" \
             -e "PGPORT=5433" \
             -v "${TASK_DIR}:/data" \
-            postgres:10.14 \
+            postgres:13.11 \
             /bin/bash
 
     ;;

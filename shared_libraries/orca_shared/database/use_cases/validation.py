@@ -27,15 +27,15 @@ def _validate_password(password: str, context: str, logger: logging.Logger) -> N
         msg = f"{context} password must be at least 12 characters long."
         logger.critical(msg)
         raise Exception(msg)
-    elif re.search('[0-9]', password) is None:
+    elif re.search("[0-9]", password) is None:
         msg = f"{context} password must contain a digit between 0 and 9."
         logger.critical(msg)
         raise Exception(msg)
-    elif re.search('[A-Z]', password) is None:
+    elif re.search("[A-Z]", password) is None:
         msg = f"{context} password must contain an upper case letter."
         logger.critical(msg)
         raise Exception(msg)
-    elif re.search('[a-z]', password) is None:
+    elif re.search("[a-z]", password) is None:
         msg = f"{context} password must contain a lower case letter."
         logger.critical(msg)
         raise Exception(msg)
@@ -64,7 +64,9 @@ def validate_postgres_name(name: str, context: str, logger: logging.Logger) -> N
     # noinspection RegExpSimplifiable
     # todo: Add support for non-english characters mentioned in postgres docs. ORCA-572
     if not re.compile("^[a-zA-Z_][a-zA-Z0-9_$]*$").match(name):
-        msg = f"{context} must start with an English letter or '_' " \
-              "and contain only English letters, numbers, '$', or '_'."
+        msg = (
+            f"{context} must start with an English letter or '_' "
+            "and contain only English letters, numbers, '$', or '_'."
+        )
         logger.critical(msg)
         raise Exception(msg)

@@ -45,8 +45,8 @@ except Exception as ex:
 
 
 def task(
-        page_index: int,
-        db_connect_info: Dict[str, str],
+    page_index: int,
+    db_connect_info: Dict[str, str],
 ) -> Dict[str, Any]:
     """
     Args:
@@ -62,15 +62,15 @@ def task(
     return {
         OUTPUT_ANOTHER_PAGE_KEY: len(jobs) > PAGE_SIZE,
         OUTPUT_JOBS_KEY: jobs[
-                            0:PAGE_SIZE
-                            ],  # we get one extra for anotherPage calculation.
+            0:PAGE_SIZE
+        ],  # we get one extra for anotherPage calculation.
     }
 
 
 @retry_operational_error()
 def query_db(
-        engine: Engine,
-        page_index: int,
+    engine: Engine,
+    page_index: int,
 ) -> List[Dict[str, Any]]:
     """
     Gets jobs for the given page, up to PAGE_SIZE + 1 results.
@@ -101,14 +101,18 @@ def query_db(
                     JOBS_ID_KEY: sql_result["id"],
                     JOBS_ORCA_ARCHIVE_LOCATION_KEY: sql_result["orca_archive_location"],
                     JOBS_STATUS_KEY: sql_result["status"],
-                    JOBS_INVENTORY_CREATION_TIME_KEY: sql_result["inventory_creation_time"],
+                    JOBS_INVENTORY_CREATION_TIME_KEY: sql_result[
+                        "inventory_creation_time"
+                    ],
                     JOBS_LAST_UPDATE_KEY: sql_result["last_update"],
                     JOBS_ERROR_MESSAGE_KEY: sql_result["error_message"],
                     JOBS_REPORT_TOTALS_KEY: {
                         REPORT_TOTALS_ORPHAN_KEY: sql_result["orphan_count"],
                         REPORT_TOTALS_PHANTOM_KEY: sql_result["phantom_count"],
-                        REPORT_TOTALS_CATALOG_MISMATCH_KEY: sql_result["catalog_mismatch_count"]
-                    }
+                        REPORT_TOTALS_CATALOG_MISMATCH_KEY: sql_result[
+                            "catalog_mismatch_count"
+                        ],
+                    },
                 }
             )
         return jobs
@@ -146,7 +150,7 @@ LIMIT :page_size+1"""
 
 
 def create_http_error_dict(
-        error_type: str, http_status_code: int, request_id: str, message: str
+    error_type: str, http_status_code: int, request_id: str, message: str
 ) -> Dict[str, Any]:
     """
     Creates a standardized dictionary for error reporting.
@@ -191,7 +195,7 @@ def check_env_variable(env_name: str) -> str:
 
 @LOGGER.inject_lambda_context
 def handler(
-        event: Dict[str, Union[str, int]], context: LambdaContext
+    event: Dict[str, Union[str, int]], context: LambdaContext
 ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
     """
     Entry point for the internal_reconcile_report_job Lambda.

@@ -12,7 +12,9 @@ from sqlalchemy import create_engine
 import migrations.migrate_versions_6_to_7.migrate_sql as sql
 
 
-def migrate_versions_6_to_7(config: PostgresConnectionInfo, is_latest_version: bool) -> None:
+def migrate_versions_6_to_7(
+    config: PostgresConnectionInfo, is_latest_version: bool
+) -> None:
     """
     Performs the migration of the ORCA schema from version 6 to version 7 of
     the ORCA schema. This includes adding the collection_id column to recovery_jobs and
@@ -26,8 +28,9 @@ def migrate_versions_6_to_7(config: PostgresConnectionInfo, is_latest_version: b
         None
     """
     # Get the admin engine to the app database
-    user_admin_engine = \
-        create_engine(create_admin_uri(config, LOGGER, config.user_database_name), future=True)
+    user_admin_engine = create_engine(
+        create_admin_uri(config, LOGGER, config.user_database_name), future=True
+    )
 
     with user_admin_engine.connect() as connection:
 
@@ -41,7 +44,9 @@ def migrate_versions_6_to_7(config: PostgresConnectionInfo, is_latest_version: b
 
         # Create storage_class table
         LOGGER.debug("Adding collection_id to recovery status tables ...")
-        connection.execute(sql.add_collection_id_to_recovery_job_and_recovery_file_sql())
+        connection.execute(
+            sql.add_collection_id_to_recovery_job_and_recovery_file_sql()
+        )
         LOGGER.info("collection_id added.")
 
         # If v7 is the latest version, update the schema_versions table.

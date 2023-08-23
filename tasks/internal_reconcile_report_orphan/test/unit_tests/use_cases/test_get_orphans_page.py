@@ -10,7 +10,10 @@ class TestGetOrphansPage(unittest.TestCase):
         orphans_page_storage = Mock()
         LOGGER = Mock()
 
-        result = get_orphans_page.task(orphans_record_filter, orphans_page_storage, LOGGER)
+        result = get_orphans_page.task(
+            orphans_record_filter, orphans_page_storage, LOGGER
+        )
         self.assertEqual(orphans_page_storage.get_orphans_page.return_value, result)
         orphans_page_storage.get_orphans_page.assert_called_once_with(
-            orphans_record_filter, LOGGER)
+            orphans_record_filter, LOGGER
+        )
