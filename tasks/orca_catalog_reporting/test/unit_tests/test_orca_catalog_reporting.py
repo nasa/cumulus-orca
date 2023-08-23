@@ -349,7 +349,7 @@ class TestOrcaCatalogReportingUnit(
         self.assertEqual(
             {
                 "anotherPage": True,
-                "granules": granules[0: orca_catalog_reporting.PAGE_SIZE],
+                "granules": granules[0 : orca_catalog_reporting.PAGE_SIZE],  # noqa: 203
             },
             result,
         )
@@ -424,6 +424,7 @@ class TestOrcaCatalogReportingUnit(
                 }
             ],
         )
+        mock_execute_result.mappings.assert_called_once_with()
         mock_exit.assert_called_once_with(None, None, None)
         mock_get_catalog_sql.assert_called_once_with()
         self.assertEqual(

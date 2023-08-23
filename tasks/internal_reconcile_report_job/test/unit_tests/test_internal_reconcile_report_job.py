@@ -21,11 +21,11 @@ class TestInternalReconcileReportJob(
     @patch("internal_reconcile_report_job.LOGGER")
     @patch("internal_reconcile_report_job.check_env_variable")
     def test_handler_happy_path(
-            self,
-            mock_check_env_variable: MagicMock,
-            mock_logger: MagicMock,
-            mock_get_configuration: MagicMock,
-            mock_task: MagicMock,
+        self,
+        mock_check_env_variable: MagicMock,
+        mock_logger: MagicMock,
+        mock_get_configuration: MagicMock,
+        mock_task: MagicMock,
     ):
         """
         Basic path with all information present.
@@ -39,26 +39,29 @@ class TestInternalReconcileReportJob(
             internal_reconcile_report_job.OUTPUT_ANOTHER_PAGE_KEY: False,
             internal_reconcile_report_job.OUTPUT_JOBS_KEY: [
                 {
-                    internal_reconcile_report_job.JOBS_ID_KEY:
-                        random.randint(0, 999),  # nosec
-                    internal_reconcile_report_job.JOBS_ORCA_ARCHIVE_LOCATION_KEY:
-                        uuid.uuid4().__str__(),
-                    internal_reconcile_report_job.JOBS_STATUS_KEY:
-                        "generating reports",
-                    internal_reconcile_report_job.JOBS_INVENTORY_CREATION_TIME_KEY:
-                        random.randint(0, 999),  # nosec
-                    internal_reconcile_report_job.JOBS_LAST_UPDATE_KEY:
-                        random.randint(0, 999),  # nosec
-                    internal_reconcile_report_job.JOBS_ERROR_MESSAGE_KEY:
-                        uuid.uuid4().__str__(),
+                    internal_reconcile_report_job.JOBS_ID_KEY: random.randint(
+                        0, 999
+                    ),  # nosec #noqa: E501
+                    internal_reconcile_report_job.JOBS_ORCA_ARCHIVE_LOCATION_KEY: uuid.uuid4().__str__(),  # noqa: E501
+                    internal_reconcile_report_job.JOBS_STATUS_KEY: "generating reports",  # noqa: E501
+                    internal_reconcile_report_job.JOBS_INVENTORY_CREATION_TIME_KEY: random.randint(
+                        0, 999
+                    ),  # nosec #noqa: E501
+                    internal_reconcile_report_job.JOBS_LAST_UPDATE_KEY: random.randint(
+                        0, 999
+                    ),  # nosec # noqa: E501
+                    internal_reconcile_report_job.JOBS_ERROR_MESSAGE_KEY: uuid.uuid4().__str__(),
                     internal_reconcile_report_job.JOBS_REPORT_TOTALS_KEY: {
-                        internal_reconcile_report_job.REPORT_TOTALS_ORPHAN_KEY:
-                            random.randint(0, 999),  # nosec
-                        internal_reconcile_report_job.REPORT_TOTALS_PHANTOM_KEY:
-                            random.randint(0, 999),  # nosec
-                        internal_reconcile_report_job.REPORT_TOTALS_CATALOG_MISMATCH_KEY:
-                            random.randint(0, 999)  # nosec
-                        }
+                        internal_reconcile_report_job.REPORT_TOTALS_ORPHAN_KEY: random.randint(
+                            0, 999
+                        ),  # nosec
+                        internal_reconcile_report_job.REPORT_TOTALS_PHANTOM_KEY: random.randint(
+                            0, 999
+                        ),  # nosec
+                        internal_reconcile_report_job.REPORT_TOTALS_CATALOG_MISMATCH_KEY: random.randint(  # noqa: 501
+                            0, 999
+                        ),  # nosec
+                    },
                 }
             ],
         }
@@ -81,9 +84,9 @@ class TestInternalReconcileReportJob(
     @patch("internal_reconcile_report_job.create_http_error_dict")
     @patch("orca_shared.database.shared_db.get_configuration")
     def test_handler_missing_page_index_returns_error(
-            self,
-            mock_get_configuration: MagicMock,
-            mock_create_http_error_dict: MagicMock,
+        self,
+        mock_get_configuration: MagicMock,
+        mock_create_http_error_dict: MagicMock,
     ):
         """
         page_index should be required by schema.
@@ -108,11 +111,11 @@ class TestInternalReconcileReportJob(
     @patch("orca_shared.database.shared_db.get_configuration")
     @patch("internal_reconcile_report_job.check_env_variable")
     def test_handler_bad_output_raises_error(
-            self,
-            mock_check_env_variable: MagicMock,
-            mock_get_configuration: MagicMock,
-            mock_task: MagicMock,
-            mock_create_http_error_dict: MagicMock,
+        self,
+        mock_check_env_variable: MagicMock,
+        mock_get_configuration: MagicMock,
+        mock_task: MagicMock,
+        mock_create_http_error_dict: MagicMock,
     ):
         """
         Output validity should be checked, and return an error code if invalid.
@@ -126,23 +129,26 @@ class TestInternalReconcileReportJob(
             internal_reconcile_report_job.OUTPUT_ANOTHER_PAGE_KEY: False,
             internal_reconcile_report_job.OUTPUT_JOBS_KEY: [
                 {
-                    internal_reconcile_report_job.JOBS_ID_KEY:
-                        random.randint(0, 999),  # nosec
-                    internal_reconcile_report_job.JOBS_ORCA_ARCHIVE_LOCATION_KEY:
-                        uuid.uuid4().__str__(),
-                    internal_reconcile_report_job.JOBS_STATUS_KEY:
-                        "generating reports",
-                    internal_reconcile_report_job.JOBS_INVENTORY_CREATION_TIME_KEY:
-                        random.randint(0, 999),  # nosec
-                    internal_reconcile_report_job.JOBS_LAST_UPDATE_KEY:
-                        random.randint(0, 999),  # nosec
+                    internal_reconcile_report_job.JOBS_ID_KEY: random.randint(
+                        0, 999
+                    ),  # nosec
+                    internal_reconcile_report_job.JOBS_ORCA_ARCHIVE_LOCATION_KEY: uuid.uuid4().__str__(),  # noqa: 501
+                    internal_reconcile_report_job.JOBS_STATUS_KEY: "generating reports",
+                    internal_reconcile_report_job.JOBS_INVENTORY_CREATION_TIME_KEY: random.randint(
+                        0, 999
+                    ),  # nosec
+                    internal_reconcile_report_job.JOBS_LAST_UPDATE_KEY: random.randint(
+                        0, 999
+                    ),  # nosec
                     internal_reconcile_report_job.JOBS_ERROR_MESSAGE_KEY: None,
                     internal_reconcile_report_job.JOBS_REPORT_TOTALS_KEY: {
-                        internal_reconcile_report_job.REPORT_TOTALS_PHANTOM_KEY:
-                            random.randint(0, 999),  # nosec
-                        internal_reconcile_report_job.REPORT_TOTALS_CATALOG_MISMATCH_KEY:
-                            random.randint(0, 999)  # nosec
-                        }
+                        internal_reconcile_report_job.REPORT_TOTALS_PHANTOM_KEY: random.randint(
+                            0, 999
+                        ),  # nosec
+                        internal_reconcile_report_job.REPORT_TOTALS_CATALOG_MISMATCH_KEY: random.randint(  # noqa: 501
+                            0, 999
+                        ),  # nosec
+                    },
                 }
             ],
         }
@@ -163,7 +169,7 @@ class TestInternalReconcileReportJob(
     @patch("internal_reconcile_report_job.query_db")
     @patch("orca_shared.database.shared_db.get_user_connection")
     def test_task_happy_path(
-            self, mock_get_user_connection: MagicMock, mock_query_db: MagicMock
+        self, mock_get_user_connection: MagicMock, mock_query_db: MagicMock
     ):
         """
         Task should call query_db, and send jobs back.
@@ -197,7 +203,7 @@ class TestInternalReconcileReportJob(
     @patch("internal_reconcile_report_job.query_db")
     @patch("orca_shared.database.shared_db.get_user_connection")
     def test_task_another_page(
-            self, mock_get_user_connection: MagicMock, mock_query_db: MagicMock
+        self, mock_get_user_connection: MagicMock, mock_query_db: MagicMock
     ):
         """
         Task should call query_db, and send jobs back.
@@ -224,8 +230,9 @@ class TestInternalReconcileReportJob(
         self.assertEqual(
             {
                 internal_reconcile_report_job.OUTPUT_ANOTHER_PAGE_KEY: True,
-                internal_reconcile_report_job.OUTPUT_JOBS_KEY:
-                    jobs[0: internal_reconcile_report_job.PAGE_SIZE],
+                internal_reconcile_report_job.OUTPUT_JOBS_KEY: jobs[
+                    0 : internal_reconcile_report_job.PAGE_SIZE  # noqa: 234
+                ],
             },
             result,
         )
@@ -256,7 +263,7 @@ class TestInternalReconcileReportJob(
             "error_message": error_message,
             "orphan_count": orphan_count,
             "phantom_count": phantom_count,
-            "catalog_mismatch_count": catalog_mismatch_count
+            "catalog_mismatch_count": catalog_mismatch_count,
         }
 
         mock_execute_result = Mock()
@@ -293,26 +300,17 @@ class TestInternalReconcileReportJob(
         self.assertEqual(
             [
                 {
-                    internal_reconcile_report_job.JOBS_ID_KEY:
-                        job_id,
-                    internal_reconcile_report_job.JOBS_ORCA_ARCHIVE_LOCATION_KEY:
-                        orca_archive_location,
-                    internal_reconcile_report_job.JOBS_STATUS_KEY:
-                        status,
-                    internal_reconcile_report_job.JOBS_INVENTORY_CREATION_TIME_KEY:
-                        inventory_creation_time,
-                    internal_reconcile_report_job.JOBS_LAST_UPDATE_KEY:
-                        last_update_time,
-                    internal_reconcile_report_job.JOBS_ERROR_MESSAGE_KEY:
-                        error_message,
+                    internal_reconcile_report_job.JOBS_ID_KEY: job_id,
+                    internal_reconcile_report_job.JOBS_ORCA_ARCHIVE_LOCATION_KEY: orca_archive_location,  # noqa: 501
+                    internal_reconcile_report_job.JOBS_STATUS_KEY: status,
+                    internal_reconcile_report_job.JOBS_INVENTORY_CREATION_TIME_KEY: inventory_creation_time,  # noqa: 501
+                    internal_reconcile_report_job.JOBS_LAST_UPDATE_KEY: last_update_time,
+                    internal_reconcile_report_job.JOBS_ERROR_MESSAGE_KEY: error_message,
                     internal_reconcile_report_job.JOBS_REPORT_TOTALS_KEY: {
-                        internal_reconcile_report_job.REPORT_TOTALS_ORPHAN_KEY:
-                            orphan_count,
-                        internal_reconcile_report_job.REPORT_TOTALS_PHANTOM_KEY:
-                            phantom_count,
-                        internal_reconcile_report_job.REPORT_TOTALS_CATALOG_MISMATCH_KEY:
-                            catalog_mismatch_count
-                    }
+                        internal_reconcile_report_job.REPORT_TOTALS_ORPHAN_KEY: orphan_count,
+                        internal_reconcile_report_job.REPORT_TOTALS_PHANTOM_KEY: phantom_count,
+                        internal_reconcile_report_job.REPORT_TOTALS_CATALOG_MISMATCH_KEY: catalog_mismatch_count,  # noqa: 501
+                    },
                 }
             ],
             result,
@@ -361,24 +359,25 @@ class TestInternalReconcileReportJob(
         )
 
     @patch("internal_reconcile_report_job.LOGGER.error")
-    def test_create_http_error_dict_happy_path(
-            self,
-            mock_error: MagicMock
-    ):
+    def test_create_http_error_dict_happy_path(self, mock_error: MagicMock):
         error_type = uuid.uuid4().__str__()
         http_status_code = random.randint(0, 9999)  # nosec
         request_id = uuid.uuid4().__str__()
         message = uuid.uuid4().__str__()
 
         result = internal_reconcile_report_job.create_http_error_dict(
-            error_type, http_status_code, request_id, message)
+            error_type, http_status_code, request_id, message
+        )
 
-        self.assertEqual({
-            "errorType": error_type,
-            "httpStatus": http_status_code,
-            "requestId": request_id,
-            "message": message,
-        }, result)
+        self.assertEqual(
+            {
+                "errorType": error_type,
+                "httpStatus": http_status_code,
+                "requestId": request_id,
+                "message": message,
+            },
+            result,
+        )
 
         mock_error.assert_called_once_with(message)
 
@@ -414,15 +413,11 @@ class TestInternalReconcileReportJob(
         """
 
         with self.assertRaises(KeyError) as err:
-            internal_reconcile_report_job.check_env_variable(
-                "EMPTY_ENV_VAR"
-            )
+            internal_reconcile_report_job.check_env_variable("EMPTY_ENV_VAR")
         error_message = "Empty value for EMPTY_ENV_VAR"
         self.assertEqual(err.exception.args[0], error_message)
         with self.assertRaises(KeyError):
-            internal_reconcile_report_job.check_env_variable(
-                "MISSING_ENV_VAR"
-            )
+            internal_reconcile_report_job.check_env_variable("MISSING_ENV_VAR")
         mock_logger.error.assert_called_with(
             "MISSING_ENV_VAR environment value not found."
         )

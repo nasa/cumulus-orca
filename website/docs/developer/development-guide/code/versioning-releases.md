@@ -147,22 +147,16 @@ DO NOT RUN THE RELEASE STAGE FROM `PROTOTYPE-LATEST`
 Comment the release stage out in `bamboo.yaml` at the top of the file, and under `stages:`. Note that indentation is not a reliable indicator of block length, so make sure that all release code, including `repositories`, `triggers`, and `branches`, are commented out.
 :::
 
-An EC2 key pair must be created using the AWS CLI if you are using a new `PREFIX`. Make sure to save the generated private key for connecting to this instance later.
-
-```bash
-aws ec2 create-key-pair --key-name <PREFIX> --query 'KeyMaterial' --output text > <PREFIX>.pem
-```
-:::note
-Make sure your AWS is configured to use the cumulus sandbox account by using that account's AWS access keys before creating the EC2 key pair.
-:::
-
 You will use the `ORCA Deploy Plan` bamboo plan for deploying the resources.
 
-After hitting the play button on `Deploy DR ORCA Buckets` stage in bamboo plan, but before hitting `Run` in the popup, replace the following variables with yours.
-
+After hitting the play button on `Deploy DR ORCA Buckets` stage in bamboo plan, but before hitting `Run` in the popup, replace the following variables with yours:
 - PREFIX
 - DR_AWS_ACCESS_KEY_ID
 - DR_AWS_SECRET_ACCESS_KEY
+
+:::tip
+Hitting 'play' next to `Deploy DR ORCA buckets`, `Deploy Dev RDS Stack` and `Deploy Dev Cumulus and ORCA Stack` brings up a checkbox list to run multiple jobs at once. Note that none of the checkboxes should be checked. This is because some variables are sensitive and some will vary depending upon the user running the pipeline.
+:::
 
 :::tip
 If you are targeting your personal feature branch, you may set these and future variables on the Plan Branch under `variables`.
@@ -178,10 +172,6 @@ These are the ORCA buckets that will be created in the disaster recovery AWS acc
 
 Some of these buckets have cross-account IAM policies attached so that they can be accessed from the other cumulus sandbox.
 
-:::tip
-Hitting 'play' next to `Deploy DR ORCA buckets`, `Deploy Dev RDS Stack` and `Deploy Dev Cumulus and ORCA Stack` brings up a checkbox list to run multiple jobs at once. Note that none of the checkboxes should be checked.
-:::
-
 The Cumulus and TF buckets as well as dynamoDB table in cumulus OU account are created automatically in the Bamboo `Deploy Cumulus buckets and Cumulus and Orca modules` stage.
 These are the buckets that will be created in cumulus OU account:
 
@@ -192,27 +182,9 @@ These are the buckets that will be created in cumulus OU account:
 - `<PREFIX>-protected`
 - `<PREFIX>-tf-state` (for storing the terraform state file in cumulus OU account)
 
-:::tip
-The `*-tf-state` buckets and dynamoDB tables will not be automatically removed by cleanup scripts.
-Once you are done with your testing, and you have verified that cleanup is actually successful, manually delete these resources.
-:::
-
-After hitting the play button on `Deploy Cumulus buckets and Cumulus and Orca modules`, but before hitting `Run` in the popup, replace the following variables with yours.
-
-- CUMULUS_AWS_ACCESS_KEY_ID
-- CUMULUS_AWS_SECRET_ACCESS_KEY
-- PREFIX
-- DB_ADMIN_PASSWORD
-- DB_USER_PASSWORD
-- EARTHDATA_CLIENT_ID
-- EARTHDATA_CLIENT_PASSWORD
-- CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION
-
-This is because some variables are sensitive and some will vary depending upon the user running the pipeline. Hitting 'play' next to any of the deployment stages brings up a checkbox list to run multiple jobs at once. Note that none of the checkboxes should be checked.
-
 The above buckets can also be created manually if desired by the user. Make sure to use the proper AWS access keys for configuration before running the commands.
 
-The bucket can be created using the following CLI command:
+Buckets can be created using the following CLI command:
 ```bash
 aws s3api create-bucket --bucket <BUCKET_NAME>  --region us-west-2 --create-bucket-configuration LocationConstraint=us-west-2
 ```
@@ -232,16 +204,31 @@ The dynamodb table and bucket versioning can be created manually as well.
     --versioning-configuration Status=Enabled
 ```
 
-A new earthdata application will need to be created if not done previously which will give the values for `EARTHDATA_CLIENT_ID` and `EARTHDATA_CLIENT_PASSWORD`. If you already have the application, use the existing values. `CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION` is the branch you want to check out in the [deployment repo](https://git.earthdata.nasa.gov/projects/ORCA/repos/cumulus-orca-deploy-template/browse) such as `v11.1.1-v4.0.1`.
+:::tip
+The `*-tf-state` buckets and dynamoDB tables will not be automatically removed by cleanup scripts.
+Once you are done with your testing, and you have verified that cleanup is actually successful, manually delete these resources.
+:::
 
-Note that the jobs may need to be run multiple times to get past deployment errors if there is one. If an error is raised saying `Cloudwatch log groups already exist`, then manually delete all the cloudwatch log groups and corresponding lambdas having the same name as the log groups from the AWS console and retry running the job.
+After hitting the play button on `Deploy Cumulus buckets and Cumulus and Orca modules`, but before hitting `Run` in the popup, replace the following variables with yours:
+- CUMULUS_AWS_ACCESS_KEY_ID
+- CUMULUS_AWS_SECRET_ACCESS_KEY
+- PREFIX
+- DB_ADMIN_PASSWORD
+- DB_USER_PASSWORD
+- CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION
 
-The `ORCA Cleanup Plan` has two stages named `Clean up ORCA buckets and modules` and `Clean up DR ORCA buckets` which can be run in sequence to remove most of the resources created by the deployment stages. Remember to add the following AWS secrets keys for both Cumulus and DR accounts while running the pipeline.
+`CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION` is the branch you want to check out in the [deployment repo](https://git.earthdata.nasa.gov/projects/ORCA/repos/cumulus-orca-deploy-template/browse) such as `v11.1.1-v4.0.1`.
 
+Note that the jobs may need to be run multiple times to get past deployment errors if there is one. If an error is raised saying `Cloudwatch log groups already exist`, then manually delete all the cloudwatch log groups and corresponding lambdas having the same name as the log groups from the AWS console and retry running the job. If the deployment is successful, the pipeline will run ingest integration tests automatically in the next step.
+
+The `ORCA Cleanup Plan` has two stages named `Clean up ORCA buckets and modules` and `Clean up DR ORCA buckets` which can be run in sequence to remove most of the resources created by the deployment stages. Remember to add the following variables before running the pipeline.
+
+- PREFIX
 - CUMULUS_AWS_ACCESS_KEY_ID
 - CUMULUS_AWS_SECRET_ACCESS_KEY
 - DR_AWS_ACCESS_KEY_ID
 - DR_AWS_SECRET_ACCESS_KEY
+- CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION
 
 State buckets and lock tables will be left intact to aid in any cleanup issues/debugging.
 To verify cleanup, check the stage logs for errors, and [check the AWS environment for additional resources](https://docs.aws.amazon.com/ARG/latest/userguide/find-resources-to-tag.html) with the tag `Deployment=PREFIX`.

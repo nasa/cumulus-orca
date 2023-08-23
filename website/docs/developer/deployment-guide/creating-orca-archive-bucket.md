@@ -208,7 +208,7 @@ aws sts get-caller-identity
 }
 ```
 
-Replace the number in `arn:aws:iam::012345678912:root` with the value of your account number.
+Replace the number in `arn:aws:iam::012345678912:root` with the value of your non-DR account number.
 
 The Resource value is the bucket and bucket paths that the Cumulus application
 can access. Replace `PREFIX-orca-archive` with the name
@@ -267,7 +267,7 @@ The Principal value is the AWS root user for your Cumulus application that will
 access the ORCA reports bucket.
 See the Archive Bucket instructions for assistance getting this value.
 
-Replace the number in `arn:aws:iam::012345678912:root` with the value of your account number.
+Replace the number in `arn:aws:iam::012345678912:root` with the value of your non-DR account number.
 See the Archive Bucket instructions for assistance getting this value.
 
 Replace the number `000000000000` with your DR account number.

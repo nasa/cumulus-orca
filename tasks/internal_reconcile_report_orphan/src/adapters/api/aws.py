@@ -64,7 +64,7 @@ def check_env_variable(env_name: str) -> str:
 
 
 def create_http_error_dict(
-        error_type: str, http_status_code: int, request_id: str, message: str
+    error_type: str, http_status_code: int, request_id: str, message: str
 ) -> Dict[str, Any]:
     """
     Creates a standardized dictionary for error reporting.
@@ -94,7 +94,7 @@ OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY = "DB_CONNECT_INFO_SECRET_ARN"  # nose
 
 @LOGGER.inject_lambda_context
 def handler(
-        event: Dict[str, Union[str, int]], context: LambdaContext
+    event: Dict[str, Union[str, int]], context: LambdaContext
 ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
     """
     Entry point for the internal_reconcile_report_orphan Lambda.
@@ -127,32 +127,33 @@ def handler(
             )
 
         db_connect_info = get_configuration(
-            check_env_variable(OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY),
-            LOGGER
+            check_env_variable(OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY), LOGGER
         )
 
         storage_adapter = StorageAdapterPostgres(
-            create_user_uri(
-                db_connect_info, LOGGER))
+            create_user_uri(db_connect_info, LOGGER)
+        )
 
-        orphan_record_filter = \
-            OrphanRecordFilter(job_id=event[INPUT_JOB_ID_KEY],
-                               page_index=event[INPUT_PAGE_INDEX_KEY],
-                               page_size=PAGE_SIZE)
+        orphan_record_filter = OrphanRecordFilter(
+            job_id=event[INPUT_JOB_ID_KEY],
+            page_index=event[INPUT_PAGE_INDEX_KEY],
+            page_size=PAGE_SIZE,
+        )
         orphan_record_page = get_orphans_page.task(
-            orphan_record_filter,
-            storage_adapter,
-            LOGGER
+            orphan_record_filter, storage_adapter, LOGGER
         )
         result = {
             OUTPUT_JOB_ID_KEY: event[INPUT_JOB_ID_KEY],
-            OUTPUT_ORPHANS_KEY: [{
-                ORPHANS_KEY_PATH_KEY: orphan.key_path,
-                ORPHANS_S3_ETAG_KEY: orphan.etag,
-                ORPHANS_S3_LAST_UPDATE_KEY: orphan.last_update,
-                ORPHANS_S3_SIZE_IN_BYTES_KEY: orphan.size_in_bytes,
-                ORPHANS_STORAGE_CLASS_KEY: orphan.storage_class,
-            } for orphan in orphan_record_page.orphans],
+            OUTPUT_ORPHANS_KEY: [
+                {
+                    ORPHANS_KEY_PATH_KEY: orphan.key_path,
+                    ORPHANS_S3_ETAG_KEY: orphan.etag,
+                    ORPHANS_S3_LAST_UPDATE_KEY: orphan.last_update,
+                    ORPHANS_S3_SIZE_IN_BYTES_KEY: orphan.size_in_bytes,
+                    ORPHANS_STORAGE_CLASS_KEY: orphan.storage_class,
+                }
+                for orphan in orphan_record_page.orphans
+            ],
             OUTPUT_ANOTHER_PAGE_KEY: orphan_record_page.another_page,
         }
 

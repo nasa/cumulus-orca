@@ -1,5 +1,4 @@
 import json
-import logging
 import time
 import uuid
 from unittest import TestCase, mock
@@ -7,6 +6,10 @@ from unittest import TestCase, mock
 import boto3
 
 import helpers
+from custom_logger import CustomLoggerAdapter
+
+# Set the logger
+logger = CustomLoggerAdapter.set_logger(__name__)
 
 
 class TestOverrideStorageClassHappyPath(TestCase):
@@ -20,6 +23,7 @@ class TestOverrideStorageClassHappyPath(TestCase):
             # Set up Orca API resources
             # ---
             my_session = helpers.create_session()
+            boto3_session = boto3.Session()
             granule_id_1 = uuid.uuid4().__str__()
             provider_id = uuid.uuid4().__str__()
             provider_name = uuid.uuid4().__str__()
@@ -31,16 +35,16 @@ class TestOverrideStorageClassHappyPath(TestCase):
             cumulus_bucket_name = "orca-sandbox-s3-provider"
             recovery_bucket_name = helpers.recovery_bucket_name
             excluded_filetype = []
-            name_1 = uuid.uuid4().__str__() + ".hdf"    # refers to file1.hdf
+            name_1 = uuid.uuid4().__str__() + ".hdf"  # refers to file1.hdf
             key_name_1 = "test/" + uuid.uuid4().__str__() + "/" + name_1
             file_1_hash = uuid.uuid4().__str__()
             file_1_hash_type = uuid.uuid4().__str__()
             execution_id = uuid.uuid4().__str__()
 
             # Upload the randomized file to source bucket
-            boto3.client('s3').upload_file(
+            boto3_session.client('s3').upload_file(
                 "file1.hdf", cumulus_bucket_name, key_name_1
-                )
+            )
 
             copy_to_archive_input = {
                 "payload": {
@@ -100,12 +104,12 @@ class TestOverrideStorageClassHappyPath(TestCase):
                 ]
             }
 
-            execution_info = boto3.client("stepfunctions").start_execution(
+            execution_info = boto3_session.client("stepfunctions").start_execution(
                 stateMachineArn=helpers.orca_copy_to_archive_step_function_arn,
                 input=json.dumps(copy_to_archive_input, indent=4),
             )
 
-            step_function_results = helpers.get_state_machine_execution_results(
+            step_function_results = helpers.get_state_machine_execution_results(boto3_session, 
                 execution_info["executionArn"],
                 maximum_duration_seconds=30,
             )
@@ -130,7 +134,7 @@ class TestOverrideStorageClassHappyPath(TestCase):
                     # and cross-account access is no longer granted,
                     # use boto3.Session(profile_name="yourAWSConfigureProfileName").client(...
                     # to use a differently configured aws access key
-                    head_object_output = boto3.client("s3").head_object(
+                    head_object_output = boto3_session.client("s3").head_object(
                         Bucket=recovery_bucket_name, Key=key)
                     self.assertEqual(
                         200,
@@ -141,13 +145,13 @@ class TestOverrideStorageClassHappyPath(TestCase):
                         "DEEP_ARCHIVE",
                         head_object_output["StorageClass"]
                     )
-                    s3_versions.append(head_object_output["VersionId"])
+                    s3_versions.append(head_object_output.get("VersionId", "null"))
             except Exception as ex:
-                logging.error(ex)
+                logger.error(ex)
                 raise
 
             # Let the catalog update
-            time.sleep(1)
+            time.sleep(30)
             # noinspection PyArgumentList
             catalog_output = helpers.post_to_api(
                 my_session,
@@ -155,6 +159,7 @@ class TestOverrideStorageClassHappyPath(TestCase):
                 data=json.dumps(
                     {
                         "pageIndex": 0,
+                        "collectionId": [collection_name + "___" + collection_version],
                         "granuleId": [
                             granule_id_1
                         ],
@@ -164,7 +169,8 @@ class TestOverrideStorageClassHappyPath(TestCase):
                 headers={"Host": helpers.aws_api_name},
             )
             self.assertEqual(
-                200, catalog_output.status_code, "Error occurred while contacting API."
+                200, catalog_output.status_code, f"Error occurred while contacting API: "
+                                                 f"{catalog_output.content}"
             )
             expected_catalog_output_granules = [{
                 "providerId": provider_id,
@@ -197,12 +203,13 @@ class TestOverrideStorageClassHappyPath(TestCase):
                 catalog_output_json,
                 "Expected API output not returned.",
             )
+            actual_catalog_output_granules = catalog_output_json["granules"]
             # Make sure all given granules are present without checking order.
             self.assertCountEqual(
                 expected_catalog_output_granules,
-                catalog_output_json["granules"],
+                actual_catalog_output_granules,
                 "Expected API output not returned."
             )
         except Exception as ex:
-            logging.error(ex)
+            logger.error(ex)
             raise

@@ -104,8 +104,7 @@ class TestGetCurrentArchiveList(
         self.assertEqual(
             {
                 get_current_archive_list.OUTPUT_JOB_ID_KEY: mock_job_id,
-                get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY:
-                    mock_orca_archive_location,
+                get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY: mock_orca_archive_location,  # noqa: E501
             },
             result,
         )
@@ -972,12 +971,10 @@ class TestGetCurrentArchiveList(
         mock_manifest_key_path = Mock()
         receipt_handle = uuid.uuid4().__str__()
         expected_result = {
-            get_current_archive_list.OUTPUT_JOB_ID_KEY:
-                random.randint(  # nosec
-                    0, 1000
-                ),
-            get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY:
-                uuid.uuid4().__str__(),  # nosec
+            get_current_archive_list.OUTPUT_JOB_ID_KEY: random.randint(  # nosec
+                0, 1000
+            ),
+            get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY: uuid.uuid4().__str__(),  # nosec # noqa: E501
         }
         mock_task.return_value = copy.deepcopy(expected_result)
         expected_result[
@@ -1005,26 +1002,28 @@ class TestGetCurrentArchiveList(
         with patch.dict(
             os.environ,
             {
-                get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY:
-                    mock_s3_credentials_secret_arn,
-                get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY:
-                    report_queue_url,
-                get_current_archive_list.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY:
-                    mock_db_connect_info_secret_arn,
-
+                get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY: mock_s3_credentials_secret_arn,  # noqa: E501
+                get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY: report_queue_url,  # noqa: E501
+                get_current_archive_list.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY: mock_db_connect_info_secret_arn,  # noqa: E501
             },
         ):
             result = get_current_archive_list.handler(event, mock_context)
 
         mock_get_s3_credentials_from_secrets_manager.assert_called_once_with(
             mock_check_env_variable(
-                get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY))
+                get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY
+            )
+        )
         mock_get_configuration.assert_called_once_with(
             mock_check_env_variable(
-                get_current_archive_list.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY))
+                get_current_archive_list.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY
+            )
+        )
         mock_get_message_from_queue.assert_called_once_with(
             mock_check_env_variable(
-                get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY))
+                get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY
+            )
+        )
         mock_task.assert_called_once_with(
             mock_report_bucket_aws_region,
             mock_report_bucket_name,
@@ -1043,11 +1042,9 @@ class TestGetCurrentArchiveList(
     @patch("get_current_archive_list.check_env_variable")
     @patch.dict(
         os.environ,
-        {
-            "DB_CONNECT_INFO_SECRET_ARN": "test"
-        },
+        {"DB_CONNECT_INFO_SECRET_ARN": "test"},
         clear=True,
-     )
+    )
     def test_handler_rejects_bad_output(
         self,
         mock_check_env_variable: MagicMock,
@@ -1090,17 +1087,17 @@ class TestGetCurrentArchiveList(
             with patch.dict(
                 os.environ,
                 {
-                    get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY:
-                    mock_s3_credentials_secret_arn,
-                    get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY:
-                    report_queue_url,
+                    get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY: mock_s3_credentials_secret_arn,  # noqa: E501
+                    get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY: report_queue_url,  # noqa: E501
                 },
             ):
                 get_current_archive_list.handler(event, mock_context)
 
         mock_get_message_from_queue.assert_called_once_with(
             mock_check_env_variable(
-                get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY))
+                get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY
+            )
+        )
         mock_task.assert_called_once_with(
             mock_report_bucket_aws_region,
             mock_report_bucket_name,
@@ -1118,10 +1115,10 @@ class TestGetCurrentArchiveList(
     @patch.dict(
         os.environ,
         {
-             "ENV_VAR": uuid.uuid4().__str__(),
+            "ENV_VAR": uuid.uuid4().__str__(),
         },
         clear=True,
-     )
+    )
     def test_check_env_variable_happy_path(self):
 
         """
@@ -1134,10 +1131,10 @@ class TestGetCurrentArchiveList(
     @patch.dict(
         os.environ,
         {
-             "EMPTY_ENV_VAR": "",
+            "EMPTY_ENV_VAR": "",
         },
         clear=True,
-     )
+    )
     @patch("get_current_archive_list.LOGGER")
     def test_check_env_variable_empty_and_no_key(self, mock_logger: MagicMock):
 
@@ -1146,15 +1143,11 @@ class TestGetCurrentArchiveList(
         """
 
         with self.assertRaises(KeyError) as err:
-            get_current_archive_list.check_env_variable(
-                "EMPTY_ENV_VAR"
-            )
+            get_current_archive_list.check_env_variable("EMPTY_ENV_VAR")
         error_message = "Empty value for EMPTY_ENV_VAR"
         self.assertEqual(err.exception.args[0], error_message)
         with self.assertRaises(KeyError):
-            get_current_archive_list.check_env_variable(
-                "MISSING_ENV_VAR"
-            )
+            get_current_archive_list.check_env_variable("MISSING_ENV_VAR")
         mock_logger.error.assert_called_with(
             "MISSING_ENV_VAR environment value not found."
         )

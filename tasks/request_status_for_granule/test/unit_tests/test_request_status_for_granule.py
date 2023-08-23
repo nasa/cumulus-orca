@@ -40,26 +40,27 @@ class TestRequestStatusForGranuleUnit(
         """
         Basic path with all information present.
         """
+        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         async_operation_id = uuid.uuid4().__str__()
         mock_task.return_value = {
+            request_status_for_granule.OUTPUT_COLLECTION_ID_KEY: collection_id,
             request_status_for_granule.OUTPUT_GRANULE_ID_KEY: granule_id,
             request_status_for_granule.OUTPUT_JOB_ID_KEY: async_operation_id,
             request_status_for_granule.OUTPUT_FILES_KEY: [
                 {
-                    request_status_for_granule.OUTPUT_FILENAME_KEY:
-                        uuid.uuid4().__str__(),  # nosec
-                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY:
-                        uuid.uuid4().__str__(),  # nosec
-                    request_status_for_granule.OUTPUT_STATUS_KEY:
-                        "staged",
+                    request_status_for_granule.OUTPUT_FILENAME_KEY: uuid.uuid4().__str__(),  # nosec # noqa: E501
+                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY: uuid.uuid4().__str__(),  # nosec # noqa: E501
+                    request_status_for_granule.OUTPUT_STATUS_KEY: "staged",
                 }
             ],
-            request_status_for_granule.OUTPUT_REQUEST_TIME_KEY:
-                random.randint(0, 9999999),  # nosec
+            request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: random.randint(
+                0, 9999999
+            ),  # nosec
         }
 
         event = {
+            request_status_for_granule.INPUT_COLLECTION_ID_KEY: collection_id,
             request_status_for_granule.INPUT_GRANULE_ID_KEY: granule_id,
             request_status_for_granule.INPUT_JOB_ID_KEY: async_operation_id,
         }
@@ -68,6 +69,7 @@ class TestRequestStatusForGranuleUnit(
         result = request_status_for_granule.handler(event, context)
 
         mock_task.assert_called_once_with(
+            collection_id,
             granule_id,
             mock_get_dbconnect_info.return_value,
             async_operation_id,
@@ -87,30 +89,34 @@ class TestRequestStatusForGranuleUnit(
         """
         If asyncOperationId is missing, it should default to null.
         """
+        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
 
-        event = {request_status_for_granule.INPUT_GRANULE_ID_KEY: granule_id}
+        event = {
+            request_status_for_granule.INPUT_COLLECTION_ID_KEY: collection_id,
+            request_status_for_granule.INPUT_GRANULE_ID_KEY: granule_id,
+        }
         context = Mock()
         mock_task.return_value = {
+            request_status_for_granule.OUTPUT_COLLECTION_ID_KEY: collection_id,
             request_status_for_granule.OUTPUT_GRANULE_ID_KEY: granule_id,
             request_status_for_granule.OUTPUT_JOB_ID_KEY: uuid.uuid4().__str__(),  # nosec
             request_status_for_granule.OUTPUT_FILES_KEY: [
                 {
-                    request_status_for_granule.OUTPUT_FILENAME_KEY:
-                        uuid.uuid4().__str__(),  # nosec
-                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY:
-                        uuid.uuid4().__str__(),  # nosec
-                    request_status_for_granule.OUTPUT_STATUS_KEY:
-                        "staged",
+                    request_status_for_granule.OUTPUT_FILENAME_KEY: uuid.uuid4().__str__(),  # nosec # noqa: E501
+                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY: uuid.uuid4().__str__(),  # nosec # noqa: E501
+                    request_status_for_granule.OUTPUT_STATUS_KEY: "staged",
                 }
             ],
-            request_status_for_granule.OUTPUT_REQUEST_TIME_KEY:
-                random.randint(0, 9999999),  # nosec
+            request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: random.randint(
+                0, 9999999
+            ),  # nosec
         }
 
         result = request_status_for_granule.handler(event, context)
 
         mock_task.assert_called_once_with(
+            collection_id,
             granule_id,
             mock_get_dbconnect_info.return_value,
             None,
@@ -137,7 +143,10 @@ class TestRequestStatusForGranuleUnit(
         """
         async_operation_id = uuid.uuid4().__str__()
 
-        event = {request_status_for_granule.INPUT_JOB_ID_KEY: async_operation_id}
+        event = {
+            request_status_for_granule.INPUT_COLLECTION_ID_KEY: uuid.uuid4().__str__(),
+            request_status_for_granule.INPUT_JOB_ID_KEY: async_operation_id,
+        }
         context = Mock()
         context.aws_request_id = Mock()
 
@@ -146,7 +155,9 @@ class TestRequestStatusForGranuleUnit(
             "BadRequest",
             HTTPStatus.BAD_REQUEST,
             context.aws_request_id,
-            f"data must contain ['{request_status_for_granule.OUTPUT_GRANULE_ID_KEY}'] properties")
+            f"data must contain ['{request_status_for_granule.OUTPUT_COLLECTION_ID_KEY}', "
+            f"'{request_status_for_granule.OUTPUT_GRANULE_ID_KEY}'] properties",
+        )
         self.assertEqual(mock_create_http_error_dict.return_value, result)
 
     # noinspection PyPep8Naming
@@ -170,10 +181,12 @@ class TestRequestStatusForGranuleUnit(
         If error is raised, it should be caught and returned in a dictionary.
         """
         async_operation_id = uuid.uuid4().__str__()
+        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
 
         event = {
             request_status_for_granule.INPUT_JOB_ID_KEY: async_operation_id,
+            request_status_for_granule.INPUT_COLLECTION_ID_KEY: collection_id,
             request_status_for_granule.INPUT_GRANULE_ID_KEY: granule_id,
         }
         context = Mock()
@@ -186,29 +199,31 @@ class TestRequestStatusForGranuleUnit(
                     "InternalServerError",
                     HTTPStatus.INTERNAL_SERVER_ERROR,
                     context.aws_request_id,
-                    str(database_exception)
-                )
+                    str(database_exception),
+                ),
             ),
             (
                 request_status_for_granule.JobGranuleCombinationNotFoundException(
-                    async_operation_id, granule_id),
+                    async_operation_id, collection_id, granule_id
+                ),
                 mock.call(
                     "NotFound",
                     HTTPStatus.NOT_FOUND,
                     context.aws_request_id,
-                    f"No job found for granule id '{granule_id}' "
-                    f"and job id '{async_operation_id}'."
-                )
+                    f"No job found for collection '{collection_id}' granule '{granule_id}' "
+                    f"job '{async_operation_id}'.",
+                ),
             ),
             (
                 request_status_for_granule.JobNotFoundException(
-                    granule_id),
+                    collection_id, granule_id
+                ),
                 mock.call(
                     "NotFound",
                     HTTPStatus.NOT_FOUND,
                     context.aws_request_id,
-                    f"No job for granule id '{granule_id}'.",
-                )
+                    f"No job for collection '{collection_id}' granule '{granule_id}'.",
+                ),
             ),
         ]
 
@@ -219,9 +234,7 @@ class TestRequestStatusForGranuleUnit(
                 result = request_status_for_granule.handler(event, context)
                 # assert_called_once_with does not accept a `call` parameter.
                 # Split into two checks.
-                mock_create_http_error_dict.assert_has_calls(
-                    [exception_and_result[1]]
-                )
+                mock_create_http_error_dict.assert_has_calls([exception_and_result[1]])
                 self.assertEqual(1, mock_create_http_error_dict.call_count)
                 self.assertEqual(mock_create_http_error_dict.return_value, result)
 
@@ -246,26 +259,27 @@ class TestRequestStatusForGranuleUnit(
         """
         If output is in invalid format, raise error.
         """
+        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         async_operation_id = uuid.uuid4().__str__()
         mock_task.return_value = {
+            request_status_for_granule.OUTPUT_COLLECTION_ID_KEY: collection_id,
             request_status_for_granule.OUTPUT_GRANULE_ID_KEY: granule_id,
             request_status_for_granule.OUTPUT_JOB_ID_KEY: async_operation_id,
             request_status_for_granule.OUTPUT_FILES_KEY: [
                 {
-                    request_status_for_granule.OUTPUT_FILENAME_KEY:
-                        uuid.uuid4().__str__(),  # nosec
-                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY:
-                        uuid.uuid4().__str__(),  # nosec
-                    request_status_for_granule.OUTPUT_STATUS_KEY:
-                        "apples",
+                    request_status_for_granule.OUTPUT_FILENAME_KEY: uuid.uuid4().__str__(),  # nosec # noqa: E501
+                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY: uuid.uuid4().__str__(),  # nosec # noqa: E501
+                    request_status_for_granule.OUTPUT_STATUS_KEY: "apples",
                 }
             ],
-            request_status_for_granule.OUTPUT_REQUEST_TIME_KEY:
-                random.randint(0, 9999999),  # nosec
+            request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: random.randint(
+                0, 9999999
+            ),  # nosec
         }
 
         event = {
+            request_status_for_granule.INPUT_COLLECTION_ID_KEY: collection_id,
             request_status_for_granule.INPUT_GRANULE_ID_KEY: granule_id,
             request_status_for_granule.INPUT_JOB_ID_KEY: async_operation_id,
         }
@@ -274,6 +288,7 @@ class TestRequestStatusForGranuleUnit(
         result = request_status_for_granule.handler(event, context)
 
         mock_task.assert_called_once_with(
+            collection_id,
             granule_id,
             mock_get_dbconnect_info.return_value,
             async_operation_id,
@@ -284,19 +299,9 @@ class TestRequestStatusForGranuleUnit(
             context.aws_request_id,
             f"data.{request_status_for_granule.OUTPUT_FILES_KEY}[0]."
             f"{request_status_for_granule.OUTPUT_STATUS_KEY} "
-            f"must match pattern ^(pending|success|error|staged)$")
+            f"must match pattern ^(pending|success|error|staged)$",
+        )
         self.assertEqual(mock_create_http_error_dict.return_value, result)
-
-    def test_task_granule_id_cannot_be_none(self):
-        """
-        Raises error if granule_id is None.
-        """
-        try:
-            # noinspection PyTypeChecker
-            request_status_for_granule.task(None, Mock(), Mock())
-        except ValueError:
-            return
-        self.fail("Error not raised.")
 
     @patch("orca_shared.database.shared_db.get_user_connection")
     @patch("request_status_for_granule.get_job_entry_for_granule")
@@ -310,6 +315,7 @@ class TestRequestStatusForGranuleUnit(
         """
         If job_id is given, then it should not take a separate request to get it.
         """
+        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
 
@@ -331,14 +337,14 @@ class TestRequestStatusForGranuleUnit(
         )
 
         result = request_status_for_granule.task(
-            granule_id, db_connect_info, job_id
+            collection_id, granule_id, db_connect_info, job_id
         )
 
         mock_get_file_entries_for_granule_in_job.assert_called_once_with(
-            granule_id, job_id, mock_get_user_connection.return_value
+            collection_id, granule_id, job_id, mock_get_user_connection.return_value
         )
         mock_get_job_entry_for_granule.assert_called_once_with(
-            granule_id, job_id, mock_get_user_connection.return_value
+            collection_id, granule_id, job_id, mock_get_user_connection.return_value
         )
 
         expected = job_entry
@@ -361,6 +367,7 @@ class TestRequestStatusForGranuleUnit(
         """
         If job_id is not given, then it should take a separate request to get it.
         """
+        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
 
@@ -380,17 +387,17 @@ class TestRequestStatusForGranuleUnit(
         )
 
         result = request_status_for_granule.task(
-            granule_id, db_connect_info, None
+            collection_id, granule_id, db_connect_info, None
         )
 
         mock_get_most_recent_job_id_for_granule.assert_called_once_with(
-            granule_id, mock_get_user_connection.return_value
+            collection_id, granule_id, mock_get_user_connection.return_value
         )
         mock_get_file_entries_for_granule_in_job.assert_called_once_with(
-            granule_id, job_id, mock_get_user_connection.return_value
+            collection_id, granule_id, job_id, mock_get_user_connection.return_value
         )
         mock_get_job_entry_for_granule.assert_called_once_with(
-            granule_id, job_id, mock_get_user_connection.return_value
+            collection_id, granule_id, job_id, mock_get_user_connection.return_value
         )
 
         expected = job_entry
@@ -412,6 +419,7 @@ class TestRequestStatusForGranuleUnit(
         """
         If job_id is not given, and no valid job id is found, raise error.
         """
+        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
 
         db_connect_info = Mock()
@@ -420,12 +428,13 @@ class TestRequestStatusForGranuleUnit(
 
         with self.assertRaises(request_status_for_granule.JobNotFoundException) as cm:
             request_status_for_granule.task(
-                granule_id, db_connect_info, None
+                collection_id, granule_id, db_connect_info, None
             )
+        self.assertEqual(collection_id, cm.exception.collection_id)
         self.assertEqual(granule_id, cm.exception.granule_id)
 
         mock_get_most_recent_job_id_for_granule.assert_called_once_with(
-            granule_id, mock_get_user_connection.return_value
+            collection_id, granule_id, mock_get_user_connection.return_value
         )
         mock_get_user_connection.assert_called_once_with(db_connect_info)
 
@@ -439,6 +448,7 @@ class TestRequestStatusForGranuleUnit(
         """
         If the job_id+granule_id does not point to an entry, raise error.
         """
+        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
 
@@ -446,16 +456,18 @@ class TestRequestStatusForGranuleUnit(
 
         mock_get_job_entry_for_granule.return_value = None
 
-        with self.assertRaises(request_status_for_granule.JobGranuleCombinationNotFoundException) \
-                as cm:
+        with self.assertRaises(
+            request_status_for_granule.JobGranuleCombinationNotFoundException
+        ) as cm:
             request_status_for_granule.task(
-                granule_id, db_connect_info, job_id
+                collection_id, granule_id, db_connect_info, job_id
             )
+        self.assertEqual(collection_id, cm.exception.collection_id)
         self.assertEqual(granule_id, cm.exception.granule_id)
         self.assertEqual(job_id, cm.exception.job_id)
 
         mock_get_job_entry_for_granule.assert_called_once_with(
-            granule_id, job_id, mock_get_user_connection.return_value
+            collection_id, granule_id, job_id, mock_get_user_connection.return_value
         )
 
         mock_get_user_connection.assert_called_once_with(db_connect_info)
@@ -465,13 +477,16 @@ class TestRequestStatusForGranuleUnit(
         """
         Basic path with all information present.
         """
+        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
 
         expected_result = {"job_id": job_id}
 
         mock_execute_result = Mock()
-        mock_execute_result.mappings = Mock(return_value=copy.deepcopy([expected_result]))
+        mock_execute_result.mappings = Mock(
+            return_value=copy.deepcopy([expected_result])
+        )
         mock_execute = Mock()
         mock_execute.return_value = mock_execute_result
         mock_connection = Mock()
@@ -484,12 +499,12 @@ class TestRequestStatusForGranuleUnit(
         mock_engine.begin = Mock(return_value=mock_enter)
 
         result = request_status_for_granule.get_most_recent_job_id_for_granule(
-            granule_id, mock_engine
+            collection_id, granule_id, mock_engine
         )
 
         mock_connection.execute.assert_called_once_with(
             mock_sql.return_value,
-            [{"granule_id": granule_id}],
+            [{"collection_id": collection_id, "granule_id": granule_id}],
         )
         mock_execute_result.mappings.assert_called_once_with()
 
@@ -500,9 +515,11 @@ class TestRequestStatusForGranuleUnit(
         """
         Basic path with all information present.
         """
+        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
         expected_result = {
+            request_status_for_granule.OUTPUT_COLLECTION_ID_KEY: uuid.uuid4().__str__(),
             request_status_for_granule.OUTPUT_GRANULE_ID_KEY: uuid.uuid4().__str__(),
             request_status_for_granule.OUTPUT_JOB_ID_KEY: uuid.uuid4().__str__(),
             request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: random.randint(  # nosec
@@ -514,7 +531,9 @@ class TestRequestStatusForGranuleUnit(
         }
 
         mock_execute_result = Mock()
-        mock_execute_result.mappings = Mock(return_value=copy.deepcopy([expected_result]))
+        mock_execute_result.mappings = Mock(
+            return_value=copy.deepcopy([expected_result])
+        )
         mock_execute = Mock()
         mock_execute.return_value = mock_execute_result
         mock_connection = Mock()
@@ -527,13 +546,14 @@ class TestRequestStatusForGranuleUnit(
         mock_engine.begin = Mock(return_value=mock_enter)
 
         result = request_status_for_granule.get_job_entry_for_granule(
-            granule_id, job_id, mock_engine
+            collection_id, granule_id, job_id, mock_engine
         )
 
         mock_connection.execute.assert_called_once_with(
             mock_sql.return_value,
             [
                 {
+                    "collection_id": collection_id,
                     "granule_id": granule_id,
                     "job_id": job_id,
                 }
@@ -548,15 +568,18 @@ class TestRequestStatusForGranuleUnit(
         """
         Basic path with all information present.
         """
+        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
 
-        expected_result = [{
+        expected_result = [
+            {
                 request_status_for_granule.OUTPUT_FILENAME_KEY: uuid.uuid4().__str__(),
                 request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY: uuid.uuid4().__str__(),
                 request_status_for_granule.OUTPUT_STATUS_KEY: uuid.uuid4().__str__(),
                 request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY: uuid.uuid4().__str__(),
-            }]
+            }
+        ]
 
         mock_execute_result = Mock()
         mock_execute_result.mappings = Mock(return_value=copy.deepcopy(expected_result))
@@ -572,13 +595,14 @@ class TestRequestStatusForGranuleUnit(
         mock_engine.begin = Mock(return_value=mock_enter)
 
         result = request_status_for_granule.get_file_entries_for_granule_in_job(
-            granule_id, job_id, mock_engine
+            collection_id, granule_id, job_id, mock_engine
         )
 
         mock_connection.execute.assert_called_once_with(
             mock_sql.return_value,
             [
                 {
+                    "collection_id": collection_id,
                     "granule_id": granule_id,
                     "job_id": job_id,
                 }
@@ -617,6 +641,7 @@ class TestRequestStatusForGranuleUnit(
         """
         Checks a realistic output against the output.json.
         """
+        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         job_id = uuid.uuid4().__str__()
         request_time = random.randint(0, 628021800000)  # nosec
@@ -637,36 +662,29 @@ class TestRequestStatusForGranuleUnit(
         mock_execute_result1 = Mock()
         mock_execute_result0.mappings = Mock(
             return_value=[
-                    {
-                        request_status_for_granule.OUTPUT_GRANULE_ID_KEY: granule_id,
-                        request_status_for_granule.OUTPUT_JOB_ID_KEY: job_id,
-                        request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: request_time,
-                        request_status_for_granule.OUTPUT_COMPLETION_TIME_KEY: None,
-                    }
-                ]
-            )
+                {
+                    request_status_for_granule.OUTPUT_COLLECTION_ID_KEY: collection_id,
+                    request_status_for_granule.OUTPUT_GRANULE_ID_KEY: granule_id,
+                    request_status_for_granule.OUTPUT_JOB_ID_KEY: job_id,
+                    request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: request_time,
+                    request_status_for_granule.OUTPUT_COMPLETION_TIME_KEY: None,
+                }
+            ]
+        )
         mock_execute_result1.mappings = Mock(
             return_value=[
                 {
-                    request_status_for_granule.OUTPUT_FILENAME_KEY:
-                        filename_0,
-                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY:
-                        restore_destination_0,
-                    request_status_for_granule.OUTPUT_STATUS_KEY:
-                        status_0,
-                    request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY:
-                        error_0,
+                    request_status_for_granule.OUTPUT_FILENAME_KEY: filename_0,
+                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY: restore_destination_0,  # noqa: E501
+                    request_status_for_granule.OUTPUT_STATUS_KEY: status_0,
+                    request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY: error_0,
                 },
                 {
-                    request_status_for_granule.OUTPUT_FILENAME_KEY:
-                        filename_1,
-                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY:
-                        restore_destination_1,
-                    request_status_for_granule.OUTPUT_STATUS_KEY:
-                        status_1,
-                    request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY:
-                        error_1,
-                }
+                    request_status_for_granule.OUTPUT_FILENAME_KEY: filename_1,
+                    request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY: restore_destination_1,  # noqa: E501
+                    request_status_for_granule.OUTPUT_STATUS_KEY: status_1,
+                    request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY: error_1,
+                },
             ]
         )
 
@@ -682,30 +700,30 @@ class TestRequestStatusForGranuleUnit(
         mock_get_user_connection.return_value = mock_engine
 
         result = request_status_for_granule.task(
-            granule_id, db_connect_info, job_id
+            collection_id, granule_id, db_connect_info, job_id
         )
 
         self.assertEqual(
             {
+                request_status_for_granule.OUTPUT_COLLECTION_ID_KEY: collection_id,
                 request_status_for_granule.OUTPUT_GRANULE_ID_KEY: granule_id,
                 request_status_for_granule.OUTPUT_JOB_ID_KEY: job_id,
                 request_status_for_granule.OUTPUT_FILES_KEY: [
                     {
                         request_status_for_granule.OUTPUT_FILENAME_KEY: filename_0,
                         request_status_for_granule.OUTPUT_ERROR_MESSAGE_KEY: error_0,
-                        request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY:
-                            restore_destination_0,
+                        request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY: restore_destination_0,  # noqa: E501
                         request_status_for_granule.OUTPUT_STATUS_KEY: status_0,
                     },
                     {
                         request_status_for_granule.OUTPUT_FILENAME_KEY: filename_1,
-                        request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY:
-                            restore_destination_1,
+                        request_status_for_granule.OUTPUT_RESTORE_DESTINATION_KEY: restore_destination_1,  # noqa: E501
                         request_status_for_granule.OUTPUT_STATUS_KEY: status_1,
-                    }
+                    },
                 ],
                 request_status_for_granule.OUTPUT_REQUEST_TIME_KEY: request_time,
             },
-            result)
+            result,
+        )
 
         mock_get_user_connection.assert_called_once_with(db_connect_info)

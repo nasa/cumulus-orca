@@ -12,7 +12,6 @@ from orca_shared.database.use_cases.validation import (
 
 
 class TestCreatePostgresConnectionUri(unittest.TestCase):
-
     @patch("orca_shared.database.use_cases.validation._validate_password")
     @patch("orca_shared.database.use_cases.validation.validate_postgres_name")
     def test_validate_config_happy_path(
@@ -43,19 +42,19 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
         )
         logger = Mock()
         validate_config(config, logger)
-        mock_validate_postgres_name.assert_has_calls([
-            call(user_username, "User username", logger),
-            call(admin_username, "Admin username", logger),
-            call(user_database_name, "User database name", logger),
-            call(admin_database_name, "Admin database name", logger),
-        ])
+        mock_validate_postgres_name.assert_has_calls(
+            [
+                call(user_username, "User username", logger),
+                call(admin_username, "Admin username", logger),
+                call(user_database_name, "User database name", logger),
+                call(admin_database_name, "Admin database name", logger),
+            ]
+        )
         self.assertEqual(4, mock_validate_postgres_name.call_count)
 
         mock_validate_password.assert_called_once_with(user_password, "User", logger)
 
-    def test_validate_password_happy_path(
-        self
-    ):
+    def test_validate_password_happy_path(self):
         """
         A password must have lower case and upper case letters,
         a number between 0 and 9, a special character and
@@ -77,8 +76,10 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
             with self.subTest(password=password):
                 with self.assertRaises(Exception) as cm:
                     _validate_password(password, context, logger)
-                self.assertEqual(str(cm.exception),
-                                 f"{context} password must be at least 12 characters long.")
+                self.assertEqual(
+                    str(cm.exception),
+                    f"{context} password must be at least 12 characters long.",
+                )
 
     def test_validate_password_number_missing_raises_error(self):
         """
@@ -91,7 +92,7 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
             _validate_password(password, context, logger)
         self.assertEqual(
             str(cm.exception),
-            f"{context} password must contain a digit between 0 and 9."
+            f"{context} password must contain a digit between 0 and 9.",
         )
 
     def test_validate_password_upper_case_missing_raises_error(self):
@@ -104,8 +105,7 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
         with self.assertRaises(Exception) as cm:
             _validate_password(password, context, logger)
         self.assertEqual(
-            str(cm.exception),
-            f"{context} password must contain an upper case letter."
+            str(cm.exception), f"{context} password must contain an upper case letter."
         )
 
     def test_validate_password_lower_case_missing_raises_error(self):
@@ -118,8 +118,7 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
         with self.assertRaises(Exception) as cm:
             _validate_password(password, context, logger)
         self.assertEqual(
-            str(cm.exception),
-            f"{context} password must contain a lower case letter."
+            str(cm.exception), f"{context} password must contain a lower case letter."
         )
 
     def test_validate_password_special_character_missing_raises_error(self):
@@ -134,12 +133,10 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
             _validate_password(password, context, logger)
         self.assertEqual(
             str(cm.exception),
-            f"{context} password must contain a special character from {special_characters}"
+            f"{context} password must contain a special character from {special_characters}",
         )
 
-    def test_validate_postgres_name_happy_path(
-        self
-    ):
+    def test_validate_postgres_name_happy_path(self):
         """
         A name of any length starting with a letter should be accepted.
         """
@@ -160,20 +157,22 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
             with self.subTest(password=password):
                 with self.assertRaises(Exception) as cm:
                     validate_postgres_name(password, context, logger)
-                self.assertEqual(str(cm.exception),
-                                 f"{context} must be non-empty.")
+                self.assertEqual(str(cm.exception), f"{context} must be non-empty.")
 
     def test_validate_postgres_name_long_raises_error(self):
         """
         A name of length > 63 should be rejected.
         """
-        password = "1234567890123456789012345678901234567890123456789012345678901234"  # nosec
+        password = (
+            "1234567890123456789012345678901234567890123456789012345678901234"  # nosec
+        )
         context = Mock()
         logger = Mock()
         with self.assertRaises(Exception) as cm:
             validate_postgres_name(password, context, logger)
-        self.assertEqual(str(cm.exception),
-                         f"{context} must be less than 64 characters.")
+        self.assertEqual(
+            str(cm.exception), f"{context} must be less than 64 characters."
+        )
 
     def test_validate_postgres_name_invalid_raises_error(self):
         """
@@ -186,6 +185,8 @@ class TestCreatePostgresConnectionUri(unittest.TestCase):
             with self.subTest(name=name):
                 with self.assertRaises(Exception) as cm:
                     validate_postgres_name(name, context, logger)
-                self.assertEqual(str(cm.exception),
-                                 f"{context} must start with an English letter or '_' "
-                                 "and contain only English letters, numbers, '$', or '_'.")
+                self.assertEqual(
+                    str(cm.exception),
+                    f"{context} must start with an English letter or '_' "
+                    "and contain only English letters, numbers, '$', or '_'.",
+                )

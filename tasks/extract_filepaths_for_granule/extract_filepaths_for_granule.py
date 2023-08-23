@@ -24,6 +24,7 @@ CONFIG_BUCKETS_KEY = "buckets"
 
 INPUT_GRANULES_KEY = "granules"
 INPUT_GRANULE_RECOVERY_BUCKET_OVERRIDE_KEY = "recoveryBucketOverride"
+INPUT_COLLECTION_ID_KEY = "collectionId"
 INPUT_GRANULE_ID_KEY = "granuleId"
 INPUT_GRANULE_FILES_KEY = "files"
 INPUT_GRANULE_FILE_FILENAME_KEY = "fileName"
@@ -57,14 +58,14 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any]):
     """
     Task called by the handler to perform the work.
 
-    This task will parse the input, removing the granuleId and file keys for a granule.
+    This task will parse the input, extracting the properties for a granule.
 
         Args:
             task_input: See schemas/input.json
             config: See schemas/config.json
 
         Returns:
-            dict: dict containing granuleId and keys. See handler for detail.
+            dict: dict containing properties for granules. See handler for detail.
 
         Raises:
             ExtractFilePathsError: An error occurred parsing the input.
@@ -89,8 +90,9 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any]):
     regex_buckets = get_regex_buckets(config)
     result_granules = []
     for a_granule in task_input[INPUT_GRANULES_KEY]:
-        recovery_bucket_override = \
-            a_granule.get(INPUT_GRANULE_RECOVERY_BUCKET_OVERRIDE_KEY, None)
+        recovery_bucket_override = a_granule.get(
+            INPUT_GRANULE_RECOVERY_BUCKET_OVERRIDE_KEY, None
+        )
         files = []
         for a_file in a_granule[INPUT_GRANULE_FILES_KEY]:
             file_name = a_file[INPUT_GRANULE_FILE_FILENAME_KEY]
@@ -107,11 +109,15 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any]):
                     destination_bucket = recovery_bucket_override
                 else:
                     matching_regex = next(
-                        filter(lambda key: re.compile(key).match(file_name), regex_buckets),
-                        None
+                        filter(
+                            lambda key: re.compile(key).match(file_name), regex_buckets
+                        ),
+                        None,
                     )
                     if matching_regex is None:
-                        raise ExtractFilePathsError(f"No matching regex for '{file_key}'")
+                        raise ExtractFilePathsError(
+                            f"No matching regex for '{file_key}'"
+                        )
                     destination_bucket = regex_buckets[matching_regex]
 
                 LOGGER.debug(
@@ -125,11 +131,17 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any]):
                     }
                 )
         if len(files) == 0:
-            LOGGER.warning(f"All files for granule '{a_granule['granuleId']}' excluded.")
-        result_granules.append({
-            "granuleId": a_granule[INPUT_GRANULE_ID_KEY],
-            "keys": files,
-        })
+            LOGGER.warning(
+                f"All files for collection '{a_granule[INPUT_COLLECTION_ID_KEY]} "
+                f"granule {a_granule[INPUT_GRANULE_ID_KEY]}' excluded."
+            )
+        result_granules.append(
+            {
+                "collectionId": a_granule[INPUT_COLLECTION_ID_KEY],
+                "granuleId": a_granule[INPUT_GRANULE_ID_KEY],
+                "keys": files,
+            }
+        )
     return {OUTPUT_GRANULES_KEY: result_granules}
 
 
@@ -173,7 +185,7 @@ def get_regex_buckets(config: Dict[str, Any]) -> Dict[str, str]:
 
 def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> bool:
     """
-    Tests whether or not file is included in {excludedFileExtensions} from copy_to_archive.
+    Tests whether file is included in {excludedFileExtensions} from copy_to_archive.
     Args:
         file_key: The key of the file within the s3 bucket.
         exclude_file_types: List of extensions to exclude in the backup.
@@ -191,8 +203,9 @@ def should_exclude_files_type(file_key: str, exclude_file_types: List[str]) -> b
     return False
 
 
-def set_optional_event_property(event: Dict[str, Any], target_path_cursor: Dict,
-                                target_path_segments: List) -> None:
+def set_optional_event_property(
+    event: Dict[str, Any], target_path_cursor: Dict, target_path_segments: List
+) -> None:
     """Sets the optional variable value from event if present, otherwise sets to None.
     Args:
         event: See schemas/input.json.
@@ -208,7 +221,7 @@ def set_optional_event_property(event: Dict[str, Any], target_path_cursor: Dict,
             set_optional_event_property(
                 event,
                 target_path_cursor[optionalValueTargetPath],
-                temp_target_path_segments
+                temp_target_path_segments,
             )
         elif isinstance(target_path_cursor[optionalValueTargetPath], str):
             source_path = target_path_cursor[optionalValueTargetPath]
@@ -217,8 +230,9 @@ def set_optional_event_property(event: Dict[str, Any], target_path_cursor: Dict,
             # ensure that the path up to the target_path exists
             event_cursor = event
             for target_path_segment in temp_target_path_segments[:-1]:
-                event_cursor[target_path_segment] =\
-                    event_cursor.get(target_path_segment, {})
+                event_cursor[target_path_segment] = event_cursor.get(
+                    target_path_segment, {}
+                )
                 event_cursor = event_cursor[target_path_segment]
             event_cursor[temp_target_path_segments[-1]] = None
 
@@ -227,20 +241,25 @@ def set_optional_event_property(event: Dict[str, Any], target_path_cursor: Dict,
             for source_path_segment in source_path_segments:
                 source_path_cursor = source_path_cursor.get(source_path_segment, None)
                 if source_path_cursor is None:
-                    LOGGER.info(f"When retrieving '{'.'.join(temp_target_path_segments)}', "
-                                f"no value found in '{source_path}' at key {source_path_segment}. "
-                                f"Defaulting to null.")
+                    LOGGER.info(
+                        f"When retrieving '{'.'.join(temp_target_path_segments)}', "
+                        f"no value found in '{source_path}' at key {source_path_segment}. "
+                        f"Defaulting to null."
+                    )
                     break
             event_cursor[temp_target_path_segments[-1]] = source_path_cursor
         else:
-            raise Exception(f"Illegal type {type(target_path_cursor[optionalValueTargetPath])} "
-                            f"found at {'.'.join(temp_target_path_segments)}")
+            raise Exception(
+                f"Illegal type {type(target_path_cursor[optionalValueTargetPath])} "
+                f"found at {'.'.join(temp_target_path_segments)}"
+            )
 
 
 # noinspection PyUnusedLocal
 @LOGGER.inject_lambda_context
-def handler(event: Dict[str, Dict[str, Any]],
-            context: LambdaContext):  # pylint: disable-msg=unused-argument
+def handler(
+    event: Dict[str, Dict[str, Any]], context: LambdaContext
+):  # pylint: disable-msg=unused-argument
     """Lambda handler. Extracts the key's for a granule from an input dict.
 
     Args:
@@ -251,16 +270,7 @@ def handler(event: Dict[str, Dict[str, Any]],
             and execution env.
 
     Returns:
-        dict: A dict with the following keys:
-
-            'granules' (list(dict)): list of dict with the following keys:
-                'granuleId' (string): The id of a granule.
-                'keys' (list(string)): list of keys for the granule.
-
-        Example:
-            {"granules": [{"granuleId": "granxyz",
-                         "keys": ["key1",
-                                       "key2"]}]}
+        See schemas/output.json for more information.
 
     Raises:
         ExtractFilePathsError: An error occurred parsing the input.

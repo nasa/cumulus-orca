@@ -24,9 +24,13 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         # todo: Use randomized values on a per-test basis.
         self.config = PostgresConnectionInfo(  # nosec
             admin_database_name="admin_db",
-            admin_username="admin", admin_password="admin123",
-            user_username="user56789012", user_password="pass56789012",
-            user_database_name="user_db", host="aws.postgresrds.host", port="5432"
+            admin_username="admin",
+            admin_password="admin123",
+            user_username="user56789012",
+            user_password="pass56789012",
+            user_database_name="user_db",
+            host="aws.postgresrds.host",
+            port="5432",
         )
         self.orca_buckets = ["orca_worm", "orca_versioned", "orca_special"]
 

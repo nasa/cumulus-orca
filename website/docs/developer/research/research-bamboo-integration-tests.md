@@ -59,7 +59,7 @@ terraform apply \
 ```
 Variables in terraform.tfvars can be overwritten by the `-var` field as seen above. 
 
-Some of the sensitive bamboo variables such as `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `RDS_USER_ACCESS_SECRET_ARN` have been encrypted using bamboo encryption service. While running the pipeline, those variables have to be replaced manually with the real values since bamboo does not automatically decrypt the values while running the pipeline. Make sure all sensitive variables are encrypted before pushing the changes to the repo. 
+Some of the sensitive bamboo variables such as `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, have been encrypted using bamboo encryption service. While running the pipeline, those variables have to be replaced manually with the real values since bamboo does not automatically decrypt the values while running the pipeline. Make sure all sensitive variables are encrypted before pushing the changes to the repo. 
 
 The bamboo spec for running the two scripts under tasks is shown below.
 

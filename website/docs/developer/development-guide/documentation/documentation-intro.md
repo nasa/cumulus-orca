@@ -5,13 +5,12 @@ desc: Provides basic information on ORCA documentation including layout and key 
 ---
 
 ORCA project documentation is hosted on [NASA's GitHub Pages](https://nasa.github.io/cumulus-orca/).
-The project utilizes the open-source static website generator [Docusaurus](https://v2.docusaurus.io/)
+The project utilizes the open-source static website generator [Docusaurus](https://docusaurus.io/)
 to build html files from markdown documentation, add some organization and navigation,
-and provide other niceties in the final website (search, easy templating, etc.).
+and provide other niceties in the final website (search, easy templates, etc.).
 
 The sections below go into greater detail and provide information on the ORCA
-documentation layout, locations and key Docusarus files to manage.
-
+documentation layout, locations and key Docusaurus files to manage.
 
 ## Docusaurus Documentation Layout
 
@@ -21,7 +20,6 @@ Under the `website` directory, there are three primary directories which contain
 ORCA documentation content. Those directories are `docs`, `static`, and `src`.
 The sections below go into detail on the contents of each of those directories
 and their layout.
-
 
 ### `docs` Directory
 
@@ -34,12 +32,10 @@ ORCA documentation sections with the exception of the `templates` directory.
 ```sh
 docs
 ├── about
-├── cookbook
 ├── developer
 ├── operator
 └── templates
 ```
-
 
 #### `docs/about`
 
@@ -55,19 +51,7 @@ docs/about
 ├── architecture
 ├── introduction
 ├── team
-└── tips
 ```
-
-
-#### `docs/cookbook`
-
-The `docs/cookbook` subdirectory contains all documentation related to the
-[**ORCA Cookbooks**](../../../cookbook/cookbook-intro.md)
-documentation and navigation. This directory contains information
-related to ORCA cookbooks and real world implementations of the ORCA codebase
-in Cumulus. Under the `docs/cookbook` directory, information is broken up based
-on the sidebar menu layout.
-
 
 #### `docs/developer`
 
@@ -79,7 +63,6 @@ procedures, and other developer specific information needed to interact and
 contribute to the ORCA product. Under the `docs/developer` directory, information
 is broken up based on the sidebar menu layout.
 
-
 #### `docs/operator`
 
 The `docs/operator` subdirectory contains all documentation related to the
@@ -90,7 +73,6 @@ utilizing the Cumulus Dashboard to perform ORCA tasks, and performing tasks rela
 to operations and data management staff. Under the `docs/operator` directory,
 information is broken up based on the sidebar menu layout.
 
-
 #### `docs/templates`
 
 The `docs/templates` subdirectory contains templates and non-static reusable
@@ -100,7 +82,6 @@ More information on these types of files can be found in the
 [document template documentation](documentaion-templates.md) and the
 [adding new content documentation](documentation-add-content.md).
 
-
 ### `static` Directory
 
 The `website/static` directory contains ORCA's static website content. Currently,
@@ -109,7 +90,6 @@ content should be placed in this directory for use by the pages under `website/d
 See the [adding new content documentation](documentation-add-content.md) for more
 information on adding new static content.
 
-
 ### `src` Directory
 
 The `website/src` directory contains the Docusaurus generated index page splash
@@ -117,13 +97,11 @@ screen, and css style sheet files. Generally, files in this directory should onl
 be updated by the ORCA core team members. The index splash scree is controlled
 via the `docusaurus.config.js` and `website/src/pages/index.js` files.
 
-
 ## Key Docusaurus Files
 
 Docusaurus contains two key files that control the layout, configuration, style,
 and behaviour of the static site. Information on these files are laid out in the
 sections below.
-
 
 ### `sidebar.js`
 
@@ -131,13 +109,11 @@ The `website/sidebar.js` file provides the layout information for the sidebar as
 well as navigation to all the various documents. More information on the
 `sidebar.js` file can be found in the [Docusaurus documentation](https://v2.docusaurus.io/docs/sidebar#sidebar-object).
 
-
 ### `docusaurus.config.js`
 
 The `website/docusaurus.config.js` file provides configuration, plugin and setting
 information to the Docusaurus build. More information on the `docusaurus.config.js`
 file can be found in the [Docusaurus documentation](https://v2.docusaurus.io/docs/configuration).
-
 
 ## Other Documentation Locations
 
@@ -150,9 +126,6 @@ below provides location information for the file and updating particulars.
 The README.md file located at the base of the repository provides basic information
 about ORCA and directs users to specific documentation and information.
 
-
 ### `tasks/<taskname>/README.md`
 
 The README.md files under the various `tasks/<taskname>` folders are auto generated.
-
-

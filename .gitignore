@@ -25,3 +25,4 @@ tasks/request_from_archive/test/private_config.json
 .env
 **/.DS_Store
 **/temp_scripted_test.*
+integration_test/workflow_tests/RecoveryRecords/*

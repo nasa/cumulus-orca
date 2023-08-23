@@ -78,7 +78,7 @@ def retry_error(
                     else:
                         # perform exponential delay
                         backoff_time = (
-                            backoff_in_seconds * backoff_factor ** total_retries
+                            backoff_in_seconds * backoff_factor**total_retries
                             + random.uniform(0, 1)  # nosec
                         )
                         LOGGER.error(

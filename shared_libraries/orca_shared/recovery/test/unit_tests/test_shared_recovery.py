@@ -5,7 +5,9 @@ Description: Unit tests for shared_recovery.py shared library.
 import json
 import os
 import unittest
+import uuid
 from datetime import datetime, timezone
+from unittest import mock
 from unittest.mock import patch
 
 import boto3
@@ -113,36 +115,42 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         the queue based on RequestMethod and Status values.
         """
         # Setting other variables unique to this test
+        collection_id = uuid.uuid4().__str__()
         archive_destination = "s3://archive-bucket"
 
-        # Run subtests
-        with self.subTest(request_method=shared_recovery.RequestMethod.NEW_JOB):
-            # Send values to the function
-            shared_recovery.create_status_for_job(
-                self.job_id, self.granule_id, archive_destination, [], self.db_queue_url
-            )
+        file = {uuid.uuid4().__str__(): uuid.uuid4().__str__()}
+        # Send values to the function
+        shared_recovery.create_status_for_job(
+            self.job_id,
+            collection_id,
+            self.granule_id,
+            archive_destination,
+            [file],
+            self.db_queue_url,
+        )
 
-            # grabbing queue contents after the message is sent
-            queue_contents = self.queue.receive_messages()
-            queue_output_body = json.loads(queue_contents[0].body)
+        # grabbing queue contents after the message is sent
+        queue_contents = self.queue.receive_messages()
+        queue_output_body = json.loads(queue_contents[0].body)
 
-            # Testing required fields
-            self.assertEqual(queue_output_body[shared_recovery.JOB_ID_KEY], self.job_id)
-            self.assertEqual(
-                queue_output_body[shared_recovery.GRANULE_ID_KEY], self.granule_id
-            )
+        # Testing required fields
+        self.assertEqual(
+            {
+                shared_recovery.JOB_ID_KEY: self.job_id,
+                shared_recovery.COLLECTION_ID_KEY: collection_id,
+                shared_recovery.FILES_KEY: [file],
+                shared_recovery.GRANULE_ID_KEY: self.granule_id,
+                shared_recovery.REQUEST_TIME_KEY: mock.ANY,
+                shared_recovery.ARCHIVE_DESTINATION_KEY: archive_destination,
+            },
+            queue_output_body,
+        )
 
-            # Testing optional fields
-            self.assertIn(shared_recovery.REQUEST_TIME_KEY, queue_output_body)
-            # Get the request time
-            new_request_time = datetime.fromisoformat(
-                queue_output_body[shared_recovery.REQUEST_TIME_KEY]
-            )
-            self.assertEqual(new_request_time.tzinfo, timezone.utc)
-            self.assertEqual(
-                queue_output_body[shared_recovery.ARCHIVE_DESTINATION_KEY],
-                archive_destination,
-            )
+        # Get the request time
+        new_request_time = datetime.fromisoformat(
+            queue_output_body[shared_recovery.REQUEST_TIME_KEY]
+        )
+        self.assertEqual(timezone.utc, new_request_time.tzinfo)
 
     @patch.dict(
         os.environ,
@@ -157,6 +165,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         """
         for status_id in self.statuses:
             # Setting other variables unique to this test
+            collection_id = uuid.uuid4().__str__()
             error_message = "Access denied"
             filename = "f1.doc"
 
@@ -169,6 +178,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                 # Send values to the function
                 shared_recovery.update_status_for_file(
                     self.job_id,
+                    collection_id,
                     self.granule_id,
                     filename,
                     status_id,
@@ -185,13 +195,16 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                     queue_output_body[shared_recovery.JOB_ID_KEY], self.job_id
                 )
                 self.assertEqual(
-                    queue_output_body[shared_recovery.GRANULE_ID_KEY], self.granule_id
+                    collection_id, queue_output_body[shared_recovery.COLLECTION_ID_KEY]
                 )
                 self.assertEqual(
-                    queue_output_body[shared_recovery.STATUS_ID_KEY], status_id.value
+                    self.granule_id, queue_output_body[shared_recovery.GRANULE_ID_KEY]
                 )
                 self.assertEqual(
-                    queue_output_body[shared_recovery.FILENAME_KEY], filename
+                    status_id.value, queue_output_body[shared_recovery.STATUS_ID_KEY]
+                )
+                self.assertEqual(
+                    filename, queue_output_body[shared_recovery.FILENAME_KEY]
                 )
                 self.assertNotIn(shared_recovery.REQUEST_TIME_KEY, queue_output_body)
                 self.assertNotIn(
@@ -212,40 +225,40 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                     new_completion_time = datetime.fromisoformat(
                         queue_output_body[shared_recovery.COMPLETION_TIME_KEY]
                     )
-                    self.assertEqual(new_completion_time.tzinfo, timezone.utc)
+                    self.assertEqual(timezone.utc, new_completion_time.tzinfo)
                 else:
                     self.assertNotIn(
                         shared_recovery.COMPLETION_TIME_KEY, queue_output_body
                     )
                 if status_id == shared_recovery.OrcaStatus.FAILED:
                     self.assertEqual(
-                        queue_output_body[shared_recovery.ERROR_MESSAGE_KEY],
                         error_message,
+                        queue_output_body[shared_recovery.ERROR_MESSAGE_KEY],
                     )
                 else:
                     self.assertNotIn(
                         shared_recovery.ERROR_MESSAGE_KEY, queue_output_body
                     )
 
-    def test_update_status_for_file_raise_errors_error_message(self):
+    def test_update_status_for_file_error_message_empty_raises_error_message(self):
         """
         Tests that update_status_for_file will raise a ValueError
         if the error_message is either empty or None in case of status_id as FAILED.
         request_method is set as NEW since the logics only apply for it.
         """
-        filename = "f1.doc"
         # setting status_id as FAILED since error_message only shows up for failed status.
         status_id = shared_recovery.OrcaStatus.FAILED
 
         for error_message in [None, ""]:
             # will pass if it raises a ValueError which is expected in this case
-            self.assertRaises(
-                ValueError,
-                shared_recovery.update_status_for_file,
-                self.job_id,
-                self.granule_id,
-                filename,
-                status_id,
-                error_message,
-                self.db_queue_url,
-            )
+            with self.assertRaises(ValueError) as cm:
+                shared_recovery.update_status_for_file(
+                    uuid.uuid4().__str__(),
+                    uuid.uuid4().__str__(),
+                    uuid.uuid4().__str__(),
+                    uuid.uuid4().__str__(),
+                    status_id,
+                    error_message,
+                    uuid.uuid4().__str__(),
+                )
+            self.assertEqual("Error message is required.", str(cm.exception))

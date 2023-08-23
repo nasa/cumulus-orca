@@ -11,7 +11,9 @@ from sqlalchemy import create_engine
 import migrations.migrate_versions_3_to_4.migrate_sql as sql
 
 
-def migrate_versions_3_to_4(config: PostgresConnectionInfo, is_latest_version: bool) -> None:
+def migrate_versions_3_to_4(
+    config: PostgresConnectionInfo, is_latest_version: bool
+) -> None:
     """
     Performs the migration of the ORCA schema from version 3 to version 4 of
     the ORCA schema.
@@ -22,8 +24,9 @@ def migrate_versions_3_to_4(config: PostgresConnectionInfo, is_latest_version: b
         None
     """
     # Get the admin engine to the app database
-    user_admin_engine = \
-        create_engine(create_admin_uri(config, LOGGER, config.user_database_name), future=True)
+    user_admin_engine = create_engine(
+        create_admin_uri(config, LOGGER, config.user_database_name), future=True
+    )
 
     with user_admin_engine.connect() as connection:
         # Change to DBO role and set search path

@@ -37,18 +37,6 @@ variable "vpc_id" {
 }
 
 
-variable "workflow_config" {
-  # https://github.com/nasa/cumulus/blob/master/tf-modules/workflow/variables.tf#L23
-  description = "Configuration object with ARNs for workflow integration (Role ARN for executing workflows and Lambda ARNs to trigger on workflow execution)"
-  type = object({
-    sf_event_sqs_to_db_records_sqs_queue_arn = string
-    sf_semaphore_down_lambda_function_arn    = string
-    state_machine_role_arn                   = string
-    sqs_message_remover_lambda_function_arn  = string
-  })
-}
-
-
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
 variable "tags" {
   type        = map(string)
@@ -293,5 +281,5 @@ variable "vpc_endpoint_id" {
 
 variable "log_level" {
   type        = string
-  description = "Sets the verbose of powertools logger. Must be one of 'INFO', 'DEBUG', 'WARN', 'ERROR'. Defaults to 'INFO'."
+  description = "sets the verbose of PowerTools logger. Must be one of 'INFO', 'DEBUG', 'WARN', 'ERROR'. Defaults to 'INFO'."
 }

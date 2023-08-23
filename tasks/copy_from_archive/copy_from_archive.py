@@ -15,7 +15,11 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 # noinspection PyPackageRequirements
 from boto3.s3.transfer import MB, TransferConfig
+
+# noinspection PyPackageRequirements
 from botocore.client import BaseClient
+
+# noinspection PyPackageRequirements
 from botocore.exceptions import ClientError
 from orca_shared.recovery import shared_recovery
 
@@ -28,6 +32,7 @@ FILE_MESSAGE_RECEIPT = "receiptHandle"
 
 # These are tied to the input schema.
 INPUT_JOB_ID_KEY = "jobId"
+INPUT_COLLECTION_ID_KEY = "collectionId"
 INPUT_GRANULE_ID_KEY = "granuleId"
 INPUT_FILENAME_KEY = "filename"
 INPUT_SOURCE_KEY_KEY = "sourceKey"
@@ -43,8 +48,8 @@ LOGGER = Logger()
 try:
     with open("schemas/input.json", "r") as raw_schema:
         _INPUT_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
-except Exception as ex:
-    LOGGER.error(f"Could not build schema validator: {ex}")
+except Exception as schema_ex:
+    LOGGER.error(f"Could not build schema validator: {schema_ex}")
     raise
 
 try:
@@ -110,6 +115,7 @@ def task(
                     a_file[FILE_SUCCESS_KEY] = True
                     shared_recovery.update_status_for_file(
                         a_file[INPUT_JOB_ID_KEY],
+                        a_file[INPUT_COLLECTION_ID_KEY],
                         a_file[INPUT_GRANULE_ID_KEY],
                         a_file[INPUT_FILENAME_KEY],
                         shared_recovery.OrcaStatus.SUCCESS,
@@ -117,7 +123,7 @@ def task(
                         status_update_queue_url,
                     )
 
-                    # Remove message from the queue we are listening to so we
+                    # Remove message from the queue we are listening to, so we
                     # don't try to do it again if something else fails.
                     aws_client_sqs.delete_message(
                         QueueUrl=recovery_queue_url,
@@ -143,6 +149,7 @@ def task(
             any_error = True
             shared_recovery.update_status_for_file(
                 a_file[INPUT_JOB_ID_KEY],
+                a_file[INPUT_COLLECTION_ID_KEY],
                 a_file[INPUT_GRANULE_ID_KEY],
                 a_file[INPUT_FILENAME_KEY],
                 shared_recovery.OrcaStatus.FAILED,
@@ -150,7 +157,7 @@ def task(
                 status_update_queue_url,
             )
     if any_error:
-        LOGGER.error("File copy failed. {files}", files=files)
+        LOGGER.error(f"File copy failed. {files}")
         raise CopyRequestError(f"File copy failed. {files}")
 
 
@@ -167,7 +174,7 @@ def get_files_from_records(
     files = []
     for record in records:
         a_file = json.loads(record["body"])
-        LOGGER.debug("Validating {file}", file=a_file)
+        LOGGER.debug(f"Validating {a_file}")
         _BODY_VALIDATE(a_file)
         a_file[FILE_SUCCESS_KEY] = False
         a_file[FILE_MESSAGE_RECEIPT] = record[FILE_MESSAGE_RECEIPT]

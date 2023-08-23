@@ -1,17 +1,8 @@
 ## Referenced Modules - Workflows
-module "orca_recovery_workflow" {
-  source = "https://github.com/nasa/cumulus/releases/download/v10.0.0/terraform-aws-cumulus-workflow.zip"
-  ## --------------------------
-  ## Cumulus Variables
-  ## --------------------------
-  ## REQUIRED
-  prefix          = var.prefix
-  name            = "OrcaRecoveryWorkflow"
-  workflow_config = var.workflow_config
-  system_bucket   = var.system_bucket
-  tags            = var.tags
-
-  state_machine_definition = templatefile(
+resource "aws_sfn_state_machine" "default" {
+  name       = "${var.prefix}-OrcaRecoveryWorkflow"
+  role_arn   = var.orca_step_function_role_arn
+  definition = templatefile(
     "${path.module}/orca_recover_workflow.asl.json",
     {
       orca_default_bucket : var.orca_default_bucket,
@@ -19,4 +10,5 @@ module "orca_recovery_workflow" {
       orca_lambda_request_from_archive_arn : var.orca_lambda_request_from_archive_arn
     }
   )
+  tags       = var.tags
 }

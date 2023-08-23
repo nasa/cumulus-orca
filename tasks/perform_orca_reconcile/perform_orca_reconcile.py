@@ -383,7 +383,7 @@ def retry_error(
                     else:
                         # perform exponential delay
                         backoff_time = (
-                            backoff_in_seconds * backoff_factor ** total_retries
+                            backoff_in_seconds * backoff_factor**total_retries
                             + random.uniform(0, 1)  # nosec
                         )
                         LOGGER.error(
@@ -411,7 +411,8 @@ def remove_job_from_queue(internal_report_queue_url: str, message_receipt_handle
     """
     aws_client_sqs = boto3.client("sqs")
     LOGGER.debug(
-        f"Deleting message '{message_receipt_handle}' from queue '{internal_report_queue_url}'")
+        f"Deleting message '{message_receipt_handle}' from queue '{internal_report_queue_url}'"
+    )
     # Remove message from the queue we are listening to.
     aws_client_sqs.delete_message(
         QueueUrl=internal_report_queue_url,

@@ -32,12 +32,10 @@ class TestAWS(unittest.TestCase):
             }
         """
         secret_name = "orcatest-orca-db-login-secret"  # nosec
-        self.test_sm.create_secret(
-            Name=secret_name, SecretString=self.secretstring
-        )
+        self.test_sm.create_secret(Name=secret_name, SecretString=self.secretstring)
         self.db_connect_info_secret_arn = self.test_sm.describe_secret(
-                    SecretId=secret_name
-                    )["ARN"]
+            SecretId=secret_name
+        )["ARN"]
 
     @patch.dict(
         os.environ,
@@ -55,24 +53,28 @@ class TestAWS(unittest.TestCase):
         Get secret value and return data class.
         """
         mock_logger = Mock()
-        testing_config = aws.get_configuration(self.db_connect_info_secret_arn, mock_logger)
+        testing_config = aws.get_configuration(
+            self.db_connect_info_secret_arn, mock_logger
+        )
 
         mock_validate_config.assert_called_once_with(testing_config, mock_logger)
-        self.assertEqual(PostgresConnectionInfo(  # nosec
-            admin_database_name="admin_db",
-            admin_password="admin123",
-            admin_username="admin",
-            host="aws.postgresrds.host",
-            port="5432",
-            user_database_name="user_db",
-            user_password="user123",
-            user_username="user",
-        ), testing_config)
+        self.assertEqual(
+            PostgresConnectionInfo(  # nosec
+                admin_database_name="admin_db",
+                admin_password="admin123",
+                admin_username="admin",
+                host="aws.postgresrds.host",
+                port="5432",
+                user_database_name="user_db",
+                user_password="user123",
+                user_username="user",
+            ),
+            testing_config,
+        )
 
     @patch.dict(
         os.environ,
-        {
-        },
+        {},
         clear=True,
     )
     def test_get_configuration_no_aws_region(self):

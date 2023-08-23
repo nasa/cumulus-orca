@@ -6,6 +6,18 @@ cwd=$(pwd)
 export AWS_ACCESS_KEY_ID=$bamboo_CUMULUS_AWS_ACCESS_KEY_ID
 export AWS_SECRET_ACCESS_KEY=$bamboo_CUMULUS_AWS_SECRET_ACCESS_KEY
 export AWS_DEFAULT_REGION=$bamboo_CUMULUS_AWS_DEFAULT_REGION
+# buckets structure tied to buckets.tf.template and dr-buckets.tf.template
+export orca_BUCKETS='{"protected": {"name": "'$bamboo_PREFIX'-protected", "type": "protected"}, "internal": {"name": "'$bamboo_PREFIX'-internal", "type": "internal"}, "private": {"name": "'$bamboo_PREFIX'-private", "type": "private"}, "public": {"name": "'$bamboo_PREFIX'-public", "type": "public"}, "orca_default": {"name": "'$bamboo_PREFIX'-orca-primary", "type": "orca"}, "provider": {"name": "orca-sandbox-s3-provider", "type": "provider"}}'
+
+# Setting environment variables with proper values
+export AWS_ACCOUNT_ID=$(aws sts get-caller-identity | jq -r '.Account')
+export VPC_ID=$(aws ec2 describe-vpcs | jq -r '.Vpcs | to_entries | .[] | .value.VpcId')
+export AWS_SUBNET_ID1=$(aws ec2 describe-subnets --filters "Name=availability-zone,Values=us-west-2a"| jq -r '.Subnets | .[] | select (.Tags | .[] | .Value | contains ("Private application ")) | .SubnetId ')
+export AWS_SUBNET_ID2=$(aws ec2 describe-subnets --filters "Name=availability-zone,Values=us-west-2b"| jq -r '.Subnets | .[] | select (.Tags | .[] | .Value | contains ("Private application ")) | .SubnetId ')
+export AWS_SUBNET_ID3=$(aws ec2 describe-subnets --filters "Name=availability-zone,Values=us-west-2c"| jq -r '.Subnets | .[] | select (.Tags | .[] | .Value | contains ("Private application ")) | .SubnetId ')
+export orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN="arn:aws:states:${bamboo_AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:stateMachine:${bamboo_PREFIX}-OrcaCopyToArchiveWorkflow"
+export orca_RECOVERY_STEP_FUNCTION_ARN="arn:aws:states:${bamboo_AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:stateMachine:${bamboo_PREFIX}-OrcaRecoveryWorkflow"
+export orca_RECOVERY_BUCKET_NAME="${bamboo_PREFIX}-orca-primary"
 
 #remove old files from bamboo as they throw error
 rm *.tf
@@ -20,6 +32,7 @@ else
     --bucket ${bamboo_PREFIX}-tf-state \
     --versioning-configuration Status=Enabled
 
+    echo "Deploying dynamoDB table"
     aws dynamodb create-table \
       --table-name ${bamboo_PREFIX}-tf-locks \
       --attribute-definitions AttributeName=LockID,AttributeType=S \
@@ -31,6 +44,22 @@ fi
 git clone --branch ${bamboo_BRANCH_NAME} --single-branch https://github.com/nasa/cumulus-orca.git
 echo "Cloned Orca, branch ${bamboo_BRANCH_NAME}"
 
+# Init ORCA
+cd cumulus-orca
+echo "inside orca"
+#configuring S3 backend
+echo "terraform {
+  backend \"s3\" {
+    bucket = \"${bamboo_PREFIX}-tf-state\"
+    region = \"${bamboo_AWS_DEFAULT_REGION}\"
+    key    = \"${bamboo_PREFIX}/orca/terraform.tfstate\"
+    dynamodb_table = \"${bamboo_PREFIX}-tf-locks\"
+  }
+}" >> terraform.tf
+terraform init -input=false
+cd ..
+
+# todo: integration_test folder exists at root AND in cumulus-orca. Just use one. https://bugs.earthdata.nasa.gov/browse/ORCA-708
 cd integration_test
 #replace prefix with bamboo prefix variable
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' buckets.tf.template > buckets.tf
@@ -40,7 +69,7 @@ echo "terraform {
   backend \"s3\" {
     bucket = \"${bamboo_PREFIX}-tf-state\"
     region = \"${bamboo_AWS_DEFAULT_REGION}\"
-    key    = \"terraform.tfstate\"
+    key    = \"${bamboo_PREFIX}/buckets/terraform.tfstate\"
     dynamodb_table = \"${bamboo_PREFIX}-tf-locks\"
   }
 }" >> terraform.tf
@@ -52,33 +81,37 @@ git clone --branch $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION --single-branch 
 echo "cloned Cumulus, branch $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION"
 
 #rds-cluster-tf module
-cd cumulus-orca-deploy-template/rds-cluster-tf
-echo "inside rds-cluster-tf"
-mv terraform.tfvars.example terraform.tfvars
-
-#replacing terraform.tf and environment variables with proper values
-sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g; s/us-east-1/'"$bamboo_AWS_DEFAULT_REGION"'/g' terraform.tf.example > terraform.tf
-export AWS_ACCOUNT_ID=$(aws sts get-caller-identity | jq -r '.Account')
-export VPC_ID=$(aws ec2 describe-vpcs | jq -r '.Vpcs | to_entries | .[] | .value.VpcId')
-export AWS_SUBNET_ID1=$(aws ec2 describe-subnets --filters "Name=availability-zone,Values=us-west-2a"| jq -r '.Subnets | .[] | select (.Tags | .[] | .Value | contains ("Private application ")) | .SubnetId ')
-export AWS_SUBNET_ID2=$(aws ec2 describe-subnets --filters "Name=availability-zone,Values=us-west-2b"| jq -r '.Subnets | .[] | select (.Tags | .[] | .Value | contains ("Private application ")) | .SubnetId ')
-export AWS_SUBNET_ID3=$(aws ec2 describe-subnets --filters "Name=availability-zone,Values=us-west-2c"| jq -r '.Subnets | .[] | select (.Tags | .[] | .Value | contains ("Private application ")) | .SubnetId ')
+rds_path="cumulus-orca-deploy-template/terraform-aws-cumulus/tf-modules/cumulus-rds-tf"
+cd "$rds_path"
+echo "inside $rds_path"
+#configuring S3 backend
+echo "terraform {
+  backend \"s3\" {
+    bucket = \"${bamboo_PREFIX}-tf-state\"
+    region = \"${bamboo_AWS_DEFAULT_REGION}\"
+    key    = \"${bamboo_PREFIX}/rds/terraform.tfstate\"
+    dynamodb_table = \"${bamboo_PREFIX}-tf-locks\"
+  }
+}" >> terraform.tf
 terraform init -input=false
+cd ../../../..
 
-#data persistence tf module
-cd ../data-persistence-tf
-mv terraform.tfvars.example terraform.tfvars
-#replacing terraform.tf with proper values
-sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g; s/us-east-1/'"$bamboo_AWS_DEFAULT_REGION"'/g' terraform.tf.example > terraform.tf
+# ecs-standalone module
+ecs_path="cumulus-orca-deploy-template/ecs-standalone-tf"
+cd "$ecs_path"
+echo "inside $ecs_path"
+#configuring S3 backend
+echo "terraform {
+  backend \"s3\" {
+    bucket = \"${bamboo_PREFIX}-tf-state\"
+    region = \"${bamboo_AWS_DEFAULT_REGION}\"
+    key    = \"${bamboo_PREFIX}/ecs/terraform.tfstate\"
+    dynamodb_table = \"${bamboo_PREFIX}-tf-locks\"
+  }
+}" >> terraform.tf
 terraform init -input=false
-
-cd ../cumulus-tf
-#replacing .tf files with proper values
-sed 's/PREFIX/'"$bamboo_PREFIX"'/g' terraform.tfvars.example > terraform.tfvars
-sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g; s/us-east-1/'"$bamboo_AWS_DEFAULT_REGION"'/g' terraform.tf.example > terraform.tf
-terraform init -input=false
-
 cd ../..
+
 # Remove all prevent_destroy properties
 for f in $(find cumulus-orca-deploy-template -name '*.tf');
 do
