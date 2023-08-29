@@ -17,6 +17,8 @@ and includes an additional section for migration notes.
 
 ### Migration Notes
 
+- Update terraform to the latest 1.5 version
+
 ### Added
 
 ### Changed
@@ -28,6 +30,8 @@ and includes an additional section for migration notes.
 ### Fixed
 
 ### Security
+
+- *ORCA-729* Updated terraform provider to use the latest version 1.5
 
 ## [8.1.0] 2023-08-02
 

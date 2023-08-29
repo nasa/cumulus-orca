@@ -154,6 +154,8 @@ modifications, which will be detailed below.
          },
          "Action":[
             "s3:GetObject*",
+            "S3:GetObjectTagging",
+            "S3:PutObjectTagging",
             "s3:RestoreObject",
             "s3:GetBucket*",
             "s3:ListBucket",
