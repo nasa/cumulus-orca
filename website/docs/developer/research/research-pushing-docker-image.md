@@ -196,7 +196,7 @@ docker.prototype_image: output will be in this color.
     docker.prototype_image (docker-push): 23f7bd114e4a: Preparing
     docker.prototype_image (docker-push): v1: digest: sha256:29c151d20a3d1e8e525e9af4e7292f0e99d8f8cd64d7bcba289ceafc77a2ea98 size: 1156
     docker.prototype_image (docker-push): Logging out...
-    docker.prototype_image (docker-push): Removing login credentials for 236859827343.dkr.ecr.us-west-2.amazonaws.com
+    docker.prototype_image (docker-push): Removing login credentials for 000000000000.dkr.ecr.us-west-2.amazonaws.com
 Build 'docker.prototype_image' finished after 13 seconds 305 milliseconds.
 
 ==> Wait completed after 13 seconds 305 milliseconds

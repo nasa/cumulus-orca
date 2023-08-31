@@ -128,7 +128,7 @@ def copy_granule_between_buckets(
                 "ContentType"
             ],
             "ACL": "bucket-owner-full-control",  # Sets the x-amz-acl URI Request Parameter.
-                                                 # Needed for cross-OU copies.
+            # Needed for cross-OU copies.
         },
         Config=TransferConfig(multipart_chunksize=multipart_chunksize_mb * MB),
     )
@@ -137,7 +137,7 @@ def copy_granule_between_buckets(
         Bucket=destination_bucket, Prefix=destination_key
     )
     latest_version = next(  # Find the first item in file_versions["Versions"]
-                            # that has "IsLatest" set to true.
+        # that has "IsLatest" set to true.
         filter(lambda file_version: file_version["IsLatest"], file_versions["Versions"])
     )
     LOGGER.info("collecting metadata from file version")
@@ -189,7 +189,9 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
 
     multipart_chunksize_mb_str = config.get(CONFIG_MULTIPART_CHUNKSIZE_MB_KEY, None)
     if multipart_chunksize_mb_str is None:
-        multipart_chunksize_mb = int(os.environ[OS_ENVIRON_DEFAULT_MULTIPART_CHUNKSIZE_MB_KEY])
+        multipart_chunksize_mb = int(
+            os.environ[OS_ENVIRON_DEFAULT_MULTIPART_CHUNKSIZE_MB_KEY]
+        )
         LOGGER.debug(
             "{CONFIG_MULTIPART_CHUNKSIZE_MB_KEY} is not set for config."
             "Using default value of {multipart_chunksize_mb}.",
@@ -203,9 +205,12 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
         metadata_queue_url = os.environ.get(OS_ENVIRON_METADATA_DB_QUEUE_URL_KEY)
         if metadata_queue_url is None or len(metadata_queue_url) == 0:
             raise KeyError(
-                f"{OS_ENVIRON_METADATA_DB_QUEUE_URL_KEY} environment variable is not set.")
+                f"{OS_ENVIRON_METADATA_DB_QUEUE_URL_KEY} environment variable is not set."
+            )
     except KeyError:
-        LOGGER.error(f"{OS_ENVIRON_METADATA_DB_QUEUE_URL_KEY} environment variable is not set.")
+        LOGGER.error(
+            f"{OS_ENVIRON_METADATA_DB_QUEUE_URL_KEY} environment variable is not set."
+        )
         raise
 
     granule_data = {}
@@ -222,7 +227,9 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
     # See https://github.com/nasa/cumulus-dashboard/blob/
     # 18a278ee5a1ac5181ec035b3df0665ef5acadcb0/app/src/js/utils/format.js#L342
     sqs_body["collection"]["collectionId"] = (
-        config[CONFIG_COLLECTION_SHORT_NAME_KEY] + "___" + config[CONFIG_COLLECTION_VERSION_KEY]
+        config[CONFIG_COLLECTION_SHORT_NAME_KEY]
+        + "___"
+        + config[CONFIG_COLLECTION_VERSION_KEY]
     )
     # Iterate through the input granules (>= 0 granules expected)
     for granule in task_input["granules"]:
@@ -373,8 +380,9 @@ def get_storage_class(config: Dict[str, Any]) -> str:
 
 
 # Copied from request_from_archive.py
-def set_optional_event_property(event: Dict[str, Any], target_path_cursor: Dict,
-                                target_path_segments: List) -> None:
+def set_optional_event_property(
+    event: Dict[str, Any], target_path_cursor: Dict, target_path_segments: List
+) -> None:
     """Sets the optional variable value from event if present, otherwise sets to None.
     Args:
         event: See schemas/input.json.
@@ -390,7 +398,7 @@ def set_optional_event_property(event: Dict[str, Any], target_path_cursor: Dict,
             set_optional_event_property(
                 event,
                 target_path_cursor[optionalValueTargetPath],
-                temp_target_path_segments
+                temp_target_path_segments,
             )
         elif isinstance(target_path_cursor[optionalValueTargetPath], str):
             source_path = target_path_cursor[optionalValueTargetPath]
@@ -399,8 +407,9 @@ def set_optional_event_property(event: Dict[str, Any], target_path_cursor: Dict,
             # ensure that the path up to the target_path exists
             event_cursor = event
             for target_path_segment in temp_target_path_segments[:-1]:
-                event_cursor[target_path_segment] =\
-                    event_cursor.get(target_path_segment, {})
+                event_cursor[target_path_segment] = event_cursor.get(
+                    target_path_segment, {}
+                )
                 event_cursor = event_cursor[target_path_segment]
             event_cursor[temp_target_path_segments[-1]] = None
 
@@ -409,14 +418,18 @@ def set_optional_event_property(event: Dict[str, Any], target_path_cursor: Dict,
             for source_path_segment in source_path_segments:
                 source_path_cursor = source_path_cursor.get(source_path_segment, None)
                 if source_path_cursor is None:
-                    LOGGER.info(f"When retrieving '{'.'.join(temp_target_path_segments)}', "
-                                f"no value found in '{source_path}' at key {source_path_segment}. "
-                                f"Defaulting to null.")
+                    LOGGER.info(
+                        f"When retrieving '{'.'.join(temp_target_path_segments)}', "
+                        f"no value found in '{source_path}' at key {source_path_segment}. "
+                        f"Defaulting to null."
+                    )
                     break
             event_cursor[temp_target_path_segments[-1]] = source_path_cursor
         else:
-            raise Exception(f"Illegal type {type(target_path_cursor[optionalValueTargetPath])} "
-                            f"found at {'.'.join(temp_target_path_segments)}")
+            raise Exception(
+                f"Illegal type {type(target_path_cursor[optionalValueTargetPath])} "
+                f"found at {'.'.join(temp_target_path_segments)}"
+            )
 
 
 # noinspection PyUnusedLocal

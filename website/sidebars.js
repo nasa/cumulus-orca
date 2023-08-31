@@ -14,9 +14,6 @@ module.exports = {
         'about/architecture/architecture-api-container',
         'about/architecture/architecture-database-container',
     ],
-    "Helpful Tips": [
-        'about/tips',
-    ],
     "ORCA Team": [
         'about/team',
     ],
@@ -35,6 +32,7 @@ module.exports = {
                 'developer/development-guide/code/clean-architecture',
                 'developer/development-guide/code/versioning-releases',
                 'developer/development-guide/code/linting',
+                'developer/development-guide/code/local-debugging',
                 'developer/development-guide/code/unit-tests',
                 'developer/development-guide/code/integration-tests',
                 'developer/development-guide/code/postgres-tests',
@@ -83,11 +81,6 @@ module.exports = {
       'developer/research/research-s3-bucket-best-practices',
       'developer/research/research-deep-archive-migration',
       'developer/research/research-logging-libraries'
-    ],
-  },
-  cookbook: {
-    "Getting Started": [
-        'cookbook/cookbook-intro',
     ],
   },
   ops_guide: {

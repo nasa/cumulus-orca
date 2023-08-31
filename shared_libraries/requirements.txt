@@ -5,18 +5,18 @@ pydoc-markdown>=4.0.0,<5.0.0
 
 ## Additional validation libraries
 ## ---------------------------------------------------------------------------
-bandit==1.7.0
-flake8==4.0.1
-black==21.12b0
-isort==5.10.1
+bandit==1.7.5
+flake8==6.1.0
+black==22.3.0
+isort==5.12.0
 
 
 ## Libraries needed for unit tests
 ## ---------------------------------------------------------------------------
 
 ## Libraries used by every package/module
-pytest==6.2.5
-coverage==6.2
+pytest==7.4.0
+coverage==7.2.7
 
 ## Libraries used by database package
 psycopg2-binary==2.9.2

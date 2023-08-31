@@ -1,24 +1,23 @@
-FROM amazonlinux:2
+FROM amazonlinux:2023
 LABEL maintainer="Rizbi Hassan" \
-      version="1" \
+      version="2" \
       description="This image can be used to run unit & validation tests for ORCA in Bamboo."
 
-ENV NODE_VERSION="16.x"
-ENV TERRAFORM_VERSION "0.13.6"
-ENV PYTHON_VERSION "3.9.16"
+ENV NODE_VERSION="20.x"
+ENV TERRAFORM_VERSION "1.5.5"
+ENV PYTHON_VERSION "3.9.17"
 
 # Add NodeJS and Yarn repos & update package index
 RUN \
 curl -sL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash - && \
 curl -sL https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo && \
 curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm" -o "session-manager-plugin.rpm" && \
-amazon-linux-extras install epel -y && \
-yum update -y
+dnf update -y
 
 # install pip, Python 3.9, CLI utilities, session manager and other tools
 RUN \
-yum install -y jq gcc git make openssl openssl-devel wget zip unzip bzip2-devel libffi-devel ncurses-devel sqlite-devel readline-devel uuid-devel libuuid-devel gdbm-devel xz-devel tar nodejs yarn awscli session-manager-plugin.rpm procps parallel && \
-yum groupinstall -y "Development Tools" && \
+dnf install -y jq gcc git make openssl openssl-devel wget zip unzip bzip2-devel libffi-devel ncurses-devel sqlite-devel readline-devel uuid-devel libuuid-devel gdbm-devel xz-devel tar nodejs yarn awscli session-manager-plugin.rpm procps parallel && \
+dnf groupinstall -y "Development Tools" && \
 # Install Python 3.9
 wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz && \
 tar xvf Python-${PYTHON_VERSION}.tgz && \

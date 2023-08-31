@@ -7,7 +7,7 @@ To run the tests provided below, run the steps in the [initial setup](#initial-s
 section first.
 
 It is recommended to run the tests in the following order.
-- [Database Migration v1 to v5 Test](#database-migration-v1-to-v5-test)
+- [Database Migration v1 to vX Test](#database-migration-v1-to-vx-test)
 - [Database No Migration Test](#database-no-migration-test)
 - [Database Fresh Install Test](#database-fresh-install-test)
 - [Database Exists Install Test](#database-exists-install-test)
@@ -513,10 +513,10 @@ Follow [Fresh Install Test Validation](#fresh-install-test-validation).
 
 Follow [Fresh Install Test Cleanup](#fresh-install-test-cleanup).
 
-## Database Migration v1 to v5 Test
+## Database Migration v1 to vX Test
 
 This test validates that the db_deploy scripts correctly identify a v1 ORCA
-schema and run the migration of objects and data to an ORCA v5 schema.
+schema and run the migration of objects and data to an ORCA vX schema. vX is the latest version of the schema the database should be migrated to.
 
 ### Database Setup Migration Test
 
@@ -1065,9 +1065,56 @@ schema version.
   </thead>
   <tbody>
     <tr>
+      <td>7</td>
+      <td>
+        <ol>
+          <li></li>
+        </ol>
+      </td>
+      <td>
+        <ul>
+          <li></li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>
+        <ol>
+          <li>sql/orca_schema_v7/remove.sql</li>
+        </ol>
+      </td>
+      <td>
+        <ul>
+          <li>The collection_id column is removed from the recovery_job table</li>
+          <li>The collection_id column is removed from the recovery_file table</li>
+          <li>Primary keys and foreign keys are restored to the recovery tables.</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>
+        <ol>
+          <li>sql/orca_schema_v7/remove.sql</li>
+          <li>sql/orca_schema_v6/remove.sql</li>
+        </ol>
+      </td>
+      <td>
+        <ul>
+          <li>The storage_class table and data is removed</li>
+          <li>The storage_class_id column and constraints are removed from the files table</li>
+          <li>The orca_storage_class_id and s3_storage_class columns are removed from the reconcile_catalog_mismatch_report table</li>
+          <li>The orca_storage_class_id column is removed from the reconcile_phantom_report table</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
       <td>4</td>
       <td>
         <ol>
+          <li>sql/orca_schema_v7/remove.sql</li>
+          <li>sql/orca_schema_v6/remove.sql</li>
           <li>sql/orca_schema_v5/remove.sql</li>
         </ol>
       </td>
@@ -1090,6 +1137,8 @@ schema version.
       <td>3</td>
       <td>
         <ol>
+          <li>sql/orca_schema_v7/remove.sql</li>
+          <li>sql/orca_schema_v6/remove.sql</li>
           <li>sql/orca_schema_v5/remove.sql</li>
           <li>sql/orca_schema_v4/remove.sql</li>
         </ol>
@@ -1106,6 +1155,8 @@ schema version.
       <td>2</td>
       <td>
         <ol>
+          <li>sql/orca_schema_v7/remove.sql</li>
+          <li>sql/orca_schema_v6/remove.sql</li>
           <li>sql/orca_schema_v5/remove.sql</li>
           <li>sql/orca_schema_v4/remove.sql</li>
           <li>sql/orca_schema_v3/remove.sql</li>
@@ -1120,6 +1171,8 @@ schema version.
       <td>1</td>
       <td>
         <ol>
+          <li>sql/orca_schema_v7/remove.sql</li>
+          <li>sql/orca_schema_v6/remove.sql</li>
           <li>sql/orca_schema_v5/remove.sql</li>
           <li>sql/orca_schema_v4/remove.sql</li>
           <li>sql/orca_schema_v3/remove.sql</li>
@@ -1164,6 +1217,42 @@ Validating the migration follows the same steps as the migration test validation
 above with the only diffrence being the amount of information emitted in the log
 will be a subset of total migration from version 1 to latest logs.
 
+#### :warning: Version 6 to Version 7 Corner Case Tests
+
+During normal migration testing no errors will occur and all _collection_id_ values will be set to a value of **UNKNOWN**. In order to validate migration in a more real world way, perform the following actions.
+
+1. Revert the ORCA schema to v6.
+2. In the `psql` window run the following
+   ```bash
+   root@56a9df92a881:/data/tasks/db_deploy/test/manual_tests# psql
+
+   psql (10.14 (Debian 10.14-1.pgdg90+1), server 10.20 (Debian 10.20-1.pgdg90+1))
+   Type "help" for help.
+
+   postgres=# \c orca
+   You are now connected to database "orca" as user "postgres".
+
+   orca=# \i sql/orca_schema_v7/populate_dummy_data.sql
+   orca=# commit;
+   ```
+   This will populate the orca catalog tables with data for additional testing.
+3. Run the `python manual_test.py` file in the python window.
+
+Validate the migration of data by querying the `recovery_job` and `recovery_file` table as seen below in the psql window. The `populate_dummy_data.sql` file populates the ORCA archive with data from all but 7 of the granules in the recovery tables.
+
+```bash
+orca=# select count(*) from orca.recovery_job where collection_id = 'UNKNOWN';
+ count 
+-------
+     7
+(1 row)
+
+orca=# select count(*) from orca.recovery_file where collection_id = 'UNKNOWN';
+ count 
+-------
+     7
+(1 row)
+```
 
 ### Migration Test Cleanup
 

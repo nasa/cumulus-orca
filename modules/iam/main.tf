@@ -1,3 +1,4 @@
+data "aws_region" "current_region" {}
 ## Local Variables
 # We will eventually create more specific permissions. For now, only reports buckets are separated.
 # Note that all_bucket_names does not actually contain all buckets used by Orca.
@@ -144,4 +145,51 @@ resource "aws_iam_role_policy" "restore_object_role_policy" {
   name   = "${var.prefix}_restore_object_role_policy"
   role   = aws_iam_role.restore_object_role.id
   policy = data.aws_iam_policy_document.restore_object_role_policy_document.json
+}
+
+
+# Step functions
+# copied from (cumulus/tf-modules/ingest/iam.tf) todo: Strip back and personalize for each step-function
+data "aws_iam_policy_document" "states_assume_role_policy" {
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["states.${data.aws_region.current_region.name}.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "step_functions" {
+  name                 = "${var.prefix}-orca-steprole"
+  assume_role_policy   = data.aws_iam_policy_document.states_assume_role_policy.json
+  permissions_boundary = var.permissions_boundary_arn
+  tags                 = var.tags
+}
+
+data "aws_iam_policy_document" "step_functions_policy" {
+  statement {
+    actions = [
+      "lambda:InvokeFunction",
+      "ecr:*",
+      "cloudtrail:LookupEvents",
+      "ecs:RunTask",
+      "ecs:StopTask",
+      "ecs:DescribeTasks",
+      "autoscaling:Describe*",
+      "cloudwatch:*",
+      "logs:*",
+      "sns:*",
+      "iam:GetPolicy",
+      "iam:GetPolicyVersion",
+      "iam:GetRole",
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_role_policy" "step_functions_role" {
+  name   = "${var.prefix}_orca_step_policy"
+  role   = aws_iam_role.step_functions.id
+  policy = data.aws_iam_policy_document.step_functions_policy.json
 }

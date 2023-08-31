@@ -494,7 +494,9 @@ def get_s3_credentials_from_secrets_manager(s3_credentials_secret_arn: str) -> t
     )
     LOGGER.debug(f"Getting secret '{s3_credentials_secret_arn}'")
     s3_credentials = json.loads(
-        secretsmanager.get_secret_value(SecretId=s3_credentials_secret_arn)["SecretString"]
+        secretsmanager.get_secret_value(SecretId=s3_credentials_secret_arn)[
+            "SecretString"
+        ]
     )
     s3_access_key = s3_credentials.get(S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY, None)
     if s3_access_key is None or len(s3_access_key) == 0:
@@ -519,6 +521,7 @@ class MessageData:
         manifest_key: (str) The key/path to the manifest within the report bucket
         message_receipt: (str) The receipt handle of the message in the queue
     """
+
     report_bucket_region: str
     report_bucket_name: str
     manifest_key: str
@@ -598,11 +601,14 @@ def handler(event: Dict[str, List], context: LambdaContext) -> Dict[str, Any]:
 
     # getting the env variables
     s3_access_key, s3_secret_key = get_s3_credentials_from_secrets_manager(
-        check_env_variable(OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY))
+        check_env_variable(OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY)
+    )
     db_connect_info = shared_db.get_configuration(
-        check_env_variable(OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY))
+        check_env_variable(OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY)
+    )
     message_data = get_message_from_queue(
-        check_env_variable(OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY))
+        check_env_variable(OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY)
+    )
 
     result = task(
         message_data.report_bucket_region,

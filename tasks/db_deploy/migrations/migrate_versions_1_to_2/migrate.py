@@ -11,7 +11,9 @@ from sqlalchemy import create_engine
 import migrations.migrate_versions_1_to_2.migrate_sql as sql
 
 
-def migrate_versions_1_to_2(config: PostgresConnectionInfo, is_latest_version: bool) -> None:
+def migrate_versions_1_to_2(
+    config: PostgresConnectionInfo, is_latest_version: bool
+) -> None:
     """
     Performs the migration of the ORCA schema from version 1 to version 2 of
     the ORCA schema.
@@ -34,8 +36,9 @@ def migrate_versions_1_to_2(config: PostgresConnectionInfo, is_latest_version: b
         raise Exception("User password must be at least 12 characters long.")
 
     # Get the admin engine to the app database
-    user_admin_engine = \
-        create_engine(create_admin_uri(config, LOGGER, config.user_database_name), future=True)
+    user_admin_engine = create_engine(
+        create_admin_uri(config, LOGGER, config.user_database_name), future=True
+    )
 
     # Create all the new objects, users, roles, etc.
     with user_admin_engine.connect() as connection:

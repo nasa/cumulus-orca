@@ -42,36 +42,29 @@ class TestInternalReconcileReportMismatch(
             internal_reconcile_report_mismatch.OUTPUT_ANOTHER_PAGE_KEY: False,
             internal_reconcile_report_mismatch.OUTPUT_MISMATCHES_KEY: [
                 {
-                    internal_reconcile_report_mismatch.MISMATCHES_COLLECTION_ID_KEY:
-                        uuid.uuid4().__str__(),
-                    internal_reconcile_report_mismatch.MISMATCHES_GRANULE_ID_KEY:
-                        uuid.uuid4().__str__(),
-                    internal_reconcile_report_mismatch.MISMATCHES_FILENAME_KEY:
-                        uuid.uuid4().__str__(),
-                    internal_reconcile_report_mismatch.MISMATCHES_KEY_PATH_KEY:
-                        uuid.uuid4().__str__(),
-                    internal_reconcile_report_mismatch.MISMATCHES_CUMULUS_ARCHIVE_LOCATION_KEY:
-                        uuid.uuid4().__str__(),
-                    internal_reconcile_report_mismatch.MISMATCHES_ORCA_ETAG_KEY:
-                        uuid.uuid4().__str__(),
-                    internal_reconcile_report_mismatch.MISMATCHES_S3_ETAG_KEY:
-                        uuid.uuid4().__str__(),
-                    internal_reconcile_report_mismatch.MISMATCHES_ORCA_LAST_UPDATE_KEY:
-                        random.randint(0, 999),  # nosec
-                    internal_reconcile_report_mismatch.MISMATCHES_S3_LAST_UPDATE_KEY:
-                        random.randint(0, 999),  # nosec
-                    internal_reconcile_report_mismatch.MISMATCHES_ORCA_SIZE_IN_BYTES_KEY:
-                        random.randint(0, 999),  # nosec
-                    internal_reconcile_report_mismatch.MISMATCHES_S3_SIZE_IN_BYTES_KEY:
-                        random.randint(0, 999),  # nosec
-                    internal_reconcile_report_mismatch.MISMATCHES_ORCA_STORAGE_CLASS_KEY:
-                        uuid.uuid4().__str__(),
-                    internal_reconcile_report_mismatch.MISMATCHES_S3_STORAGE_CLASS_KEY:
-                        uuid.uuid4().__str__(),
-                    internal_reconcile_report_mismatch.MISMATCHES_DISCREPANCY_TYPE_KEY:
-                        uuid.uuid4().__str__(),
-                    internal_reconcile_report_mismatch.MISMATCHES_COMMENT_KEY:
-                        None
+                    internal_reconcile_report_mismatch.MISMATCHES_COLLECTION_ID_KEY: uuid.uuid4().__str__(),  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_GRANULE_ID_KEY: uuid.uuid4().__str__(),  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_FILENAME_KEY: uuid.uuid4().__str__(),  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_KEY_PATH_KEY: uuid.uuid4().__str__(),  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_CUMULUS_ARCHIVE_LOCATION_KEY: uuid.uuid4().__str__(),  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_ORCA_ETAG_KEY: uuid.uuid4().__str__(),  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_S3_ETAG_KEY: uuid.uuid4().__str__(),  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_ORCA_LAST_UPDATE_KEY: random.randint(  # noqa: E501
+                        0, 999
+                    ),  # nosec
+                    internal_reconcile_report_mismatch.MISMATCHES_S3_LAST_UPDATE_KEY: random.randint(  # noqa: E501
+                        0, 999
+                    ),  # nosec
+                    internal_reconcile_report_mismatch.MISMATCHES_ORCA_SIZE_IN_BYTES_KEY: random.randint(  # noqa: E501
+                        0, 999
+                    ),  # nosec
+                    internal_reconcile_report_mismatch.MISMATCHES_S3_SIZE_IN_BYTES_KEY: random.randint(  # noqa: E501
+                        0, 999
+                    ),  # nosec
+                    internal_reconcile_report_mismatch.MISMATCHES_ORCA_STORAGE_CLASS_KEY: uuid.uuid4().__str__(),  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_S3_STORAGE_CLASS_KEY: uuid.uuid4().__str__(),  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_DISCREPANCY_TYPE_KEY: uuid.uuid4().__str__(),  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_COMMENT_KEY: None,
                 }
             ],
         }
@@ -146,36 +139,29 @@ class TestInternalReconcileReportMismatch(
             internal_reconcile_report_mismatch.OUTPUT_ANOTHER_PAGE_KEY: False,
             internal_reconcile_report_mismatch.OUTPUT_MISMATCHES_KEY: [
                 {
-                    internal_reconcile_report_mismatch.MISMATCHES_COLLECTION_ID_KEY:
-                        uuid.uuid4().__str__(),
-                    internal_reconcile_report_mismatch.MISMATCHES_GRANULE_ID_KEY:
-                        uuid.uuid4().__str__(),
-                    internal_reconcile_report_mismatch.MISMATCHES_FILENAME_KEY:
-                        uuid.uuid4().__str__(),
-                    internal_reconcile_report_mismatch.MISMATCHES_KEY_PATH_KEY:
-                        uuid.uuid4().__str__(),
-                    internal_reconcile_report_mismatch.MISMATCHES_CUMULUS_ARCHIVE_LOCATION_KEY:
-                        uuid.uuid4().__str__(),
-                    internal_reconcile_report_mismatch.MISMATCHES_ORCA_ETAG_KEY:
-                        uuid.uuid4().__str__(),
-                    internal_reconcile_report_mismatch.MISMATCHES_S3_ETAG_KEY:
-                        uuid.uuid4().__str__(),
-                    internal_reconcile_report_mismatch.MISMATCHES_ORCA_LAST_UPDATE_KEY:
-                        random.randint(0, 999).__str__(),  # nosec
-                    internal_reconcile_report_mismatch.MISMATCHES_S3_LAST_UPDATE_KEY:
-                        random.randint(0, 999),  # nosec
-                    internal_reconcile_report_mismatch.MISMATCHES_ORCA_SIZE_IN_BYTES_KEY:
-                        random.randint(0, 999),  # nosec
-                    internal_reconcile_report_mismatch.MISMATCHES_S3_SIZE_IN_BYTES_KEY:
-                        random.randint(0, 999),  # nosec
-                    internal_reconcile_report_mismatch.MISMATCHES_ORCA_STORAGE_CLASS_KEY:
-                        uuid.uuid4().__str__(),
-                    internal_reconcile_report_mismatch.MISMATCHES_S3_STORAGE_CLASS_KEY:
-                        uuid.uuid4().__str__(),
-                    internal_reconcile_report_mismatch.MISMATCHES_DISCREPANCY_TYPE_KEY:
-                        uuid.uuid4().__str__(),
-                    internal_reconcile_report_mismatch.MISMATCHES_COMMENT_KEY:
-                        uuid.uuid4().__str__()
+                    internal_reconcile_report_mismatch.MISMATCHES_COLLECTION_ID_KEY: uuid.uuid4().__str__(),  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_GRANULE_ID_KEY: uuid.uuid4().__str__(),  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_FILENAME_KEY: uuid.uuid4().__str__(),  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_KEY_PATH_KEY: uuid.uuid4().__str__(),  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_CUMULUS_ARCHIVE_LOCATION_KEY: uuid.uuid4().__str__(),  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_ORCA_ETAG_KEY: uuid.uuid4().__str__(),  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_S3_ETAG_KEY: uuid.uuid4().__str__(),  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_ORCA_LAST_UPDATE_KEY: random.randint(  # noqa: E501
+                        0, 999
+                    ).__str__(),  # nosec
+                    internal_reconcile_report_mismatch.MISMATCHES_S3_LAST_UPDATE_KEY: random.randint(  # noqa: E501
+                        0, 999
+                    ),  # nosec
+                    internal_reconcile_report_mismatch.MISMATCHES_ORCA_SIZE_IN_BYTES_KEY: random.randint(  # noqa: E501
+                        0, 999
+                    ),  # nosec
+                    internal_reconcile_report_mismatch.MISMATCHES_S3_SIZE_IN_BYTES_KEY: random.randint(  # noqa: E501
+                        0, 999
+                    ),  # nosec
+                    internal_reconcile_report_mismatch.MISMATCHES_ORCA_STORAGE_CLASS_KEY: uuid.uuid4().__str__(),  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_S3_STORAGE_CLASS_KEY: uuid.uuid4().__str__(),  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_DISCREPANCY_TYPE_KEY: uuid.uuid4().__str__(),  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_COMMENT_KEY: uuid.uuid4().__str__(),  # noqa: E501
                 }
             ],
         }
@@ -264,7 +250,7 @@ class TestInternalReconcileReportMismatch(
                 internal_reconcile_report_mismatch.OUTPUT_JOB_ID_KEY: job_id,
                 internal_reconcile_report_mismatch.OUTPUT_ANOTHER_PAGE_KEY: True,
                 internal_reconcile_report_mismatch.OUTPUT_MISMATCHES_KEY: mismatches[
-                    0: internal_reconcile_report_mismatch.PAGE_SIZE
+                    0 : internal_reconcile_report_mismatch.PAGE_SIZE  # noqa: E203
                 ],
             },
             result,
@@ -309,7 +295,7 @@ class TestInternalReconcileReportMismatch(
             "orca_storage_class": orca_storage_class,
             "s3_storage_class": s3_storage_class,
             "discrepancy_type": discrepancy_type,
-            "comment": comment
+            "comment": comment,
         }
         mock_execute_result = Mock()
         mock_execute_result.mappings = Mock(return_value=[returned_row0])
@@ -347,36 +333,21 @@ class TestInternalReconcileReportMismatch(
         self.assertEqual(
             [
                 {
-                    internal_reconcile_report_mismatch.MISMATCHES_COLLECTION_ID_KEY:
-                        collection_id,
-                    internal_reconcile_report_mismatch.MISMATCHES_GRANULE_ID_KEY:
-                        granule_id,
-                    internal_reconcile_report_mismatch.MISMATCHES_FILENAME_KEY:
-                        filename,
-                    internal_reconcile_report_mismatch.MISMATCHES_KEY_PATH_KEY:
-                        key_path,
-                    internal_reconcile_report_mismatch.MISMATCHES_CUMULUS_ARCHIVE_LOCATION_KEY:
-                        cumulus_archive_location,
-                    internal_reconcile_report_mismatch.MISMATCHES_ORCA_ETAG_KEY:
-                        orca_etag,
-                    internal_reconcile_report_mismatch.MISMATCHES_S3_ETAG_KEY:
-                        s3_etag,
-                    internal_reconcile_report_mismatch.MISMATCHES_ORCA_LAST_UPDATE_KEY:
-                        orca_last_update,
-                    internal_reconcile_report_mismatch.MISMATCHES_S3_LAST_UPDATE_KEY:
-                        s3_last_update,
-                    internal_reconcile_report_mismatch.MISMATCHES_ORCA_SIZE_IN_BYTES_KEY:
-                        orca_size_in_bytes,
-                    internal_reconcile_report_mismatch.MISMATCHES_S3_SIZE_IN_BYTES_KEY:
-                        s3_size_in_bytes,
-                    internal_reconcile_report_mismatch.MISMATCHES_ORCA_STORAGE_CLASS_KEY:
-                        orca_storage_class,
-                    internal_reconcile_report_mismatch.MISMATCHES_S3_STORAGE_CLASS_KEY:
-                        s3_storage_class,
-                    internal_reconcile_report_mismatch.MISMATCHES_DISCREPANCY_TYPE_KEY:
-                        discrepancy_type,
-                    internal_reconcile_report_mismatch.MISMATCHES_COMMENT_KEY:
-                        comment
+                    internal_reconcile_report_mismatch.MISMATCHES_COLLECTION_ID_KEY: collection_id,
+                    internal_reconcile_report_mismatch.MISMATCHES_GRANULE_ID_KEY: granule_id,
+                    internal_reconcile_report_mismatch.MISMATCHES_FILENAME_KEY: filename,
+                    internal_reconcile_report_mismatch.MISMATCHES_KEY_PATH_KEY: key_path,
+                    internal_reconcile_report_mismatch.MISMATCHES_CUMULUS_ARCHIVE_LOCATION_KEY: cumulus_archive_location,  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_ORCA_ETAG_KEY: orca_etag,
+                    internal_reconcile_report_mismatch.MISMATCHES_S3_ETAG_KEY: s3_etag,
+                    internal_reconcile_report_mismatch.MISMATCHES_ORCA_LAST_UPDATE_KEY: orca_last_update,  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_S3_LAST_UPDATE_KEY: s3_last_update,  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_ORCA_SIZE_IN_BYTES_KEY: orca_size_in_bytes,  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_S3_SIZE_IN_BYTES_KEY: s3_size_in_bytes,  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_ORCA_STORAGE_CLASS_KEY: orca_storage_class,  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_S3_STORAGE_CLASS_KEY: s3_storage_class,  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_DISCREPANCY_TYPE_KEY: discrepancy_type,  # noqa: E501
+                    internal_reconcile_report_mismatch.MISMATCHES_COMMENT_KEY: comment,
                 }
             ],
             result,
@@ -429,24 +400,25 @@ class TestInternalReconcileReportMismatch(
         )
 
     @patch("internal_reconcile_report_mismatch.LOGGER.error")
-    def test_create_http_error_dict_happy_path(
-            self,
-            mock_error: MagicMock
-    ):
+    def test_create_http_error_dict_happy_path(self, mock_error: MagicMock):
         error_type = uuid.uuid4().__str__()
         http_status_code = random.randint(0, 9999)  # nosec
         request_id = uuid.uuid4().__str__()
         message = uuid.uuid4().__str__()
 
         result = internal_reconcile_report_mismatch.create_http_error_dict(
-            error_type, http_status_code, request_id, message)
+            error_type, http_status_code, request_id, message
+        )
 
-        self.assertEqual({
-            "errorType": error_type,
-            "httpStatus": http_status_code,
-            "requestId": request_id,
-            "message": message,
-        }, result)
+        self.assertEqual(
+            {
+                "errorType": error_type,
+                "httpStatus": http_status_code,
+                "requestId": request_id,
+                "message": message,
+            },
+            result,
+        )
 
         mock_error.assert_called_once_with(message)
 

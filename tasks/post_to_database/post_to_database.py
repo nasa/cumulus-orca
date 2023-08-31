@@ -94,8 +94,8 @@ def send_record_to_database(record: Dict[str, Any], engine: Engine) -> None:
 
 
 @shared_db.retry_operational_error(
-     # Retry all files due to transactional behavior of engine.begin
-     )
+    # Retry all files due to transactional behavior of engine.begin
+)
 def create_status_for_job_and_files(
     job_id: str,
     collection_id: str,
@@ -155,12 +155,16 @@ def create_status_for_job_and_files(
         )
 
     if len(file_parameters) == 0:
-        LOGGER.info(f"No files given for job '{job_id}' collection '{collection_id}' "
-                    f"granule '{granule_id}'. "
-                    "Creating error status entry.")
+        LOGGER.info(
+            f"No files given for job '{job_id}' collection '{collection_id}' "
+            f"granule '{granule_id}'. "
+            "Creating error status entry."
+        )
         # No files given. Assume that this is in error.
         job_status = OrcaStatus.FAILED
-        job_completion_time = datetime.datetime.now(datetime.timezone.utc).isoformat().__str__()
+        job_completion_time = (
+            datetime.datetime.now(datetime.timezone.utc).isoformat().__str__()
+        )
     elif found_pending:
         # Most jobs will be this. Some files are still pending.
         job_status = OrcaStatus.PENDING
@@ -191,15 +195,13 @@ def create_status_for_job_and_files(
                 connection.execute(create_file_sql(), file_parameters)
     except Exception as sql_ex:
         # Can't use f"" because of '{}' bug in CumulusLogger.
-        LOGGER.error(
-            f"Error while creating statuses for job '{job_id}': {sql_ex}"
-        )
+        LOGGER.error(f"Error while creating statuses for job '{job_id}': {sql_ex}")
         raise
 
 
 @shared_db.retry_operational_error(
-     # Retry all files due to transactional behavior of engine.begin
-     )
+    # Retry all files due to transactional behavior of engine.begin
+)
 def update_status_for_file(
     job_id: str,
     collection_id: str,
@@ -237,7 +239,11 @@ def update_status_for_file(
         "granule_id": granule_id,
         "filename": filename,
     }
-    job_parameters = {"job_id": job_id, "collection_id": collection_id, "granule_id": granule_id}
+    job_parameters = {
+        "job_id": job_id,
+        "collection_id": collection_id,
+        "granule_id": granule_id,
+    }
     try:
         LOGGER.debug(
             f"Updating status for recovery record job_id '{job_id}' "
@@ -249,9 +255,7 @@ def update_status_for_file(
             connection.execute(update_job_sql(), job_parameters)
     except Exception as sql_ex:
         # Can't use f"" because of '{}' bug in CumulusLogger.
-        LOGGER.error(
-            f"Error while creating statuses for job '{job_id}': {sql_ex}"
-        )
+        LOGGER.error(f"Error while creating statuses for job '{job_id}': {sql_ex}")
         raise
 
 

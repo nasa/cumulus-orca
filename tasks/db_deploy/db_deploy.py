@@ -21,7 +21,7 @@ from migrations.migrate_db import perform_migration
 
 # Globals
 # Latest version of the ORCA schema.
-LATEST_ORCA_SCHEMA_VERSION = 6
+LATEST_ORCA_SCHEMA_VERSION = 7
 MAX_RETRIES = 3
 
 
@@ -61,7 +61,7 @@ def handler(
 
     # Get the ORCA bucket list
     orca_buckets = event.get("orcaBuckets", None)
-    if type(orca_buckets) != list or len(orca_buckets) == 0:
+    if not isinstance(orca_buckets, list) or len(orca_buckets) == 0:
         raise ValueError("orcaBuckets must be a valid list of ORCA S3 bucket names.")
 
     return task(config, orca_buckets)
@@ -97,8 +97,9 @@ def task(config: PostgresConnectionInfo, orca_buckets: List[str]) -> None:
             return
 
     # Create the engine
-    user_admin_engine = \
-        create_engine(create_admin_uri(config, LOGGER, config.user_database_name), future=True)
+    user_admin_engine = create_engine(
+        create_admin_uri(config, LOGGER, config.user_database_name), future=True
+    )
 
     # Connect as admin user to config["user_database"] database.
     with user_admin_engine.connect() as connection:
@@ -167,8 +168,9 @@ def app_db_exists(connection: Connection, db_name: str) -> bool:
 
 
 @retry_operational_error(MAX_RETRIES)
-def reset_user_password(connection: Connection, config: PostgresConnectionInfo,
-                        user_name: str):
+def reset_user_password(
+    connection: Connection, config: PostgresConnectionInfo, user_name: str
+):
     """
     Resets the ORCA user password.
 
@@ -177,20 +179,45 @@ def reset_user_password(connection: Connection, config: PostgresConnectionInfo,
         config: Dictionary of connection information.
         user_name: Username for the application user
     """
+    # SQL for checking user exists
+    check_user_sql = text(
+        """
+        SELECT EXISTS(
+            SELECT
+                usename
+            FROM
+                pg_user
+            WHERE
+                usename = :user_name
+        );
+        """
+    )
+
     # SQL for resetting user password
     reset_user_password_sql = text(
         f"""
-            ALTER ROLE "{user_name}" WITH ENCRYPTED PASSWORD :user_password
+        ALTER ROLE {user_name}
+            WITH ENCRYPTED PASSWORD :user_password ;
         """
     )
 
     # Run the query
-    connection.execute(
-        reset_user_password_sql, {"user_password": config.user_password}
-    )
-    connection.commit()
+    results = connection.execute(check_user_sql, {"user_name": user_name})
+    for row in results.fetchall():
+        user_exists = row[0]
 
-    LOGGER.info(f"Password for {config.user_username} has been reset")
+    if user_exists:
+        # Run the update
+        connection.execute(
+            reset_user_password_sql, {"user_password": config.user_password}
+        )
+        connection.commit()
+        LOGGER.info(f"Password for {config.user_username} has been reset")
+
+    else:
+        LOGGER.warn(
+            f"User {config.user_username} does not exist! No password reset performed."
+        )
 
 
 def app_schema_exists(connection: Connection) -> bool:

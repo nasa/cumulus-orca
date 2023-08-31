@@ -243,9 +243,7 @@ def post_entry_to_standard_queue(
     # TODO: pass AWS region value to function. SHOULD be gotten from environment
     # higher up. Setting this to us-west-2 initially since that is where
     # EOSDIS runs from normally. SEE ORCA-203 https://bugs.earthdata.nasa.ov/browse/ORCA-203
-    LOGGER.debug(
-        f"Creating SQS resource for {recovery_queue_url}"
-    )
+    LOGGER.debug(f"Creating SQS resource for {recovery_queue_url}")
     mysqs_resource = boto3.resource("sqs", region_name=get_aws_region())
     mysqs = mysqs_resource.Queue(recovery_queue_url)
 

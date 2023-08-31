@@ -110,7 +110,7 @@ def get_granule_status_entries_for_job(
 
 
 def get_granule_status_entries_for_job_sql() -> text:  # pragma: no cover
-    return text(  # nosec
+    return text(
         f"""
                 SELECT
                     collection_id as "{OUTPUT_COLLECTION_ID_KEY}",
@@ -121,7 +121,7 @@ def get_granule_status_entries_for_job_sql() -> text:  # pragma: no cover
                 JOIN recovery_status ON recovery_job.status_id=recovery_status.id
                 WHERE
                     job_id = :job_id
-                """
+                """  # nosec
     )
 
 

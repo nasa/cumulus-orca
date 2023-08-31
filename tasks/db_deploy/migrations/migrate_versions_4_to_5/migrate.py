@@ -36,8 +36,9 @@ def migrate_versions_4_to_5(
         None
     """
     # Get the admin engine to the app database
-    user_admin_engine = \
-        create_engine(create_admin_uri(config, LOGGER, config.user_database_name), future=True)
+    user_admin_engine = create_engine(
+        create_admin_uri(config, LOGGER, config.user_database_name), future=True
+    )
 
     with user_admin_engine.connect() as connection:
 
@@ -71,8 +72,9 @@ def migrate_versions_4_to_5(
 
         # Create partitioned tables for the reconcile_s3_object table
         for bucket_name in orca_buckets:
-            _partition_name = orca_shared.reconciliation.shared_reconciliation. \
-                                get_partition_name_from_bucket_name(bucket_name)
+            _partition_name = orca_shared.reconciliation.shared_reconciliation.get_partition_name_from_bucket_name(
+                bucket_name
+            )
 
             LOGGER.debug(
                 f"Creating partition table {_partition_name} for reconcile_s3_object ..."

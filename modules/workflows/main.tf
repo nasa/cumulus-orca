@@ -11,12 +11,12 @@ module "orca_internal_reconciliation_workflow" {
   prefix          = var.prefix
   system_bucket   = var.system_bucket
   tags            = var.tags
-  workflow_config = var.workflow_config
 
   ## --------------------------
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
+  orca_step_function_role_arn = var.orca_step_function_role_arn
 
   # Task ARNS needed for workflow template
   orca_lambda_get_current_archive_list_arn = var.orca_lambda_get_current_archive_list_arn
@@ -34,17 +34,17 @@ module "orca_recovery_workflow" {
   prefix          = var.prefix
   system_bucket   = var.system_bucket
   tags            = var.tags
-  workflow_config = var.workflow_config
 
   ## --------------------------
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
   orca_default_bucket = var.orca_default_bucket
+  orca_step_function_role_arn = var.orca_step_function_role_arn
 
   # Task ARNS needed for workflow template
   orca_lambda_extract_filepaths_for_granule_arn = var.orca_lambda_extract_filepaths_for_granule_arn
-  orca_lambda_request_from_archive_arn                 = var.orca_lambda_request_from_archive_arn
+  orca_lambda_request_from_archive_arn          = var.orca_lambda_request_from_archive_arn
 }
 
 # copy_to_archive_workflow - On-Demand execution of copy_to_archive.
@@ -58,12 +58,13 @@ module "orca_copy_to_archive_workflow" {
   prefix          = var.prefix
   system_bucket   = var.system_bucket
   tags            = var.tags
-  workflow_config = var.workflow_config
 
   ## --------------------------
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
+  orca_step_function_role_arn = var.orca_step_function_role_arn
+  
   # Task ARNS needed for workflow template
-  orca_lambda_copy_to_archive_arn                    = var.orca_lambda_copy_to_archive_arn
+  orca_lambda_copy_to_archive_arn = var.orca_lambda_copy_to_archive_arn
 }

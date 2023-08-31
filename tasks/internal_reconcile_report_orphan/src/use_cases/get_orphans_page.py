@@ -5,9 +5,9 @@ from src.entities.orphan import OrphanRecordPage, OrphanRecordFilter
 
 
 def task(
-        orphan_record_filter: OrphanRecordFilter,
-        orphans_page_storage: OrphansPageStorageInterface,
-        LOGGER: logging.Logger
+    orphan_record_filter: OrphanRecordFilter,
+    orphans_page_storage: OrphansPageStorageInterface,
+    LOGGER: logging.Logger,
 ) -> OrphanRecordPage:
     """
     Args:
@@ -19,7 +19,4 @@ def task(
         A list containing orphan records.
         A bool indicating if there are further pages to retrieve.
     """
-    return orphans_page_storage.get_orphans_page(
-        orphan_record_filter,
-        LOGGER
-    )
+    return orphans_page_storage.get_orphans_page(orphan_record_filter, LOGGER)

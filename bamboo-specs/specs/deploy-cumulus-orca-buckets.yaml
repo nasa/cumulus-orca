@@ -66,6 +66,11 @@ Deploy Cumulus buckets and Cumulus and Orca modules:
         #!/bin/bash
         . ./integration_test/shared/setup-orca.sh
         bash integration_test/deployment-orca.sh
+  artifacts:
+  - name: EC2KeyPair
+    pattern: 'EC2KeyPair.pem'
+    shared: true
+    required: true
 
 #job for running ingest integration tests
 Run Ingest Integration tests:
@@ -87,6 +92,7 @@ Run Ingest Integration tests:
       - |-
         #!/bin/bash
         . ./integration_test/shared/setup-orca.sh
+        . ./integration_test/setup-workflow-tests.sh
         cd integration_test/workflow_tests
         bash bin/run_tests.sh primary
 
@@ -98,18 +104,14 @@ variables:
   CUMULUS_AWS_SECRET_ACCESS_KEY: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
   DR_AWS_ACCESS_KEY_ID: REPLACE ME
   DR_AWS_SECRET_ACCESS_KEY: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
-  RDS_ENGINE_VERSION: 10.18
+  RDS_ENGINE_VERSION: 11.13
   ROLE_BOUNDARY: NGAPShRoleBoundary
-  CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION: release/v11.1.1-v4.0.1
+  CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION: release/v15.0.3-vANY
   PREFIX: REPLACE ME
   DB_ADMIN_USERNAME: postgres
   DB_ADMIN_PASSWORD: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
   DB_USER_PASSWORD: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
-  EARTHDATA_CLIENT_ID: REPLACE ME
-  EARTHDATA_CLIENT_PASSWORD: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
   BRANCH_NAME: ${bamboo.planRepository.branchName}
-  CMR_OAUTH_PROVIDER: earthdata
-  ORCA_API_DEPLOYMENT_INVOKE_URL: REPLACE ME
  
 repositories:
 - orca-develop:

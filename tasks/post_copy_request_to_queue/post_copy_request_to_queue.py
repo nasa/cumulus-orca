@@ -211,30 +211,21 @@ def query_db(
                 get_metadata_sql(),
                 {
                     "key_path": key_path,
-                    "status_id": shared_recovery.OrcaStatus.PENDING.value
-                }
+                    "status_id": shared_recovery.OrcaStatus.PENDING.value,
+                },
             ):
                 # Create dictionary for with the info needed for the
                 # copy_from_archive lambda
                 row_dict = {
-                    JOB_ID_KEY:
-                        row[0],
-                    COLLECTION_ID_KEY:
-                        row[1],
-                    GRANULE_ID_KEY:
-                        row[2],
-                    FILENAME_KEY:
-                        row[3],
-                    RESTORE_DESTINATION_KEY:
-                        row[4],
-                    MULTIPART_CHUNKSIZE_MB_KEY:
-                        row[5],
-                    SOURCE_KEY_KEY:
-                        key_path,
-                    TARGET_KEY_KEY:
-                        key_path,  # todo add a card to configure targetKey in the future
-                    SOURCE_BUCKET_KEY:
-                        bucket_name,  # todo add to database and retrieve. ORCA-351
+                    JOB_ID_KEY: row[0],
+                    COLLECTION_ID_KEY: row[1],
+                    GRANULE_ID_KEY: row[2],
+                    FILENAME_KEY: row[3],
+                    RESTORE_DESTINATION_KEY: row[4],
+                    MULTIPART_CHUNKSIZE_MB_KEY: row[5],
+                    SOURCE_KEY_KEY: key_path,
+                    TARGET_KEY_KEY: key_path,  # todo add a card to configure targetKey
+                    SOURCE_BUCKET_KEY: bucket_name,  # todo add to database and retrieve. ORCA-351
                 }
                 rows.append(row_dict)
 

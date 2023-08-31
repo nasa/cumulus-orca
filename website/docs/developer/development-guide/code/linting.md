@@ -39,7 +39,7 @@ information on the following Pylint topics:
 ## Manually Running PyLint
 1. Navigate to the task's base folder.
 1. Activate the virtual environment.
-1. Run pylint and fix any discovered issues if you can.
+1. Run Pylint and fix any discovered issues if you can.
    ```commandline
    pylint [file name]
    ```

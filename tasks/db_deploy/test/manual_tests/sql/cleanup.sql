@@ -1,4 +1,6 @@
 \c orca
+\ir orca_schema_v7/remove.sql;
+\ir orca_schema_v6/remove.sql;
 \ir orca_schema_v5/remove.sql;
 \ir orca_schema_v4/remove.sql;
 \ir orca_schema_v3/remove.sql;

@@ -60,20 +60,18 @@ class TestPostCopyRequestToQueue(TestCase):
         key_path = f"{uuid.uuid4()}.ext"
         bucket_name = f"{uuid.uuid4()}-bucket"
 
-        body_json = json.dumps({
-            "Records": [
-                {
-                    "s3": {
-                        "bucket": {
-                            "name": bucket_name
-                        },
-                        "object": {
-                            "key": key_path
+        body_json = json.dumps(
+            {
+                "Records": [
+                    {
+                        "s3": {
+                            "bucket": {"name": bucket_name},
+                            "object": {"key": key_path},
                         }
                     }
-                }
-            ]
-        })
+                ]
+            }
+        )
         event = {"Records": [{"body": body_json}]}
         context = Mock()
 
@@ -144,18 +142,18 @@ class TestPostCopyRequestToQueue(TestCase):
             with patch.dict(
                 os.environ,
                 {
-                    post_copy_request_to_queue.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY:
-                        uuid.uuid4().__str__(),
-                    post_copy_request_to_queue.OS_ENVIRON_RECOVERY_QUEUE_URL_KEY:
-                        uuid.uuid4().__str__(),
-                    post_copy_request_to_queue.OS_ENVIRON_MAX_RETRIES_KEY:
-                        str(random.randint(0, 100)),  # nosec
-                    post_copy_request_to_queue.OS_ENVIRON_RETRY_SLEEP_SECS_KEY:
-                        str(random.randint(0, 100)),  # nosec
-                    post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY:
-                        str(random.randint(0, 100)),  # nosec
-                    post_copy_request_to_queue.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY:
-                        uuid.uuid4().__str__(),
+                    post_copy_request_to_queue.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY: uuid.uuid4().__str__(),  # noqa: E501
+                    post_copy_request_to_queue.OS_ENVIRON_RECOVERY_QUEUE_URL_KEY: uuid.uuid4().__str__(),  # noqa: E501
+                    post_copy_request_to_queue.OS_ENVIRON_MAX_RETRIES_KEY: str(
+                        random.randint(0, 100)  # nosec
+                    ),
+                    post_copy_request_to_queue.OS_ENVIRON_RETRY_SLEEP_SECS_KEY: str(
+                        random.randint(0, 100)  # nosec
+                    ),
+                    post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY: str(
+                        random.randint(0, 100)  # nosec
+                    ),
+                    post_copy_request_to_queue.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY: uuid.uuid4().__str__(),  # noqa: E501
                 },
                 clear=True,
             ):
@@ -166,16 +164,11 @@ class TestPostCopyRequestToQueue(TestCase):
     @patch.dict(
         os.environ,
         {
-            post_copy_request_to_queue.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY:
-                "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
-            post_copy_request_to_queue.OS_ENVIRON_RECOVERY_QUEUE_URL_KEY:
-                "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
-            post_copy_request_to_queue.OS_ENVIRON_MAX_RETRIES_KEY:
-                "1",
-            post_copy_request_to_queue.OS_ENVIRON_RETRY_SLEEP_SECS_KEY:
-                "2",
-            post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY:
-                "3",
+            post_copy_request_to_queue.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY: "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",  # noqa: E501
+            post_copy_request_to_queue.OS_ENVIRON_RECOVERY_QUEUE_URL_KEY: "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",  # noqa: E501
+            post_copy_request_to_queue.OS_ENVIRON_MAX_RETRIES_KEY: "1",
+            post_copy_request_to_queue.OS_ENVIRON_RETRY_SLEEP_SECS_KEY: "2",
+            post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY: "3",
         },
         clear=True,
     )
@@ -226,16 +219,11 @@ class TestPostCopyRequestToQueue(TestCase):
     @patch.dict(
         os.environ,
         {
-            post_copy_request_to_queue.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY:
-                "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
-            post_copy_request_to_queue.OS_ENVIRON_RECOVERY_QUEUE_URL_KEY:
-                "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
-            post_copy_request_to_queue.OS_ENVIRON_MAX_RETRIES_KEY:
-                "1",
-            post_copy_request_to_queue.OS_ENVIRON_RETRY_SLEEP_SECS_KEY:
-                "2",
-            post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY:
-                "3",
+            post_copy_request_to_queue.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY: "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",  # noqa: E501
+            post_copy_request_to_queue.OS_ENVIRON_RECOVERY_QUEUE_URL_KEY: "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",  # noqa: E501
+            post_copy_request_to_queue.OS_ENVIRON_MAX_RETRIES_KEY: "1",
+            post_copy_request_to_queue.OS_ENVIRON_RETRY_SLEEP_SECS_KEY: "2",
+            post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY: "3",
         },
         clear=True,
     )
@@ -286,14 +274,26 @@ class TestPostCopyRequestToQueue(TestCase):
 
         bad_events = [
             {
-                "event": {"Records": [{"body": "{\"Records\": [{\"s3\": {\"bucket\": {\"name\": \"test-bucket\"},\
-                    \"object\": {}}}]}"}]},
-                "key": "key"
+                "event": {
+                    "Records": [
+                        {
+                            "body": '{"Records": [{"s3": {"bucket": {"name": "test-bucket"},\
+                    "object": {}}}]}'
+                        }
+                    ]
+                },
+                "key": "key",
             },
             {
-                "event": {"Records": [{"body": "{\"Records\": [{\"s3\": {\"bucket\": {},\
-                    \"object\": {\"key\": \"test.jpg\"}}}]}"}]},
-                "key": "name"
+                "event": {
+                    "Records": [
+                        {
+                            "body": '{"Records": [{"s3": {"bucket": {},\
+                    "object": {"key": "test.jpg"}}}]}'
+                        }
+                    ]
+                },
+                "key": "name",
             },
         ]
         context = Mock()
@@ -308,18 +308,16 @@ class TestPostCopyRequestToQueue(TestCase):
         with patch.dict(
             os.environ,
             {
-                post_copy_request_to_queue.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY:
-                    db_queue_url,
-                post_copy_request_to_queue.OS_ENVIRON_RECOVERY_QUEUE_URL_KEY:
-                    recovery_queue_url,
-                post_copy_request_to_queue.OS_ENVIRON_MAX_RETRIES_KEY:
-                    str(max_retries),
-                post_copy_request_to_queue.OS_ENVIRON_RETRY_SLEEP_SECS_KEY:
-                str(retry_sleep_secs),
-                post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY:
-                    str(retry_backoff),
-                post_copy_request_to_queue.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY:
-                    db_connect_info_secret_arn,
+                post_copy_request_to_queue.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY: db_queue_url,
+                post_copy_request_to_queue.OS_ENVIRON_RECOVERY_QUEUE_URL_KEY: recovery_queue_url,
+                post_copy_request_to_queue.OS_ENVIRON_MAX_RETRIES_KEY: str(max_retries),
+                post_copy_request_to_queue.OS_ENVIRON_RETRY_SLEEP_SECS_KEY: str(
+                    retry_sleep_secs
+                ),
+                post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY: str(
+                    retry_backoff
+                ),
+                post_copy_request_to_queue.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY: db_connect_info_secret_arn,  # noqa: E501
             },
             clear=True,
         ):
@@ -663,8 +661,8 @@ class TestPostCopyRequestToQueue(TestCase):
             mock_get_metadata_sql.return_value,
             {
                 "key_path": key_path,
-                "status_id": shared_recovery.OrcaStatus.PENDING.value
-            }
+                "status_id": shared_recovery.OrcaStatus.PENDING.value,
+            },
         )
         self.assertEqual(
             [
@@ -744,8 +742,8 @@ class TestPostCopyRequestToQueue(TestCase):
             mock_get_metadata_sql.return_value,
             {
                 "key_path": key_path,
-                "status_id": shared_recovery.OrcaStatus.PENDING.value
-            }
+                "status_id": shared_recovery.OrcaStatus.PENDING.value,
+            },
         )
 
     @patch("post_copy_request_to_queue.shared_db.get_user_connection")
@@ -794,6 +792,6 @@ class TestPostCopyRequestToQueue(TestCase):
             mock_get_metadata_sql.return_value,
             {
                 "key_path": key_path,
-                "status_id": shared_recovery.OrcaStatus.PENDING.value
-            }
+                "status_id": shared_recovery.OrcaStatus.PENDING.value,
+            },
         )

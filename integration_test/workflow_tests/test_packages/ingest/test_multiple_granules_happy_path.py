@@ -29,6 +29,7 @@ class TestMultipleGranulesHappyPath(TestCase):
             # Set up Orca API resources
             # ---
             my_session = helpers.create_session()
+            boto3_session = boto3.Session()
             granule_id_1 = uuid.uuid4().__str__()
             granule_id_2 = uuid.uuid4().__str__()
             provider_id = uuid.uuid4().__str__()
@@ -47,7 +48,7 @@ class TestMultipleGranulesHappyPath(TestCase):
             file_1_hash = uuid.uuid4().__str__()
             file_1_hash_type = uuid.uuid4().__str__()
             # Upload the randomized file to source bucket
-            boto3.client('s3').upload_file(
+            boto3_session.client('s3').upload_file(
                 "file1.hdf", cumulus_bucket_name, key_name_1
             )
             execution_id = uuid.uuid4().__str__()
@@ -61,7 +62,7 @@ class TestMultipleGranulesHappyPath(TestCase):
                 name_2 = uuid.uuid4().__str__() + ".hdf"  # refers to file1.hdf
                 key_name_2 = "test/" + uuid.uuid4().__str__() + "/" + name_2
                 # Upload the randomized file to source bucket
-                boto3.client('s3').upload_file(
+                boto3_session.client('s3').upload_file(
                     "file1.hdf", cumulus_bucket_name, key_name_2
                 )
             copy_to_archive_input = {
@@ -142,14 +143,15 @@ class TestMultipleGranulesHappyPath(TestCase):
                 ]
             }
 
-            execution_info = boto3.client("stepfunctions").start_execution(
+            execution_info = boto3_session.client("stepfunctions").start_execution(
                 stateMachineArn=helpers.orca_copy_to_archive_step_function_arn,
                 input=json.dumps(copy_to_archive_input, indent=4),
             )
 
-            step_function_results = helpers.get_state_machine_execution_results(
-                execution_info["executionArn"]
-            )
+            step_function_results = helpers.get_state_machine_execution_results(boto3_session,
+                                                                                execution_info[
+                                                                                    "executionArn"]
+                                                                                )
 
             self.assertEqual(
                 "SUCCEEDED",
@@ -172,7 +174,7 @@ class TestMultipleGranulesHappyPath(TestCase):
                     # and cross-account access is no longer granted,
                     # use boto3.Session(profile_name="yourAWSConfigureProfileName").client(...
                     # to use a differently configured aws access key
-                    head_object_output = boto3.client("s3").head_object(
+                    head_object_output = boto3_session.client("s3").head_object(
                         Bucket=recovery_bucket_name, Key=key)
                     self.assertEqual(
                         200,
@@ -183,19 +185,15 @@ class TestMultipleGranulesHappyPath(TestCase):
                         "GLACIER",
                         head_object_output["StorageClass"]
                     )
-                    s3_versions.append(head_object_output["VersionId"])
+                    s3_versions.append(head_object_output.get("VersionId", "null"))
             except Exception as ex:
                 logger.error(ex)
                 raise
 
             # Let the catalog update
-            time.sleep(10)
+            time.sleep(30)
             # noinspection PyArgumentList
-            catalog_output = helpers.post_to_api(
-                my_session,
-                helpers.api_url + "/catalog/reconcile/",
-                data=json.dumps(
-                    {
+            catalog_input = {
                         "pageIndex": 0,
                         "collectionId": [collection_id],
                         "granuleId": [
@@ -204,6 +202,11 @@ class TestMultipleGranulesHappyPath(TestCase):
                         ],
                         "endTimestamp": int((time.time() + 5) * 1000),
                     }
+            catalog_output = helpers.post_to_api(
+                my_session,
+                helpers.api_url + "/catalog/reconcile/",
+                data=json.dumps(
+                    catalog_input
                 ),
                 headers={"Host": helpers.aws_api_name},
             )
@@ -223,7 +226,7 @@ class TestMultipleGranulesHappyPath(TestCase):
                         "cumulusArchiveLocation": cumulus_bucket_name,
                         "orcaArchiveLocation": recovery_bucket_name,
                         "keyPath": key_name_1,
-                        "sizeBytes": 205640819682 if use_large_file else 6,
+                        "sizeBytes": 6,
                         "hash": file_1_hash, "hashType": file_1_hash_type,
                         "storageClass": "GLACIER",
                         "version": s3_versions[0],
@@ -244,7 +247,7 @@ class TestMultipleGranulesHappyPath(TestCase):
                             "cumulusArchiveLocation": cumulus_bucket_name,
                             "orcaArchiveLocation": recovery_bucket_name,
                             "keyPath": key_name_2,
-                            "sizeBytes": 6,
+                            "sizeBytes": 205640819682 if use_large_file else 6,
                             "hash": None, "hashType": None,
                             "storageClass": "GLACIER",
                             "version": s3_versions[1],
@@ -267,18 +270,19 @@ class TestMultipleGranulesHappyPath(TestCase):
             self.assertCountEqual(
                 expected_catalog_output_granules,
                 catalog_output_json["granules"],
-                "Expected API output granules not returned."
+                f"Expected API output granules not returned. Request: {catalog_input}"
             )
 
             # recovery check
             self.partial_test_recovery_happy_path(
+                boto3_session,
                 collection_id, granule_id_1, name_1, key_name_1, recovery_bucket_name)
         except Exception as ex:
             logger.error(ex)
             raise
 
     def partial_test_recovery_happy_path(
-        self, collection_id: str, granule_id: str, file_name: str,
+        self, boto3_session, collection_id: str, granule_id: str, file_name: str,
         file_key: str, orca_bucket_name: str
     ):
         target_bucket = helpers.buckets["private"]["name"]
@@ -289,6 +293,7 @@ class TestMultipleGranulesHappyPath(TestCase):
             ])
         ], None)
         step_function_results = self.initiate_recovery(
+            boto3_session=boto3_session,
             recovery_request_record=recovery_request_record,
             file_bucket_maps=[
                 {
@@ -342,6 +347,7 @@ class TestMultipleGranulesHappyPath(TestCase):
 
     @staticmethod
     def initiate_recovery(
+        boto3_session,
         recovery_request_record: helpers.RecoveryRequestRecord, file_bucket_maps: List[Dict],
     ):
         recovery_step_function_input = {
@@ -367,16 +373,17 @@ class TestMultipleGranulesHappyPath(TestCase):
             }
         }
 
-        logger.info("Sending event to recovery step function.")
+        logger.info(f"Sending event to recovery step function")
         logger.info(recovery_step_function_input)
 
-        execution_info = boto3.client("stepfunctions").start_execution(
+        execution_info = boto3_session.client("stepfunctions").start_execution(
             stateMachineArn=helpers.orca_recovery_step_function_arn,
             input=json.dumps(recovery_step_function_input, indent=4),
         )
 
-        step_function_results = helpers.get_state_machine_execution_results(
-            execution_info["executionArn"]
-        )
+        step_function_results = helpers.get_state_machine_execution_results(boto3_session,
+                                                                            execution_info[
+                                                                                "executionArn"]
+                                                                            )
 
         return step_function_results

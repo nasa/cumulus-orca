@@ -12,18 +12,6 @@ variable "system_bucket" {
 }
 
 
-variable "workflow_config" {
-  # https://github.com/nasa/cumulus/blob/master/tf-modules/workflow/variables.tf#L23
-  description = "Configuration object with ARNs for workflow integration (Role ARN for executing workflows and Lambda ARNs to trigger on workflow execution)"
-  type = object({
-    sf_event_sqs_to_db_records_sqs_queue_arn = string
-    sf_semaphore_down_lambda_function_arn    = string
-    state_machine_role_arn                   = string
-    sqs_message_remover_lambda_function_arn  = string
-  })
-}
-
-
 ## OPTIONAL
 variable "tags" {
   type        = map(string)
@@ -37,4 +25,9 @@ variable "tags" {
 variable "orca_lambda_copy_to_archive_arn" {
   type        = string
   description = "AWS ARN for the copy_to_archive lambda."
+}
+
+variable "orca_step_function_role_arn" {
+  type        = string
+  description = "AWS ARN of the role for step functions."
 }

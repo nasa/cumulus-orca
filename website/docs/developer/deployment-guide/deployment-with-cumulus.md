@@ -66,6 +66,7 @@ module "orca" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
+  aws_region               = var.region
   buckets                  = var.buckets
   lambda_subnet_ids        = var.lambda_subnet_ids
   permissions_boundary_arn = var.permissions_boundary_arn
@@ -486,12 +487,13 @@ file. The variables must be set with proper values for your environment in the
 
 | Variable                   | Definition                                               |              Example Value                                  |
 | -------------------------- | -------------------------------------------------------- | ------------------------------------------------------------|
+| `aws_region`               | AWS Region to create resources in.                       | "us-west-2"                                                 |
 | `db_admin_password`        | Password for RDS database administrator authentication   | "My_Sup3rS3cr3t_admin_Passw0rd"                             |
 | `db_host_endpoint`         | Database host endpoint to connect to.                    | "aws.postgresrds.host"                                      |
 | `db_user_password`         | Password for RDS database user authentication            | "My_Sup3rS3cr3tuserPassw0rd"                                |
-| `dlq_subscription_email`   | The email to notify users when messages are received in dead letter SQS queue | "test@email.com"                      |
+| `dlq_subscription_email`   | The email to notify users when messages are received in dead letter SQS queue | "test@email.com"                       |
 | `orca_default_bucket`      | Default archive bucket to use.                           | "PREFIX-orca-primary"                                       |
-| `orca_reports_bucket_name` | The Name of the bucket to store s3 inventory reports.    | "PREFIX-orca-reports"                          |
+| `orca_reports_bucket_name` | The Name of the bucket to store s3 inventory reports.    | "PREFIX-orca-reports"                                       |
 | `rds_security_group_id`    | Cumulus' RDS Security Group's ID.                        | "sg-01234567890123456"                                      |
 | `s3_access_key`            | Access key for communicating with Orca S3 buckets.       |                                                             |
 | `s3_secret_key`            | Secret key for communicating with Orca S3 buckets.       |                                                             |
@@ -503,7 +505,7 @@ end user to better adjust ORCA for their specific environment.
 
 #### Cumulus Optional Variables
 
-The following variables should be present already in the `cumulus-tf/terrafor.tfvars`
+The following variables should be present already in the `cumulus-tf/terraform.tfvars`
 file. The variables can be set with proper values for your environment in the
 `cumulus-tf/terraform.tfvars` file. It is recommended that the `region` variable
 is set to the proper AWS region for deployments.
@@ -529,7 +531,7 @@ variables is shown in the table below.
 | `metadata_queue_message_retention_time_seconds`        | number       | Number of seconds the metadata-queue fifo SQS retains a message.                                                               | 777600 |
 | `db_name`                                              | string       | The name of the Orca database within the RDS cluster. Any `-` in `prefix` will be replaced with `_`.                           | PREFIX_orca |
 | `db_user_name`                                         | string       | The name of the application user for the Orca database. Any `-` in `prefix` will be replaced with `_`.                         | PREFIX_orcauser |
-| `log_level`                                            | string       | Sets the verbose of powertools logger. Must be one of 'INFO', 'DEBUG', 'WARN', 'ERROR'. Defaults to 'INFO'.                    | "INFO" |
+| `log_level`                                            | string       | sets the verbose of PowerTools logger. Must be one of 'INFO', 'DEBUG', 'WARN', 'ERROR'. Defaults to 'INFO'.                    | "INFO" |
 | `orca_default_recovery_type`                           | string       | The Tier for the restore request. Valid values are 'Standard', 'Bulk', 'Expedited'                                               | "Standard" |
 | `orca_default_storage_class`                           | string       | The [class of storage](../../operator/storage-classes.md) to use when ingesting files. Can be overridden by collection config. | "GLACIER" |
 | `orca_delete_old_reconcile_jobs_frequency_cron`        | string       | Frequency cron for running the delete_old_reconcile_jobs lambda.                                                               | "cron(0 0 ? * SUN *)" |

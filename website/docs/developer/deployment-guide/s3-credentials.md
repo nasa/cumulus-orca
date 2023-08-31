@@ -21,3 +21,4 @@ To generate an access key:
 1. Note that these keys will eventually expire and will need to be regenerated and redeployed
 
 We are looking into alternatives to this system to remove these manual steps and eliminate the need for manual redeployment of expired keys.
+Once Cumulus updates their RDS instance (or we decouple) IAM roles may be an option. Details in [backlog card](https://bugs.earthdata.nasa.gov/browse/ORCA-667).

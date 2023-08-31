@@ -25,6 +25,7 @@ class TestMultipleGranules(TestCase):
             # Set up Orca API resources
             # ---
             my_session = helpers.create_session()
+            boto3_session = boto3.Session()
             granule_id = uuid.uuid4().__str__()
             provider_id = uuid.uuid4().__str__()
             provider_name = uuid.uuid4().__str__()
@@ -37,12 +38,12 @@ class TestMultipleGranules(TestCase):
             bucket_name = "orca-sandbox-s3-provider"
             excluded_filetype = [".hdf"]
             file_name = uuid.uuid4().__str__() + ".hdf"  # refers to file1.hdf
-            key_name = uuid.uuid4().__str__() + "/" + file_name
+            key_name = "test/" + uuid.uuid4().__str__() + "/" + file_name
             execution_id = uuid.uuid4().__str__()
 
             # Upload the randomized file to source bucket
-            boto3.client('s3').upload_file("file1.hdf",
-                                           bucket_name, key_name)
+            boto3_session.client('s3').upload_file("file1.hdf",
+                                                   bucket_name, key_name)
             copy_to_archive_input = {
                 "payload": {
                     "granules": [
@@ -95,12 +96,12 @@ class TestMultipleGranules(TestCase):
                 "copied_to_orca": []
             }
 
-            execution_info = boto3.client("stepfunctions").start_execution(
+            execution_info = boto3_session.client("stepfunctions").start_execution(
                 stateMachineArn=helpers.orca_copy_to_archive_step_function_arn,
                 input=json.dumps(copy_to_archive_input, indent=4),
             )
 
-            step_function_results = helpers.get_state_machine_execution_results(
+            step_function_results = helpers.get_state_machine_execution_results(boto3_session, 
                 execution_info["executionArn"],
                 maximum_duration_seconds=30,
             )
@@ -119,7 +120,7 @@ class TestMultipleGranules(TestCase):
 
             # verify that the object does NOT exist in recovery bucket
             try:
-                head_object_output = boto3.client("s3").head_object(
+                head_object_output = boto3_session.client("s3").head_object(
                     Bucket=recovery_bucket_name, Key=key_name)
                 if head_object_output["ResponseMetadata"]["HTTPStatusCode"] == 200:
                     raise Exception(f"{key_name} already exists"
@@ -131,7 +132,7 @@ class TestMultipleGranules(TestCase):
                 )
 
             # Let the catalog update
-            time.sleep(10)
+            time.sleep(30)
             # noinspection PyArgumentList
             catalog_output = helpers.post_to_api(
                 my_session,

@@ -1,6 +1,12 @@
 ## Variables obtained by Cumulus deployment
 ## Should exist in https://github.com/nasa/cumulus-template-deploy/blob/master/cumulus-tf/variables.tf
 ## REQUIRED
+variable "aws_region" {  # todo: Add to docs
+  type        = string
+  description = "AWS Region to create resources in."
+}
+
+
 variable "buckets" {
   type        = map(object({ name = string, type = string }))
   description = "S3 bucket locations for the various storage types being used."
@@ -37,19 +43,13 @@ variable "vpc_id" {
 }
 
 
-variable "workflow_config" {
-  # https://github.com/nasa/cumulus/blob/master/tf-modules/workflow/variables.tf#L23
-  description = "Configuration object with ARNs for workflow integration (Role ARN for executing workflows and Lambda ARNs to trigger on workflow execution)"
-  type = object({
-    sf_event_sqs_to_db_records_sqs_queue_arn = string
-    sf_semaphore_down_lambda_function_arn    = string
-    state_machine_role_arn                   = string
-    sqs_message_remover_lambda_function_arn  = string
-  })
+## OPTIONAL
+variable "aws_profile" {
+  type    = string
+  default = null
 }
 
 
-## OPTIONAL
 variable "tags" {
   type        = map(string)
   description = "Tags to be applied to resources that support tags."
@@ -93,7 +93,6 @@ variable "orca_reports_bucket_name" {
   type        = string
   description = "The name of the bucket to store s3 inventory reports."
 }
-
 
 variable "rds_security_group_id" {
   type        = string
@@ -331,7 +330,7 @@ variable "vpc_endpoint_id" {
 
 variable "log_level" {
   type        = string
-  description = "Sets the verbose of powertools logger. Must be one of 'INFO', 'DEBUG', 'WARN', 'ERROR'. Defaults to 'INFO'."
+  description = "sets the verbose of PowerTools logger. Must be one of 'INFO', 'DEBUG', 'WARN', 'ERROR'. Defaults to 'INFO'."
   default     = "INFO"
   validation {
     condition     = contains(["INFO", "DEBUG", "WARN", "ERROR"], var.log_level)
