@@ -15,6 +15,12 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 
+## [6.0.4]
+
+### Changed
+
+- *ORCA-738* Update cumulus-process to v1.2.0 and cumulus-message-adapter-python to v2.1.0. To alleviate potential issues related to timeouts when using CMA calls.
+
 ## [6.0.3]
 ### Changed
 - *ORCA-643* Reverted ORCA-437, which introduced IAM authentication for API Gateway endpoints.
