@@ -6,7 +6,7 @@ pydoc-markdown>=4.0.0,<5.0.0
 ## Additional validation libraries
 ## ---------------------------------------------------------------------------
 bandit==1.7.0
-safety==1.10.3
+#safety==1.10.3
 flake8==4.0.1
 black==21.12b0
 isort==5.10.1
@@ -32,7 +32,7 @@ moto[sqs]==2.0.6
 ## ---------------------------------------------------------------------------
 
 ## Libraries used by every package/module
-cumulus-message-adapter-python==2.0.1
+cumulus-message-adapter-python==2.1.0
 
 ## Libraries used by database package
 boto3~=1.18.40

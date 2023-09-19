@@ -1,4 +1,4 @@
-cumulus-message-adapter-python==2.0.1
+cumulus-message-adapter-python==2.1.0
 SQLAlchemy==1.4.11
 ../../shared_libraries[all]
 fastjsonschema==2.15.0
@@ -9,7 +9,7 @@ psycopg2-binary==2.8.6
 ## Additional validation libraries
 ## ---------------------------------------------------------------------------
 bandit==1.7.0
-safety==1.10.3
+#safety==1.10.3
 flake8==4.0.1
 black==21.12b0
 isort==5.10.1

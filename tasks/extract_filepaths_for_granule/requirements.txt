@@ -1,1 +1,1 @@
-cumulus-message-adapter-python==2.0.1
+cumulus-message-adapter-python==2.1.0

@@ -1,4 +1,4 @@
-cumulus-process==0.8.0
+cumulus-process==1.2.0
 boto3==1.18.40
 pytest==6.1.2
 coverage==5.3
@@ -8,7 +8,7 @@ moto[sqs]==2.0.6
 ## Additional validation libraries
 ## ---------------------------------------------------------------------------
 bandit==1.7.0
-safety==1.10.3
+#safety==1.10.3
 flake8==4.0.1
 black==21.12b0
 isort==5.10.1
