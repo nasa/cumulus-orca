@@ -109,5 +109,6 @@ resource "aws_kms_key" "orca_kms_key" {
   description             = "KMS key for secrets in order to avoid Snyk vulnerability."
   deletion_window_in_days = 7 # range is between 7 and 30 days.
   is_enabled              = true
+  enable_key_rotation     = true
   policy                  = data.aws_iam_policy_document.orca_kms_key_policy.json
 }
