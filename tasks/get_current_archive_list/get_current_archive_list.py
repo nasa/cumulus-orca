@@ -436,8 +436,8 @@ def translate_s3_import_to_partitioned_data_sql() -> text:  # pragma: no cover
     """
     SQL for translating between the temporary table and Orca table.
     """
-    return text(
-        f"""
+    return text(  # nosec  # noqa
+        """
         INSERT INTO orca.reconcile_s3_object (
                 job_id,
                 orca_archive_location,
@@ -460,7 +460,7 @@ def translate_s3_import_to_partitioned_data_sql() -> text:  # pragma: no cover
             storage_class, delete_marker
             FROM s3_import
             WHERE is_latest = TRUE
-        """  # nosec    # noqa
+        """
     )
 
 

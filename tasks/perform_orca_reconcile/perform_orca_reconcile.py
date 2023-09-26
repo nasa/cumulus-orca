@@ -209,8 +209,8 @@ def generate_orphan_reports_sql() -> text:  # pragma: no cover
     """
     SQL for generating reports on files in S3, but not the Orca catalog.
     """
-    return text(
-        f"""
+    return text(  # nosec  # noqa
+        """
         WITH
             orphan_reports AS
             (
@@ -247,7 +247,7 @@ def generate_orphan_reports_sql() -> text:  # pragma: no cover
                 size_in_bytes,
                 storage_class
             FROM
-                orphan_reports"""  # nosec  # noqa
+                orphan_reports"""
     )
 
 
@@ -255,8 +255,8 @@ def generate_mismatch_reports_sql() -> text:  # pragma: no cover
     """
     SQL for retrieving mismatches between entries in S3 and the Orca catalog.
     """
-    return text(
-        f"""
+    return text(  # nosec  # noqa
+        """
         INSERT INTO orca.reconcile_catalog_mismatch_report
         (
             job_id,
@@ -333,7 +333,7 @@ def generate_mismatch_reports_sql() -> text:  # pragma: no cover
                 files.etag != reconcile_s3_object.etag OR
                 files.size_in_bytes != reconcile_s3_object.size_in_bytes OR
                 storage_class.value != reconcile_s3_object.storage_class
-            )"""  # nosec   # noqa
+            )"""
     )
 
 

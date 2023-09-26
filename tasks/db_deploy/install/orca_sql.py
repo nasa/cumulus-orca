@@ -58,7 +58,7 @@ def dbo_role_sql(db_name: str, admin_username: str) -> text:
     Returns:
         SQL for creating orca_dbo role.
     """
-    return text(
+    return text(  # nosec
         f"""
         DO
         $$
@@ -81,7 +81,7 @@ def dbo_role_sql(db_name: str, admin_username: str) -> text:
             GRANT orca_dbo TO "{admin_username}";
           END
         $$
-    """  # nosec
+    """
     )
 
 
@@ -93,7 +93,7 @@ def app_role_sql(db_name: str) -> text:
     Returns:
         SQL for creating orca_app role.
     """
-    return text(
+    return text(  # nosec
         f"""
         DO
         $$
@@ -114,7 +114,7 @@ def app_role_sql(db_name: str) -> text:
           GRANT CONNECT ON DATABASE "{db_name}" TO orca_app;
         END
         $$;
-    """  # nosec
+    """
     )
 
 
@@ -177,7 +177,7 @@ def app_user_sql(user_name: str) -> text:
     Returns:
         SQL for creating PREFIX_orcauser user.
     """
-    return text(
+    return text(  # nosec
         f"""
         DO
         $$
@@ -202,7 +202,7 @@ def app_user_sql(user_name: str) -> text:
             ALTER ROLE "{user_name}" SET search_path = orca, public;
         END
         $$;
-    """  # nosec
+    """
     )
 
 

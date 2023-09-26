@@ -261,7 +261,7 @@ def get_metadata_sql(key_path: str) -> text:
     Returns:
         (sqlalchemy.text): SQL statement
     """
-    return text(
+    return text(  # nosec
         f"""
             SELECT
                 job_id, granule_id, filename, restore_destination, multipart_chunksize_mb
@@ -271,7 +271,7 @@ def get_metadata_sql(key_path: str) -> text:
                 key_path = '{key_path}'
             AND
                 status_id = {shared_recovery.OrcaStatus.PENDING.value}
-        """  # nosec
+        """
     )
 
 
