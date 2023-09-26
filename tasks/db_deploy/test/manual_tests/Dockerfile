@@ -3,9 +3,9 @@ FROM postgres:13.11 AS mypgbuild
 # Build the aws_s3 extension
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-    git \
-    make \
-   ca-certificates \
+    git=1:2.* \
+    make=4.* \
+    ca-certificates=2023* \
  && git clone https://github.com/chimpler/postgres-aws-s3.git \
  && cd /postgres-aws-s3 \
  && make install \
@@ -18,7 +18,7 @@ FROM postgres:13.11
 # Add the plpython3u extension
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-    postgresql-plpython3-13 \
+    postgresql-plpython3-13=13.* \
  && rm -rf /var/lib/apt/lists/*
 
 # Copy the aws_s3 extension

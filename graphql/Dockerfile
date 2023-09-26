@@ -10,8 +10,8 @@ ENV PYTHONUNBUFFERED 1
 # Install psycopg2 requirements
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-    build-essential \
-    libpq-dev \
+    build-essential=12.* \
+    libpq-dev=15.* \
  && rm -rf /var/lib/apt/lists/*
 
 # Copy external dependencies
@@ -43,8 +43,8 @@ RUN groupadd -r appuser \
 # Install curl for healthcheck and PostgreSQL client libs
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-    libpq5 \
-    curl \
+    libpq5=15.* \
+    curl=7.* \
  && rm -rf /var/lib/apt/lists/*
 
 # Copy compiled wheels and install the requirements
