@@ -8,8 +8,11 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # Install psycopg2 requirements
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends build-essential libpq-dev
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+    build-essential \
+    libpq-dev \
+ && rm -rf /var/lib/apt/lists/*
 
 # Copy external dependencies
 COPY shared_libraries shared_libraries
@@ -38,12 +41,15 @@ RUN groupadd -r appuser \
     && useradd -r -s /bin/false -m -d /app -g appuser appuser
 
 # Install curl for healthcheck and PostgreSQL client libs
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends libpq5 curl
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+    libpq5 \
+    curl \
+ && rm -rf /var/lib/apt/lists/*
 
 # Copy compiled wheels and install the requirements
 COPY --from=builder /app/wheels /wheels
-RUN pip install --no-cache /wheels/*
+RUN pip install --no-cache-dir /wheels/*
 
 # Set the work directory for our application
 WORKDIR /app

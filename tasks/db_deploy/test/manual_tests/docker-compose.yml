@@ -12,4 +12,9 @@ services:
       - POSTGRES_PASSWORD=${ADMIN_PASSWORD}
     volumes:
       - "${DATA_DIR}:/var/lib/postgresql/data"
-
+    healthcheck:
+      test: ["CMD-SHELL", "/postgres-healthcheck.sh"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    restart: always
