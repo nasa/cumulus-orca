@@ -282,6 +282,12 @@ and includes an additional section for migration notes.
   }
   ```
 
+## [6.0.4] 2023-09-26
+
+### Fixed
+
+- *ORCA-738* Update cumulus-process to v1.2.0 and cumulus-message-adapter-python to v2.1.0. To alleviate potential issues related to timeouts when using CMA calls.
+
 ## [6.0.3] 2023-02-28
 
 ### Changed
