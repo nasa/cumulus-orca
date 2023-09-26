@@ -41,7 +41,7 @@ task_dirs=$(ls -d tasks/* | egrep -v "package")
 ## Call each task's testing suite
 ## TODO: Add more logging output
 echo "Running unit tests in parallel..."
-parallel --jobs 0 -n 1 -X --halt now,fail=1 run_unit_tests ::: $task_dirs
+parallel --jobs 1 -n 1 -X --halt now,fail=1 run_unit_tests ::: $task_dirs
 
 process_return_code=$?
 echo

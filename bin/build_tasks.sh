@@ -40,7 +40,7 @@ export -f build_task
 task_dirs=$(ls -d tasks/* | egrep -v "package")
 
 echo "Building in parallel..."
-parallel --jobs 0 -n 1 -X --halt now,fail=1 build_task ::: $task_dirs
+parallel --jobs 1 -n 1 -X --halt now,fail=1 build_task ::: $task_dirs
 
 process_return_code=$?
 echo
