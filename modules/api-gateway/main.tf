@@ -62,6 +62,7 @@ resource "aws_api_gateway_method" "orca_catalog_reporting_api_method" {
   resource_id   = aws_api_gateway_resource.orca_catalog_reporting_api_resource_catalog_reconcile.id
   http_method   = "POST"
   authorization = "NONE"
+  api_key_required = false
 }
 
 resource "aws_api_gateway_integration" "orca_catalog_reporting_api_integration" {
@@ -126,6 +127,7 @@ resource "aws_api_gateway_method" "request_status_for_granule_api_method" {
   resource_id   = aws_api_gateway_resource.request_status_for_granule_api_resource_recovery_granules.id
   http_method   = "POST"
   authorization = "NONE"
+  api_key_required = false
 }
 
 resource "aws_api_gateway_integration" "request_status_for_granule_api_integration" {
@@ -184,6 +186,7 @@ resource "aws_api_gateway_method" "request_status_for_job_api_method" {
   resource_id   = aws_api_gateway_resource.request_status_for_job_api_resource_recovery_jobs.id
   http_method   = "POST"
   authorization = "NONE"
+  api_key_required = false
 }
 
 resource "aws_api_gateway_integration" "request_status_for_job_api_integration" {
@@ -289,6 +292,7 @@ resource "aws_api_gateway_method" "internal_reconcile_report_job_api_method" {
   resource_id   = aws_api_gateway_resource.orca_internal_reconciliation_jobs_api_resource.id
   http_method   = "POST"
   authorization = "NONE"
+  api_key_required = false
 }
 
 resource "aws_api_gateway_integration" "internal_reconcile_report_job_api_integration" {
@@ -350,6 +354,7 @@ resource "aws_api_gateway_method" "internal_reconcile_report_orphan_api_method" 
   resource_id   = aws_api_gateway_resource.orca_internal_reconcile_report_orphans_api_resource.id
   http_method   = "POST"
   authorization = "NONE"
+  api_key_required = false
 }
 
 resource "aws_api_gateway_integration" "internal_reconcile_report_orphan_api_integration" {
@@ -411,6 +416,7 @@ resource "aws_api_gateway_method" "internal_reconcile_report_phantom_api_method"
   resource_id   = aws_api_gateway_resource.orca_internal_reconcile_report_phantom_api_resource.id
   http_method   = "POST"
   authorization = "NONE"
+  api_key_required = false
 }
 
 resource "aws_api_gateway_integration" "internal_reconcile_report_phantom_api_integration" {
@@ -471,6 +477,7 @@ resource "aws_api_gateway_method" "internal_reconcile_report_mismatch_api_method
   resource_id   = aws_api_gateway_resource.orca_internal_reconcile_report_mismatch_api_resource.id
   http_method   = "POST"
   authorization = "NONE"
+  api_key_required = false
 }
 
 resource "aws_api_gateway_integration" "internal_reconcile_report_mismatch_api_integration" {
@@ -535,7 +542,8 @@ resource "aws_api_gateway_deployment" "orca_api_deployment" {
 resource "aws_api_gateway_stage" "orca_api_stage" {
   deployment_id = aws_api_gateway_deployment.orca_api_deployment.id
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  stage_name = var.api_gateway_stage_name
+  xray_tracing_enabled = var.api_xray_tracing
+  client_certificate_id = var.api_client_certificate_id
 
   access_log_settings {
     destination_arn = aws_cloudwatch_log_group.orca_api_cloudwatch_logs.source_arn
@@ -548,5 +556,6 @@ resource "aws_api_gateway_stage" "orca_api_stage" {
 resource "aws_cloudwatch_log_group" "orca_api_cloudwatch_logs" {
   name = "orca-${aws_api_gateway_rest_api.orca_api.id}/${var.api_gateway_stage_name}"
   retention_in_days = 7
+  kms_key_id = "alias/aws/cloudwatch"
   tags = var.tags
 }

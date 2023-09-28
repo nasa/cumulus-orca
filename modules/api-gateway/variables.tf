@@ -61,3 +61,15 @@ variable "vpc_endpoint_id" {
   type        = string
   description = "NGAP vpc endpoint id needed to access the api. Defaults to null."
 }
+
+variable "api_xray_tracing" {
+  type = bool
+  default = false
+  description = "Enable or Disable X-Ray Tracing on API Gateway"
+}
+
+variable "api_client_certificate_id" {
+  type = string
+  default = null
+  description = "Client Certificate ID for API Gateway"
+}

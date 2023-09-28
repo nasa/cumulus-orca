@@ -3,6 +3,9 @@ locals {
   orca_buckets = [for k, v in var.buckets : v.name if v.type == "orca"]
 }
 
+# Data block to obtain AWS Account ID
+data "aws_get_caller_identity" "sqs_account_id" {}
+
 ## SQS IAM access policy for internal-report-queue.fifo SQS
 ## ====================================================================================================
 data "aws_iam_policy_document" "internal_report_queue_policy" {
@@ -17,6 +20,10 @@ data "aws_iam_policy_document" "internal_report_queue_policy" {
 ## ====================================================================================================
 data "aws_iam_policy_document" "metadata_queue_policy" {
   statement {
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
     actions   = ["sqs:*"] # todo: Lock down access to specific actions and resources. https://bugs.earthdata.nasa.gov/browse/ORCA-273
     resources = ["arn:aws:sqs:*"]
     effect    = "Allow"
@@ -46,6 +53,10 @@ data "aws_iam_policy_document" "s3_inventory_queue_policy" {
 ## ====================================================================================================
 data "aws_iam_policy_document" "staged_recovery_queue_policy" {
   statement {
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
     actions   = ["sqs:*"] # todo: Lock down access to specific actions and resources. https://bugs.earthdata.nasa.gov/browse/ORCA-273
     resources = ["arn:aws:sqs:*"]
     effect    = "Allow"
@@ -56,6 +67,10 @@ data "aws_iam_policy_document" "staged_recovery_queue_policy" {
 ## ====================================================================================================
 data "aws_iam_policy_document" "status_update_queue_policy" {
   statement {
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
     actions   = ["sqs:*"] # todo: Lock down access to specific actions and resources. https://bugs.earthdata.nasa.gov/browse/ORCA-273
     resources = ["arn:aws:sqs:*"]
     effect    = "Allow"
@@ -110,6 +125,7 @@ resource "aws_sqs_queue" "archive_recovery_dlq" {
   delay_seconds             = var.sqs_delay_time_seconds
   max_message_size          = var.sqs_maximum_message_size
   message_retention_seconds = var.archive_recovery_queue_message_retention_time_seconds
+  sqs_managed_sse_enabled   = true
   tags                      = var.tags
 }
 
@@ -120,6 +136,10 @@ resource "aws_sqs_queue_policy" "archive_recovery_deadletter_queue_policy" {
 
 data "aws_iam_policy_document" "archive_recovery_deadletter_queue_policy_document" {
   statement {
+    principals {
+      type        = "AWS"
+      identifiers = [aws_get_caller_identity.sqs_account_id.account_id]
+    }
     effect    = "Allow"
     resources = [aws_sqs_queue.archive_recovery_dlq.arn]
     actions = [
@@ -209,6 +229,7 @@ resource "aws_sqs_queue" "internal_report_dlq" {
   fifo_queue       = true
   delay_seconds    = var.sqs_delay_time_seconds
   max_message_size = var.sqs_maximum_message_size
+  sqs_managed_sse_enabled = true
   tags             = var.tags
 }
 
@@ -219,6 +240,10 @@ resource "aws_sqs_queue_policy" "internal_report_deadletter_queue_policy" {
 
 data "aws_iam_policy_document" "internal_report_deadletter_queue_policy_document" {
   statement {
+    principals {
+      type        = "AWS"
+      identifiers = [aws_get_caller_identity.sqs_account_id.account_id]
+    }
     effect    = "Allow"
     resources = [aws_sqs_queue.internal_report_dlq.arn]
     actions = [
@@ -318,6 +343,7 @@ resource "aws_sqs_queue" "s3_inventory_dlq" {
   name             = "${var.prefix}-orca-s3-inventory-deadletter-queue"
   delay_seconds    = var.sqs_delay_time_seconds
   max_message_size = var.sqs_maximum_message_size
+  sqs_managed_sse_enabled = true
   tags             = var.tags
 }
 
@@ -328,6 +354,10 @@ resource "aws_sqs_queue_policy" "s3_inventory_deadletter_queue_policy" {
 
 data "aws_iam_policy_document" "s3_inventory_deadletter_queue_policy_document" {
   statement {
+    principals {
+      type        = "AWS"
+      identifiers = [aws_get_caller_identity.sqs_account_id.account_id]
+    }
     effect    = "Allow"
     resources = [aws_sqs_queue.s3_inventory_dlq.arn]
     actions = [
@@ -401,6 +431,7 @@ resource "aws_sqs_queue" "staged_recovery_dlq" {
   delay_seconds             = var.sqs_delay_time_seconds
   max_message_size          = var.sqs_maximum_message_size
   message_retention_seconds = var.staged_recovery_queue_message_retention_time_seconds
+  sqs_managed_sse_enabled   = true
   tags                      = var.tags
 }
 
@@ -411,6 +442,10 @@ resource "aws_sqs_queue_policy" "staged_recovery_deadletter_queue_policy" {
 
 data "aws_iam_policy_document" "staged_recovery_deadletter_queue_policy_document" {
   statement {
+    principals {
+      type        = "AWS"
+      identifiers = [aws_get_caller_identity.sqs_account_id.account_id]
+    }
     effect    = "Allow"
     resources = [aws_sqs_queue.staged_recovery_dlq.arn]
     actions = [
@@ -487,6 +522,7 @@ resource "aws_sqs_queue" "status_update_dlq" {
   fifo_queue       = true
   delay_seconds    = var.sqs_delay_time_seconds
   max_message_size = var.sqs_maximum_message_size
+  sqs_managed_sse_enabled = true
   tags             = var.tags
 }
 
@@ -497,6 +533,10 @@ resource "aws_sqs_queue_policy" "status_update_deadletter_queue_policy" {
 
 data "aws_iam_policy_document" "status_update_deadletter_queue_policy_document" {
   statement {
+    principals {
+      type        = "AWS"
+      identifiers = [aws_get_caller_identity.sqs_account_id.account_id]
+    }
     effect    = "Allow"
     resources = [aws_sqs_queue.status_update_dlq.arn]
     actions = [
