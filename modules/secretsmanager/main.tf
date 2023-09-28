@@ -111,4 +111,5 @@ resource "aws_kms_key" "orca_kms_key" {
   is_enabled              = true
   enable_key_rotation     = true
   policy                  = data.aws_iam_policy_document.orca_kms_key_policy.json
+  tags                    = var.tags
 }

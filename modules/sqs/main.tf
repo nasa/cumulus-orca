@@ -156,6 +156,7 @@ resource "aws_cloudwatch_metric_alarm" "archive_recovery_deadletter_alarm" {
 resource "aws_sns_topic" "archive_recovery_dlq_alarm" {
   name              = "archive_recovery_dlq_alarm_topic"
   kms_master_key_id = "alias/aws/sns"
+  tags              = var.tags
 
 }
 
@@ -362,6 +363,7 @@ resource "aws_cloudwatch_metric_alarm" "s3_inventory_deadletter_alarm" {
 resource "aws_sns_topic" "s3_inventory_dlq_alarm" {
   name              = "s3_inventory_dlq_alarm_topic"
   kms_master_key_id = "alias/aws/sns"
+  tags              = var.tags
 }
 
 resource "aws_sns_topic_subscription" "s3_inventory_dlq_alarm_email" {
@@ -444,6 +446,7 @@ resource "aws_cloudwatch_metric_alarm" "staged_recovery_deadletter_alarm" {
 resource "aws_sns_topic" "staged_recovery_dlq_alarm" {
   name              = "staged_recovery_dlq_alarm_topic"
   kms_master_key_id = "alias/aws/sns"
+  tags              = var.tags
 
 }
 
@@ -529,6 +532,7 @@ resource "aws_cloudwatch_metric_alarm" "status_update_deadletter_alarm" {
 resource "aws_sns_topic" "status_update_dlq_alarm" {
   name              = "status_update_dlq_alarm_topic"
   kms_master_key_id = "alias/aws/sns"
+  tags              = var.tags
 }
 
 resource "aws_sns_topic_subscription" "status_update_dlq_alarm_email" {

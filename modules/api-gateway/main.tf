@@ -19,6 +19,7 @@ resource "aws_api_gateway_rest_api" "orca_api" {
     types            = ["PRIVATE"]
     vpc_endpoint_ids = [local.vpc_endpoint_id]
   }
+  tags = var.tags
 }
 
 # TODO: This policy should be tightened up to only allow traffic from the Cumulus and DR VPC users

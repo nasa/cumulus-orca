@@ -61,7 +61,7 @@ locals {
   orca_bucket_names = [for k, v in var.buckets : v.name if v.type == "orca"]
 }
 
-resource "aws_s3_bucket_inventory" "inventory-report" {
+resource "aws_s3_bucket_inventory" "inventory_report" {
   for_each = toset(local.orca_bucket_names)
 
   bucket = each.key

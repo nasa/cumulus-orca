@@ -6,6 +6,11 @@ variable "prefix" {
   description = "Prefix used to prepend to all object names and tags."
 }
 
+variable "tags" {
+  type        = map(string)
+  description = "Tags to be applied to resources that support tags."
+}
+
 variable "request_status_for_granule_invoke_arn" {
   type        = string
   description = "Invoke ARN of the request_status_for_granule lambda function"
