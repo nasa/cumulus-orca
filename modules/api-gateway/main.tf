@@ -539,11 +539,14 @@ resource "aws_api_gateway_stage" "orca_api_stage" {
 
   access_log_settings {
     destination_arn = aws_cloudwatch_log_group.orca_api_cloudwatch_logs.source_arn
-    format = "json
+    format = "json"
   }
+  
+  tags = var.tags
 }
 
 resource "aws_cloudwatch_log_group" "orca_api_cloudwatch_logs" {
   name = "orca-${aws_api_gateway_rest_api.orca_api.id}/${var.api_gateway_stage_name}"
   retention_in_days = 7
+  tags = var.tags
 }

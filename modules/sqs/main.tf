@@ -255,6 +255,7 @@ resource "aws_cloudwatch_metric_alarm" "internal_report_deadletter_alarm" {
 resource "aws_sns_topic" "internal_report_dlq_alarm" {
   name              = "internal_report_dlq_alarm_topic"
   kms_master_key_id = "alias/aws/sns"
+  tags = var.tags
 }
 
 resource "aws_sns_topic_subscription" "internal_report_dlq_alarm_email" {
