@@ -10,6 +10,10 @@ data "aws_get_caller_identity" "sqs_account_id" {}
 ## ====================================================================================================
 data "aws_iam_policy_document" "internal_report_queue_policy" {
   statement {
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
     actions   = ["sqs:*"] # todo: Lock down access to specific actions and resources. https://bugs.earthdata.nasa.gov/browse/ORCA-273
     resources = ["arn:aws:sqs:*"]
     effect    = "Allow"
