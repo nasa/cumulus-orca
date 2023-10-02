@@ -20,6 +20,192 @@ for more information.
 
 :::
 
+## Creating all you need with a Cloud Formation Template
+
+Apply the following cloud formation template to your DR account with the following inputs:
+- DAAC, your Cumulus DAAC. For example, obdaac
+- Maturity. For example, sit,uat or prod
+- Cumulus Account ID, the account ID of the Cumulus account that will backup data into ORCA
+
+This will create archive and reports buckets with the necessary bucket policies giving the Cumulus Account permission to write data to the archive bucket.
+
+```yaml
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'AWS CloudFormation Template for ORCA bucket creation:
+  ORCA requires the creation of two S3 buckets. One for archival an one for reporting.
+  Both buckets require cross account access so that the corresponding Cumulus account can access the bucket. 
+  In the case of the reporting bucket, the ORCA account requires access too.'
+Parameters:
+  DAAC:
+    Type: String
+    Description: 'The name of the S3 Bucket to create, make this unique'
+  Maturity:
+    Type: String
+    Description: 'sit, uat or prod'
+    AllowedValues: ["sit", "uat", "prod"]
+  CumulusAccountID:
+    Type: String
+    Description: 'The account ID of the Cumulus account that requires access'
+Resources:
+  S3ARCHBUCKET:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub '${DAAC}-${Maturity}-orca-archive'
+  S3ARCHBUCKETPOL:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Sub '${DAAC}-${Maturity}-orca-archive'
+      PolicyDocument:
+        Id: "Cross Account Access"
+        Version: "2012-10-17"
+        Statement:
+          - Sid: CrossAccPolicyDoc
+            Action: [
+              "s3:GetObject*",
+              "s3:RestoreObject",
+              "s3:GetBucket*",
+              "s3:ListBucket",
+              "s3:PutBucketNotification",
+              "s3:GetInventoryConfiguration",
+              "s3:PutInventoryConfiguration",
+              "s3:ListBucketVersions"
+            ]
+            Effect: Allow
+            Resource: [
+              !Sub 'arn:aws:s3:::${S3ARCHBUCKET}',
+              !Sub 'arn:aws:s3:::${S3ARCHBUCKET}/*'
+            ]
+            Principal:
+              AWS: !Join ['', ["arn:aws:iam::", !Ref CumulusAccountID, ":root"]]
+          - Sid: "Cross Account Write Access"
+            Action: "s3:PutObject*"
+            Effect: Allow
+            Resource: !Sub 'arn:aws:s3:::${S3ARCHBUCKET}/*'
+            Condition:
+              StringNotEquals:
+                's3:x-amz-storage-class':
+                  - 'GLACIER'
+                  - 'DEEP_ARCHIVE'
+                's3:x-amz-acl': 'bucket-owner-full-control'
+            Principal:
+              AWS: !Join ['', ["arn:aws:iam::", !Ref CumulusAccountID, ":root"]]
+    DependsOn: S3ARCHBUCKET
+  S3REPBUCKET:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub '${DAAC}-${Maturity}-orca-reports'
+  S3REPBUCKETPOL:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Sub '${DAAC}-${Maturity}-orca-reports'
+      PolicyDocument:
+        Id: "Cross Account Access"
+        Version: "2012-10-17"
+        Statement:
+          - Sid: CrossAccPolicyDoc
+            Action: [
+              "s3:GetObject*",
+              "s3:GetBucket*",
+              "s3:ListBucket",
+              "s3:PutObject",
+              "s3:PutObjectAcl",
+              "s3:PutBucketNotification"
+            ]
+            Effect: Allow
+            Resource: [
+              !Sub 'arn:aws:s3:::${S3REPBUCKET}',
+              !Sub 'arn:aws:s3:::${S3REPBUCKET}/*'
+            ]
+            Principal:
+              AWS: !Join ['', ["arn:aws:iam::", !Ref CumulusAccountID, ":root"]]
+          - Sid: !Sub 'Inventory-${DAAC}-${Maturity}-orca-reports'
+            Action: "s3:PutObject"
+            Effect: Allow
+            Resource: !Sub 'arn:aws:s3:::${S3REPBUCKET}/*'
+            Condition: 
+              StringEquals:
+                's3:x-amz-acl': 'bucket-owner-full-control'
+                'aws:SourceAccount': !Ref AWS::AccountId
+              ArnLike:
+                aws:SourceArn: !Sub 'arn:aws:s3:::${DAAC}-${Maturity}-orca-reports'
+            Principal:
+              Service: "s3.amazonaws.com"
+    DependsOn: S3REPBUCKET 
+Outputs:
+  ArchiveBucket:
+    Description: Archive S3 Bucket Name
+    Value: !Ref S3ARCHBUCKET
+  ArchiveBucketPolicy:
+    Description: Archive S3 Bucket Policy Name
+    Value: !Ref S3ARCHBUCKETPOL
+  ReportsBucket:
+    Description: Archive S3 Bucket Name
+    Value: !Ref S3REPBUCKET
+  ReportsBucketPolicy:
+    Description: Archive S3 Bucket Policy Name
+    Value: !Ref S3REPBUCKETPOL
+```
+### Via AWS GUI
+
+For each of the buckets listed below
+go to AWS, open the bucket in question, click "Permissions", 
+then under "Bucket policy" click "Edit".
+The policy given, once modified, can be pasted into this form.
+
+##### Archive Bucket:
+
+The policy shown below can be used with some minor
+modifications, which will be detailed below.
+
+```json
+{
+   "Version": "2012-10-17",
+   "Statement": [
+      {
+         "Sid": "Cross Account Access",
+         "Effect": "Allow",
+         "Principal": {
+            "AWS": "arn:aws:iam::012345678912:root"
+         },
+         "Action":[
+            "s3:GetObject*",
+            "s3:RestoreObject",
+            "s3:GetBucket*",
+            "s3:ListBucket",
+            "s3:PutBucketNotification",
+            "s3:GetInventoryConfiguration",
+            "s3:PutInventoryConfiguration",
+            "s3:ListBucketVersions"
+         ],
+         "Resource": [
+            "arn:aws:s3:::PREFIX-orca-archive",
+            "arn:aws:s3:::PREFIX-orca-archive/*"
+         ]
+      },
+      {
+         "Sid": "Cross Account Write Access",
+         "Effect": "Allow",
+         "Principal": {
+            "AWS": "arn:aws:iam::012345678912:root"
+         },
+         "Action": "s3:PutObject*",
+         "Resource": [
+            "arn:aws:s3:::PREFIX-orca-archive/*"
+         ],
+         "Condition": {
+            "StringEquals": {
+               "s3:x-amz-acl": "bucket-owner-full-control",
+               "s3:x-amz-storage-class": [
+                  "GLACIER",
+                  "DEEP_ARCHIVE"
+               ]
+            }
+         }
+      }
+   ]
+}
+```
+
 The sections below go into further detail on creating the ORCA archive bucket.
 
 ## Create the ORCA Archive and Report Buckets
@@ -129,67 +315,6 @@ Below is an example name of an ORCA archive bucket and ORCA report bucket.
 The policy section is the JSON policy requested for the ORCA archive bucket in
 the Disaster Recovery OU.
 See [the section below](#via-aws-gui) for policy document examples.
-
-### Via AWS GUI
-
-For each of the buckets listed below
-go to AWS, open the bucket in question, click "Permissions", 
-then under "Bucket policy" click "Edit".
-The policy given, once modified, can be pasted into this form.
-
-##### Archive Bucket:
-
-The policy shown below can be used with some minor
-modifications, which will be detailed below.
-
-```json
-{
-   "Version": "2012-10-17",
-   "Statement": [
-      {
-         "Sid": "Cross Account Access",
-         "Effect": "Allow",
-         "Principal": {
-            "AWS": "arn:aws:iam::012345678912:root"
-         },
-         "Action":[
-            "s3:GetObject*",
-            "s3:RestoreObject",
-            "s3:GetBucket*",
-            "s3:ListBucket",
-            "s3:PutBucketNotification",
-            "s3:GetInventoryConfiguration",
-            "s3:PutInventoryConfiguration",
-            "s3:ListBucketVersions"
-         ],
-         "Resource": [
-            "arn:aws:s3:::PREFIX-orca-archive",
-            "arn:aws:s3:::PREFIX-orca-archive/*"
-         ]
-      },
-      {
-         "Sid": "Cross Account Write Access",
-         "Effect": "Allow",
-         "Principal": {
-            "AWS": "arn:aws:iam::012345678912:root"
-         },
-         "Action": "s3:PutObject*",
-         "Resource": [
-            "arn:aws:s3:::PREFIX-orca-archive/*"
-         ],
-         "Condition": {
-            "StringEquals": {
-               "s3:x-amz-acl": "bucket-owner-full-control",
-               "s3:x-amz-storage-class": [
-                  "GLACIER",
-                  "DEEP_ARCHIVE"
-               ]
-            }
-         }
-      }
-   ]
-}
-```
 
 The Principal value is the AWS root user for your Cumulus application that will
 access the ORCA archive bucket. The value for this can be retrieved by
