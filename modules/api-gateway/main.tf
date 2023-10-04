@@ -538,24 +538,3 @@ resource "aws_api_gateway_deployment" "orca_api_deployment" {
     aws_api_gateway_integration.internal_reconcile_report_mismatch_api_integration
   ]
 }
-
-resource "aws_api_gateway_stage" "orca_api_stage" {
-  deployment_id = aws_api_gateway_deployment.orca_api_deployment.id
-  rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  xray_tracing_enabled = var.api_xray_tracing
-  client_certificate_id = var.api_client_certificate_id
-
-  access_log_settings {
-    destination_arn = aws_cloudwatch_log_group.orca_api_cloudwatch_logs.source_arn
-    format = "json"
-  }
-  
-  tags = var.tags
-}
-
-resource "aws_cloudwatch_log_group" "orca_api_cloudwatch_logs" {
-  name = "orca-${aws_api_gateway_rest_api.orca_api.id}/${var.api_gateway_stage_name}"
-  retention_in_days = 7
-  kms_key_id = "alias/aws/cloudwatch"
-  tags = var.tags
-}
