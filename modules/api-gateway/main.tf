@@ -19,6 +19,7 @@ resource "aws_api_gateway_rest_api" "orca_api" {
     types            = ["PRIVATE"]
     vpc_endpoint_ids = [local.vpc_endpoint_id]
   }
+  tags = var.tags
 }
 
 # TODO: This policy should be tightened up to only allow traffic from the Cumulus and DR VPC users
@@ -61,6 +62,7 @@ resource "aws_api_gateway_method" "orca_catalog_reporting_api_method" {
   resource_id   = aws_api_gateway_resource.orca_catalog_reporting_api_resource_catalog_reconcile.id
   http_method   = "POST"
   authorization = "NONE"
+  api_key_required = false
 }
 
 resource "aws_api_gateway_integration" "orca_catalog_reporting_api_integration" {
@@ -125,6 +127,7 @@ resource "aws_api_gateway_method" "request_status_for_granule_api_method" {
   resource_id   = aws_api_gateway_resource.request_status_for_granule_api_resource_recovery_granules.id
   http_method   = "POST"
   authorization = "NONE"
+  api_key_required = false
 }
 
 resource "aws_api_gateway_integration" "request_status_for_granule_api_integration" {
@@ -183,6 +186,7 @@ resource "aws_api_gateway_method" "request_status_for_job_api_method" {
   resource_id   = aws_api_gateway_resource.request_status_for_job_api_resource_recovery_jobs.id
   http_method   = "POST"
   authorization = "NONE"
+  api_key_required = false
 }
 
 resource "aws_api_gateway_integration" "request_status_for_job_api_integration" {
@@ -288,6 +292,7 @@ resource "aws_api_gateway_method" "internal_reconcile_report_job_api_method" {
   resource_id   = aws_api_gateway_resource.orca_internal_reconciliation_jobs_api_resource.id
   http_method   = "POST"
   authorization = "NONE"
+  api_key_required = false
 }
 
 resource "aws_api_gateway_integration" "internal_reconcile_report_job_api_integration" {
@@ -349,6 +354,7 @@ resource "aws_api_gateway_method" "internal_reconcile_report_orphan_api_method" 
   resource_id   = aws_api_gateway_resource.orca_internal_reconcile_report_orphans_api_resource.id
   http_method   = "POST"
   authorization = "NONE"
+  api_key_required = false
 }
 
 resource "aws_api_gateway_integration" "internal_reconcile_report_orphan_api_integration" {
@@ -410,6 +416,7 @@ resource "aws_api_gateway_method" "internal_reconcile_report_phantom_api_method"
   resource_id   = aws_api_gateway_resource.orca_internal_reconcile_report_phantom_api_resource.id
   http_method   = "POST"
   authorization = "NONE"
+  api_key_required = false
 }
 
 resource "aws_api_gateway_integration" "internal_reconcile_report_phantom_api_integration" {
@@ -470,6 +477,7 @@ resource "aws_api_gateway_method" "internal_reconcile_report_mismatch_api_method
   resource_id   = aws_api_gateway_resource.orca_internal_reconcile_report_mismatch_api_resource.id
   http_method   = "POST"
   authorization = "NONE"
+  api_key_required = false
 }
 
 resource "aws_api_gateway_integration" "internal_reconcile_report_mismatch_api_integration" {

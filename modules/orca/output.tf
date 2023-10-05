@@ -8,6 +8,7 @@ output "orca_lambda_copy_to_archive_arn" {
 }
 
 output "orca_lambda_orca_catalog_reporting_arn" {
+  description = "AWS ARN of the ORCA orca_catalog_reporting lambda."
   value = module.orca_lambdas.orca_catalog_reporting_arn
 }
 
