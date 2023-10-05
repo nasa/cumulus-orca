@@ -47,6 +47,7 @@ variable "vpc_id" {
 variable "aws_profile" {
   type    = string
   default = null
+  description = "AWS CLI profile to use for installation and monitoring of AWS objects."
 }
 
 

@@ -152,12 +152,9 @@
         }
       ],
       "cmr": {
-        "username": "podaaccumulus",
         "cmrLimit": 100,
-        "clientId": "POCUMULUS",
         "cmrEnvironment": "UAT",
         "provider": "POCUMULUS",
-        "password": "Ig2pEq/19psJTB7Mp9+ZTW5S6pe06PDNuXfUbDwpSPz6BRurSW/Tdu1XFne3WpBGb7XKWPeTZyHwMihPnk7CynVsYpAZOMceVTbgYTuveSa1MjtAYDoaoMP2Nl9itHcWnn6wmFz9vcx9rYLRMz+clKniLcJFXO0iXmQCHGAuawQfnf2xVz9MqyQDf1sr5lqgBt1wX3PJxPLg386v4/vt731dwdWEkFhc/Yy9H9eX5gEQtC5Thy//1TTm4bLfpUgX32gSbE9lJqQz7oXrf64CJ1gwr4TriZ6FBU+3uAh0LjkGFnp1DeUt6Z82U+FNsKq/Hgw3OrNTBmlGp0HIFKz22Q==",
         "cmrPageSize": 50
       }
     },
