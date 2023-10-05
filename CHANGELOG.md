@@ -15,10 +15,6 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 
-### Migration Notes
-
-- Update terraform to the latest 1.5 version
-
 ### Added
 
 ### Changed
@@ -28,6 +24,14 @@ and includes an additional section for migration notes.
 ### Removed
 
 ### Fixed
+
+### Security
+
+## [9.0.0] 2023-10-05
+
+### Migration Notes
+
+- Update terraform to the latest 1.5 version
 
 ### Security
 
