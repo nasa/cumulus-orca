@@ -32,6 +32,7 @@ and includes an additional section for migration notes.
 ### Security
 
 - *ORCA-729* Updated terraform provider to use the latest version 1.5
+- *ORCA-713* Updated terraform, Dockerfile, and other IAC elements for best practices and security where able.
 
 ## [8.1.0] 2023-08-02
 

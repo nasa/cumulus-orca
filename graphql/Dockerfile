@@ -28,7 +28,7 @@ FROM python:3.9-slim
 
 # Set variables
 ARG VERSION_NUMBER="test"
-ARG PORT=5000
+ENV PORT=5000
 
 # Set metadata information
 LABEL application.name="ORCA-GraphQL" \
