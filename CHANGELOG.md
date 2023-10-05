@@ -15,6 +15,8 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 
+## [9.0.0] 2023-10-05
+
 ### Migration Notes
 
 - Update terraform to the latest 1.5 version
