@@ -122,7 +122,7 @@ BEGIN
     COMMENT ON COLUMN files.name
       IS 'Name of the file including extension';
     COMMENT ON COLUMN files.orca_archive_location
-      IS 'S3 Glacier bucket that the file object is stored in';
+      IS 'S3 archive bucket that the file object is stored in';
     COMMENT ON COLUMN files.cumulus_archive_location
       IS 'Cumulus S3 bucket where the file is thought to be stored.';
     COMMENT ON COLUMN files.key_path
@@ -130,9 +130,9 @@ BEGIN
     COMMENT ON COLUMN files.ingest_time
       IS 'Date and time the file was ingested into ORCA';
     COMMENT ON COLUMN files.etag
-      IS 'etag of the file object in the AWS S3 Glacier bucket.';
+      IS 'etag of the file object in the AWS S3 archive bucket.';
     COMMENT ON COLUMN files.version
-      IS 'Version of the file in the S3 Glacier bucket';
+      IS 'Version of the file in the S3 archive bucket';
     COMMENT ON COLUMN files.size_in_bytes
       IS 'Size of the object in bytes';
     COMMENT ON COLUMN files.hash
