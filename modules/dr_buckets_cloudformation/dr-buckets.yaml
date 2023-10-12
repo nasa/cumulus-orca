@@ -1,0 +1,115 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: 'AWS CloudFormation Template for ORCA bucket creation:
+  ORCA requires the creation of two S3 buckets. One for archival an one for reporting.
+  Both buckets require cross account access so that the corresponding Cumulus account can access the bucket. 
+  In the case of the reporting bucket, the ORCA account requires access too.'
+Parameters:
+  PREFIX:
+    Type: String
+    Default: "rhassanorcatest"
+    Description: 'The prefix to use in bucket names'
+  # Maturity:
+  #   Type: String
+  #   Description: 'sit, uat or prod'
+  #   AllowedValues: ["sit", "uat", "prod"]
+  # CumulusAccountID:
+  #   Type: String
+  #   Description: 'The account ID of the Cumulus account that requires access'
+Resources:
+  S3ARCHBUCKET:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub '${PREFIX}-orca-archive'
+  # S3ARCHBUCKETPOL:
+  #   Type: 'AWS::S3::BucketPolicy'
+  #   Properties:
+  #     Bucket: !Sub '${DAAC}-${Maturity}-orca-archive'
+  #     PolicyDocument:
+  #       Id: "Cross Account Access"
+  #       Version: "2012-10-17"
+  #       Statement:
+  #         - Sid: CrossAccPolicyDoc
+  #           Action: [
+  #             "s3:GetObject*",
+  #             "s3:RestoreObject",
+  #             "s3:GetBucket*",
+  #             "s3:ListBucket",
+  #             "s3:PutBucketNotification",
+  #             "s3:GetInventoryConfiguration",
+  #             "s3:PutInventoryConfiguration",
+  #             "s3:ListBucketVersions"
+  #           ]
+  #           Effect: Allow
+  #           Resource: [
+  #             !Sub 'arn:aws:s3:::${S3ARCHBUCKET}',
+  #             !Sub 'arn:aws:s3:::${S3ARCHBUCKET}/*'
+  #           ]
+  #           Principal:
+  #             AWS: !Join ['', ["arn:aws:iam::", !Ref CumulusAccountID, ":root"]]
+  #         - Sid: "Cross Account Write Access"
+  #           Action: "s3:PutObject*"
+  #           Effect: Allow
+  #           Resource: !Sub 'arn:aws:s3:::${S3ARCHBUCKET}/*'
+  #           Condition:
+  #             StringNotEquals:
+  #               's3:x-amz-storage-class':
+  #                 - 'GLACIER'
+  #                 - 'DEEP_ARCHIVE'
+  #               's3:x-amz-acl': 'bucket-owner-full-control'
+  #           Principal:
+  #             AWS: !Join ['', ["arn:aws:iam::", !Ref CumulusAccountID, ":root"]]
+  #   DependsOn: S3ARCHBUCKET
+  # S3REPBUCKET:
+  #   Type: 'AWS::S3::Bucket'
+  #   Properties:
+  #     BucketName: !Sub '${DAAC}-${Maturity}-orca-reports'
+  # S3REPBUCKETPOL:
+  #   Type: 'AWS::S3::BucketPolicy'
+  #   Properties:
+  #     Bucket: !Sub '${DAAC}-${Maturity}-orca-reports'
+  #     PolicyDocument:
+  #       Id: "Cross Account Access"
+  #       Version: "2012-10-17"
+  #       Statement:
+  #         - Sid: CrossAccPolicyDoc
+  #           Action: [
+  #             "s3:GetObject*",
+  #             "s3:GetBucket*",
+  #             "s3:ListBucket",
+  #             "s3:PutObject",
+  #             "s3:PutObjectAcl",
+  #             "s3:PutBucketNotification"
+  #           ]
+  #           Effect: Allow
+  #           Resource: [
+  #             !Sub 'arn:aws:s3:::${S3REPBUCKET}',
+  #             !Sub 'arn:aws:s3:::${S3REPBUCKET}/*'
+  #           ]
+  #           Principal:
+  #             AWS: !Join ['', ["arn:aws:iam::", !Ref CumulusAccountID, ":root"]]
+  #         - Sid: !Sub 'Inventory-${DAAC}-${Maturity}-orca-reports'
+  #           Action: "s3:PutObject"
+  #           Effect: Allow
+  #           Resource: !Sub 'arn:aws:s3:::${S3REPBUCKET}/*'
+  #           Condition: 
+  #             StringEquals:
+  #               's3:x-amz-acl': 'bucket-owner-full-control'
+  #               'aws:SourceAccount': !Ref AWS::AccountId
+  #             ArnLike:
+  #               aws:SourceArn: !Sub 'arn:aws:s3:::${DAAC}-${Maturity}-orca-reports'
+  #           Principal:
+  #             Service: "s3.amazonaws.com"
+  #   DependsOn: S3REPBUCKET 
+Outputs:
+  ArchiveBucket:
+    Description: Archive S3 Bucket Name
+    Value: !Ref S3ARCHBUCKET
+#   ArchiveBucketPolicy:
+#     Description: Archive S3 Bucket Policy Name
+#     Value: !Ref S3ARCHBUCKETPOL
+#   ReportsBucket:
+#     Description: Archive S3 Bucket Name
+#     Value: !Ref S3REPBUCKET
+#   ReportsBucketPolicy:
+#     Description: Archive S3 Bucket Policy Name
+#     Value: !Ref S3REPBUCKETPOL
