@@ -153,7 +153,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         """
         *Happy Path*
         Test that sending a message to SQS queue using post_status_for_file
-        function with ORCA status as SUCCESS returns the same expected message.
+        function with ORCA status = SUCCESS returns the same expected message.
         """
         # Setting other variables unique to this test
         collection_id = uuid.uuid4().__str__()
@@ -206,7 +206,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         """
         *Happy Path*
         Test that sending a message to SQS queue using post_status_for_file
-        function with ORCA status as FAILED returns the same expected message.
+        function with ORCA status = FAILED returns the same expected message.
         """
         # Setting other variables unique to this test
         collection_id = uuid.uuid4().__str__()
