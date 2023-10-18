@@ -80,9 +80,11 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                 # Testing SQS body
                 self.assertEqual(queue_output_body, new_data)
                 self.assertEqual(
-                                    request_method.value,
-                                    queue_contents[0].message_attributes["RequestMethod"]["StringValue"],
-                                )
+                    request_method.value,
+                    queue_contents[0].message_attributes["RequestMethod"][
+                        "StringValue"
+                    ],
+                )
                 # Delete the message from the FIFO queue to show we have read it before looping
                 self.fifo_queue.delete_messages(
                     Entries=[
