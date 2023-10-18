@@ -130,6 +130,18 @@ The policy section is the JSON policy requested for the ORCA archive bucket in
 the Disaster Recovery OU.
 See [the section below](#via-aws-gui) for policy document examples.
 
+### Via AWS CloudFormation Template
+
+The AWS Cloudformation template for creating the ORCA DR buckets can be found [here](https://github.com/nasa/cumulus-orca/blob/master/modules/dr_buckets_cloudformation/dr-buckets.yaml). Make sure you have AWS CLI installed before deploying this template.
+
+From your terminal, run the following command by replacing the variables `<PREFIX>` and `<AWS_ACCOUNT_ID>` first:
+
+```
+aws cloudformation deploy --stack-name <PREFIX>-orca-bucket-stack --template-file dr-buckets.yaml --parameter-overrides "PREFIX"="<PREFIX>" "CumulusAccountID"="<AWS_ACCOUNT_ID>"
+
+```
+This will create archive and reports buckets with the necessary bucket policies giving the Cumulus Account permission to write data to the archive bucket.
+
 ### Via AWS GUI
 
 For each of the buckets listed below
