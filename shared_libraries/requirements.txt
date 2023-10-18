@@ -22,7 +22,7 @@ coverage==7.2.7
 psycopg2-binary==2.9.2
 
 ## Libraries used by recovery package
-moto[sqs]==2.0.6
+moto[sqs]==4.2.2
 
 ## Libraries used by reconciliation package
 # None

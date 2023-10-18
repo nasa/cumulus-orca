@@ -19,6 +19,8 @@ and includes an additional section for migration notes.
 
 ### Changed
 
+- *ORCA-737* Updated moto library used for unit tests to version 4.2.2 from version 2.0.
+
 ### Deprecated
 
 ### Removed
