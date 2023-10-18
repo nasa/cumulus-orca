@@ -1,7 +1,7 @@
 boto3==1.18.40
 pytest==7.4.0
 coverage==7.2.7
-moto[sqs,s3]==2.2.8
+moto[sqs,s3]==4.2.2
 fastjsonschema==2.15.0
 aws_lambda_powertools==1.31.0
 ../../shared_libraries[recovery]

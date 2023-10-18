@@ -31,8 +31,10 @@ class TestPostToQueueAndTriggerStepFunction(
         Perform initial setup for the tests.
         """
         self.mock_sqs.start()
-        self.test_sqs = boto3.resource("sqs", region_name="us-east-2")
-        self.queue = self.test_sqs.create_queue(QueueName="test-queue")
+        self.test_sqs = boto3.resource("sqs", region_name="us-west-2")
+        self.queue = self.test_sqs.create_queue(
+            QueueName="test-queue.fifo", Attributes={"FifoQueue": "true"}
+        )
         self.queue_url = self.queue.url
 
     def tearDown(self):
@@ -331,7 +333,7 @@ class TestPostToQueueAndTriggerStepFunction(
         self.fail("Error not raised.")
 
     @patch("time.sleep")
-    @patch.dict(os.environ, {"AWS_DEFAULT_REGION": "us-east-2"}, clear=True)
+    @patch.dict(os.environ, {"AWS_DEFAULT_REGION": "us-west-2"}, clear=True)
     def test_post_to_fifo_queue_happy_path(self, mock_sleep: MagicMock):
         """
         SQS library happy path. Checks that the message sent to SQS
@@ -357,7 +359,7 @@ class TestPostToQueueAndTriggerStepFunction(
     # Todo: since sleep is not called in function under test,
     # this violates good unit test practices. Fix in ORCA-406
     @patch("time.sleep")
-    @patch.dict(os.environ, {"AWS_DEFAULT_REGION": "us-east-2"}, clear=True)
+    @patch.dict(os.environ, {"AWS_DEFAULT_REGION": "us-west-2"}, clear=True)
     def test_post_to_fifo_queue_retry_failures(self, mock_sleep: MagicMock):
         """
         Produces a failure and checks if retries are performed in the SQS library.
