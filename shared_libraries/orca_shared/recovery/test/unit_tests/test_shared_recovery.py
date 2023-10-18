@@ -36,6 +36,16 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
             QueueName="fifo-queue.fifo", Attributes={"FifoQueue": "true"}
         )
         self.fifo_queue_url = self.fifo_queue.url
+        self.request_methods = [
+            shared_recovery.RequestMethod.NEW_JOB,
+            shared_recovery.RequestMethod.UPDATE_FILE,
+        ]
+        self.statuses = [
+            shared_recovery.OrcaStatus.PENDING,
+            shared_recovery.OrcaStatus.STAGED,
+            shared_recovery.OrcaStatus.SUCCESS,
+            shared_recovery.OrcaStatus.FAILED,
+        ]
         self.job_id = "1234"
         self.granule_id = "6c8d0c8b-4f9a-4d87-ab7c-480b185a0250"
         self.MessageGroupId = "request_files"
@@ -46,11 +56,6 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         """
         self.mock_sqs.stop()
 
-    @patch.dict(
-        os.environ,
-        {"AWS_REGION": "us-west-2"},
-        clear=True,
-    )
     def test_post_entry_to_fifo_queue_no_errors(self):
         """
         *Happy Path*
@@ -58,18 +63,32 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         function returns the same expected message.
         """
         new_data = {"name": "test"}
-        # Run subtests
-        # Send values to the function
-        shared_recovery.post_entry_to_fifo_queue(
-            new_data, shared_recovery.RequestMethod.NEW_JOB, self.fifo_queue_url
-        )
+        for request_method in self.request_methods:
+            # Run subtests
+            with self.subTest(request_method=request_method):
+                # Send values to the function
+                shared_recovery.post_entry_to_fifo_queue(
+                    new_data, request_method, self.fifo_queue_url
+                )
 
-        # grabbing queue contents after the message is sent
-        queue_contents = self.fifo_queue.receive_messages(MessageAttributeNames=["All"])
-        queue_output_body = json.loads(queue_contents[0].body)
+                # grabbing queue contents after the message is sent
+                queue_contents = self.fifo_queue.receive_messages(
+                    MessageAttributeNames=["All"]
+                )
+                queue_output_body = json.loads(queue_contents[0].body)
 
-        # Testing SQS body
-        self.assertEqual(queue_output_body, new_data)
+                # Testing SQS body
+                self.assertEqual(queue_output_body, new_data)
+
+                # Delete the message from the FIFO queue to show we have read it before looping
+                self.fifo_queue.delete_messages(
+                    Entries=[
+                        {
+                            "ReceiptHandle": queue_contents[0].receipt_handle,
+                            "Id": queue_contents[0].message_id,
+                        }
+                    ]
+                )
 
     @patch.dict(
         os.environ,
@@ -144,115 +163,97 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         )
         self.assertEqual(timezone.utc, new_request_time.tzinfo)
 
-    @patch.dict(
-        os.environ,
-        {"AWS_REGION": "us-west-2"},
-        clear=True,
-    )
-    def test_update_status_for_file_no_errors_status_success(self):
+    def test_update_status_for_file_no_errors(self):
         """
         *Happy Path*
         Test that sending a message to SQS queue using post_status_for_file
-        function with ORCA status = SUCCESS returns the same expected message.
+        function returns the same expected message.
         """
-        # Setting other variables unique to this test
-        collection_id = uuid.uuid4().__str__()
-        error_message = "Access denied"
-        filename = "f1.doc"
-        # Send values to the function
-        shared_recovery.update_status_for_file(
-            self.job_id,
-            collection_id,
-            self.granule_id,
-            filename,
-            shared_recovery.OrcaStatus.SUCCESS,
-            error_message,
-            self.fifo_queue_url,
-        )
+        for status_id in self.statuses:
+            # Setting other variables unique to this test
+            collection_id = uuid.uuid4().__str__()
+            error_message = "Access denied"
+            filename = "f1.doc"
 
-        # grabbing queue contents after the message is sent
-        queue_contents = self.fifo_queue.receive_messages()
-        queue_output_body = json.loads(queue_contents[0].body)
+            # Run subtests
+            with self.subTest(
+                request_method=shared_recovery.RequestMethod.UPDATE_FILE,
+                status_id=status_id,
+            ):
 
-        # Testing required fields
-        self.assertEqual(queue_output_body[shared_recovery.JOB_ID_KEY], self.job_id)
-        self.assertEqual(
-            collection_id, queue_output_body[shared_recovery.COLLECTION_ID_KEY]
-        )
-        self.assertEqual(
-            self.granule_id, queue_output_body[shared_recovery.GRANULE_ID_KEY]
-        )
-        self.assertEqual(
-            shared_recovery.OrcaStatus.SUCCESS.value,
-            queue_output_body[shared_recovery.STATUS_ID_KEY],
-        )
-        self.assertEqual(filename, queue_output_body[shared_recovery.FILENAME_KEY])
-        self.assertNotIn(shared_recovery.REQUEST_TIME_KEY, queue_output_body)
-        self.assertNotIn(shared_recovery.RESTORE_DESTINATION_KEY, queue_output_body)
-        self.assertNotIn(shared_recovery.KEY_PATH_KEY, queue_output_body)
+                # Send values to the function
+                shared_recovery.update_status_for_file(
+                    self.job_id,
+                    collection_id,
+                    self.granule_id,
+                    filename,
+                    status_id,
+                    error_message,
+                    self.fifo_queue_url,
+                )
 
-        self.assertIn(shared_recovery.COMPLETION_TIME_KEY, queue_output_body)
-        new_completion_time = datetime.fromisoformat(
-            queue_output_body[shared_recovery.COMPLETION_TIME_KEY]
-        )
-        self.assertEqual(timezone.utc, new_completion_time.tzinfo)
+                # grabbing queue contents after the message is sent
+                queue_contents = self.fifo_queue.receive_messages()
+                queue_output_body = json.loads(queue_contents[0].body)
 
-    @patch.dict(
-        os.environ,
-        {"AWS_REGION": "us-west-2"},
-        clear=True,
-    )
-    def test_update_status_for_file_no_errors_status_failed(self):
-        """
-        *Happy Path*
-        Test that sending a message to SQS queue using post_status_for_file
-        function with ORCA status = FAILED returns the same expected message.
-        """
-        # Setting other variables unique to this test
-        collection_id = uuid.uuid4().__str__()
-        error_message = "Access denied"
-        filename = "f1.doc"
-        # Send values to the function
-        shared_recovery.update_status_for_file(
-            self.job_id,
-            collection_id,
-            self.granule_id,
-            filename,
-            shared_recovery.OrcaStatus.FAILED,
-            error_message,
-            self.fifo_queue_url,
-        )
+                # Testing required fields
+                self.assertEqual(
+                    queue_output_body[shared_recovery.JOB_ID_KEY], self.job_id
+                )
+                self.assertEqual(
+                    collection_id, queue_output_body[shared_recovery.COLLECTION_ID_KEY]
+                )
+                self.assertEqual(
+                    self.granule_id, queue_output_body[shared_recovery.GRANULE_ID_KEY]
+                )
+                self.assertEqual(
+                    status_id.value, queue_output_body[shared_recovery.STATUS_ID_KEY]
+                )
+                self.assertEqual(
+                    filename, queue_output_body[shared_recovery.FILENAME_KEY]
+                )
+                self.assertNotIn(shared_recovery.REQUEST_TIME_KEY, queue_output_body)
+                self.assertNotIn(
+                    shared_recovery.RESTORE_DESTINATION_KEY, queue_output_body
+                )
+                self.assertNotIn(shared_recovery.KEY_PATH_KEY, queue_output_body)
 
-        # grabbing queue contents after the message is sent
-        queue_contents = self.fifo_queue.receive_messages()
-        queue_output_body = json.loads(queue_contents[0].body)
+                # Testing fields based on status_id
+                completion_status = [
+                    shared_recovery.OrcaStatus.SUCCESS,
+                    shared_recovery.OrcaStatus.FAILED,
+                ]
 
-        # Testing required fields
-        self.assertEqual(queue_output_body[shared_recovery.JOB_ID_KEY], self.job_id)
-        self.assertEqual(
-            collection_id, queue_output_body[shared_recovery.COLLECTION_ID_KEY]
-        )
-        self.assertEqual(
-            self.granule_id, queue_output_body[shared_recovery.GRANULE_ID_KEY]
-        )
-        self.assertEqual(
-            shared_recovery.OrcaStatus.FAILED.value,
-            queue_output_body[shared_recovery.STATUS_ID_KEY],
-        )
-        self.assertEqual(filename, queue_output_body[shared_recovery.FILENAME_KEY])
-        self.assertNotIn(shared_recovery.REQUEST_TIME_KEY, queue_output_body)
-        self.assertNotIn(shared_recovery.RESTORE_DESTINATION_KEY, queue_output_body)
-        self.assertNotIn(shared_recovery.KEY_PATH_KEY, queue_output_body)
-
-        self.assertIn(shared_recovery.COMPLETION_TIME_KEY, queue_output_body)
-        new_completion_time = datetime.fromisoformat(
-            queue_output_body[shared_recovery.COMPLETION_TIME_KEY]
-        )
-        self.assertEqual(timezone.utc, new_completion_time.tzinfo)
-        self.assertEqual(
-            error_message,
-            queue_output_body[shared_recovery.ERROR_MESSAGE_KEY],
-        )
+                if status_id in completion_status:
+                    self.assertIn(
+                        shared_recovery.COMPLETION_TIME_KEY, queue_output_body
+                    )
+                    new_completion_time = datetime.fromisoformat(
+                        queue_output_body[shared_recovery.COMPLETION_TIME_KEY]
+                    )
+                    self.assertEqual(timezone.utc, new_completion_time.tzinfo)
+                else:
+                    self.assertNotIn(
+                        shared_recovery.COMPLETION_TIME_KEY, queue_output_body
+                    )
+                if status_id == shared_recovery.OrcaStatus.FAILED:
+                    self.assertEqual(
+                        error_message,
+                        queue_output_body[shared_recovery.ERROR_MESSAGE_KEY],
+                    )
+                else:
+                    self.assertNotIn(
+                        shared_recovery.ERROR_MESSAGE_KEY, queue_output_body
+                    )
+                # Delete the message from the FIFO queue to show we have read it before looping
+                self.fifo_queue.delete_messages(
+                    Entries=[
+                        {
+                            "ReceiptHandle": queue_contents[0].receipt_handle,
+                            "Id": queue_contents[0].message_id,
+                        }
+                    ]
+                )
 
     def test_update_status_for_file_error_message_empty_raises_error_message(self):
         """
