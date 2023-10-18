@@ -16,8 +16,10 @@ and includes an additional section for migration notes.
 ## [Unreleased]
 
 ### Added
+- *ORCA-766* Created AWS cloudformation template that can be used to deploy ORCA DR buckets.
 
 ### Changed
+- *ORCA-765* Updated ORCA "Creating the Glacier Bucket" documentation with instructions to deploy ORCA DR buckets using cloudformation.
 
 ### Deprecated
 
