@@ -1,8 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: 'AWS CloudFormation Template for ORCA bucket creation:
-  ORCA requires the creation of two S3 buckets. One for archival an one for reporting.
-  Both buckets require cross account access so that the corresponding Cumulus account can access the bucket.
-  In the case of the reporting bucket, the ORCA account requires access too.'
+  ORCA requires the creation of two S3 buckets. One for archival and one for reporting.
+  Both buckets require cross account access so that the corresponding Cumulus account can access the bucket.'
 Parameters:
   PREFIX:
     Type: String
