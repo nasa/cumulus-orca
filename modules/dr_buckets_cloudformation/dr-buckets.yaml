@@ -100,5 +100,5 @@ Outputs:
     Description: Archive S3 Bucket Name
     Value: !Ref S3ARCHBUCKET
   ReportsBucket:
-    Description: Archive S3 Bucket Name
+    Description: Reports S3 Bucket Name
     Value: !Ref S3REPBUCKET
