@@ -218,11 +218,7 @@ After hitting the play button on `Deploy Cumulus buckets and Cumulus and Orca mo
 
 Note that the jobs may need to be run multiple times to get past deployment errors if there is one. If an error is raised saying `Cloudwatch log groups already exist`, then manually delete all the cloudwatch log groups and corresponding lambdas having the same name as the log groups from the AWS console and retry running the job. If the deployment is successful, the pipeline will run ingest integration tests automatically in the next step.
 
-<<<<<<< HEAD
 The `ORCA Cleanup Plan` in bamboo has two stages named `Clean up ORCA buckets and modules` and `Clean up DR ORCA buckets` which can be run in sequence to remove most of the resources created by the deployment stages. Choose your feature branch and then run the pipeline. Remember to add the following AWS secrets keys for both Cumulus and DR accounts while running the pipeline.
-=======
-The `ORCA Cleanup Plan` has two stages named `Clean up ORCA buckets and modules` and `Clean up DR ORCA buckets` which can be run in sequence to remove most of the resources created by the deployment stages. Remember to add the following variables before running the pipeline.
->>>>>>> develop
 
 - PREFIX
 - CUMULUS_AWS_ACCESS_KEY_ID
