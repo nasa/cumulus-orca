@@ -1,9 +1,0 @@
-variable "cumulus_account_id" {
-  type        = string
-  description = "AWS Account ID of Cumulus account."
-}
-
-variable "prefix" {
-  type        = string
-  description = "The prefix to use in deployment"
-}
