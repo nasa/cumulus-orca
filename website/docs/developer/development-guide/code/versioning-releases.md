@@ -150,6 +150,9 @@ After hitting the play button on `Deploy DR ORCA Buckets` stage in bamboo plan, 
 - PREFIX
 - DR_AWS_ACCESS_KEY_ID
 - DR_AWS_SECRET_ACCESS_KEY
+- CUMULUS_ACCOUNT_ID
+
+To get the `Cumulus Account ID`, configure to Cumulus Account using `aws configure` and then retrieve the ID using `aws sts get-caller-identity | grep Account` 
 
 :::tip
 Hitting 'play' next to `Deploy DR ORCA buckets`, `Deploy Dev RDS Stack` and `Deploy Dev Cumulus and ORCA Stack` brings up a checkbox list to run multiple jobs at once. Note that none of the checkboxes should be checked. This is because some variables are sensitive and some will vary depending upon the user running the pipeline.

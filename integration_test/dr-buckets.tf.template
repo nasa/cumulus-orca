@@ -1,15 +1,13 @@
 # This will get the DR AWS account ID.
 data "aws_caller_identity" "current_account" {}
 
-# To get the Cumulus Account ID, configure to Cumulus Account using `aws configure` and then retrieve the ID using `aws sts get-caller-identity | grep Account` 
-
 # "worm" bucket was added as theoretical support for a potential future avenue of a theoretical feature. Consider everything having to do with it untested and mutable.
 resource "aws_s3_bucket" "orca-archive-worm" {
-  bucket = "${var.prefix}-orca-archive-worm"
+  bucket = "PREFIX-orca-archive-worm"
   force_destroy = true
   object_lock_enabled = true
   tags = {
-    Deployment = "${var.prefix}"
+    Deployment = "PREFIX"
     Application = "ORCA"
   }
 }
@@ -35,13 +33,13 @@ data "aws_iam_policy_document" "orca-archive-worm-policy-json" {
  statement {
     principals {
       type        = "AWS"
-      identifiers = ["arn:aws:iam::${var.cumulus_account_id}:root"]
+      identifiers = ["arn:aws:iam::CUMULUS_ACCOUNT_ID:root"]
       }
       actions = [
                   "s3:PutObject*"
       ]
       resources = [
-                  "arn:aws:s3:::${var.prefix}-orca-archive-worm/*"
+                  "arn:aws:s3:::PREFIX-orca-archive-worm/*"
                   ]
       condition {
         test     = "StringEquals"
@@ -60,11 +58,11 @@ resource "aws_s3_bucket_policy" "orca-archive-worm-policy" {
 }
 
 resource "aws_s3_bucket" "orca-reports" {
-  bucket = "${var.prefix}-orca-reports"
+  bucket = "PREFIX-orca-reports"
   depends_on = [aws_s3_bucket.orca-archive-worm]
   force_destroy = true
   tags = {
-    Deployment = "${var.prefix}"
+    Deployment = "PREFIX"
     Application = "ORCA"
   }
 }
@@ -84,7 +82,7 @@ data "aws_iam_policy_document" "orca-reports-policy-json" {
   statement {
     principals {
       type        = "AWS"
-      identifiers = ["arn:aws:iam::${var.cumulus_account_id}:root"]
+      identifiers = ["arn:aws:iam::CUMULUS_ACCOUNT_ID:root"]
     }
     actions = [
         "s3:GetObject*",
@@ -95,8 +93,8 @@ data "aws_iam_policy_document" "orca-reports-policy-json" {
         "s3:PutBucketNotification"
     ]
     resources = [
-        "arn:aws:s3:::${var.prefix}-orca-reports",
-        "arn:aws:s3:::${var.prefix}-orca-reports/*"
+        "arn:aws:s3:::PREFIX-orca-reports",
+        "arn:aws:s3:::PREFIX-orca-reports/*"
         ]
   } 
   statement {
@@ -108,8 +106,8 @@ data "aws_iam_policy_document" "orca-reports-policy-json" {
                   "s3:PutObject"
       ]
       resources = [
-                  "arn:aws:s3:::${var.prefix}-orca-reports",
-                  "arn:aws:s3:::${var.prefix}-orca-reports/*"
+                  "arn:aws:s3:::PREFIX-orca-reports",
+                  "arn:aws:s3:::PREFIX-orca-reports/*"
                   ]
       condition {
         test     = "StringEquals"
@@ -127,7 +125,7 @@ data "aws_iam_policy_document" "orca-reports-policy-json" {
         test = "ArnLike"
         variable = "aws:SourceArn"
         values = [
-          "arn:aws:s3:::${var.prefix}-*"
+          "arn:aws:s3:::PREFIX-*"
         ]
       }
     }
@@ -140,8 +138,8 @@ data "aws_iam_policy_document" "orca-reports-policy-json" {
                   "s3:PutObject"
       ]
       resources = [
-                  "arn:aws:s3:::${var.prefix}-orca-reports",
-                  "arn:aws:s3:::${var.prefix}-orca-reports/*"
+                  "arn:aws:s3:::PREFIX-orca-reports",
+                  "arn:aws:s3:::PREFIX-orca-reports/*"
                   ]
       condition {
         test     = "StringEquals"
@@ -159,7 +157,7 @@ data "aws_iam_policy_document" "orca-reports-policy-json" {
         test = "ArnLike"
         variable = "aws:SourceArn"
         values = [
-          "arn:aws:s3:::${var.prefix}-orca-archive-worm"
+          "arn:aws:s3:::PREFIX-orca-archive-worm"
         ]
       }
     }
@@ -172,10 +170,10 @@ resource "aws_s3_bucket_policy" "orca-reports-policy" {
 
 resource "aws_s3_bucket" "orca-primary" {
   # If bucket name is updated, also update orca_RECOVERY_BUCKET_NAME in integration_test/shared/setup_orca.sh
-  bucket = "${var.prefix}-orca-primary"
+  bucket = "PREFIX-orca-primary"
   force_destroy = true
   tags = {
-    Deployment = "${var.prefix}"
+    Deployment = "PREFIX"
     Application = "ORCA"
   }
 }
@@ -184,7 +182,7 @@ data "aws_iam_policy_document" "orca-primary-policy-json" {
  statement {
    principals {
      type        = "AWS"
-     identifiers = ["arn:aws:iam::${var.cumulus_account_id}:root"]
+     identifiers = ["arn:aws:iam::CUMULUS_ACCOUNT_ID:root"]
     }
     actions = [
                 "s3:GetObject*",
@@ -199,20 +197,20 @@ data "aws_iam_policy_document" "orca-primary-policy-json" {
                 "s3:DeleteObject"
     ]
     resources = [
-                "arn:aws:s3:::${var.prefix}-orca-primary",
-                "arn:aws:s3:::${var.prefix}-orca-primary/*"
+                "arn:aws:s3:::PREFIX-orca-primary",
+                "arn:aws:s3:::PREFIX-orca-primary/*"
                 ]
   }
  statement {
     principals {
       type        = "AWS"
-      identifiers = ["arn:aws:iam::${var.cumulus_account_id}:root"]
+      identifiers = ["arn:aws:iam::CUMULUS_ACCOUNT_ID:root"]
       }
       actions = [
                   "s3:PutObject*"
       ]
       resources = [
-                  "arn:aws:s3:::${var.prefix}-orca-primary/*"
+                  "arn:aws:s3:::PREFIX-orca-primary/*"
                   ]
       condition {
         test     = "StringEquals"
