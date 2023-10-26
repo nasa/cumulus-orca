@@ -31,7 +31,7 @@ fi
 git clone --branch ${bamboo_BRANCH_NAME} --single-branch https://github.com/nasa/cumulus-orca.git
 cd integration_test
 echo "Cloned Orca, branch ${bamboo_BRANCH_NAME}"
-#replace prefix with bamboo prefix variable
+# Replace PREFIX and CUMULUS_ACCOUNT_ID with bamboo variables
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' dr-buckets.tf.template > dr-buckets-temporary.tf.template
 sed -e 's/CUMULUS_ACCOUNT_ID/'"$bamboo_CUMULUS_ACCOUNT_ID"'/g' dr-buckets-temporary.tf.template > dr-buckets.tf
 
