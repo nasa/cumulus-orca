@@ -12,6 +12,7 @@ from migrations.migrate_versions_2_to_3.migrate import migrate_versions_2_to_3
 from migrations.migrate_versions_3_to_4.migrate import migrate_versions_3_to_4
 from migrations.migrate_versions_4_to_5.migrate import migrate_versions_4_to_5
 from migrations.migrate_versions_5_to_6.migrate import migrate_versions_5_to_6
+from migrations.migrate_versions_6_to_7.migrate import migrate_versions_6_to_7
 
 
 def perform_migration(
@@ -54,5 +55,10 @@ def perform_migration(
 
     if current_schema_version == 5:
         # Run migrations from version 5 to version 6
-        migrate_versions_5_to_6(config, True)
+        migrate_versions_5_to_6(config, False)
         current_schema_version = 6
+
+    if current_schema_version == 6:
+        # Run migrations from version 6 to version 7
+        migrate_versions_6_to_7(config, True)
+        current_schema_version = 7

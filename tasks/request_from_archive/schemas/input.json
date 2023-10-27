@@ -11,6 +11,10 @@
       "items": {
         "type": "object",
         "properties": {
+          "collectionId": {
+            "description": "The id of the collection containing the granule.",
+            "type": "string"
+          },
           "granuleId": {
             "description": "The id of the granule being restored.",
             "type": "string"
@@ -38,6 +42,7 @@
           }
         },
         "required": [
+          "collectionId",
           "granuleId",
           "keys"
         ]

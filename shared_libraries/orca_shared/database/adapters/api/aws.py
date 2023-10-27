@@ -10,8 +10,9 @@ from orca_shared.database.entities.postgres_connection_info import (
 from orca_shared.database.use_cases.validation import validate_config
 
 
-def get_configuration(db_connect_info_secret_arn: str, logger: logging.Logger) \
-        -> PostgresConnectionInfo:
+def get_configuration(
+    db_connect_info_secret_arn: str, logger: logging.Logger
+) -> PostgresConnectionInfo:
     """
     Create a dictionary of configuration values based on environment variables
     and secret information items needed to create ORCA database connections.
@@ -64,15 +65,15 @@ def get_configuration(db_connect_info_secret_arn: str, logger: logging.Logger) \
 
     # return the config dict
     result = PostgresConnectionInfo(
-            admin_database_name=db_connect_info["admin_database"],
-            admin_username=db_connect_info["admin_username"],
-            admin_password=db_connect_info["admin_password"],
-            user_username=db_connect_info["user_username"],
-            user_password=db_connect_info["user_password"],
-            user_database_name=db_connect_info["user_database"],
-            host=db_connect_info["host"],
-            port=db_connect_info["port"],
-        )
+        admin_database_name=db_connect_info["admin_database"],
+        admin_username=db_connect_info["admin_username"],
+        admin_password=db_connect_info["admin_password"],
+        user_username=db_connect_info["user_username"],
+        user_password=db_connect_info["user_password"],
+        user_database_name=db_connect_info["user_database"],
+        host=db_connect_info["host"],
+        port=db_connect_info["port"],
+    )
 
     validate_config(result, logger)
     return result

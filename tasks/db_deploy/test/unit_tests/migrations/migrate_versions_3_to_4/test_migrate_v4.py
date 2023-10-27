@@ -24,9 +24,13 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         # todo: Use randomized values on a per-test basis.
         self.config = PostgresConnectionInfo(  # nosec
             admin_database_name="admin_db",
-            admin_username="admin", admin_password="admin123",
-            user_username="user56789012", user_password="pass56789012",
-            user_database_name="user_db", host="aws.postgresrds.host", port="5432"
+            admin_username="admin",
+            admin_password="admin123",
+            user_username="user56789012",
+            user_password="pass56789012",
+            user_database_name="user_db",
+            host="aws.postgresrds.host",
+            port="5432",
         )
 
     def tearDown(self):
@@ -92,7 +96,9 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 ]
                 # Validate logic switch and set the execution order
                 if latest_version:
-                    execution_order.append(call.execute(mock_schema_versions_data.return_value))
+                    execution_order.append(
+                        call.execute(mock_schema_versions_data.return_value)
+                    )
                     mock_schema_versions_data.assert_called_once_with()
 
                 else:
@@ -103,7 +109,9 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 # Check that items were called in the proper order
                 mock_conn_enter = mock_create_engine().connect().__enter__()
                 mock_conn_enter.assert_has_calls(execution_order, any_order=False)
-                self.assertEqual(len(execution_order), len(mock_conn_enter.method_calls))
+                self.assertEqual(
+                    len(execution_order), len(mock_conn_enter.method_calls)
+                )
 
             # Reset the mocks for next loop
             mock_create_admin_uri.reset_mock()

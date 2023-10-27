@@ -73,5 +73,5 @@ check_returncode $? "ERROR: Potential security or code issues found."
 ## Run tests
 echo "INFO: Running integration tests ..."
 
-python run_tests.py
+python run_tests.py "$1"
 check_returncode $? "ERROR: Unit tests encountered failures."

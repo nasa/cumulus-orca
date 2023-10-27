@@ -17,6 +17,7 @@ OUTPUT_JOB_ID_KEY = "asyncOperationId"
 OUTPUT_JOB_STATUS_TOTALS_KEY = "jobStatusTotals"
 OUTPUT_GRANULES_KEY = "granules"
 OUTPUT_STATUS_KEY = "status"
+OUTPUT_COLLECTION_ID_KEY = "collectionId"
 OUTPUT_GRANULE_ID_KEY = "granuleId"
 
 
@@ -100,6 +101,7 @@ def get_granule_status_entries_for_job(
     for row in results.mappings():
         rows.append(
             {
+                OUTPUT_COLLECTION_ID_KEY: row[OUTPUT_COLLECTION_ID_KEY],
                 OUTPUT_GRANULE_ID_KEY: row[OUTPUT_GRANULE_ID_KEY],
                 OUTPUT_STATUS_KEY: row[OUTPUT_STATUS_KEY],
             }
@@ -108,9 +110,10 @@ def get_granule_status_entries_for_job(
 
 
 def get_granule_status_entries_for_job_sql() -> text:  # pragma: no cover
-    return text(  # nosec
+    return text(
         f"""
                 SELECT
+                    collection_id as "{OUTPUT_COLLECTION_ID_KEY}",
                     granule_id as "{OUTPUT_GRANULE_ID_KEY}",
                     recovery_status.value AS "{OUTPUT_STATUS_KEY}"
                 FROM
@@ -118,7 +121,7 @@ def get_granule_status_entries_for_job_sql() -> text:  # pragma: no cover
                 JOIN recovery_status ON recovery_job.status_id=recovery_status.id
                 WHERE
                     job_id = :job_id
-                """
+                """  # nosec
     )
 
 

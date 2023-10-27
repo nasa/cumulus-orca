@@ -45,12 +45,10 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
             }
         """
         secret_name = "orcatest-orca-db-login-secret"  # nosec
-        self.test_sm.create_secret(
-            Name=secret_name, SecretString=self.secretstring
-        )
+        self.test_sm.create_secret(Name=secret_name, SecretString=self.secretstring)
         self.db_connect_info_secret_arn = self.test_sm.describe_secret(
-                    SecretId=secret_name
-                    )["ARN"]
+            SecretId=secret_name
+        )["ARN"]
 
     def tearDown(self):
         """
@@ -75,8 +73,7 @@ class TestSharedDatabaseLibraries(unittest.TestCase):
 
     @patch.dict(
         os.environ,
-        {
-        },
+        {},
         clear=True,
     )
     def test_get_configuration_no_aws_region(self):

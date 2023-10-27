@@ -24,9 +24,13 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         # todo: Use randomized values on a per-test basis.
         self.config = PostgresConnectionInfo(  # nosec
             admin_database_name="admin_db",
-            admin_username="admin", admin_password="admin123",
-            user_username="user56789012", user_password="pass56789012",
-            user_database_name="user_db", host="aws.postgresrds.host", port="5432"
+            admin_username="admin",
+            admin_password="admin123",
+            user_username="user56789012",
+            user_password="pass56789012",
+            user_database_name="user_db",
+            host="aws.postgresrds.host",
+            port="5432",
         )
 
         self.mock_connection = MagicMock()
@@ -114,9 +118,7 @@ class TestCreateDatabaseLibraries(unittest.TestCase):
         """
         create_db.create_database(self.config)
 
-        mock_create_admin_uri.assert_called_once_with(
-            self.config, create_db.LOGGER
-        )
+        mock_create_admin_uri.assert_called_once_with(self.config, create_db.LOGGER)
         mock_create_engine.assert_called_once_with(
             mock_create_admin_uri.return_value, future=True
         )

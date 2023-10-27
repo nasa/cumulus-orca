@@ -35,6 +35,7 @@ class TestCopyToArchive(TestCase):
     """
     Test copy_to_archive functionality and business logic.
     """
+
     # Create the mock for SQS unit tests
     mock_sqs = mock_sqs()
 
@@ -58,8 +59,7 @@ class TestCopyToArchive(TestCase):
                         copy_to_archive.FILE_BUCKET_KEY: "orca-sandbox-protected",
                         "url_path": "MOD09GQ/006/",
                         "type": "",
-                        copy_to_archive.FILE_FILEPATH_KEY:
-                            "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+                        copy_to_archive.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",  # noqa: E501
                         "duplicate_found": True,
                         "checksumType": "md5",
                         "checksum": "bogus_checksum_value",
@@ -71,8 +71,7 @@ class TestCopyToArchive(TestCase):
                         copy_to_archive.FILE_BUCKET_KEY: "orca-sandbox-private",
                         "url_path": "MOD09GQ/006",
                         "type": "",
-                        copy_to_archive.FILE_FILEPATH_KEY:
-                            "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+                        copy_to_archive.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",  # noqa: E501
                         "duplicate_found": True,
                         "checksumType": "md5",
                         "checksum": "bogus_checksum_value",
@@ -84,8 +83,7 @@ class TestCopyToArchive(TestCase):
                         copy_to_archive.FILE_BUCKET_KEY: "orca-sandbox-public",
                         "url_path": "MOD09GQ/006",
                         "type": "",
-                        copy_to_archive.FILE_FILEPATH_KEY:
-                            "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+                        copy_to_archive.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",  # noqa: E501
                         "duplicate_found": True,
                         "checksumType": "md5",
                         "checksum": "bogus_checksum_value",
@@ -93,8 +91,7 @@ class TestCopyToArchive(TestCase):
                     {
                         copy_to_archive.FILE_BUCKET_KEY: "orca-sandbox-private",
                         "type": "metadata",
-                        copy_to_archive.FILE_FILEPATH_KEY:
-                            "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+                        copy_to_archive.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",  # noqa: E501
                         "url_path": "MOD09GQ/006",
                         "checksumType": "md5",
                         "checksum": "bogus_checksum_value",
@@ -110,7 +107,9 @@ class TestCopyToArchive(TestCase):
         """
         self.mock_sqs.start()
         self.test_sqs = boto3.resource("sqs", region_name="us-west-2")
-        self.queue = self.test_sqs.create_queue(QueueName="test-metadata-queue")
+        self.queue = self.test_sqs.create_queue(
+            QueueName="test-metadata-queue.fifo", Attributes={"FifoQueue": "true"}
+        )
         self.metadata_queue_url = self.queue.url
 
     def tearDown(self):
@@ -121,7 +120,8 @@ class TestCopyToArchive(TestCase):
 
     @patch("copy_to_archive.LOGGER.info")
     def test_set_optional_event_property(
-        self, mock_logger: MagicMock,
+        self,
+        mock_logger: MagicMock,
     ):
         """
         Tests that set_optional_event_property sets asyncOperationId as the value
@@ -134,37 +134,25 @@ class TestCopyToArchive(TestCase):
         key2_value = uuid.uuid4().__str__()
         mock_event = {
             "event": {
-                "cumulus_meta": {
-                    "asyncOperationId": key2_value
-                },
+                "cumulus_meta": {"asyncOperationId": key2_value},
                 "meta": {
                     "collection": {
-                        "meta": {
-                            "orca": {
-                                "defaultBucketOverride": key1_value
-                            }
-                        }
+                        "meta": {"orca": {"defaultBucketOverride": key1_value}}
                     }
-                }
+                },
             },
-            "config1": {
-                key2: uuid.uuid4().__str__()
-            }
+            "config1": {key2: uuid.uuid4().__str__()},
         }
         mock_target_path_cursor = {
             "config0": {
-                key0:
-                    "event.meta.collection.meta.orca.defaultRecoveryTypeOverride",
-                key1:
-                    "event.meta.collection.meta.orca.defaultBucketOverride"
+                key0: "event.meta.collection.meta.orca.defaultRecoveryTypeOverride",
+                key1: "event.meta.collection.meta.orca.defaultBucketOverride",
             },
-            "config1": {
-                key2:
-                    "event.cumulus_meta.asyncOperationId"
-            }
+            "config1": {key2: "event.cumulus_meta.asyncOperationId"},
         }
-        copy_to_archive \
-            .set_optional_event_property(mock_event, mock_target_path_cursor, [])
+        copy_to_archive.set_optional_event_property(
+            mock_event, mock_target_path_cursor, []
+        )
 
         # set asyncOperationId to non-null value
         self.assertEqual(None, mock_event["config0"][key0])
@@ -222,7 +210,8 @@ class TestCopyToArchive(TestCase):
         result = copy_to_archive.handler(handler_input_event, handler_input_context)
         mock_task.assert_called_once_with(
             handler_input_event[copy_to_archive.EVENT_INPUT_KEY],
-            handler_input_event[copy_to_archive.EVENT_CONFIG_KEY])
+            handler_input_event[copy_to_archive.EVENT_CONFIG_KEY],
+        )
 
         self.assertEqual(mock_task.return_value, result)
 
@@ -336,7 +325,7 @@ class TestCopyToArchive(TestCase):
                         "ACL": "bucket-owner-full-control",
                     },
                     Config=unittest.mock.ANY,  # Checked by ConfigCheck.
-                                               # Equality checkers do not work.
+                    # Equality checkers do not work.
                 )
             )
 
@@ -362,9 +351,9 @@ class TestCopyToArchive(TestCase):
                 "lastUpdate": ANY,
                 "files": [
                     {
-                        "cumulusArchiveLocation": event_input["granules"][0][
-                            "files"
-                        ][0]["bucket"],
+                        "cumulusArchiveLocation": event_input["granules"][0]["files"][
+                            0
+                        ]["bucket"],
                         "orcaArchiveLocation": mock_get_destination_bucket_name.return_value,
                         "keyPath": event_input["granules"][0]["files"][0][
                             copy_to_archive.FILE_FILEPATH_KEY
@@ -385,9 +374,9 @@ class TestCopyToArchive(TestCase):
                         "storageClass": mock_get_storage_class.return_value,
                     },
                     {
-                        "cumulusArchiveLocation": event_input["granules"][0][
-                            "files"
-                        ][1]["bucket"],
+                        "cumulusArchiveLocation": event_input["granules"][0]["files"][
+                            1
+                        ]["bucket"],
                         "orcaArchiveLocation": mock_get_destination_bucket_name.return_value,
                         "keyPath": event_input["granules"][0]["files"][1][
                             copy_to_archive.FILE_FILEPATH_KEY
@@ -408,9 +397,9 @@ class TestCopyToArchive(TestCase):
                         "storageClass": mock_get_storage_class.return_value,
                     },
                     {
-                        "cumulusArchiveLocation": event_input["granules"][0][
-                            "files"
-                        ][2]["bucket"],
+                        "cumulusArchiveLocation": event_input["granules"][0]["files"][
+                            2
+                        ]["bucket"],
                         "orcaArchiveLocation": mock_get_destination_bucket_name.return_value,
                         "keyPath": event_input["granules"][0]["files"][2][
                             copy_to_archive.FILE_FILEPATH_KEY
@@ -431,9 +420,9 @@ class TestCopyToArchive(TestCase):
                         "storageClass": mock_get_storage_class.return_value,
                     },
                     {
-                        "cumulusArchiveLocation": event_input["granules"][0][
-                            "files"
-                        ][3]["bucket"],
+                        "cumulusArchiveLocation": event_input["granules"][0]["files"][
+                            3
+                        ]["bucket"],
                         "orcaArchiveLocation": mock_get_destination_bucket_name.return_value,
                         "keyPath": event_input["granules"][0]["files"][3][
                             copy_to_archive.FILE_FILEPATH_KEY
@@ -511,8 +500,7 @@ class TestCopyToArchive(TestCase):
                             copy_to_archive.FILE_BUCKET_KEY: "orca-sandbox-protected",
                             "url_path": "MOD09GQ/006/",
                             "type": "",
-                            copy_to_archive.FILE_FILEPATH_KEY:
-                                "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",
+                            copy_to_archive.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065109.hdf",  # noqa: E501
                             "duplicate_found": True,
                             copy_to_archive.FILE_HASH_TYPE_KEY: "md5",
                             copy_to_archive.FILE_HASH_KEY: "bogus_checksum_value",
@@ -532,8 +520,7 @@ class TestCopyToArchive(TestCase):
                             copy_to_archive.FILE_BUCKET_KEY: "orca-sandbox-protected",
                             "url_path": "MOD09GQ/006/",
                             "type": "",
-                            copy_to_archive.FILE_FILEPATH_KEY:
-                                "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065108.hdf",
+                            copy_to_archive.FILE_FILEPATH_KEY: "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065108.hdf",  # noqa: E501
                             "duplicate_found": True,
                             copy_to_archive.FILE_HASH_TYPE_KEY: "md5",
                             copy_to_archive.FILE_HASH_KEY: "bogus_checksum_value",
@@ -608,7 +595,7 @@ class TestCopyToArchive(TestCase):
                         "ACL": "bucket-owner-full-control",
                     },
                     Config=unittest.mock.ANY,  # Checked by ConfigCheck.
-                                               # Equality checkers do not work.
+                    # Equality checkers do not work.
                 )
             )
 
@@ -711,7 +698,7 @@ class TestCopyToArchive(TestCase):
                         "ACL": "bucket-owner-full-control",
                     },
                     Config=unittest.mock.ANY,  # Checked by ConfigCheck.
-                                               # Equality checkers do not work.
+                    # Equality checkers do not work.
                 )
             )
 
@@ -818,7 +805,8 @@ class TestCopyToArchive(TestCase):
             )
         self.assertEqual(
             f"'{copy_to_archive.OS_ENVIRON_ORCA_DEFAULT_BUCKET_KEY} "
-            f"environment variable is not set.'", str(cm.exception),
+            f"environment variable is not set.'",
+            str(cm.exception),
         )
 
     @patch.dict(
@@ -829,9 +817,7 @@ class TestCopyToArchive(TestCase):
     def test_get_storage_class_returns_override_if_present(self):
         storage_class = Mock()
         result = copy_to_archive.get_storage_class(
-            {
-                copy_to_archive.CONFIG_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY: storage_class
-            }
+            {copy_to_archive.CONFIG_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY: storage_class}
         )
         self.assertEqual(storage_class, result)
 
@@ -930,9 +916,7 @@ class TestCopyToArchive(TestCase):
         Produces a failure and checks if retries are performed in the SQS library.
         """
         sqs_body = {
-            "provider": {
-                "providerId": "1234", "name": "LPCumulus"
-                },
+            "provider": {"providerId": "1234", "name": "LPCumulus"},
             "collection": {
                 "collectionId": "MOD14A1__061",
                 "shortname": "MOD14A1",

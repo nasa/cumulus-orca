@@ -15,9 +15,9 @@ class TestRDBMS(unittest.TestCase):
     @patch("src.adapters.storage.rdbms.StorageAdapterRDBMS.get_orphans_sql")
     @patch("sqlalchemy.engine.create.create_engine")
     def test_get_orphans_page_happy_path(
-            self,
-            mock_create_engine: MagicMock,
-            mock_get_orphans_sql: MagicMock,
+        self,
+        mock_create_engine: MagicMock,
+        mock_get_orphans_sql: MagicMock,
     ):
         """
         Should set up an engine, and use it to retrieve a page of orphan reports.
@@ -38,7 +38,7 @@ class TestRDBMS(unittest.TestCase):
             "etag": etag,
             "last_update": last_update,
             "size_in_bytes": size_in_bytes,
-            "storage_class": storage_class
+            "storage_class": storage_class,
         }
         mock_execute_result = Mock()
         mock_execute_result.mappings = Mock(return_value=[returned_row0])
@@ -61,8 +61,10 @@ class TestRDBMS(unittest.TestCase):
         LOGGER = Mock()
 
         result = storage_adapter.get_orphans_page(
-            OrphanRecordFilter(job_id=job_id, page_index=page_index, page_size=page_size),
-            LOGGER
+            OrphanRecordFilter(
+                job_id=job_id, page_index=page_index, page_size=page_size
+            ),
+            LOGGER,
         )
 
         mock_enter.__enter__.assert_called_once_with()
@@ -90,16 +92,17 @@ class TestRDBMS(unittest.TestCase):
                         storage_class=storage_class,
                     )
                 ],
-                another_page=False),
-            result
+                another_page=False,
+            ),
+            result,
         )
 
     @patch("src.adapters.storage.rdbms.StorageAdapterPostgres.get_orphans_sql")
     @patch("sqlalchemy.engine.create.create_engine")
     def test_get_orphans_page_no_rows_happy_path(
-            self,
-            mock_create_engine: MagicMock,
-            mock_get_orphans_sql: MagicMock,
+        self,
+        mock_create_engine: MagicMock,
+        mock_get_orphans_sql: MagicMock,
     ):
         """
         Should query the db, then return an empty array.
@@ -128,8 +131,10 @@ class TestRDBMS(unittest.TestCase):
         LOGGER = Mock()
 
         result = storage_adapter.get_orphans_page(
-            OrphanRecordFilter(job_id=job_id, page_index=page_index, page_size=page_size),
-            LOGGER
+            OrphanRecordFilter(
+                job_id=job_id, page_index=page_index, page_size=page_size
+            ),
+            LOGGER,
         )
 
         mock_enter.__enter__.assert_called_once_with()
@@ -146,20 +151,14 @@ class TestRDBMS(unittest.TestCase):
         mock_execute_result.mappings.assert_called_once_with()
         mock_exit.assert_called_once_with(None, None, None)
         mock_get_orphans_sql.assert_called_once_with()
-        self.assertEqual(
-            OrphanRecordPage(
-                orphans=[
-                ],
-                another_page=False),
-            result
-        )
+        self.assertEqual(OrphanRecordPage(orphans=[], another_page=False), result)
 
     @patch("src.adapters.storage.rdbms.StorageAdapterRDBMS.get_orphans_sql")
     @patch("sqlalchemy.engine.create.create_engine")
     def test_get_orphans_page_extra_results_pages(
-            self,
-            mock_create_engine: MagicMock,
-            mock_get_orphans_sql: MagicMock,
+        self,
+        mock_create_engine: MagicMock,
+        mock_get_orphans_sql: MagicMock,
     ):
         """
         If the results exceed page-size,
@@ -181,14 +180,14 @@ class TestRDBMS(unittest.TestCase):
             "etag": etag,
             "last_update": last_update,
             "size_in_bytes": size_in_bytes,
-            "storage_class": storage_class
+            "storage_class": storage_class,
         }
         returned_row1 = {
             "key_path": uuid.uuid4().__str__(),
             "etag": uuid.uuid4().__str__(),
             "last_update": random.randint(0, 999999),  # nosec
             "size_in_bytes": random.randint(0, 999),  # nosec
-            "storage_class": uuid.uuid4().__str__()
+            "storage_class": uuid.uuid4().__str__(),
         }
         mock_execute_result = Mock()
         mock_execute_result.mappings = Mock(return_value=[returned_row0, returned_row1])
@@ -210,8 +209,10 @@ class TestRDBMS(unittest.TestCase):
         LOGGER = Mock()
 
         result = storage_adapter.get_orphans_page(
-            OrphanRecordFilter(job_id=job_id, page_index=page_index, page_size=page_size),
-            LOGGER
+            OrphanRecordFilter(
+                job_id=job_id, page_index=page_index, page_size=page_size
+            ),
+            LOGGER,
         )
 
         mock_enter.__enter__.assert_called_once_with()
@@ -239,12 +240,13 @@ class TestRDBMS(unittest.TestCase):
                         storage_class=storage_class,
                     )
                 ],
-                another_page=True),
-            result
+                another_page=True,
+            ),
+            result,
         )
 
     def test_StorageAdapterPostgres_implements_sql(
-            self,
+        self,
     ):
         """
         Should implement the StorageAdapterRDBMS and associated SQL.

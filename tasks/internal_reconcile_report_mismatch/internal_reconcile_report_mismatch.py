@@ -52,9 +52,9 @@ except Exception as ex:
 
 
 def task(
-        job_id: int,
-        page_index: int,
-        db_connect_info: Dict[str, str],
+    job_id: int,
+    page_index: int,
+    db_connect_info: Dict[str, str],
 ) -> Dict[str, Any]:
     """
     Args:
@@ -73,16 +73,16 @@ def task(
         OUTPUT_JOB_ID_KEY: job_id,
         OUTPUT_ANOTHER_PAGE_KEY: len(mismatches) > PAGE_SIZE,
         OUTPUT_MISMATCHES_KEY: mismatches[
-                               0:PAGE_SIZE
-                               ],  # we get one extra for anotherPage calculation.
+            0:PAGE_SIZE
+        ],  # we get one extra for anotherPage calculation.
     }
 
 
 @retry_operational_error()
 def query_db(
-        engine: Engine,
-        job_id: str,
-        page_index: int,
+    engine: Engine,
+    job_id: str,
+    page_index: int,
 ) -> List[Dict[str, Any]]:
     """
     Gets mismatches for the given job/page, up to PAGE_SIZE + 1 results.
@@ -112,36 +112,23 @@ def query_db(
         for sql_result in sql_results.mappings():
             mismatches.append(
                 {
-                    MISMATCHES_COLLECTION_ID_KEY:
-                        sql_result["collection_id"],
-                    MISMATCHES_GRANULE_ID_KEY:
-                        sql_result["granule_id"],
-                    MISMATCHES_FILENAME_KEY:
-                        sql_result["filename"],
-                    MISMATCHES_KEY_PATH_KEY:
-                        sql_result["key_path"],
-                    MISMATCHES_CUMULUS_ARCHIVE_LOCATION_KEY:
-                        sql_result["cumulus_archive_location"],
-                    MISMATCHES_ORCA_ETAG_KEY:
-                        sql_result["orca_etag"],
-                    MISMATCHES_S3_ETAG_KEY:
-                        sql_result["s3_etag"],
-                    MISMATCHES_ORCA_LAST_UPDATE_KEY:
-                        sql_result["orca_last_update"],
-                    MISMATCHES_S3_LAST_UPDATE_KEY:
-                        sql_result["s3_last_update"],
-                    MISMATCHES_ORCA_SIZE_IN_BYTES_KEY:
-                        sql_result["orca_size_in_bytes"],
-                    MISMATCHES_S3_SIZE_IN_BYTES_KEY:
-                        sql_result["s3_size_in_bytes"],
-                    MISMATCHES_ORCA_STORAGE_CLASS_KEY:
-                        sql_result["orca_storage_class"],
-                    MISMATCHES_S3_STORAGE_CLASS_KEY:
-                        sql_result["s3_storage_class"],
-                    MISMATCHES_DISCREPANCY_TYPE_KEY:
-                        sql_result["discrepancy_type"],
-                    MISMATCHES_COMMENT_KEY:
-                        sql_result["comment"]
+                    MISMATCHES_COLLECTION_ID_KEY: sql_result["collection_id"],
+                    MISMATCHES_GRANULE_ID_KEY: sql_result["granule_id"],
+                    MISMATCHES_FILENAME_KEY: sql_result["filename"],
+                    MISMATCHES_KEY_PATH_KEY: sql_result["key_path"],
+                    MISMATCHES_CUMULUS_ARCHIVE_LOCATION_KEY: sql_result[
+                        "cumulus_archive_location"
+                    ],
+                    MISMATCHES_ORCA_ETAG_KEY: sql_result["orca_etag"],
+                    MISMATCHES_S3_ETAG_KEY: sql_result["s3_etag"],
+                    MISMATCHES_ORCA_LAST_UPDATE_KEY: sql_result["orca_last_update"],
+                    MISMATCHES_S3_LAST_UPDATE_KEY: sql_result["s3_last_update"],
+                    MISMATCHES_ORCA_SIZE_IN_BYTES_KEY: sql_result["orca_size_in_bytes"],
+                    MISMATCHES_S3_SIZE_IN_BYTES_KEY: sql_result["s3_size_in_bytes"],
+                    MISMATCHES_ORCA_STORAGE_CLASS_KEY: sql_result["orca_storage_class"],
+                    MISMATCHES_S3_STORAGE_CLASS_KEY: sql_result["s3_storage_class"],
+                    MISMATCHES_DISCREPANCY_TYPE_KEY: sql_result["discrepancy_type"],
+                    MISMATCHES_COMMENT_KEY: sql_result["comment"],
                 }
             )
         return mismatches
@@ -194,7 +181,7 @@ SELECT
 
 
 def create_http_error_dict(
-        error_type: str, http_status_code: int, request_id: str, message: str
+    error_type: str, http_status_code: int, request_id: str, message: str
 ) -> Dict[str, Any]:
     """
     Creates a standardized dictionary for error reporting.
@@ -239,7 +226,7 @@ def check_env_variable(env_name: str) -> str:
 
 @LOGGER.inject_lambda_context
 def handler(
-        event: Dict[str, Union[str, int]], context: LambdaContext
+    event: Dict[str, Union[str, int]], context: LambdaContext
 ) -> Union[List[Dict[str, Any]], Dict[str, Any]]:
     """
     Entry point for the internal_reconcile_report_mismatch Lambda.

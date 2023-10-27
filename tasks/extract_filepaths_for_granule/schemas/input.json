@@ -14,6 +14,10 @@
               "description": "The user specified recovery S3 bucket to store recovered files",
               "type": ["string", "null"]
             },
+              "collectionId": {
+              "description": "The id of the collection containing the granule.",
+              "type": "string"
+            },
             "granuleId": {
               "description": "The ID of the granule.",
               "type": "string"
@@ -43,6 +47,7 @@
             }
           },
           "required": [
+            "collectionId",
             "granuleId",
             "files"
           ]

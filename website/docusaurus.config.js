@@ -30,12 +30,6 @@ module.exports = {
           position: 'right',
         },
         {
-          to: 'docs/cookbook/cookbook-intro',
-          activeBasePath: 'docs/cookbook/',
-          label: 'ORCA Cookbooks',
-          position: 'right',
-        },
-        {
           to: 'docs/operator/operator-intro',
           activeBasePath: 'docs/operator/',
           label: 'Operator Guide',
@@ -61,10 +55,6 @@ module.exports = {
             {
               label: 'ORCA Developer Guide',
               to: 'docs/developer/quickstart/developer-intro',
-            },
-            {
-              label: 'ORCA Cookbooks',
-              to: 'docs/cookbook/cookbook-intro',
             },
             {
               label: 'ORCA Operator Guide',

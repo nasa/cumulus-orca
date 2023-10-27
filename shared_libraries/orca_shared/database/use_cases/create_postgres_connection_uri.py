@@ -8,7 +8,9 @@ from orca_shared.database.entities.postgres_connection_info import (
 )
 
 
-def create_user_uri(db_connect_info: PostgresConnectionInfo, logger: logging.Logger) -> str:
+def create_user_uri(
+    db_connect_info: PostgresConnectionInfo, logger: logging.Logger
+) -> str:
     """
     Creates a connection URI for application database as the application
     database user.
@@ -32,8 +34,11 @@ def create_user_uri(db_connect_info: PostgresConnectionInfo, logger: logging.Log
     )
 
 
-def create_admin_uri(db_connect_info: PostgresConnectionInfo, logger: logging.Logger,
-                     database_name_overwrite: str = None) -> str:
+def create_admin_uri(
+    db_connect_info: PostgresConnectionInfo,
+    logger: logging.Logger,
+    database_name_overwrite: str = None,
+) -> str:
     """
     Creates a connection URI for a database as a superuser.
 

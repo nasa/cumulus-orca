@@ -44,15 +44,14 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
     """
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/lambda.html
     # 600s for copy_to_archive operation
-    config = Config(read_timeout=600, retries={'total_max_attempts': 1})
+    config = Config(read_timeout=600, retries={"total_max_attempts": 1})
     client = boto3.client("lambda", config=config)
     response = client.invoke(
         FunctionName=os.environ[OS_ENVIRON_COPY_TO_ARCHIVE_ARN_KEY],
         InvocationType="RequestResponse",  # Synchronous
-        Payload=json.dumps({
-            ORCA_INPUT_KEY: event["input"],
-            ORCA_CONFIG_KEY: event["config"]
-        }, indent=4).encode("utf-8")
+        Payload=json.dumps(
+            {ORCA_INPUT_KEY: event["input"], ORCA_CONFIG_KEY: event["config"]}, indent=4
+        ).encode("utf-8"),
     )
     if response["StatusCode"] != 200:
         raise Exception(response.get("FunctionError", None))

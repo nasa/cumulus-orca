@@ -60,20 +60,18 @@ class TestPostCopyRequestToQueue(TestCase):
         key_path = f"{uuid.uuid4()}.ext"
         bucket_name = f"{uuid.uuid4()}-bucket"
 
-        body_json = json.dumps({
-            "Records": [
-                {
-                    "s3": {
-                        "bucket": {
-                            "name": bucket_name
-                        },
-                        "object": {
-                            "key": key_path
+        body_json = json.dumps(
+            {
+                "Records": [
+                    {
+                        "s3": {
+                            "bucket": {"name": bucket_name},
+                            "object": {"key": key_path},
                         }
                     }
-                }
-            ]
-        })
+                ]
+            }
+        )
         event = {"Records": [{"body": body_json}]}
         context = Mock()
 
@@ -144,18 +142,18 @@ class TestPostCopyRequestToQueue(TestCase):
             with patch.dict(
                 os.environ,
                 {
-                    post_copy_request_to_queue.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY:
-                        uuid.uuid4().__str__(),
-                    post_copy_request_to_queue.OS_ENVIRON_RECOVERY_QUEUE_URL_KEY:
-                        uuid.uuid4().__str__(),
-                    post_copy_request_to_queue.OS_ENVIRON_MAX_RETRIES_KEY:
-                        str(random.randint(0, 100)),  # nosec
-                    post_copy_request_to_queue.OS_ENVIRON_RETRY_SLEEP_SECS_KEY:
-                        str(random.randint(0, 100)),  # nosec
-                    post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY:
-                        str(random.randint(0, 100)),  # nosec
-                    post_copy_request_to_queue.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY:
-                        uuid.uuid4().__str__(),
+                    post_copy_request_to_queue.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY: uuid.uuid4().__str__(),  # noqa: E501
+                    post_copy_request_to_queue.OS_ENVIRON_RECOVERY_QUEUE_URL_KEY: uuid.uuid4().__str__(),  # noqa: E501
+                    post_copy_request_to_queue.OS_ENVIRON_MAX_RETRIES_KEY: str(
+                        random.randint(0, 100)  # nosec
+                    ),
+                    post_copy_request_to_queue.OS_ENVIRON_RETRY_SLEEP_SECS_KEY: str(
+                        random.randint(0, 100)  # nosec
+                    ),
+                    post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY: str(
+                        random.randint(0, 100)  # nosec
+                    ),
+                    post_copy_request_to_queue.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY: uuid.uuid4().__str__(),  # noqa: E501
                 },
                 clear=True,
             ):
@@ -166,16 +164,11 @@ class TestPostCopyRequestToQueue(TestCase):
     @patch.dict(
         os.environ,
         {
-            post_copy_request_to_queue.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY:
-                "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
-            post_copy_request_to_queue.OS_ENVIRON_RECOVERY_QUEUE_URL_KEY:
-                "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
-            post_copy_request_to_queue.OS_ENVIRON_MAX_RETRIES_KEY:
-                "1",
-            post_copy_request_to_queue.OS_ENVIRON_RETRY_SLEEP_SECS_KEY:
-                "2",
-            post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY:
-                "3",
+            post_copy_request_to_queue.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY: "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",  # noqa: E501
+            post_copy_request_to_queue.OS_ENVIRON_RECOVERY_QUEUE_URL_KEY: "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",  # noqa: E501
+            post_copy_request_to_queue.OS_ENVIRON_MAX_RETRIES_KEY: "1",
+            post_copy_request_to_queue.OS_ENVIRON_RETRY_SLEEP_SECS_KEY: "2",
+            post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY: "3",
         },
         clear=True,
     )
@@ -226,16 +219,11 @@ class TestPostCopyRequestToQueue(TestCase):
     @patch.dict(
         os.environ,
         {
-            post_copy_request_to_queue.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY:
-                "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",
-            post_copy_request_to_queue.OS_ENVIRON_RECOVERY_QUEUE_URL_KEY:
-                "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",
-            post_copy_request_to_queue.OS_ENVIRON_MAX_RETRIES_KEY:
-                "1",
-            post_copy_request_to_queue.OS_ENVIRON_RETRY_SLEEP_SECS_KEY:
-                "2",
-            post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY:
-                "3",
+            post_copy_request_to_queue.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY: "https://us-west-2.queue.amazonaws.com/123456789012/dbqueue",  # noqa: E501
+            post_copy_request_to_queue.OS_ENVIRON_RECOVERY_QUEUE_URL_KEY: "https://us-west-2.queue.amazonaws.com/123456789012/recoveryqueue",  # noqa: E501
+            post_copy_request_to_queue.OS_ENVIRON_MAX_RETRIES_KEY: "1",
+            post_copy_request_to_queue.OS_ENVIRON_RETRY_SLEEP_SECS_KEY: "2",
+            post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY: "3",
         },
         clear=True,
     )
@@ -286,14 +274,26 @@ class TestPostCopyRequestToQueue(TestCase):
 
         bad_events = [
             {
-                "event": {"Records": [{"body": "{\"Records\": [{\"s3\": {\"bucket\": {\"name\": \"test-bucket\"},\
-                    \"object\": {}}}]}"}]},
-                "key": "key"
+                "event": {
+                    "Records": [
+                        {
+                            "body": '{"Records": [{"s3": {"bucket": {"name": "test-bucket"},\
+                    "object": {}}}]}'
+                        }
+                    ]
+                },
+                "key": "key",
             },
             {
-                "event": {"Records": [{"body": "{\"Records\": [{\"s3\": {\"bucket\": {},\
-                    \"object\": {\"key\": \"test.jpg\"}}}]}"}]},
-                "key": "name"
+                "event": {
+                    "Records": [
+                        {
+                            "body": '{"Records": [{"s3": {"bucket": {},\
+                    "object": {"key": "test.jpg"}}}]}'
+                        }
+                    ]
+                },
+                "key": "name",
             },
         ]
         context = Mock()
@@ -308,18 +308,16 @@ class TestPostCopyRequestToQueue(TestCase):
         with patch.dict(
             os.environ,
             {
-                post_copy_request_to_queue.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY:
-                    db_queue_url,
-                post_copy_request_to_queue.OS_ENVIRON_RECOVERY_QUEUE_URL_KEY:
-                    recovery_queue_url,
-                post_copy_request_to_queue.OS_ENVIRON_MAX_RETRIES_KEY:
-                    str(max_retries),
-                post_copy_request_to_queue.OS_ENVIRON_RETRY_SLEEP_SECS_KEY:
-                str(retry_sleep_secs),
-                post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY:
-                    str(retry_backoff),
-                post_copy_request_to_queue.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY:
-                    db_connect_info_secret_arn,
+                post_copy_request_to_queue.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY: db_queue_url,
+                post_copy_request_to_queue.OS_ENVIRON_RECOVERY_QUEUE_URL_KEY: recovery_queue_url,
+                post_copy_request_to_queue.OS_ENVIRON_MAX_RETRIES_KEY: str(max_retries),
+                post_copy_request_to_queue.OS_ENVIRON_RETRY_SLEEP_SECS_KEY: str(
+                    retry_sleep_secs
+                ),
+                post_copy_request_to_queue.OS_ENVIRON_RETRY_BACKOFF_KEY: str(
+                    retry_backoff
+                ),
+                post_copy_request_to_queue.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY: db_connect_info_secret_arn,  # noqa: E501
             },
             clear=True,
         ):
@@ -345,6 +343,7 @@ class TestPostCopyRequestToQueue(TestCase):
         """
         self.setUpQueues()
         job_id = uuid.uuid4().__str__()
+        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         filename = uuid.uuid4().__str__()
         restore_destination = uuid.uuid4().__str__()
@@ -355,6 +354,7 @@ class TestPostCopyRequestToQueue(TestCase):
 
         row = {
             post_copy_request_to_queue.JOB_ID_KEY: job_id,
+            post_copy_request_to_queue.COLLECTION_ID_KEY: collection_id,
             post_copy_request_to_queue.GRANULE_ID_KEY: granule_id,
             post_copy_request_to_queue.FILENAME_KEY: filename,
             post_copy_request_to_queue.RESTORE_DESTINATION_KEY: restore_destination,
@@ -384,6 +384,7 @@ class TestPostCopyRequestToQueue(TestCase):
         )
         mock_update_status_for_file.assert_called_once_with(
             job_id,
+            collection_id,
             granule_id,
             filename,
             shared_recovery.OrcaStatus.STAGED,
@@ -413,6 +414,7 @@ class TestPostCopyRequestToQueue(TestCase):
         """
         self.setUpQueues()
         job_id = uuid.uuid4().__str__()
+        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         filename = uuid.uuid4().__str__()
         restore_destination = uuid.uuid4().__str__()
@@ -425,6 +427,7 @@ class TestPostCopyRequestToQueue(TestCase):
 
         row = {
             post_copy_request_to_queue.JOB_ID_KEY: job_id,
+            post_copy_request_to_queue.COLLECTION_ID_KEY: collection_id,
             post_copy_request_to_queue.GRANULE_ID_KEY: granule_id,
             post_copy_request_to_queue.FILENAME_KEY: filename,
             post_copy_request_to_queue.RESTORE_DESTINATION_KEY: restore_destination,
@@ -458,6 +461,7 @@ class TestPostCopyRequestToQueue(TestCase):
         mock_LOGGER.critical.assert_called_once_with(message)
         mock_update_status_for_file.assert_called_once_with(
             job_id,
+            collection_id,
             granule_id,
             filename,
             shared_recovery.OrcaStatus.STAGED,
@@ -494,6 +498,7 @@ class TestPostCopyRequestToQueue(TestCase):
         """
         self.setUpQueues()
         job_id = uuid.uuid4().__str__()
+        collection_id = uuid.uuid4().__str__()
         granule_id = uuid.uuid4().__str__()
         filename = uuid.uuid4().__str__()
         restore_destination = uuid.uuid4().__str__()
@@ -507,6 +512,7 @@ class TestPostCopyRequestToQueue(TestCase):
 
         row = {
             post_copy_request_to_queue.JOB_ID_KEY: job_id,
+            post_copy_request_to_queue.COLLECTION_ID_KEY: collection_id,
             post_copy_request_to_queue.GRANULE_ID_KEY: granule_id,
             post_copy_request_to_queue.FILENAME_KEY: filename,
             post_copy_request_to_queue.RESTORE_DESTINATION_KEY: restore_destination,
@@ -537,6 +543,7 @@ class TestPostCopyRequestToQueue(TestCase):
             [
                 call(
                     job_id,
+                    collection_id,
                     granule_id,
                     filename,
                     shared_recovery.OrcaStatus.STAGED,
@@ -599,11 +606,13 @@ class TestPostCopyRequestToQueue(TestCase):
         db_connect_info_secret_arn = uuid.uuid4().__str__()
 
         job_id0 = uuid.uuid4().__str__()
+        collection_id0 = uuid.uuid4().__str__()
         granule_id0 = uuid.uuid4().__str__()
         filename0 = uuid.uuid4().__str__()
         restore_destination0 = uuid.uuid4().__str__()
         multipart_chunksize_mb0 = random.randint(0, 1000)  # nosec
         job_id1 = uuid.uuid4().__str__()
+        collection_id1 = uuid.uuid4().__str__()
         granule_id1 = uuid.uuid4().__str__()
         filename1 = uuid.uuid4().__str__()
         restore_destination1 = uuid.uuid4().__str__()
@@ -613,6 +622,7 @@ class TestPostCopyRequestToQueue(TestCase):
             return_value=[
                 (
                     job_id0,
+                    collection_id0,
                     granule_id0,
                     filename0,
                     restore_destination0,
@@ -620,6 +630,7 @@ class TestPostCopyRequestToQueue(TestCase):
                 ),
                 (
                     job_id1,
+                    collection_id1,
                     granule_id1,
                     filename1,
                     restore_destination1,
@@ -650,13 +661,14 @@ class TestPostCopyRequestToQueue(TestCase):
             mock_get_metadata_sql.return_value,
             {
                 "key_path": key_path,
-                "status_id": shared_recovery.OrcaStatus.PENDING.value
-            }
+                "status_id": shared_recovery.OrcaStatus.PENDING.value,
+            },
         )
         self.assertEqual(
             [
                 {
                     post_copy_request_to_queue.JOB_ID_KEY: job_id0,
+                    post_copy_request_to_queue.COLLECTION_ID_KEY: collection_id0,
                     post_copy_request_to_queue.GRANULE_ID_KEY: granule_id0,
                     post_copy_request_to_queue.FILENAME_KEY: filename0,
                     post_copy_request_to_queue.RESTORE_DESTINATION_KEY: restore_destination0,
@@ -669,6 +681,7 @@ class TestPostCopyRequestToQueue(TestCase):
                 },
                 {
                     post_copy_request_to_queue.JOB_ID_KEY: job_id1,
+                    post_copy_request_to_queue.COLLECTION_ID_KEY: collection_id1,
                     post_copy_request_to_queue.GRANULE_ID_KEY: granule_id1,
                     post_copy_request_to_queue.FILENAME_KEY: filename1,
                     post_copy_request_to_queue.RESTORE_DESTINATION_KEY: restore_destination1,
@@ -729,8 +742,8 @@ class TestPostCopyRequestToQueue(TestCase):
             mock_get_metadata_sql.return_value,
             {
                 "key_path": key_path,
-                "status_id": shared_recovery.OrcaStatus.PENDING.value
-            }
+                "status_id": shared_recovery.OrcaStatus.PENDING.value,
+            },
         )
 
     @patch("post_copy_request_to_queue.shared_db.get_user_connection")
@@ -779,22 +792,6 @@ class TestPostCopyRequestToQueue(TestCase):
             mock_get_metadata_sql.return_value,
             {
                 "key_path": key_path,
-                "status_id": shared_recovery.OrcaStatus.PENDING.value
-            }
-        )
-
-    def test_get_metadata_sql_happy_path(self):
-        result = post_copy_request_to_queue.get_metadata_sql()
-        self.assertEqual(
-            """
-            SELECT
-                job_id, granule_id, filename, restore_destination, multipart_chunksize_mb
-            FROM
-                recovery_file
-            WHERE
-                key_path = :key_path
-            AND
-                status_id = :status_id
-        """,
-            result.text,
+                "status_id": shared_recovery.OrcaStatus.PENDING.value,
+            },
         )

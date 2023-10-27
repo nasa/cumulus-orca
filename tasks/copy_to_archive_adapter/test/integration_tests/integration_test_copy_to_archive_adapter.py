@@ -23,63 +23,56 @@ class TestCopyToArchiveAdapter(unittest.TestCase):
         execution_id = uuid.uuid4().__str__()
 
         copy_to_archive_adapter_input_event = {
-          "payload": {
-            "granules": [
-              {
-                "granuleId": granule_id,
-                "createdAt": createdAt_time,
-                "files": [
-                  {
-                    "bucket": cumulus_bucket_name,
-                    "key": key_name
-                  }
+            "payload": {
+                "granules": [
+                    {
+                        "granuleId": granule_id,
+                        "createdAt": createdAt_time,
+                        "files": [{"bucket": cumulus_bucket_name, "key": key_name}],
+                    }
                 ]
-              }
-            ]
-          },
-          "task_config": {
-            "providerId": provider_id,
-            "executionId": execution_id,
-            "collectionShortname": collection_shortname,
-            "collectionVersion": collection_version,
-            "defaultBucketOverride": orca_recovery_bucket
-          }
+            },
+            "task_config": {
+                "providerId": provider_id,
+                "executionId": execution_id,
+                "collectionShortname": collection_shortname,
+                "collectionVersion": collection_version,
+                "defaultBucketOverride": orca_recovery_bucket,
+            },
         }
 
         expected_output = {
-          "payload": {
-            "granules": [
-              {
-                "granuleId": granule_id,
-                "createdAt": createdAt_time,
-                "files": [
-                  {
-                    "bucket": cumulus_bucket_name,
-                    "key": key_name
-                  }
-                ]
-              }
-            ],
-            "copied_to_orca": [
-              "s3://" + cumulus_bucket_name + "/" + key_name,
-            ]
-          },
-          "task_config": {
-            "providerId": provider_id,
-            "executionId": execution_id,
-            "collectionShortname": collection_shortname,
-            "collectionVersion": collection_version,
-            "defaultBucketOverride": orca_recovery_bucket
-          },
-          "exception": "None"
+            "payload": {
+                "granules": [
+                    {
+                        "granuleId": granule_id,
+                        "createdAt": createdAt_time,
+                        "files": [{"bucket": cumulus_bucket_name, "key": key_name}],
+                    }
+                ],
+                "copied_to_orca": [
+                    "s3://" + cumulus_bucket_name + "/" + key_name,
+                ],
+            },
+            "task_config": {
+                "providerId": provider_id,
+                "executionId": execution_id,
+                "collectionShortname": collection_shortname,
+                "collectionVersion": collection_version,
+                "defaultBucketOverride": orca_recovery_bucket,
+            },
+            "exception": "None",
         }
         context = Mock()
-        result = copy_to_archive_adapter.handler(copy_to_archive_adapter_input_event, context)
+        result = copy_to_archive_adapter.handler(
+            copy_to_archive_adapter_input_event, context
+        )
         self.assertEqual(expected_output, result)
         # verify that the object exists in recovery bucket
         try:
             head_object_output = boto3.client("s3").head_object(
-                Bucket=orca_recovery_bucket, Key=key_name)
+                Bucket=orca_recovery_bucket, Key=key_name
+            )
             self.assertEqual(
                 200,
                 head_object_output["ResponseMetadata"]["HTTPStatusCode"],
@@ -89,5 +82,5 @@ class TestCopyToArchiveAdapter(unittest.TestCase):
             raise ex
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

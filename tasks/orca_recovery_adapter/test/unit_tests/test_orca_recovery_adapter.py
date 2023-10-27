@@ -44,10 +44,7 @@ class TestOrcaRecoveryAdapter(TestCase):
             uuid.uuid4().__str__(): uuid.uuid4().__str__(),
             uuid.uuid4().__str__(): uuid.uuid4().__str__(),
         }
-        response = {
-            "status": "SUCCEEDED",
-            "output": json.dumps(payload)
-        }
+        response = {"status": "SUCCEEDED", "output": json.dumps(payload)}
         mock_get_state_machine_execution_results.return_value = response
 
         mock_execution_arn = Mock()
@@ -70,30 +67,32 @@ class TestOrcaRecoveryAdapter(TestCase):
             "config": mock_config,
         }
 
-        with patch.dict(os.environ,
-                        {
-                            orca_recovery_adapter.OS_ENVIRON_ORCA_RECOVERY_STEP_FUNCTION_ARN_KEY:
-                                orca_recovery_step_function_arn
-                        }):
+        with patch.dict(
+            os.environ,
+            {
+                orca_recovery_adapter.OS_ENVIRON_ORCA_RECOVERY_STEP_FUNCTION_ARN_KEY: orca_recovery_step_function_arn  # noqa: E501
+            },
+        ):
             result = orca_recovery_adapter.task(event, None)
 
         mock_boto3_config.assert_called_once_with(
-            read_timeout=18000, retries={'total_max_attempts': 1}
+            read_timeout=18000, retries={"total_max_attempts": 1}
         )
         mock_boto3_client.assert_called_once_with(
-            "stepfunctions",
-            config=mock_boto3_config.return_value
+            "stepfunctions", config=mock_boto3_config.return_value
         )
         mock_start_execution.assert_called_once_with(
             stateMachineArn=orca_recovery_step_function_arn,
-            input=json.dumps({
-                orca_recovery_adapter.ORCA_INPUT_KEY: mock_input,
-                orca_recovery_adapter.ORCA_CONFIG_KEY: mock_config
-            }, indent=4)
+            input=json.dumps(
+                {
+                    orca_recovery_adapter.ORCA_INPUT_KEY: mock_input,
+                    orca_recovery_adapter.ORCA_CONFIG_KEY: mock_config,
+                },
+                indent=4,
+            ),
         )
         mock_get_state_machine_execution_results.assert_called_once_with(
-            mock_stepfunctions_client,
-            mock_execution_arn
+            mock_stepfunctions_client, mock_execution_arn
         )
         self.assertEqual(payload, result)
 
@@ -115,10 +114,7 @@ class TestOrcaRecoveryAdapter(TestCase):
             uuid.uuid4().__str__(): uuid.uuid4().__str__(),
             uuid.uuid4().__str__(): uuid.uuid4().__str__(),
         }
-        response = {
-            "status": "NOPE",
-            "output": json.dumps(payload)
-        }
+        response = {"status": "NOPE", "output": json.dumps(payload)}
         mock_get_state_machine_execution_results.return_value = response
 
         mock_execution_arn = Mock()
@@ -141,35 +137,40 @@ class TestOrcaRecoveryAdapter(TestCase):
             "config": mock_config,
         }
 
-        with patch.dict(os.environ,
-                        {
-                            orca_recovery_adapter.OS_ENVIRON_ORCA_RECOVERY_STEP_FUNCTION_ARN_KEY:
-                                orca_recovery_step_function_arn
-                        }):
+        with patch.dict(
+            os.environ,
+            {
+                orca_recovery_adapter.OS_ENVIRON_ORCA_RECOVERY_STEP_FUNCTION_ARN_KEY: orca_recovery_step_function_arn  # noqa: E501
+            },
+        ):
             with self.assertRaises(Exception) as cm:
                 orca_recovery_adapter.task(event, None)
 
         mock_boto3_config.assert_called_once_with(
-            read_timeout=18000, retries={'total_max_attempts': 1}
+            read_timeout=18000, retries={"total_max_attempts": 1}
         )
         mock_boto3_client.assert_called_once_with(
-            "stepfunctions",
-            config=mock_boto3_config.return_value
+            "stepfunctions", config=mock_boto3_config.return_value
         )
         mock_start_execution.assert_called_once_with(
             stateMachineArn=orca_recovery_step_function_arn,
-            input=json.dumps({
-                orca_recovery_adapter.ORCA_INPUT_KEY: mock_input,
-                orca_recovery_adapter.ORCA_CONFIG_KEY: mock_config
-            }, indent=4)
+            input=json.dumps(
+                {
+                    orca_recovery_adapter.ORCA_INPUT_KEY: mock_input,
+                    orca_recovery_adapter.ORCA_CONFIG_KEY: mock_config,
+                },
+                indent=4,
+            ),
         )
         mock_get_state_machine_execution_results.assert_called_once_with(
             mock_stepfunctions_client,
             mock_execution_arn,
         )
-        self.assertEqual(f"Step function did not succeed: "
-                         f"{str(response).replace('{', '{{').replace('}', '}}')}",
-                         str(cm.exception))
+        self.assertEqual(
+            f"Step function did not succeed: "
+            f"{str(response).replace('{', '{{').replace('}', '}}')}",
+            str(cm.exception),
+        )
 
     @patch("time.sleep")
     def test_get_state_machine_execution_results_retries_until_not_running(
@@ -181,12 +182,14 @@ class TestOrcaRecoveryAdapter(TestCase):
             "status": "BLAH",
             uuid.uuid4().__str__(): uuid.uuid4().__str__(),
         }
-        mock_client.describe_execution = Mock(side_effect=[
-            {
-                "status": "RUNNING",
-            },
-            final_execution_state,
-        ])
+        mock_client.describe_execution = Mock(
+            side_effect=[
+                {
+                    "status": "RUNNING",
+                },
+                final_execution_state,
+            ]
+        )
         mock_execution_arn = Mock()
         mock_retry_interval_seconds = random.randint(0, 5)  # nosec
 
@@ -198,10 +201,12 @@ class TestOrcaRecoveryAdapter(TestCase):
         )
 
         mock_sleep.assert_called_once_with(mock_retry_interval_seconds)
-        mock_client.describe_execution.assert_has_calls([
-            call(executionArn=mock_execution_arn),
-            call(executionArn=mock_execution_arn),
-        ])
+        mock_client.describe_execution.assert_has_calls(
+            [
+                call(executionArn=mock_execution_arn),
+                call(executionArn=mock_execution_arn),
+            ]
+        )
         self.assertEqual(2, mock_client.describe_execution.call_count)
 
         self.assertEqual(final_execution_state, result)
@@ -245,20 +250,20 @@ class TestOrcaRecoveryAdapter(TestCase):
         granules = [
             {
                 "recoveryBucketOverride": uuid.uuid4().__str__(),
+                "collectionId": uuid.uuid4().__str__(),
                 "granuleId": uuid.uuid4().__str__(),
                 "files": [
-                    {
-                        "fileName": uuid.uuid4().__str__(),
-                        "key": uuid.uuid4().__str__()
-                    }
+                    {"fileName": uuid.uuid4().__str__(), "key": uuid.uuid4().__str__()}
                 ],
             }
         ]
 
         config = {
             "buckets": {
-                uuid.uuid4().__str__():
-                    {"name": uuid.uuid4().__str__(), "type": uuid.uuid4().__str__()},
+                uuid.uuid4().__str__(): {
+                    "name": uuid.uuid4().__str__(),
+                    "type": uuid.uuid4().__str__(),
+                },
             },
             "fileBucketMaps": [
                 {
@@ -286,6 +291,7 @@ class TestOrcaRecoveryAdapter(TestCase):
         mock_task.return_value = {
             "granules": [
                 {
+                    "collectionId": uuid.uuid4().__str__(),
                     "granuleId": uuid.uuid4().__str__(),
                     "recoverFiles": [
                         {
@@ -300,13 +306,15 @@ class TestOrcaRecoveryAdapter(TestCase):
                             "success": True,
                             "s3MultipartChunksizeMb": random.randint(0, 5000),  # nosec
                         }
-                    ]
+                    ],
                 },
             ],
             "asyncOperationId": uuid.uuid4().__str__(),
         }
 
-        result = orca_recovery_adapter.handler(handler_input_event, handler_input_context)
+        result = orca_recovery_adapter.handler(
+            handler_input_event, handler_input_context
+        )
         mock_task.assert_called_once_with(expected_task_input, handler_input_context)
 
         self.assertEqual(mock_task.return_value, result["payload"])
@@ -315,20 +323,20 @@ class TestOrcaRecoveryAdapter(TestCase):
     def test_handler_rejects_bad_output(self, mock_task: MagicMock):
         granules = [
             {
+                "collectionId": uuid.uuid4().__str__(),
                 "granuleId": uuid.uuid4().__str__(),
                 "files": [
-                    {
-                        "fileName": uuid.uuid4().__str__(),
-                        "key": uuid.uuid4().__str__()
-                    }
+                    {"fileName": uuid.uuid4().__str__(), "key": uuid.uuid4().__str__()}
                 ],
             }
         ]
 
         config = {
             "buckets": {
-                uuid.uuid4().__str__():
-                    {"name": uuid.uuid4().__str__(), "type": uuid.uuid4().__str__()},
+                uuid.uuid4().__str__(): {
+                    "name": uuid.uuid4().__str__(),
+                    "type": uuid.uuid4().__str__(),
+                },
             },
             "fileBucketMaps": [
                 {
@@ -369,5 +377,8 @@ class TestOrcaRecoveryAdapter(TestCase):
         with self.assertRaises(ValidationError) as cm:
             orca_recovery_adapter.handler(handler_input_event, handler_input_context)
         self.assertTrue(
-            str(cm.exception).startswith("output schema: 'granuleId' is a required property"))
+            str(cm.exception).startswith(
+                "output schema: 'granuleId' is a required property"
+            )
+        )
         mock_task.assert_called_once_with(expected_task_input, handler_input_context)

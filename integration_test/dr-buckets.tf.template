@@ -1,3 +1,4 @@
+# "worm" bucket was added as theoretical support for a potential future avenue of a theoretical feature. Consider everything having to do with it untested and mutable.
 resource "aws_s3_bucket" "orca-archive-worm" {
   bucket = "PREFIX-orca-archive-worm"
   force_destroy = true
@@ -165,6 +166,7 @@ resource "aws_s3_bucket_policy" "orca-reports-policy" {
 }
 
 resource "aws_s3_bucket" "orca-primary" {
+  # If bucket name is updated, also update orca_RECOVERY_BUCKET_NAME in integration_test/shared/setup_orca.sh
   bucket = "PREFIX-orca-primary"
   force_destroy = true
   tags = {
@@ -181,10 +183,14 @@ data "aws_iam_policy_document" "orca-primary-policy-json" {
     }
     actions = [
                 "s3:GetObject*",
+                "s3:RestoreObject",
                 "s3:GetBucket*",
                 "s3:ListBucket",
                 "s3:PutObjectAcl",
                 "s3:PutBucketNotification",
+                "s3:GetInventoryConfiguration",
+                "s3:PutInventoryConfiguration",
+                "s3:ListBucketVersions",
                 "s3:DeleteObject"
     ]
     resources = [

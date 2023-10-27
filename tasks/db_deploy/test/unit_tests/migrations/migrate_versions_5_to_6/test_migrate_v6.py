@@ -24,9 +24,13 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         # todo: Use randomized values on a per-test basis.
         self.config = PostgresConnectionInfo(  # nosec
             admin_database_name="admin_db",
-            admin_username="admin", admin_password="admin123",
-            user_username="user56789012", user_password="pass56789012",
-            user_database_name="user_db", host="aws.postgresrds.host", port="5432"
+            admin_username="admin",
+            admin_password="admin123",
+            user_username="user56789012",
+            user_password="pass56789012",
+            user_database_name="user_db",
+            host="aws.postgresrds.host",
+            port="5432",
         )
 
     def tearDown(self):
@@ -37,8 +41,12 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
         self.orca_buckets = None
 
     @patch("migrations.migrate_versions_5_to_6.migrate.sql.schema_versions_data_sql")
-    @patch("migrations.migrate_versions_5_to_6.migrate.sql.add_phantom_storage_class_column_sql")
-    @patch("migrations.migrate_versions_5_to_6.migrate.sql.add_mismatch_storage_class_columns_sql")
+    @patch(
+        "migrations.migrate_versions_5_to_6.migrate.sql.add_phantom_storage_class_column_sql"
+    )
+    @patch(
+        "migrations.migrate_versions_5_to_6.migrate.sql.add_mismatch_storage_class_columns_sql"
+    )
     @patch(
         "migrations.migrate_versions_5_to_6.migrate.sql.add_files_storage_class_id_column_sql"
     )

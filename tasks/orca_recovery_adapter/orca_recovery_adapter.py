@@ -45,14 +45,13 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
         A dict representing input and copied files. See schemas/output.json for more information.
     """
     # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/lambda.html
-    config = Config(read_timeout=18000, retries={'total_max_attempts': 1})
+    config = Config(read_timeout=18000, retries={"total_max_attempts": 1})
     client = boto3.client("stepfunctions", config=config)
     execution_info = client.start_execution(
         stateMachineArn=os.environ[OS_ENVIRON_ORCA_RECOVERY_STEP_FUNCTION_ARN_KEY],
-        input=json.dumps({
-            ORCA_INPUT_KEY: event["input"],
-            ORCA_CONFIG_KEY: event["config"]
-        }, indent=4)
+        input=json.dumps(
+            {ORCA_INPUT_KEY: event["input"], ORCA_CONFIG_KEY: event["config"]}, indent=4
+        ),
     )
     step_function_results = get_state_machine_execution_results(
         client,
@@ -61,8 +60,10 @@ def task(event: Dict[str, Union[List[str], Dict]], context: object) -> Dict[str,
 
     # noinspection GrazieInspection
     if step_function_results["status"] != "SUCCEEDED":
-        raise Exception(f"Step function did not succeed: "
-                        f"{str(step_function_results).replace('{', '{{').replace('}', '}}')}")
+        raise Exception(
+            f"Step function did not succeed: "
+            f"{str(step_function_results).replace('{', '{{').replace('}', '}}')}"
+        )
         # CMA cannot handle strings with '{' as it treats any instance as a dictionary key.
         # The above line replaces '{' with '{{' to prevent errors that hide the actual error.
 
@@ -95,14 +96,12 @@ def get_state_machine_execution_results(
     while True:
         # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/stepfunctions.html#SFN.Client.describe_execution
         LOGGER.debug("Getting execution description...")
-        execution_state = client.describe_execution(
-            executionArn=execution_arn
-        )
+        execution_state = client.describe_execution(executionArn=execution_arn)
         if execution_state["status"] != "RUNNING":
             return execution_state
 
         if (
-                datetime.datetime.utcnow() - start
+            datetime.datetime.utcnow() - start
         ).total_seconds() + retry_interval_seconds > maximum_duration_seconds:
             return execution_state
 

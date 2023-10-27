@@ -67,6 +67,7 @@ def send_record_to_database(record: Dict[str, Any], engine: Engine) -> None:
         _NEW_JOB_VALIDATE(values)
         create_status_for_job_and_files(
             values[shared_recovery.JOB_ID_KEY],
+            values[shared_recovery.COLLECTION_ID_KEY],
             values[shared_recovery.GRANULE_ID_KEY],
             values[shared_recovery.REQUEST_TIME_KEY],
             values[shared_recovery.ARCHIVE_DESTINATION_KEY],
@@ -77,6 +78,7 @@ def send_record_to_database(record: Dict[str, Any], engine: Engine) -> None:
         _UPDATE_FILE_VALIDATE(values)
         update_status_for_file(
             values[shared_recovery.JOB_ID_KEY],
+            values[shared_recovery.COLLECTION_ID_KEY],
             values[shared_recovery.GRANULE_ID_KEY],
             values[shared_recovery.FILENAME_KEY],
             values[shared_recovery.LAST_UPDATE_KEY],
@@ -92,10 +94,11 @@ def send_record_to_database(record: Dict[str, Any], engine: Engine) -> None:
 
 
 @shared_db.retry_operational_error(
-     # Retry all files due to transactional behavior of engine.begin
-     )
+    # Retry all files due to transactional behavior of engine.begin
+)
 def create_status_for_job_and_files(
     job_id: str,
+    collection_id: str,
     granule_id: str,
     request_time: str,
     archive_destination: str,
@@ -107,6 +110,7 @@ def create_status_for_job_and_files(
 
     Args:
         job_id: The unique identifier used for tracking requests.
+        collection_id: The id of the collection containing the granule.
         granule_id: The id of the granule being restored.
         archive_destination: The S3 bucket destination of where the data is archived.
         request_time: The time the restore was requested in utc and iso-format.
@@ -136,6 +140,7 @@ def create_status_for_job_and_files(
         file_parameters.append(
             {
                 "job_id": job_id,
+                "collection_id": collection_id,
                 "granule_id": granule_id,
                 "filename": file[shared_recovery.FILENAME_KEY],
                 "key_path": file[shared_recovery.KEY_PATH_KEY],
@@ -150,11 +155,16 @@ def create_status_for_job_and_files(
         )
 
     if len(file_parameters) == 0:
-        LOGGER.info(f"No files given for job '{job_id}' granule '{granule_id}'. "
-                    "Creating error status entry.")
+        LOGGER.info(
+            f"No files given for job '{job_id}' collection '{collection_id}' "
+            f"granule '{granule_id}'. "
+            "Creating error status entry."
+        )
         # No files given. Assume that this is in error.
         job_status = OrcaStatus.FAILED
-        job_completion_time = datetime.datetime.now(datetime.timezone.utc).isoformat().__str__()
+        job_completion_time = (
+            datetime.datetime.now(datetime.timezone.utc).isoformat().__str__()
+        )
     elif found_pending:
         # Most jobs will be this. Some files are still pending.
         job_status = OrcaStatus.PENDING
@@ -172,6 +182,7 @@ def create_status_for_job_and_files(
                 [
                     {
                         "job_id": job_id,
+                        "collection_id": collection_id,
                         "granule_id": granule_id,
                         "status_id": job_status.value,
                         "request_time": request_time,
@@ -184,17 +195,16 @@ def create_status_for_job_and_files(
                 connection.execute(create_file_sql(), file_parameters)
     except Exception as sql_ex:
         # Can't use f"" because of '{}' bug in CumulusLogger.
-        LOGGER.error(
-            f"Error while creating statuses for job '{job_id}': {sql_ex}"
-        )
+        LOGGER.error(f"Error while creating statuses for job '{job_id}': {sql_ex}")
         raise
 
 
 @shared_db.retry_operational_error(
-     # Retry all files due to transactional behavior of engine.begin
-     )
+    # Retry all files due to transactional behavior of engine.begin
+)
 def update_status_for_file(
     job_id: str,
+    collection_id: str,
     granule_id: str,
     filename: str,
     last_update: str,
@@ -209,6 +219,7 @@ def update_status_for_file(
 
     Args:
         job_id: The unique identifier used for tracking requests.
+        collection_id: The id of the collection containing the granule.
         granule_id: The id of the granule being restored.
         filename: The name of the file being copied.
         last_update: The time this status update occurred, in UTC iso-format.
@@ -224,23 +235,27 @@ def update_status_for_file(
         "completion_time": completion_time,
         "error_message": error_message,
         "job_id": job_id,
+        "collection_id": collection_id,
         "granule_id": granule_id,
         "filename": filename,
     }
-    job_parameters = {"job_id": job_id, "granule_id": granule_id}
+    job_parameters = {
+        "job_id": job_id,
+        "collection_id": collection_id,
+        "granule_id": granule_id,
+    }
     try:
         LOGGER.debug(
-            f"Updating status for recovery record job_id {job_id} "
-            f"granule_id {granule_id} and file {filename}."
+            f"Updating status for recovery record job_id '{job_id}' "
+            f"collection_id '{collection_id}' "
+            f"granule_id '{granule_id}' and file '{filename}'."
         )
         with engine.begin() as connection:
             connection.execute(update_file_sql(), file_parameters)
             connection.execute(update_job_sql(), job_parameters)
     except Exception as sql_ex:
         # Can't use f"" because of '{}' bug in CumulusLogger.
-        LOGGER.error(
-            f"Error while creating statuses for job '{job_id}': {sql_ex}"
-        )
+        LOGGER.error(f"Error while creating statuses for job '{job_id}': {sql_ex}")
         raise
 
 
@@ -248,10 +263,10 @@ def create_job_sql() -> text:  # pragma: no cover
     return text(
         """
         INSERT INTO recovery_job
-            ("job_id", "granule_id", "status_id", "request_time",
+            ("job_id", "collection_id", "granule_id", "status_id", "request_time",
             "completion_time", "archive_destination")
         VALUES
-            (:job_id, :granule_id, :status_id, :request_time,
+            (:job_id, :collection_id, :granule_id, :status_id, :request_time,
             :completion_time, :archive_destination)"""
     )
 
@@ -260,12 +275,12 @@ def create_file_sql() -> text:  # pragma: no cover
     return text(
         """
         INSERT INTO recovery_file
-            ("job_id", "granule_id", "filename", "key_path",
+            ("job_id", "collection_id", "granule_id", "filename", "key_path",
             "restore_destination", "multipart_chunksize_mb",
             "status_id", "error_message", "request_time",
             "last_update", "completion_time")
         VALUES
-            (:job_id, :granule_id, :filename, :key_path,
+            (:job_id, :collection_id, :granule_id, :filename, :key_path,
             :restore_destination, :multipart_chunksize_mb, :status_id,
             :error_message, :request_time, :last_update, :completion_time)"""
     )
@@ -277,7 +292,10 @@ def update_file_sql() -> text:  # pragma: no cover
         UPDATE recovery_file
         SET status_id = :status_id, last_update = :last_update, completion_time = :completion_time,
             error_message = :error_message
-        WHERE job_id = :job_id AND granule_id = :granule_id AND filename = :filename"""
+        WHERE job_id = :job_id
+            AND collection_id = :collection_id
+            AND granule_id = :granule_id
+            AND filename = :filename"""
     )
 
 
@@ -287,6 +305,7 @@ def update_job_sql() -> text:  # pragma: no cover
         with granule_status as (
             SELECT
                 job_id,
+                collection_id,
                 granule_id,
                 MIN(status_id) AS status_id,
                 CASE
@@ -298,8 +317,10 @@ def update_job_sql() -> text:  # pragma: no cover
             WHERE
                 job_id = :job_id
             AND
+                collection_id = :collection_id
+            AND
                 granule_id = :granule_id
-            GROUP BY job_id, granule_id
+            GROUP BY job_id, collection_id, granule_id
         )
         UPDATE
             recovery_job
@@ -310,6 +331,8 @@ def update_job_sql() -> text:  # pragma: no cover
             granule_status
         WHERE
             recovery_job.job_id = granule_status.job_id
+        AND
+            recovery_job.collection_id = granule_status.collection_id
         AND
             recovery_job.granule_id = granule_status.granule_id"""
     )

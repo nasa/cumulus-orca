@@ -29,14 +29,17 @@ Fully defined json schemas written in the schema of https://json-schema.org/ can
   },
   "granules": [
     {
+      "collectionId": "collectionName___001",
       "granuleId": "6c8d0c8b-4f9a-4d87-ab7c-480b185a0250",
       "status": "failed"
     },
     {
+      "collectionId": "collectionName___001",
       "granuleId": "b5681dc1-48ba-4dc3-877d-1b5ad97e8276",
       "status": "pending"
     },
     {
+      "collectionId": "collectionName___001",
       "granuleId": "7a75767d-abe3-4c1d-b55f-9009de1838f8",
       "status": "success"
     }

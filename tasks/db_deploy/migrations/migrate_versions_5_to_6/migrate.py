@@ -12,7 +12,9 @@ from sqlalchemy import create_engine
 import migrations.migrate_versions_5_to_6.migrate_sql as sql
 
 
-def migrate_versions_5_to_6(config: PostgresConnectionInfo, is_latest_version: bool) -> None:
+def migrate_versions_5_to_6(
+    config: PostgresConnectionInfo, is_latest_version: bool
+) -> None:
     """
     Performs the migration of the ORCA schema from version 5 to version 6 of
     the ORCA schema. This includes adding the
@@ -29,8 +31,9 @@ def migrate_versions_5_to_6(config: PostgresConnectionInfo, is_latest_version: b
         None
     """
     # Get the admin engine to the app database
-    user_admin_engine = \
-        create_engine(create_admin_uri(config, LOGGER, config.user_database_name), future=True)
+    user_admin_engine = create_engine(
+        create_admin_uri(config, LOGGER, config.user_database_name), future=True
+    )
 
     with user_admin_engine.connect() as connection:
 

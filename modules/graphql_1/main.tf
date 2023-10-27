@@ -46,7 +46,10 @@ data "aws_iam_policy_document" "gql_task_execution_policy_document" {
     actions = [
       "secretsmanager:GetSecretValue"
     ]
-    resources = [var.db_connect_info_secret_arn]
+    resources = [
+      var.db_connect_info_secret_arn,
+      var.s3_access_credentials_secret_arn
+    ]
   }
 }
 
@@ -89,6 +92,7 @@ resource "aws_lb" "gql_app_lb" {
     prefix  = "${var.prefix}-lb-gql-a-logs"
     enabled = true
   }
+  drop_invalid_header_fields = true
   security_groups    = [aws_security_group.gql_lb_security_group.id]
   subnets            = var.lambda_subnet_ids
   idle_timeout       = 30 # API Gateway locks us to 30 seconds.
@@ -235,6 +239,16 @@ resource "aws_ecs_task_definition" "gql_task" {
         "awslogs-group": "${var.prefix}_orca_graph_ql",
         "awslogs-stream-prefix": "ecs"
       }
+    },
+    "HealthCheck": {
+      "Command": [
+        "CMD-SHELL",
+	      "curl --fail http://localhost:${local.graphql_port}/healthz || exit 1"
+      ],
+      "StartPeriod": 30,
+      "Interval": 60,
+      "Timeout": 5,
+      "Retries": 3
     }
   }
 ]

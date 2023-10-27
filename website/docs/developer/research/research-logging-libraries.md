@@ -111,7 +111,7 @@ Resulting Cloudwatch message:
     "cold_start": true,
     "function_name": "lambda_name",
     "function_memory_size": "128",
-    "function_arn": "arn:aws:lambda:us-west-2:236859827343:function:lambda_name",
+    "function_arn": "arn:aws:lambda:us-west-2:000000000000:function:lambda_name",
     "function_request_id": "bdb3bb29-5023-498a-b7a5-0582b03e215e",
     "xray_trace_id": "1-631111ec-64c294e313312cb53eb68777"
 }
@@ -143,7 +143,7 @@ Resulting Cloudwatch message:
       "cold_start": true,
       "function_name": "lambda_name",
       "function_memory_size": "128",
-      "function_arn": "arn:aws:lambda:us-west-2:236859827343:function:lambda_name",
+      "function_arn": "arn:aws:lambda:us-west-2:000000000000:function:lambda_name",
       "function_request_id": "bdb3bb29-5023-498a-b7a5-0582b03e215e",
       "exception": "Traceback (most recent call last):\n  File \"/var/task/powertools_test.py\", line 20, in some_func\n    raise KeyError(\"some key error\")\nKeyError: 'some key error'",
       "exception_name": "KeyError",

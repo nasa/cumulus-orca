@@ -103,7 +103,6 @@ module "orca_workflows" {
   ## REQUIRED
   prefix          = var.prefix
   system_bucket   = var.system_bucket
-  workflow_config = var.workflow_config
 
   ## OPTIONAL
   tags = var.tags
@@ -118,6 +117,7 @@ module "orca_workflows" {
   orca_lambda_get_current_archive_list_arn      = module.orca_lambdas.get_current_archive_list_arn
   orca_lambda_perform_orca_reconcile_arn        = module.orca_lambdas.perform_orca_reconcile_arn
   orca_lambda_request_from_archive_arn          = module.orca_lambdas.request_from_archive_arn
+  orca_step_function_role_arn                   = module.orca_iam.step_function_role_arn
 }
 
 
@@ -295,4 +295,5 @@ module "orca_api_gateway" {
   request_status_for_job_invoke_arn             = module.orca_lambdas.request_status_for_job_invoke_arn
   ## OPTIONAL
   vpc_endpoint_id = var.vpc_endpoint_id
+  tags = var.tags
 }

@@ -50,6 +50,7 @@ CONFIG_JOB_ID_KEY = "asyncOperationId"
 CONFIG_COLLECTION_KEY = "collection"
 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
 
+GRANULE_COLLECTION_ID_KEY = "collectionId"
 GRANULE_GRANULE_ID_KEY = "granuleId"
 GRANULE_KEYS_KEY = "keys"
 GRANULE_RECOVER_FILES_KEY = "recoverFiles"
@@ -82,8 +83,8 @@ try:
     with open("schemas/output.json", "r") as raw_schema:
         output_schema = json.loads(raw_schema.read())
         _VALIDATE_OUTPUT = fastjsonschema.compile(output_schema)
-except Exception as ex:
-    LOGGER.error(f"Could not build schema validator: {ex}")
+except Exception as schema_ex:
+    LOGGER.error(f"Could not build schema validator: {schema_ex}")
     raise
 
 
@@ -135,7 +136,9 @@ def task(
 
     # Get QUEUE URLS
     status_update_queue_url = str(os.environ[OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY])
-    archive_recovery_queue_url = str(os.environ[OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY])
+    archive_recovery_queue_url = str(
+        os.environ[OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY]
+    )
 
     # Use the default archive bucket if none is specified for the collection or otherwise given.
     event[EVENT_CONFIG_KEY][
@@ -172,7 +175,7 @@ def task(
         recovery_type,
         exp_days,
         status_update_queue_url,
-        archive_recovery_queue_url
+        archive_recovery_queue_url,
     )
 
 
@@ -207,12 +210,8 @@ def get_archive_recovery_type(config: Dict[str, Any]) -> str:
             raise KeyError("Recovery type not set.")
 
     if recovery_type not in VALID_RESTORE_TYPES:
-        LOGGER.error(
-            f"Invalid restore type value of '{recovery_type}'."
-        )
-        raise ValueError(
-            f"Invalid restore type value of '{recovery_type}'."
-        )
+        LOGGER.error(f"Invalid restore type value of '{recovery_type}'.")
+        raise ValueError(f"Invalid restore type value of '{recovery_type}'.")
     return recovery_type
 
 
@@ -271,9 +270,7 @@ def inner_task(
     """
     # Get the archive bucket from the event
     try:
-        archive_bucket = event[EVENT_CONFIG_KEY][
-            CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY
-        ]
+        archive_bucket = event[EVENT_CONFIG_KEY][CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY]
     except KeyError:
         raise RestoreRequestError(
             f"request: {event} does not contain a config value "
@@ -303,7 +300,9 @@ def inner_task(
         files = []
         time_stamp = datetime.now(timezone.utc).isoformat()
         if len(granule[GRANULE_KEYS_KEY]) == 0:
-            LOGGER.warning(f"No files given for granule '{granule[GRANULE_GRANULE_ID_KEY]}'")
+            LOGGER.warning(
+                f"No files given for granule '{granule[GRANULE_GRANULE_ID_KEY]}'"
+            )
         # Loop through the granule files and find the ones to restore
         for keys in granule[GRANULE_KEYS_KEY]:
             # Get the file key (path/filename)
@@ -324,10 +323,15 @@ def inner_task(
             }
             file_info = get_s3_object_information(s3, archive_bucket, file_key)
             if file_info is not None:
-                if file_info["StorageClass"] == "DEEP_ARCHIVE" and recovery_type == "Expedited":
-                    message = f"File '{file_key}' from bucket '{archive_bucket}' " \
-                              f"is in storage class '{file_info['StorageClass']}' " \
-                              f"which is incompatible with recovery type '{recovery_type}'"
+                if (
+                    file_info["StorageClass"] == "DEEP_ARCHIVE"
+                    and recovery_type == "Expedited"
+                ):
+                    message = (
+                        f"File '{file_key}' from bucket '{archive_bucket}' "
+                        f"is in storage class '{file_info['StorageClass']}' "
+                        f"which is incompatible with recovery type '{recovery_type}'"
+                    )
                     LOGGER.error(message)
                     a_file[FILE_PROCESSED_KEY] = True
                     a_file[FILE_STATUS_ID_KEY] = shared_recovery.OrcaStatus.FAILED.value
@@ -353,12 +357,18 @@ def inner_task(
         # post to DB-queue. Retry using exponential delay if it fails
         LOGGER.debug("Sending initial job status information to DB QUEUE.")
         job_id = event[EVENT_CONFIG_KEY][CONFIG_JOB_ID_KEY]
+        collection_id = granule[GRANULE_COLLECTION_ID_KEY]
         granule_id = granule[GRANULE_GRANULE_ID_KEY]
 
         for retry in range(max_retries + 1):
             try:
                 shared_recovery.create_status_for_job(
-                    job_id, granule_id, archive_bucket, files, status_update_queue_url
+                    job_id,
+                    collection_id,
+                    granule_id,
+                    archive_bucket,
+                    files,
+                    status_update_queue_url,
                 )
                 break
             except Exception as ex:
@@ -385,7 +395,7 @@ def inner_task(
             recovery_type,
             job_id,
             status_update_queue_url,
-            archive_recovery_queue_url
+            archive_recovery_queue_url,
         )
 
     # Cumulus expects response (payload.granules) to be a list of granule objects.
@@ -407,7 +417,7 @@ def process_granule(
     recovery_type: str,
     job_id: str,
     status_update_queue_url: str,
-    archive_recovery_queue_url: str
+    archive_recovery_queue_url: str,
 ) -> None:  # pylint: disable-msg=unused-argument
     """Call restore_object for the files in the granule_list. Modifies granule for output.
     Args:
@@ -437,6 +447,7 @@ def process_granule(
     Raises: RestoreRequestError if any file restore could not be initiated.
     """
     attempt = 1
+    collection_id = granule[GRANULE_COLLECTION_ID_KEY]
     granule_id = granule[GRANULE_GRANULE_ID_KEY]
 
     # Try to restore objects in S3
@@ -444,8 +455,10 @@ def process_granule(
         for a_file in granule[GRANULE_RECOVER_FILES_KEY]:
             # Only restore files we have not restored or have not successfully been restored
             if not a_file[FILE_PROCESSED_KEY]:
-                LOGGER.debug(f"Attempting to restore object at key "
-                             f"'{a_file[FILE_KEY_PATH_KEY]}'...")
+                LOGGER.debug(
+                    f"Attempting to restore object at key "
+                    f"'{a_file[FILE_KEY_PATH_KEY]}'..."
+                )
                 try:
                     restore_object(
                         s3,
@@ -455,7 +468,7 @@ def process_granule(
                         attempt,
                         job_id,
                         recovery_type,
-                        archive_recovery_queue_url
+                        archive_recovery_queue_url,
                     )
 
                     # Successful restore
@@ -507,6 +520,7 @@ def process_granule(
                 try:
                     shared_recovery.update_status_for_file(
                         job_id,
+                        collection_id,
                         granule_id,
                         a_file[FILE_FILENAME_KEY],
                         shared_recovery.OrcaStatus.FAILED,
@@ -535,16 +549,18 @@ def process_granule(
 
     # If this is reached, that means there is no entry in the db for file's status.
     if any_error:
-        LOGGER.error(f"One or more files failed to be requested "
-                     f"from '{archive_bucket_name}'. GRANULE: {json.dumps(granule)}")
+        LOGGER.error(
+            f"One or more files failed to be requested "
+            f"from '{archive_bucket_name}'. GRANULE: {json.dumps(granule)}"
+        )
         raise RestoreRequestError(
             f"One or more files failed to be requested from '{archive_bucket_name}'."
         )
 
 
 def get_s3_object_information(
-        s3_cli: BaseClient, archive_bucket_name: str, file_key: str
-                            ) -> Optional[Dict[str, Any]]:
+    s3_cli: BaseClient, archive_bucket_name: str, file_key: str
+) -> Optional[Dict[str, Any]]:
     """Perform a head request to get information about a file in S3.
     Args:
         s3_cli: An instance of boto3 s3 client
@@ -610,23 +626,22 @@ def restore_object(
     if restore_result["ResponseMetadata"]["HTTPStatusCode"] == 200:
         LOGGER.info(
             f"File '{key}' in bucket '{db_archive_bucket_key}' has already been recovered. "
-            "Sending to archive recovery SQS.")
+            "Sending to archive recovery SQS."
+        )
         # Create message format for sending to archive recovery SQS
         message = {
-                    "Records": [
-                            {
-                                "s3": {
-                                    "bucket": {
-                                        "name": db_archive_bucket_key
-                                        },
-                                    "object": {
-                                        "key": key
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-        shared_recovery.post_entry_to_standard_queue(message, archive_recovery_queue_url)
+            "Records": [
+                {
+                    "s3": {
+                        "bucket": {"name": db_archive_bucket_key},
+                        "object": {"key": key},
+                    }
+                }
+            ]
+        }
+        shared_recovery.post_entry_to_standard_queue(
+            message, archive_recovery_queue_url
+        )
 
     LOGGER.info(
         f"Restore {key} from {db_archive_bucket_key} "
@@ -634,8 +649,9 @@ def restore_object(
     )
 
 
-def set_optional_event_property(event: Dict[str, Any], target_path_cursor: Dict,
-                                target_path_segments: List) -> None:
+def set_optional_event_property(
+    event: Dict[str, Any], target_path_cursor: Dict, target_path_segments: List
+) -> None:
     """Sets the optional variable value from event if present, otherwise sets to None.
     Args:
         event: See schemas/input.json.
@@ -651,7 +667,7 @@ def set_optional_event_property(event: Dict[str, Any], target_path_cursor: Dict,
             set_optional_event_property(
                 event,
                 target_path_cursor[optionalValueTargetPath],
-                temp_target_path_segments
+                temp_target_path_segments,
             )
         elif isinstance(target_path_cursor[optionalValueTargetPath], str):
             source_path = target_path_cursor[optionalValueTargetPath]
@@ -660,8 +676,9 @@ def set_optional_event_property(event: Dict[str, Any], target_path_cursor: Dict,
             # ensure that the path up to the target_path exists
             event_cursor = event
             for target_path_segment in temp_target_path_segments[:-1]:
-                event_cursor[target_path_segment] =\
-                    event_cursor.get(target_path_segment, {})
+                event_cursor[target_path_segment] = event_cursor.get(
+                    target_path_segment, {}
+                )
                 event_cursor = event_cursor[target_path_segment]
             event_cursor[temp_target_path_segments[-1]] = None
 
@@ -670,18 +687,24 @@ def set_optional_event_property(event: Dict[str, Any], target_path_cursor: Dict,
             for source_path_segment in source_path_segments:
                 source_path_cursor = source_path_cursor.get(source_path_segment, None)
                 if source_path_cursor is None:
-                    LOGGER.info(f"When retrieving '{'.'.join(temp_target_path_segments)}', "
-                                f"no value found in '{source_path}' at key {source_path_segment}. "
-                                f"Defaulting to null.")
+                    LOGGER.info(
+                        f"When retrieving '{'.'.join(temp_target_path_segments)}', "
+                        f"no value found in '{source_path}' at key {source_path_segment}. "
+                        f"Defaulting to null."
+                    )
                     break
             event_cursor[temp_target_path_segments[-1]] = source_path_cursor
         else:
-            raise Exception(f"Illegal type {type(target_path_cursor[optionalValueTargetPath])} "
-                            f"found at {'.'.join(temp_target_path_segments)}")
+            raise Exception(
+                f"Illegal type {type(target_path_cursor[optionalValueTargetPath])} "
+                f"found at {'.'.join(temp_target_path_segments)}"
+            )
 
 
 @LOGGER.inject_lambda_context
-def handler(event: Dict[str, Any], context: LambdaContext):  # pylint: disable-msg=unused-argument
+def handler(
+    event: Dict[str, Any], _: LambdaContext
+):  # pylint: disable-msg=unused-argument
     """Lambda handler. Initiates a restore_object request from archive for each file of a granule.
     Note that this function is set up to accept a list of granules, (because Cumulus sends a list),
     but at this time, only 1 granule will be accepted.
@@ -706,7 +729,7 @@ def handler(event: Dict[str, Any], context: LambdaContext):  # pylint: disable-m
         Args:
             event: Event passed into the step from the aws workflow.
                 See schemas/input.json and schemas/config.json for more information.
-            context: This object provides information about the lambda invocation, function,
+            _: This object provides information about the lambda invocation, function,
                 and execution env.
         Returns:
             A dict matching schemas/output.json

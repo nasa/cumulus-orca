@@ -1,8 +1,10 @@
 import logging
+import sys
 import unittest
 
 import testtools
 
+import delayed_test_packages
 import test_packages
 
 
@@ -25,14 +27,14 @@ class TracingStreamResult(testtools.StreamResult):
         self.test_results[test_id] = kwargs["test_status"]
 
 
-def run_tests() -> None:
+def run_tests(test_packages_var) -> None:
     """
     Runs all tests in linked modules concurrently.
     Raises:
         Exception: Thrown once processing of all tests concludes if any test failed.
     """
     logging.getLogger().setLevel(logging.INFO)
-    suite = unittest.TestLoader().loadTestsFromModule(test_packages)
+    suite = unittest.TestLoader().loadTestsFromModule(test_packages_var)
     concurrent_suite = testtools.ConcurrentStreamTestSuite(
         lambda: ((case, None) for case in suite)
     )
@@ -50,10 +52,20 @@ def run_tests() -> None:
             failed_tests.append(test_name)
 
     if any(failed_tests):
-        raise Exception(f"Tests failed: {failed_tests}")
+        raise Exception(f"{len(failed_tests)} tests failed: {failed_tests}")
 
     logging.info("Tests passed.")
 
 
+def main():
+    lib = sys.argv[1]
+    if lib == "primary":
+        run_tests(test_packages)
+    elif lib == "delayed":
+        run_tests(delayed_test_packages)
+    else:
+        raise Exception(f"Illegal argument '{lib}'")
+
+
 if __name__ == "__main__":
-    run_tests()
+    main()

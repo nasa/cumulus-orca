@@ -1,10 +1,10 @@
 ## Testing libraries
-coverage==5.3
-pytest==6.2.5
+coverage==7.2.7
+pytest==7.4.0
 
 ## Libraries needed for testing the application
 boto3==1.18.40
-moto[sqs]==2.2.7
+moto[sqs]==4.2.2
 psycopg2-binary==2.8.6
 
 ## Application libraries
@@ -14,7 +14,7 @@ SQLAlchemy~=2.0.5
 
 ## Additional validation libraries
 ## ---------------------------------------------------------------------------
-bandit==1.7.0
-flake8==4.0.1
-black==21.12b0
-isort==5.10.1
+bandit==1.7.5
+flake8==6.1.0
+black==22.3.0
+isort==5.12.0

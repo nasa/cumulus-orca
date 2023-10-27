@@ -1,5 +1,4 @@
 import json
-import logging
 import time
 import uuid
 from unittest import TestCase
@@ -7,10 +6,15 @@ from unittest import TestCase
 import boto3
 
 import helpers
+from custom_logger import CustomLoggerAdapter
+
+# Set the logger
+logger = CustomLoggerAdapter.set_logger(__name__)
 
 
 class TestNoGranules(TestCase):
     def test_no_granules_passes(self):
+        self.maxDiff = None
         """
         If no granules are provided, should not store anything in DB.
         """
@@ -18,6 +22,7 @@ class TestNoGranules(TestCase):
             # Set up Orca API resources
             # ---
             my_session = helpers.create_session()
+            boto3_session = boto3.Session()
 
             provider_id = uuid.uuid4().__str__()
             provider_name = uuid.uuid4().__str__()
@@ -47,12 +52,12 @@ class TestNoGranules(TestCase):
                 "granules": [], "copied_to_orca": []
             }
 
-            execution_info = boto3.client("stepfunctions").start_execution(
+            execution_info = boto3_session.client("stepfunctions").start_execution(
                 stateMachineArn=helpers.orca_copy_to_archive_step_function_arn,
                 input=json.dumps(copy_to_archive_input, indent=4),
             )
 
-            step_function_results = helpers.get_state_machine_execution_results(
+            step_function_results = helpers.get_state_machine_execution_results(boto3_session, 
                 execution_info["executionArn"],
                 maximum_duration_seconds=30,
             )
@@ -69,13 +74,14 @@ class TestNoGranules(TestCase):
             )
 
             # Let the catalog update
-            time.sleep(1)
+            time.sleep(30)
             catalog_output = helpers.post_to_api(
                 my_session,
                 helpers.api_url + "/catalog/reconcile/",
                 data=json.dumps(
                     {
                         "pageIndex": 0,
+                        "collectionId": [collection_name + "___" + collection_version],
                         "providerId": [provider_id],
                         "endTimestamp": int((time.time() + 5) * 1000),
                     }
@@ -83,7 +89,8 @@ class TestNoGranules(TestCase):
                 headers={"Host": helpers.aws_api_name},
             )
             self.assertEqual(
-                200, catalog_output.status_code, "Error occurred while contacting API."
+                200, catalog_output.status_code, f"Error occurred while contacting API: "
+                                                 f"{catalog_output.content}"
             )
             self.assertEqual(
                 {"granules": [], "anotherPage": False},
@@ -91,5 +98,5 @@ class TestNoGranules(TestCase):
                 "Expected empty granule list not returned.",
             )
         except Exception as ex:
-            logging.error(ex)
+            logger.error(ex)
             raise

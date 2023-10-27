@@ -130,6 +130,18 @@ The policy section is the JSON policy requested for the ORCA archive bucket in
 the Disaster Recovery OU.
 See [the section below](#via-aws-gui) for policy document examples.
 
+### Via AWS CloudFormation Template
+
+The AWS Cloudformation template for creating the ORCA DR buckets can be found [here](https://github.com/nasa/cumulus-orca/blob/master/modules/dr_buckets_cloudformation/dr-buckets.yaml). Make sure you have AWS CLI installed before deploying this template.
+
+From your terminal, run the following command by replacing the variables `<PREFIX>` and `<AWS_ACCOUNT_ID>` first:
+
+```
+aws cloudformation deploy --stack-name <PREFIX>-orca-bucket-stack --template-file dr-buckets.yaml --parameter-overrides "PREFIX"="<PREFIX>" "CumulusAccountID"="<AWS_ACCOUNT_ID>"
+
+```
+This will create archive and reports buckets with the necessary bucket policies giving the Cumulus Account permission to write data to the archive bucket.
+
 ### Via AWS GUI
 
 For each of the buckets listed below
@@ -154,6 +166,8 @@ modifications, which will be detailed below.
          },
          "Action":[
             "s3:GetObject*",
+            "S3:GetObjectTagging",
+            "S3:PutObjectTagging",
             "s3:RestoreObject",
             "s3:GetBucket*",
             "s3:ListBucket",
@@ -208,7 +222,7 @@ aws sts get-caller-identity
 }
 ```
 
-Replace the number in `arn:aws:iam::012345678912:root` with the value of your account number.
+Replace the number in `arn:aws:iam::012345678912:root` with the value of your non-DR account number.
 
 The Resource value is the bucket and bucket paths that the Cumulus application
 can access. Replace `PREFIX-orca-archive` with the name
@@ -267,7 +281,7 @@ The Principal value is the AWS root user for your Cumulus application that will
 access the ORCA reports bucket.
 See the Archive Bucket instructions for assistance getting this value.
 
-Replace the number in `arn:aws:iam::012345678912:root` with the value of your account number.
+Replace the number in `arn:aws:iam::012345678912:root` with the value of your non-DR account number.
 See the Archive Bucket instructions for assistance getting this value.
 
 Replace the number `000000000000` with your DR account number.

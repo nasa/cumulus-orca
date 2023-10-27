@@ -54,7 +54,7 @@ isort \
 
 
 echo "INFO: Formatting with black ..."
-black *.py test
+black src test
 
 
 echo "INFO: Checking lint rules ..."
