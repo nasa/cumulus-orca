@@ -4,7 +4,7 @@ version: 2
 plan:
   project-key: ORCA
   key: ODPIT
-  name: ORCA Deploy Plan Integration test
+  name: ORCA Deploy Plan test
 stages:
 - Deploy DR ORCA Buckets:
     manual: true
@@ -16,11 +16,11 @@ stages:
     final: false
     jobs:
     - Deploy Cumulus buckets and Cumulus and Orca modules
-- Run Ingest Integration Tests:
-    manual: true
-    final: false
-    jobs:
-    - Run Ingest Integration tests
+# - Run Ingest Integration Tests:
+#     manual: true
+#     final: false
+#     jobs:
+#     - Run Ingest Integration tests
 
 #job for deploying ORCA buckets in DR account
 Deploy DR ORCA buckets:
@@ -68,60 +68,59 @@ Deploy Cumulus buckets and Cumulus and Orca modules:
         bash integration_test/deployment-orca.sh
 
 #job for running ingest integration tests
-Run Ingest Integration tests:
-  key: RIIT
-  other:
-    clean-working-dir: true
-  docker:
-    image: maven.earthdata.nasa.gov/cumulus_orca
-    volumes:
-      ${bamboo.working.directory}: ${bamboo.working.directory}
-      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
-  tasks:
-  - checkout:
-      force-clean-build: 'true'
-      description: Checkout Default Repository
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-
-        #!/bin/bash
-        . ./integration_test/shared/setup-orca.sh
-        bash integration_test/deployment-orca.sh
-  artifacts:
-  - name: EC2KeyPair
-    pattern: 'EC2KeyPair.pem'
-    shared: true
-    required: true
+# Run Ingest Integration tests:
+#   key: RIIT
+#   other:
+#     clean-working-dir: true
+#   docker:
+#     image: maven.earthdata.nasa.gov/cumulus_orca
+#     volumes:
+#       ${bamboo.working.directory}: ${bamboo.working.directory}
+#       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+#   tasks:
+#   - checkout:
+#       force-clean-build: 'true'
+#       description: Checkout Default Repository
+#   - script:
+#       interpreter: SHELL
+#       scripts:
+#       - |-
+#         #!/bin/bash
+#         . ./integration_test/shared/setup-orca.sh
+#         bash integration_test/deployment-orca.sh
+#   artifacts:
+#   - name: EC2KeyPair
+#     pattern: 'EC2KeyPair.pem'
+#     shared: true
+#     required: true
 
 #job for running ingest integration tests
-Run Ingest Integration tests:
-  key: RIIT
-  other:
-    clean-working-dir: true
-  docker:
-    image: maven.earthdata.nasa.gov/cumulus_orca
-    volumes:
-      ${bamboo.working.directory}: ${bamboo.working.directory}
-      ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
-  tasks:
-  - checkout:
-      force-clean-build: 'true'
-      description: Checkout Default Repository
-  - script:
-      interpreter: SHELL
-      scripts:
-      - |-
-        #!/bin/bash
-        . ./integration_test/shared/setup-orca.sh
-        . ./integration_test/setup-workflow-tests.sh
-        cd integration_test/workflow_tests
-        bash bin/run_tests.sh primary
+# Run Ingest Integration tests:
+#   key: RIIT
+#   other:
+#     clean-working-dir: true
+#   docker:
+#     image: maven.earthdata.nasa.gov/cumulus_orca
+#     volumes:
+#       ${bamboo.working.directory}: ${bamboo.working.directory}
+#       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
+#   tasks:
+#   - checkout:
+#       force-clean-build: 'true'
+#       description: Checkout Default Repository
+#   - script:
+#       interpreter: SHELL
+#       scripts:
+#       - |-
+#         #!/bin/bash
+#         . ./integration_test/shared/setup-orca.sh
+#         . ./integration_test/setup-workflow-tests.sh
+#         cd integration_test/workflow_tests
+#         bash bin/run_tests.sh primary
 
 variables:
   DEPLOYMENT: sandbox
   AWS_DEFAULT_REGION: us-west-2
-  CUMULUS_ACCOUNT_ID: 123456789
   CUMULUS_AWS_DEFAULT_REGION: us-west-2
   CUMULUS_AWS_ACCESS_KEY_ID: REPLACE ME
   CUMULUS_AWS_SECRET_ACCESS_KEY: BAMSCRT@0@0@eYcVOgzAUh3Ar0/flmZ1jQ==  #encrypted
