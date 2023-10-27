@@ -41,7 +41,7 @@ cd integration_test
 echo "Cloned Orca, branch ${bamboo_BRANCH_NAME}"
 #replace prefix with bamboo prefix variable
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' dr-buckets.tf.template > dr-buckets-temporary.tf.template
-sed -e 's/CUMULUS_ACCOUNT_ID/'"$bamboo_CUMULUS_ACCOUNT_ID"'/g' dr-buckets-temporary.tf.template > dr-buckets.tf
+sed -e 's/CUMULUS_ACCOUNT_ID/'"$CUMULUS_ACCOUNT_ID"'/g' dr-buckets-temporary.tf.template > dr-buckets.tf
 
 #configuring S3 backend
 echo "terraform {
