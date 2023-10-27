@@ -15,6 +15,11 @@ export AWS_ACCESS_KEY_ID=$bamboo_DR_AWS_ACCESS_KEY_ID
 export AWS_SECRET_ACCESS_KEY=$bamboo_DR_AWS_SECRET_ACCESS_KEY
 export AWS_DEFAULT_REGION=$bamboo_AWS_DEFAULT_REGION
 
+
+export DR_ACCOUNT_ID=$(aws sts get-caller-identity | jq -r '.Account')
+echo $DR_ACCOUNT_ID
+
+
 #remove old files from bamboo as they throw error
 rm *.tf
 
