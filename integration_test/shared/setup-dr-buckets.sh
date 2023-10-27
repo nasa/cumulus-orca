@@ -3,13 +3,14 @@
 set -ex
 cwd=$(pwd)
 
-# Login to Cumulus account first to get the account ID
+
+
 export AWS_ACCESS_KEY_ID=$bamboo_CUMULUS_AWS_ACCESS_KEY_ID
 export AWS_SECRET_ACCESS_KEY=$bamboo_CUMULUS_AWS_SECRET_ACCESS_KEY
 export AWS_DEFAULT_REGION=$bamboo_CUMULUS_AWS_DEFAULT_REGION
+
 export CUMULUS_ACCOUNT_ID=$(aws sts get-caller-identity | jq -r '.Account')
 
-# Login to DR account to deploy the buckets
 export AWS_ACCESS_KEY_ID=$bamboo_DR_AWS_ACCESS_KEY_ID
 export AWS_SECRET_ACCESS_KEY=$bamboo_DR_AWS_SECRET_ACCESS_KEY
 export AWS_DEFAULT_REGION=$bamboo_AWS_DEFAULT_REGION
@@ -38,7 +39,7 @@ fi
 git clone --branch ${bamboo_BRANCH_NAME} --single-branch https://github.com/nasa/cumulus-orca.git
 cd integration_test
 echo "Cloned Orca, branch ${bamboo_BRANCH_NAME}"
-# Replace PREFIX and CUMULUS_ACCOUNT_ID with bamboo variables
+#replace prefix with bamboo prefix variable
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' dr-buckets.tf.template > dr-buckets-temporary.tf.template
 sed -e 's/CUMULUS_ACCOUNT_ID/'"$bamboo_CUMULUS_ACCOUNT_ID"'/g' dr-buckets-temporary.tf.template > dr-buckets.tf
 
