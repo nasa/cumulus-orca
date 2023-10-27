@@ -1,5 +1,5 @@
 # This will get the DR AWS account ID.
-data "aws_caller_identity" "current_account" {}
+data "aws_caller_identity" "dr_account" {}
 
 # "worm" bucket was added as theoretical support for a potential future avenue of a theoretical feature. Consider everything having to do with it untested and mutable.
 resource "aws_s3_bucket" "orca-archive-worm" {
@@ -119,7 +119,7 @@ data "aws_iam_policy_document" "orca-reports-policy-json" {
       condition {
         test     = "StringEquals"
         variable = "aws:SourceAccount"
-        values   = ["${data.aws_caller_identity.current_account.account_id}"]
+        values   = ["${data.aws_caller_identity.dr_account.account_id}"]
       }
       condition {
         test = "ArnLike"
@@ -151,7 +151,7 @@ data "aws_iam_policy_document" "orca-reports-policy-json" {
       condition {
         test     = "StringEquals"
         variable = "aws:SourceAccount"
-        values   = ["${data.aws_caller_identity.current_account.account_id}"]
+        values   = ["${data.aws_caller_identity.dr_account.account_id}"]
       }
       condition {
         test = "ArnLike"

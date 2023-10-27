@@ -3,6 +3,13 @@
 set -ex
 cwd=$(pwd)
 
+# Login to Cumulus account first to get the account ID
+export AWS_ACCESS_KEY_ID=$bamboo_CUMULUS_AWS_ACCESS_KEY_ID
+export AWS_SECRET_ACCESS_KEY=$bamboo_CUMULUS_AWS_SECRET_ACCESS_KEY
+export AWS_DEFAULT_REGION=$bamboo_CUMULUS_AWS_DEFAULT_REGION
+export CUMULUS_ACCOUNT_ID=$(aws sts get-caller-identity | jq -r '.Account')
+
+# Login to DR account to deploy the buckets
 export AWS_ACCESS_KEY_ID=$bamboo_DR_AWS_ACCESS_KEY_ID
 export AWS_SECRET_ACCESS_KEY=$bamboo_DR_AWS_SECRET_ACCESS_KEY
 export AWS_DEFAULT_REGION=$bamboo_AWS_DEFAULT_REGION
