@@ -34,7 +34,7 @@ moto[sqs]==4.2.2
 aws_lambda_powertools==1.31.0
 
 ## Libraries used by database package
-boto3~=1.18.40
+boto3~=1.28.76
 SQLAlchemy~=2.0.5
 
 ## Libraries used by recovery package
