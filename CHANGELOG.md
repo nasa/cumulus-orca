@@ -23,6 +23,8 @@ and includes an additional section for migration notes.
 
 - *ORCA-737* Updated moto library used for unit tests to version 4.2.2 from version 2.0.
 
+- *ORCA-731* Updated boto3 library used for unit tests to version 1.28.76 from version 1.18.40.
+
 ### Deprecated
 
 ### Removed
