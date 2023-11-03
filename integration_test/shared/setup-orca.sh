@@ -41,11 +41,11 @@ else
       --region ${bamboo_AWS_DEFAULT_REGION}
 fi
 
-git clone --branch ${bamboo_BRANCH_NAME} --single-branch https://github.com/nasa/cumulus-orca.git
-echo "Cloned Orca, branch ${bamboo_BRANCH_NAME}"
+#git clone --branch ${bamboo_BRANCH_NAME} --single-branch https://github.com/nasa/cumulus-orca.git
+#echo "Cloned Orca, branch ${bamboo_BRANCH_NAME}"
 
 # Init ORCA
-cd cumulus-orca
+#cd cumulus-orca
 echo "inside orca"
 #configuring S3 backend
 echo "terraform {
@@ -57,7 +57,7 @@ echo "terraform {
   }
 }" >> terraform.tf
 terraform init -input=false
-cd ..
+#cd ..
 
 # todo: integration_test folder exists at root AND in cumulus-orca. Just use one. https://bugs.earthdata.nasa.gov/browse/ORCA-708
 cd integration_test
