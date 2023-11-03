@@ -57,7 +57,7 @@ echo "terraform {
   }
 }" >> terraform.tf
 terraform init -input=false
-#cd ..
+cd ..
 
 # todo: integration_test folder exists at root AND in cumulus-orca. Just use one. https://bugs.earthdata.nasa.gov/browse/ORCA-708
 cd integration_test
