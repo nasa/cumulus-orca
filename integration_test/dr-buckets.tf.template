@@ -1,3 +1,6 @@
+# This will get the DR AWS account ID.
+data "aws_caller_identity" "dr_account" {}
+
 provider "aws" {
   region = "us-west-2"
 }
@@ -34,7 +37,7 @@ data "aws_iam_policy_document" "orca-archive-worm-policy-json" {
  statement {
     principals {
       type        = "AWS"
-      identifiers = ["arn:aws:iam::236859827343:root"]
+      identifiers = ["arn:aws:iam::CUMULUS_ACCOUNT_ID:root"]
       }
       actions = [
                   "s3:PutObject*"
@@ -83,7 +86,7 @@ data "aws_iam_policy_document" "orca-reports-policy-json" {
   statement {
     principals {
       type        = "AWS"
-      identifiers = ["arn:aws:iam::236859827343:root"]
+      identifiers = ["arn:aws:iam::CUMULUS_ACCOUNT_ID:root"]
     }
     actions = [
         "s3:GetObject*",
@@ -120,7 +123,7 @@ data "aws_iam_policy_document" "orca-reports-policy-json" {
       condition {
         test     = "StringEquals"
         variable = "aws:SourceAccount"
-        values   = ["782417781503"]
+        values   = ["${data.aws_caller_identity.dr_account.account_id}"]
       }
       condition {
         test = "ArnLike"
@@ -152,7 +155,7 @@ data "aws_iam_policy_document" "orca-reports-policy-json" {
       condition {
         test     = "StringEquals"
         variable = "aws:SourceAccount"
-        values   = ["782417781503"]
+        values   = ["${data.aws_caller_identity.dr_account.account_id}"]
       }
       condition {
         test = "ArnLike"
@@ -183,7 +186,7 @@ data "aws_iam_policy_document" "orca-primary-policy-json" {
  statement {
    principals {
      type        = "AWS"
-     identifiers = ["arn:aws:iam::236859827343:root"]
+     identifiers = ["arn:aws:iam::CUMULUS_ACCOUNT_ID:root"]
     }
     actions = [
                 "s3:GetObject*",
@@ -205,7 +208,7 @@ data "aws_iam_policy_document" "orca-primary-policy-json" {
  statement {
     principals {
       type        = "AWS"
-      identifiers = ["arn:aws:iam::236859827343:root"]
+      identifiers = ["arn:aws:iam::CUMULUS_ACCOUNT_ID:root"]
       }
       actions = [
                   "s3:PutObject*"
