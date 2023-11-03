@@ -1,6 +1,10 @@
 # This will get the DR AWS account ID.
 data "aws_caller_identity" "dr_account" {}
 
+provider "aws" {
+  region = "us-west-2"
+}
+
 # "worm" bucket was added as theoretical support for a potential future avenue of a theoretical feature. Consider everything having to do with it untested and mutable.
 resource "aws_s3_bucket" "orca-archive-worm" {
   bucket = "PREFIX-orca-archive-worm"
