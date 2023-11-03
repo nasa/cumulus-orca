@@ -20,7 +20,7 @@ export orca_RECOVERY_STEP_FUNCTION_ARN="arn:aws:states:${bamboo_AWS_DEFAULT_REGI
 export orca_RECOVERY_BUCKET_NAME="${bamboo_PREFIX}-orca-primary"
 
 #remove old files from bamboo as they throw error
-#rm *.tf
+rm *.tf
 
 if aws s3api head-bucket --bucket ${bamboo_PREFIX}-tf-state;then
     echo "terraform state bucket already present. Using existing state file"
@@ -41,11 +41,11 @@ else
       --region ${bamboo_AWS_DEFAULT_REGION}
 fi
 
-#git clone --branch ${bamboo_BRANCH_NAME} --single-branch https://github.com/nasa/cumulus-orca.git
-#echo "Cloned Orca, branch ${bamboo_BRANCH_NAME}"
+git clone --branch ${bamboo_BRANCH_NAME} --single-branch https://github.com/nasa/cumulus-orca.git
+echo "Cloned Orca, branch ${bamboo_BRANCH_NAME}"
 
 # Init ORCA
-#cd cumulus-orca
+cd cumulus-orca
 echo "inside orca"
 #configuring S3 backend
 echo "terraform {

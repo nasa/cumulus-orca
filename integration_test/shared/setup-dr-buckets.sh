@@ -17,7 +17,7 @@ export AWS_SECRET_ACCESS_KEY=$bamboo_DR_AWS_SECRET_ACCESS_KEY
 export AWS_DEFAULT_REGION=$bamboo_AWS_DEFAULT_REGION
 
 #remove old files from bamboo as they throw error
-#rm *.tf
+rm *.tf
 
 if aws s3api head-bucket --bucket ${bamboo_PREFIX}-dr-tf-state;then
     echo "terraform state bucket already present. Using existing state file"
@@ -37,7 +37,7 @@ else
       --region ${bamboo_AWS_DEFAULT_REGION}
 fi
 
-#git clone --branch ${bamboo_BRANCH_NAME} --single-branch https://github.com/nasa/cumulus-orca.git
+git clone --branch ${bamboo_BRANCH_NAME} --single-branch https://github.com/nasa/cumulus-orca.git
 cd integration_test
 echo "Cloned Orca, branch ${bamboo_BRANCH_NAME}"
 #replace prefix with bamboo prefix variable
