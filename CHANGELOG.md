@@ -27,6 +27,8 @@ and includes an additional section for migration notes.
 
 - *ORCA-704* Updated dr-buckets.tf.template and buckets.tf.template with provider block to deploy in the us-west-2 region due to deployments failing in the other regions.
 
+- *ORCA-708* Updated setup-orca.sh script to use the root folder instead of cloning in a duplicate repository.
+
 ### Deprecated
 
 ### Removed
