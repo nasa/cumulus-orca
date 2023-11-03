@@ -25,6 +25,8 @@ and includes an additional section for migration notes.
 
 - *ORCA-731* Updated boto3 library used for unit tests to version 1.28.76 from version 1.18.40 to fix unit test warnings.
 
+- *ORCA-704* Updated dr-buckets.tf.template and buckets.tf.template with provider block to deploy in the us-west-2 region due to deployments failing in the other regions.
+
 ### Deprecated
 
 ### Removed
