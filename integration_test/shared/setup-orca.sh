@@ -20,7 +20,7 @@ export orca_RECOVERY_STEP_FUNCTION_ARN="arn:aws:states:${bamboo_AWS_DEFAULT_REGI
 export orca_RECOVERY_BUCKET_NAME="${bamboo_PREFIX}-orca-primary"
 
 #remove old files from bamboo as they throw error
-rm *.tf
+#rm *.tf
 
 if aws s3api head-bucket --bucket ${bamboo_PREFIX}-tf-state;then
     echo "terraform state bucket already present. Using existing state file"
