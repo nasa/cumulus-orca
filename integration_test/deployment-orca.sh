@@ -31,9 +31,9 @@ cd ../../../..
 cd cumulus-orca-deploy-template/ecs-standalone-tf
 perform_terraform_command_ecs "apply"
 cd ../..
-pwd
+
 # Deploy orca via terraform
-#cd cumulus-orca
+cd cumulus-orca
 # todo: Only build once. Reuse for various stages/jobs https://bugs.earthdata.nasa.gov/browse/ORCA-706
 # todo: Add parallelism here and elsewhere. Could be building ORCA while other modules are deployed. https://bugs.earthdata.nasa.gov/browse/ORCA-707
 bin/build_tasks.sh
