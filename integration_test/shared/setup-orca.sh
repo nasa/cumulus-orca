@@ -67,7 +67,7 @@ echo "terraform {
 terraform init -input=false
 
 #clone cumulus orca template for deploying RDS cluster
-cd ../..
+cd ..
 git clone --branch $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION --single-branch https://git.earthdata.nasa.gov/scm/orca/cumulus-orca-deploy-template.git
 echo "cloned Cumulus, branch $bamboo_CUMULUS_ORCA_DEPLOY_TEMPLATE_VERSION"
 
