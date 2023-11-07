@@ -19,6 +19,9 @@ and includes an additional section for migration notes.
 - *ORCA-766* Created AWS cloudformation template that can be used to deploy ORCA DR buckets.
 
 ### Changed
+
+- *ORCA-778* Upgraded Docusaurus to version 2.4.3 to fix snyk vulnerabilities and security issues.
+
 - *ORCA-765* Updated ORCA "Creating the Glacier Bucket" documentation with instructions to deploy ORCA DR buckets using cloudformation.
 
 - *ORCA-737* Updated moto library used for unit tests to version 4.2.2 from version 2.0.
