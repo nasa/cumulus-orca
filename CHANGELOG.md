@@ -20,6 +20,8 @@ and includes an additional section for migration notes.
 
 ### Changed
 
+- *ORCA-780* Updated ORCA "Deployment with Cumulus" documentation with instructions and examples to run ORCA recovery and archive workflows.
+
 - *ORCA-778* Upgraded Docusaurus to version 2.4.3 to fix snyk vulnerabilities and security issues.
 
 - *ORCA-765* Updated ORCA "Creating the Glacier Bucket" documentation with instructions to deploy ORCA DR buckets using cloudformation.
@@ -79,7 +81,8 @@ and includes an additional section for migration notes.
 - `collectionId` properties have been added to [Recovery Jobs](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-jobs-api) and [Recovery Granules](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-granules-api) API.
   - For Recovery Jobs, it is only added to [output](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-jobs-api-output).
   - For Recovery Granules, it is now required on [input](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-granules-api-input) and will be returned on [output](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-granules-api-output).
-- Update the `orca.tf` file to include `aws_region`. See example below.
+- Update the `orca.tf` file to include `aws_region`. 
+See example below.
   ```terraform
   ## ORCA Module
   ## =============================================================================
@@ -172,6 +175,7 @@ and includes an additional section for migration notes.
 
 ### Migration Notes
 
+- Remove the `workflow_config` variable from `orca.tf` otherwise terraform deployment will throw an error.
 - The output format of `copy_to_archive` lambda and step-function has been simplified. If accessing these resources outside of a Cumulus perspective, instead of accessing `output["payload"]["granules"]` you now use `output["granules"]`.
 - Cumulus is not currently compatible with the changes to copy_to_archive.
   - This section will be updated when a compatible version is created.
