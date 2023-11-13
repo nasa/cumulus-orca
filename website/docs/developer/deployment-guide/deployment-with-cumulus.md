@@ -61,7 +61,7 @@ If you wish to deploy code cloned locally from [Github](https://github.com/nasa/
 ## ORCA Module
 ## =============================================================================
 module "orca" {
-  source = "https://github.com/nasa/cumulus-orca/releases/download/v3.0.2/cumulus-orca-terraform.zip"
+  source = "https://github.com/nasa/cumulus-orca/releases/download/v9.0.0/cumulus-orca-terraform.zip"
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------
@@ -73,7 +73,6 @@ module "orca" {
   prefix                   = var.prefix
   system_bucket            = var.system_bucket
   vpc_id                   = var.vpc_id
-  workflow_config          = module.cumulus.workflow_config
 
   ## OPTIONAL
   tags        = var.tags
@@ -89,6 +88,8 @@ module "orca" {
   orca_default_bucket      = var.orca_default_bucket
   orca_reports_bucket_name = var.orca_reports_bucket_name
   rds_security_group_id    = var.rds_security_group_id
+  s3_access_key            = var.s3_access_key
+  s3_secret_key            = var.s3_secret_key
 
   ## OPTIONAL
   # archive_recovery_queue_message_retention_time_seconds = 777600
@@ -136,6 +137,8 @@ optional variables can be found in the [variables section](#orca-variables).
 - db_host_endpoint
 - rds_security_group_id
 - dlq_subscription_email
+- s3_access_key
+- s3_secret_key
 
 #### Required Values Retrieved from Cumulus Variables
 
@@ -157,16 +160,6 @@ The `tags` value automatically adds a *Deployment* tag like the Cumulus
 deployment.
 
 :::
-
-#### Required Values Retrieved from Other Modules
-
-The following variables are set by retrieving output from other modules. This is
-done so that the user does not have to lookup and set these variables after a
-deployment. More information about these variables can be found in the
-[Cumulus variable definitions](https://github.com/nasa/cumulus/blob/master/tf-modules/cumulus/variables.tf).
-
-- workflow_config - Retrieved from the cumulus module in `main.tf`.
-
 
 ### Creating `cumulus-tf/orca_variables.tf`
 
@@ -211,8 +204,17 @@ variable "rds_security_group_id" {
   type        = string
   description = "Cumulus' RDS Security Group's ID."
 }
-```
 
+variable "s3_access_key" {
+  type = string
+  description = "AWS Access key for communicating with Orca S3 buckets."
+}
+
+variable "s3_secret_key" {
+  type = string
+  description = "AWS Secret key for communicating with Orca S3 buckets."
+}
+```
 
 ### Modifying `cumulus-tf/terraform.tfvars`
 
@@ -256,6 +258,13 @@ rds_security_group_id = "sg-01234567890123456"
 
 ## Dead letter queue SNS topic subscription email.
 dlq_subscription_email = "test@email.com"
+
+## AWS access key to connect to AWS account.
+s3_access_key = "xxxxxxxxxxxxxxxxxxx"
+
+## AWS secret access key to connect to AWS account
+s3_secret_key = "xxxxxxxxxxxx/xxxxx/xxxxxxxxxxxxxxxxxxxxx"
+
 ```
 
 Below describes the type of value expected for each variable.
@@ -269,6 +278,8 @@ Below describes the type of value expected for each variable.
 * `orca_default_bucket` (string) - Default S3 archive bucket to use for ORCA data.
 * `orca_reports_bucket_name` (string) - The name of the bucket to store s3 inventory reports.
 * `rds_security_group_id`(string) - Cumulus' RDS Security Group's ID. Output as `security_group_id` from the rds-cluster deployment.
+* `s3_access_key` (string) - AWS Access key for communicating with Orca S3 buckets.
+* `s3_secret_key`(string) - AWS Secret key for communicating with Orca S3 buckets.
 
 Additional variable definitions can be found in the [ORCA variables](#orca-variables)
 section of the document.
@@ -393,6 +404,11 @@ the ingest workflow.
 
 :::
 
+Since ORCA is decoupling from Cumulus starting in ORCA v8.0, users will now run the same [ORCA `copy_to_archive` workflow](https://github.com/nasa/cumulus-orca/tree/master/modules/workflows/OrcaCopyToArchiveWorkflow) but must need to update the existing workflow configuration to point to [copy_to_archive_adapter lambda](https://github.com/nasa/cumulus/tree/master/tasks/orca-copy-to-archive-adapter) (owned by Cumulus) which then runs our existing orca archive workflow. 
+
+:::note
+Make sure to refer to the `copy_to_archive_adapter` lambda ARN under `Resource` property below.
+:::
 
 ```json
 "CopyToArchive":{
@@ -413,7 +429,7 @@ the ingest workflow.
   }
 },
   "Type":"Task",
-  "Resource":"module.orca.orca_lambda_copy_to_archive_arn",
+  "Resource":"module.orca.orca_lambda_copy_to_archive_adapter.arn",
   "Catch":[
     {
       "ErrorEquals":[
@@ -436,15 +452,31 @@ the ingest workflow.
   "Next":"WorkflowSucceeded"
 },
 ```
-See the copy_to_archive json schema [configuration file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive/schemas/config.json), [input file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive/schemas/input.json)  and [output file](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive/schemas/output.json) for more information.
 
-### Modify the Recovery Workflow (*OPTIONAL*)
+As part of the [Cumulus Message Adapter configuration](https://nasa.github.io/cumulus/docs/workflows/input_output#cma-configuration) 
+for `copy_to_archive`, the `excludedFileExtensions`, `s3MultipartChunksizeMb`, `providerId`, `executionId`, `collectionShortname`, `collectionVersion`, `defaultBucketOverride`, and `defaultStorageClassOverride` keys must be present under the 
+`task_config` object as seen above. 
+Per the [config schema](https://github.com/nasa/cumulus/blob/master/tasks/orca-copy-to-archive-adapter/schemas/config.json), 
+the values of the keys are used the following ways. 
+The `provider` key should contain an `id` key that returns the provider id from Cumulus. 
+The `cumulus_meta` key should contain an `execution_name` key that returns the step function execution ID from AWS. 
+The `collection` key value should contain a `name` key and a `version` key that return the required collection shortname and collection version from Cumulus respectively.
+The `collection` key value should also contain a `meta` key that includes an `orca` key having an optional `excludedFileExtensions` key that is used to determine file patterns that should not be 
+sent to ORCA. In addition, the `orca` key also contains optional `defaultBucketOverride` key that overrides the `ORCA_DEFAULT_BUCKET` set on deployment and optional `defaultStorageClassOverride` key that overrides the storage class to use when storing files in Orca. 
+The optional `s3MultipartChunksizeMb` is used to override the default setting for the lambda s3 copy maximum multipart chunk size value when copying large files to ORCA.
+These settings can often be derived from the collection configuration in Cumulus.
+See the copy_to_archive_adapter json schema [configuration file](https://github.com/nasa/cumulus/blob/master/tasks/orca-copy-to-archive-adapter/schemas/config.json), [input file](https://github.com/nasa/cumulus/blob/master/tasks/orca-copy-to-archive-adapter/schemas/input.json)  and [output file](https://github.com/nasa/cumulus/blob/master/tasks/orca-copy-to-archive-adapter/schemas/output.json) for more information.
 
-It is not recommended to modify the ORCA Recovery Workflow. The workflow JSON
-file is located in the `modules/workflows/OrcaRecoveryWorkflow` of the repository.
-The workflow file name is `orca_recover_workflow.asl.json`. To change the
-behavior of the workflow, it is recommended to modify or replace the
-`copy_from_archive` lambda.
+### Modify the Recovery Workflow
+
+Since ORCA is decoupling from Cumulus starting in ORCA v8.0, users will now need to deploy a `recovery_workflow_adapter` workflow that triggers [the recovery_adapter lambda](https://github.com/nasa/cumulus/tree/master/tasks/orca-recovery-adapter) (owned by Cumulus) which then runs our existing orca recovery workflow.
+As part of the [Cumulus Message Adapter configuration](https://nasa.github.io/cumulus/docs/workflows/input_output/#cma-configuration), several properties must be passed into the adapter lambda. See [input and config schemas](https://github.com/nasa/cumulus/tree/master/tasks/orca-recovery-adapter/schemas) for more information.
+
+Here is an example of a [recovery adapter workflow step function definition](https://github.com/nasa/cumulus/blob/master/example/cumulus-tf/orca_recovery_adapter_workflow.asl.json) and the [terraform code](https://github.com/nasa/cumulus/blob/master/example/cumulus-tf/orca_recovery_adapter_workflow.tf) provided by Cumulus that can be used to deploy the step function workflow in AWS. Once deployed, you can run that workflow to test ORCA recovery.
+
+:::note
+Users should reach out to Cumulus team if they want to automate this adapter workflow in Cumulus deployment since Cumulus owns the adapter lambdas.
+:::
 
 ### Workflow Failures
 
@@ -476,8 +508,6 @@ file. The variables must be set with proper values for your environment in the
 | `prefix`                   | Prefix that will be pre-pended to resource names created by terraform.                                                                       | "daac-sndbx" |
 | `system_bucket`            | Cumulus system bucket used to store internal files and configurations for deployments.                                                       | "PREFIX-internal" |
 | `vpc_id`                   | ID of VPC to place resources in - recommended that this be a private VPC (or at least one with restricted access).                           | "vpc-abc123456789" |
-| `workflow_config`          | Configuration object with ARNs for workflow integration (Role ARN for executing workflows and Lambda ARNs to trigger on workflow execution). | module.cumulus.workflow_config |
-
 
 #### ORCA Required Variables
 
