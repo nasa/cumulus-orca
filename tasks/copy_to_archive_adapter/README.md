@@ -8,7 +8,7 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 This adapter was created as a proof of concept and should not be used by end users. Use [Cumulus copy_to_archive_adapter](https://github.com/nasa/cumulus/tree/master/tasks/orca-copy-to-archive-adapter) instead.
 :::
 
-Since ORCA is decoupling from Cumulus starting in ORCA v8.0, users will now run the same [ORCA `copy_to_archive` workflow](https://github.com/nasa/cumulus-orca/tree/master/modules/workflows/OrcaCopyToArchiveWorkflow) but must need to update the existing workflow configuration to point to Cumulus[copy_to_archive_adapter lambda](https://github.com/nasa/cumulus/tree/master/tasks/orca-copy-to-archive-adapter) which then runs our existing orca archive workflow. 
+Since ORCA is decoupling from Cumulus starting in ORCA v8.0, users will now run the same [ORCA `copy_to_archive` workflow](https://github.com/nasa/cumulus-orca/tree/master/modules/workflows/OrcaCopyToArchiveWorkflow) but must need to update the existing workflow configuration to point to Cumulus[copy_to_archive_adapter lambda](https://github.com/nasa/cumulus/tree/master/tasks/orca-copy-to-archive-adapter) which then runs our existing `copy_to_archive` lambda.
 
 :::note
 Make sure to replace `<CUMULUS_COPY_TO_ARCHIVE_ADAPTER_ARN>` under `Resource` property below. See [cumulus terraform modules](https://github.com/nasa/cumulus/blob/master/tf-modules/cumulus/outputs.tf#L86) for additional details on how to add this.
