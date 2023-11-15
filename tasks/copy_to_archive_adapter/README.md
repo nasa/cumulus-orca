@@ -4,11 +4,58 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 
 ## Description
 
-The `copy_to_archive` module is meant to be deployed as a lambda function that takes a Cumulus message, extracts a list of files, and copies those files from their current storage location into an ORCA archive bucket. 
-It also sends additional metadata attributes to metadata SQS queue needed for Cumulus reconciliation.
+::important
+This adapter was created as a proof of concept and should not be used by end users. Use [Cumulus copy_to_archive_adapter](https://github.com/nasa/cumulus/tree/master/tasks/orca-copy-to-archive-adapter) instead.
+:::
 
-This lambda calls copy_to_archive synchronously, returning results and raising errors as appropriate.
-This provides an injection seam to contact the ORCA managed copy_to_archive lambda with ORCA's formatting.
+Since ORCA is decoupling from Cumulus starting in ORCA v8.0, users will now run the same [ORCA `copy_to_archive` workflow](https://github.com/nasa/cumulus-orca/tree/master/modules/workflows/OrcaCopyToArchiveWorkflow) but must need to update the existing workflow configuration to point to Cumulus[copy_to_archive_adapter lambda](https://github.com/nasa/cumulus/tree/master/tasks/orca-copy-to-archive-adapter) which then runs our existing `copy_to_archive` lambda.
+
+:::note
+Make sure to replace `<CUMULUS_COPY_TO_ARCHIVE_ADAPTER_ARN>` under `Resource` property below. See [cumulus terraform modules](https://github.com/nasa/cumulus/blob/master/tf-modules/cumulus/outputs.tf#L86) for additional details on how to add this.
+:::
+
+```json
+"CopyToArchive":{
+  "Parameters":{
+    "cma":{
+      "event.$":"$",
+      "task_config": {
+        "excludedFileExtensions": "{$.meta.collection.meta.orca.excludedFileExtensions}",
+        "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
+        "providerId": "{$.meta.provider.id}",
+        "providerName": "{$.meta.provider.name}",
+        "executionId": "{$.cumulus_meta.execution_name}",
+        "collectionShortname": "{$.meta.collection.name}",
+        "collectionVersion": "{$.meta.collection.version}",
+        "defaultBucketOverride": "{$.meta.collection.meta.orca.defaultBucketOverride}"
+      }
+    }
+  }
+},
+  "Type":"Task",
+  "Resource":"<CUMULUS_COPY_TO_ARCHIVE_ADAPTER_ARN>",
+  "Catch":[
+    {
+      "ErrorEquals":[
+        "States.ALL"
+      ],
+      "ResultPath":"$.exception",
+      "Next":"WorkflowFailed"
+    }
+  ],
+  "Retry": [
+    {
+      "ErrorEquals": [
+        "States.ALL"
+      ],
+      "IntervalSeconds": 2,
+      "MaxAttempts": 3,
+      "BackoffRate": 2
+    }
+  ],
+  "Next":"WorkflowSucceeded"
+},
+```
 
 ## Exclude files by extension.
 
