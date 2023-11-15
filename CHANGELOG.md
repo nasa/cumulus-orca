@@ -70,7 +70,7 @@ and includes an additional section for migration notes.
 - *ORCA-709* Updated terraform AWS provider to version 5. This is to support Cumulus and CIRRUS changes.
 - *ORCA-714* Fixed new deployment errors with API Gateway by adding an IAM policy and tying it to the GW.
 - *ORCA-716* Fixed Deployment issues with GraphQL tasks by adding permission and health check.
-- *ORCA-726* Updated Docusarus and Node version to latest LTS releases to fix security issues.
+- *ORCA-726* Updated Docusaurus and Node version to latest LTS releases to fix security issues.
 
 ### Migration Notes
 
@@ -177,15 +177,8 @@ See example below.
 
 - Remove the `workflow_config` variable from `orca.tf` otherwise terraform deployment will throw an error.
 - The output format of `copy_to_archive` lambda and step-function has been simplified. If accessing these resources outside of a Cumulus perspective, instead of accessing `output["payload"]["granules"]` you now use `output["granules"]`.
-- Cumulus is not currently compatible with the changes to copy_to_archive.
-  - This section will be updated when a compatible version is created.
-  - deployment-with-cumulus.md will also be updated.
-  - copy_to_archive_adapter/README.md will also be updated.
-  - restore-to-orca.mdx will also be updated.
-- Cumulus is not currently compatible with the changes to the Recovery Workflow step-function.
-  - This section will be updated when a compatible version is created.
-  - deployment-with-cumulus.md will also be updated.
-  - orca_recovery_adapter/README.md will also be updated.
+- Due to Cumulus-ORCA decoupling efforts, users will now run the same [ORCA `copy_to_archive` workflow](https://github.com/nasa/cumulus-orca/tree/master/modules/workflows/OrcaCopyToArchiveWorkflow) but must need to update the existing workflow configuration to point to Cumulus [copy_to_archive_adapter lambda](https://github.com/nasa/cumulus/tree/master/tasks/orca-copy-to-archive-adapter) which then runs our existing orca archive workflow. See [deployment documentation](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-with-cumulus#add-the-copytoarchive-step-to-an-ingest-workflow) for details.
+- Due to Cumulus-ORCA decoupling efforts, users will now need to deploy a `recovery_workflow_adapter` workflow that triggers the Cumulus`recovery_adapter` lambda which then runs our existing orca recovery workflow.  See [deployment documentation](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-with-cumulus#modify-the-recovery-workflow) for details.
 - Update the bucket policy for your `system-bucket` to allow load balancer to post server access logs to the bucket. See the instructions [here](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-s3-bucket#bucket-policy-for-load-balancer-server-access-loging).
 - InternalReconcileReport [Phantom](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#internal-reconcile-report-phantom-api) and [Mismatch](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#internal-reconcile-report-mismatch-api) reports are now available via GraphQL.
   - API Gateway access is now deprecated, and will be removed in a future update.
