@@ -15,6 +15,8 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 
+## [9.0.1] 2023-11-16
+
 ### Added
 - *ORCA-766* Created AWS cloudformation template that can be used to deploy ORCA DR buckets.
 
