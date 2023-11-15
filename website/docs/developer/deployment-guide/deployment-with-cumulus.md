@@ -407,7 +407,7 @@ the ingest workflow.
 Since ORCA is decoupling from Cumulus starting in ORCA v8.0, users will now run the same [ORCA `copy_to_archive` workflow](https://github.com/nasa/cumulus-orca/tree/master/modules/workflows/OrcaCopyToArchiveWorkflow) but must need to update the existing workflow configuration to point to [copy_to_archive_adapter lambda](https://github.com/nasa/cumulus/tree/master/tasks/orca-copy-to-archive-adapter) (owned by Cumulus) which then runs our existing orca archive workflow. 
 
 :::note
-Make sure to refer to the `copy_to_archive_adapter` lambda ARN under `Resource` property below.
+Make sure to replace `<CUMULUS_COPY_TO_ARCHIVE_ADAPTER_ARN>` under `Resource` property below. See [cumulus terraform modules](https://github.com/nasa/cumulus/blob/master/tf-modules/cumulus/outputs.tf#L86) for additional details on how to add this.
 :::
 
 ```json
@@ -429,7 +429,7 @@ Make sure to refer to the `copy_to_archive_adapter` lambda ARN under `Resource` 
   }
 },
   "Type":"Task",
-  "Resource":"module.orca.orca_lambda_copy_to_archive_adapter.arn",
+  "Resource":"<CUMULUS_COPY_TO_ARCHIVE_ADAPTER_ARN>",
   "Catch":[
     {
       "ErrorEquals":[
