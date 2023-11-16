@@ -14,4 +14,5 @@ class CustomLoggerAdapter(logging.LoggerAdapter):
         syslog = logging.StreamHandler()
         logger.addHandler(syslog)
         logger_adapter = CustomLoggerAdapter(logger, {'my_context': group_name})
+        logger.propagate = False
         return logger_adapter
