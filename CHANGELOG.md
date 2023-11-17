@@ -15,7 +15,8 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 
-- *Migration Notes* - Notes for end users to migrate to the version.
+### Migration Notes
+
 - *Added* - New features.
 - *Changed* - Changes in existing functionality.
 - *Deprecated* - Soon-to-be removed features.
