@@ -4,11 +4,10 @@ Visit the [Developer Guide](https://nasa.github.io/cumulus-orca/docs/developer/d
 
 ## Description
 
-The `orca_recovery_adapter` module is meant to be deployed as a lambda function that takes a Cumulus message, 
-extracts a list of files, and initiates recovery of those files from their ORCA archive location. 
+::important
+This adapter was created as a proof of concept and should not be used by end users. Use [Cumulus recovery_adapter](https://github.com/nasa/cumulus/tree/master/tasks/orca-recovery-adapter) instead.
+:::
 
-This lambda calls the ORCA recovery step-function, returning results and raising errors as appropriate.
-This provides an injection seam to contact the ORCA recovery step-function with ORCA's formatting.
 
 ## Build
 

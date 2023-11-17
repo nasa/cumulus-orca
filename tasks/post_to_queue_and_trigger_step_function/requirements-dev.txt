@@ -1,7 +1,7 @@
 ## Libraries needed for testing
 coverage==7.2.7
 pytest==7.4.0
-moto[sqs]==2.0.6
+moto[sqs]==4.2.2
 
 ## Application libraries needed for testing
 psycopg2-binary==2.8.6

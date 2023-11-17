@@ -1,5 +1,9 @@
 data "aws_caller_identity" "current_account" {}
 
+provider "aws" {
+  region = "us-west-2"
+}
+
 resource "aws_s3_bucket" "internal" {
   bucket = "PREFIX-internal"
   force_destroy = true

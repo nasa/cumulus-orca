@@ -107,7 +107,9 @@ class TestCopyToArchive(TestCase):
         """
         self.mock_sqs.start()
         self.test_sqs = boto3.resource("sqs", region_name="us-west-2")
-        self.queue = self.test_sqs.create_queue(QueueName="test-metadata-queue")
+        self.queue = self.test_sqs.create_queue(
+            QueueName="test-metadata-queue.fifo", Attributes={"FifoQueue": "true"}
+        )
         self.metadata_queue_url = self.queue.url
 
     def tearDown(self):

@@ -19,9 +19,6 @@ export orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN="arn:aws:states:${bamboo_AWS_DEFAU
 export orca_RECOVERY_STEP_FUNCTION_ARN="arn:aws:states:${bamboo_AWS_DEFAULT_REGION}:${AWS_ACCOUNT_ID}:stateMachine:${bamboo_PREFIX}-OrcaRecoveryWorkflow"
 export orca_RECOVERY_BUCKET_NAME="${bamboo_PREFIX}-orca-primary"
 
-#remove old files from bamboo as they throw error
-rm *.tf
-
 if aws s3api head-bucket --bucket ${bamboo_PREFIX}-tf-state;then
     echo "terraform state bucket already present. Using existing state file"
 else
@@ -41,11 +38,7 @@ else
       --region ${bamboo_AWS_DEFAULT_REGION}
 fi
 
-git clone --branch ${bamboo_BRANCH_NAME} --single-branch https://github.com/nasa/cumulus-orca.git
-echo "Cloned Orca, branch ${bamboo_BRANCH_NAME}"
-
 # Init ORCA
-cd cumulus-orca
 echo "inside orca"
 #configuring S3 backend
 echo "terraform {
@@ -57,9 +50,7 @@ echo "terraform {
   }
 }" >> terraform.tf
 terraform init -input=false
-cd ..
 
-# todo: integration_test folder exists at root AND in cumulus-orca. Just use one. https://bugs.earthdata.nasa.gov/browse/ORCA-708
 cd integration_test
 #replace prefix with bamboo prefix variable
 sed -e 's/PREFIX/'"$bamboo_PREFIX"'/g' buckets.tf.template > buckets.tf
