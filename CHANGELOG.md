@@ -15,34 +15,34 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 
+- *Migration Notes* - Notes for end users to migrate to the version.
+- *Added* - New features.
+- *Changed* - Changes in existing functionality.
+- *Deprecated* - Soon-to-be removed features.
+- *Removed* - Now removed features.
+- *Fixed* - Any bug fixes.
+- *Security* - Vulnerabilities fixes and changes.
+
 ## [9.0.1] 2023-11-16
 
 ### Added
 - *ORCA-766* Created AWS cloudformation template that can be used to deploy ORCA DR buckets.
+- *ORCA-765* Updated ORCA "Creating the Glacier Bucket" documentation with instructions to deploy ORCA DR buckets using cloudformation.
 
 ### Changed
 
 - *ORCA-780* Updated ORCA "Deployment with Cumulus" documentation with instructions and examples to run ORCA recovery and archive workflows.
-
-- *ORCA-778* Upgraded Docusaurus to version 2.4.3 to fix snyk vulnerabilities and security issues.
-
-- *ORCA-765* Updated ORCA "Creating the Glacier Bucket" documentation with instructions to deploy ORCA DR buckets using cloudformation.
-
-- *ORCA-737* Updated moto library used for unit tests to version 4.2.2 from version 2.0.
-
-- *ORCA-731* Updated boto3 library used for unit tests to version 1.28.76 from version 1.18.40 to fix unit test warnings.
-
 - *ORCA-704* Updated dr-buckets.tf.template and buckets.tf.template with provider block to deploy in the us-west-2 region due to deployments failing in the other regions.
-
 - *ORCA-708* Updated integration_test/shared/setup-orca.sh script to use the root folder instead of cloning in a duplicate repository.
-
-### Deprecated
-
-### Removed
 
 ### Fixed
 
+- *ORCA-731* Updated boto3 library used for unit tests to version 1.28.76 from version 1.18.40 to fix unit test warnings.
+
 ### Security
+
+- *ORCA-778* Upgraded Docusaurus to version 2.4.3 to fix snyk vulnerabilities and security issues.
+- *ORCA-737* Updated moto library used for unit tests to version 4.2.2 from version 2.0.
 
 ## [9.0.0] 2023-10-05
 
