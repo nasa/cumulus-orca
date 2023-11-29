@@ -94,6 +94,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                         }
                     ]
                 )
+                print(request_method.value)
 
     @patch.dict(
         os.environ,
