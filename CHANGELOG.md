@@ -14,6 +14,7 @@ and includes an additional section for migration notes.
 - *Security* - Vulnerabilities fixes and changes.
 
 ## [Unreleased]
+- *ORCA-366* Adding unit test for request_method
 
 ### Migration Notes
 
