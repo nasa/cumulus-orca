@@ -94,7 +94,12 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                         }
                     ]
                 )
-                print(request_method.value)
+                # Verifies that request_method is set properly (new_job or update_file)
+                self.assertTrue(
+                    request_method.value == "new_job"
+                    or request_method.value == "update_file",
+                    f"Incorrect Request Method: {request_method.value}",
+                )
 
     @patch.dict(
         os.environ,
