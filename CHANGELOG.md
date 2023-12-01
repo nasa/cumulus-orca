@@ -21,6 +21,8 @@ and includes an additional section for migration notes.
 
 ### Changed
 
+- *ORCA-361* Removed hardcoded test values from `extract_file_paths_for_granule` unit tests.
+
 ### Deprecated
 
 ### Removed
