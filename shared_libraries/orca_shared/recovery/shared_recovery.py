@@ -27,6 +27,8 @@ class RequestMethod(Enum):
 
     NEW_JOB = "new_job"
     UPDATE_FILE = "update_file"
+    DELETE_FILE = "delete_file"
+    GET_FILE = "get_file"
 
 
 class OrcaStatus(Enum):

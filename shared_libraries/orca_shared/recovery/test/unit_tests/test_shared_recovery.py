@@ -39,6 +39,8 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
         self.request_methods = [
             shared_recovery.RequestMethod.NEW_JOB,
             shared_recovery.RequestMethod.UPDATE_FILE,
+            shared_recovery.RequestMethod.DELETE_FILE,
+            shared_recovery.RequestMethod.GET_FILE,
         ]
         self.statuses = [
             shared_recovery.OrcaStatus.PENDING,
