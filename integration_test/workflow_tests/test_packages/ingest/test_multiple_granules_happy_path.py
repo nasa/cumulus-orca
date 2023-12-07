@@ -191,217 +191,217 @@ class TestMultipleGranulesHappyPath(TestCase):
             except Exception as ex:
                 logger.error(ex)
                 raise
-            # # Let the catalog update
-            # time.sleep(30)
-            # # noinspection PyArgumentList
-            # catalog_input = {
-            #     "pageIndex": 0,
-            #     "collectionId": [collection_id],
-            #     "granuleId": [
-            #         granule_id_1,
-            #         granule_id_2,
-            #     ],
-            #     "endTimestamp": int((time.time() + 5) * 1000),
-            # }
-            # catalog_output = helpers.post_to_api(
-            #     my_session,
-            #     helpers.api_url + "/catalog/reconcile/",
-            #     data=json.dumps(catalog_input),
-            #     headers={"Host": helpers.aws_api_name},
-            # )
-            # self.assertEqual(
-            #     200,
-            #     catalog_output.status_code,
-            #     f"Error occurred while contacting API: " f"{catalog_output.content}",
-            # )
-            # expected_catalog_output_granules = [
-            #     {
-            #         "providerId": provider_id,
-            #         "collectionId": collection_id,
-            #         "id": granule_id_1,
-            #         "createdAt": createdAt_time,
-            #         "executionId": execution_id,
-            #         "files": [
-            #             {
-            #                 "name": name_1,
-            #                 "cumulusArchiveLocation": cumulus_bucket_name,
-            #                 "orcaArchiveLocation": recovery_bucket_name,
-            #                 "keyPath": key_name_1,
-            #                 "sizeBytes": 6,
-            #                 "hash": file_1_hash,
-            #                 "hashType": file_1_hash_type,
-            #                 "storageClass": "GLACIER",
-            #                 "version": s3_versions[0],
-            #             }
-            #         ],
-            #         "ingestDate": mock.ANY,
-            #         "lastUpdate": mock.ANY,
-            #     },
-            #     {
-            #         "providerId": provider_id,
-            #         "collectionId": collection_id,
-            #         "id": granule_id_2,
-            #         "createdAt": createdAt_time,
-            #         "executionId": execution_id,
-            #         "files": [
-            #             {
-            #                 "name": name_2,
-            #                 "cumulusArchiveLocation": cumulus_bucket_name,
-            #                 "orcaArchiveLocation": recovery_bucket_name,
-            #                 "keyPath": key_name_2,
-            #                 "sizeBytes": 205640819682 if use_large_file else 6,
-            #                 "hash": None,
-            #                 "hashType": None,
-            #                 "storageClass": "GLACIER",
-            #                 "version": s3_versions[1],
-            #             }
-            #         ],
-            #         "ingestDate": mock.ANY,
-            #         "lastUpdate": mock.ANY,
-            #     },
-            # ]
-            # expected_catalog_output = {"anotherPage": False, "granules": mock.ANY}
-            # catalog_output_json = catalog_output.json()
-            # self.assertEqual(
-            #     expected_catalog_output,
-            #     catalog_output_json,
-            #     "Expected API output not returned.",
-            # )
-            # # Make sure all given granules are present without checking order.
-            # self.assertCountEqual(
-            #     expected_catalog_output_granules,
-            #     catalog_output_json["granules"],
-            #     f"Expected API output granules not returned. Request: {catalog_input}",
-            # )
+            # Let the catalog update
+            time.sleep(30)
+            # noinspection PyArgumentList
+            catalog_input = {
+                "pageIndex": 0,
+                "collectionId": [collection_id],
+                "granuleId": [
+                    granule_id_1,
+                    granule_id_2,
+                ],
+                "endTimestamp": int((time.time() + 5) * 1000),
+            }
+            catalog_output = helpers.post_to_api(
+                my_session,
+                helpers.api_url + "/catalog/reconcile/",
+                data=json.dumps(catalog_input),
+                headers={"Host": helpers.aws_api_name},
+            )
+            self.assertEqual(
+                200,
+                catalog_output.status_code,
+                f"Error occurred while contacting API: " f"{catalog_output.content}",
+            )
+            expected_catalog_output_granules = [
+                {
+                    "providerId": provider_id,
+                    "collectionId": collection_id,
+                    "id": granule_id_1,
+                    "createdAt": createdAt_time,
+                    "executionId": execution_id,
+                    "files": [
+                        {
+                            "name": name_1,
+                            "cumulusArchiveLocation": cumulus_bucket_name,
+                            "orcaArchiveLocation": recovery_bucket_name,
+                            "keyPath": key_name_1,
+                            "sizeBytes": 6,
+                            "hash": file_1_hash,
+                            "hashType": file_1_hash_type,
+                            "storageClass": "GLACIER",
+                            "version": s3_versions[0],
+                        }
+                    ],
+                    "ingestDate": mock.ANY,
+                    "lastUpdate": mock.ANY,
+                },
+                {
+                    "providerId": provider_id,
+                    "collectionId": collection_id,
+                    "id": granule_id_2,
+                    "createdAt": createdAt_time,
+                    "executionId": execution_id,
+                    "files": [
+                        {
+                            "name": name_2,
+                            "cumulusArchiveLocation": cumulus_bucket_name,
+                            "orcaArchiveLocation": recovery_bucket_name,
+                            "keyPath": key_name_2,
+                            "sizeBytes": 205640819682 if use_large_file else 6,
+                            "hash": None,
+                            "hashType": None,
+                            "storageClass": "GLACIER",
+                            "version": s3_versions[1],
+                        }
+                    ],
+                    "ingestDate": mock.ANY,
+                    "lastUpdate": mock.ANY,
+                },
+            ]
+            expected_catalog_output = {"anotherPage": False, "granules": mock.ANY}
+            catalog_output_json = catalog_output.json()
+            self.assertEqual(
+                expected_catalog_output,
+                catalog_output_json,
+                "Expected API output not returned.",
+            )
+            # Make sure all given granules are present without checking order.
+            self.assertCountEqual(
+                expected_catalog_output_granules,
+                catalog_output_json["granules"],
+                f"Expected API output granules not returned. Request: {catalog_input}",
+            )
 
-            # recovery check
-        #         self.partial_test_recovery_happy_path(
-        #             boto3_session,
-        #             collection_id,
-        #             granule_id_1,
-        #             name_1,
-        #             key_name_1,
-        #             recovery_bucket_name,
-        #         )
+            recovery check
+                self.partial_test_recovery_happy_path(
+                    boto3_session,
+                    collection_id,
+                    granule_id_1,
+                    name_1,
+                    key_name_1,
+                    recovery_bucket_name,
+                )
         except Exception as ex:
             logger.error(ex)
             raise
 
-    # def partial_test_recovery_happy_path(
-    #     self,
-    #     boto3_session,
-    #     collection_id: str,
-    #     granule_id: str,
-    #     file_name: str,
-    #     file_key: str,
-    #     orca_bucket_name: str,
-    # ):
-    #     target_bucket = helpers.buckets["private"]["name"]
-    #     # noinspection PyTypeChecker
-    #     recovery_request_record = helpers.RecoveryRequestRecord(
-    #         [
-    #             helpers.RecoveryRequestGranule(
-    #                 collection_id,
-    #                 granule_id,
-    #                 [
-    #                     helpers.RecoveryRequestFile(
-    #                         file_name, file_key, orca_bucket_name, target_bucket
-    #                     )
-    #                 ],
-    #             )
-    #         ],
-    #         None,
-    #     )
-    #     step_function_results = self.initiate_recovery(
-    #         boto3_session=boto3_session,
-    #         recovery_request_record=recovery_request_record,
-    #         file_bucket_maps=[{"regex": ".*", "bucket": "private"}],
-    #     )
-    #     self.assertEqual(
-    #         "SUCCEEDED",
-    #         step_function_results["status"],
-    #         "Error occurred while starting step function.",
-    #     )
-    #     expected_output = {
-    #         "granules": [
-    #             {
-    #                 "collectionId": collection_id,
-    #                 "granuleId": granule_id,
-    #                 "keys": [{"key": file_key, "destBucket": target_bucket}],
-    #                 "recoverFiles": [
-    #                     {
-    #                         "success": True,
-    #                         "filename": file_name,
-    #                         "keyPath": file_key,
-    #                         "restoreDestination": target_bucket,
-    #                         "s3MultipartChunksizeMb": None,
-    #                         "statusId": 1,
-    #                         "requestTime": mock.ANY,
-    #                         "lastUpdate": mock.ANY,
-    #                     }
-    #                 ],
-    #             }
-    #         ],
-    #         "asyncOperationId": mock.ANY,
-    #     }
-    #     actual_output = json.loads(step_function_results["output"])
-    #     self.assertEqual(
-    #         expected_output,
-    #         actual_output,
-    #         "Expected recovery step function output not returned.",
-    #     )
+    def partial_test_recovery_happy_path(
+        self,
+        boto3_session,
+        collection_id: str,
+        granule_id: str,
+        file_name: str,
+        file_key: str,
+        orca_bucket_name: str,
+    ):
+        target_bucket = helpers.buckets["private"]["name"]
+        # noinspection PyTypeChecker
+        recovery_request_record = helpers.RecoveryRequestRecord(
+            [
+                helpers.RecoveryRequestGranule(
+                    collection_id,
+                    granule_id,
+                    [
+                        helpers.RecoveryRequestFile(
+                            file_name, file_key, orca_bucket_name, target_bucket
+                        )
+                    ],
+                )
+            ],
+            None,
+        )
+        step_function_results = self.initiate_recovery(
+            boto3_session=boto3_session,
+            recovery_request_record=recovery_request_record,
+            file_bucket_maps=[{"regex": ".*", "bucket": "private"}],
+        )
+        self.assertEqual(
+            "SUCCEEDED",
+            step_function_results["status"],
+            "Error occurred while starting step function.",
+        )
+        expected_output = {
+            "granules": [
+                {
+                    "collectionId": collection_id,
+                    "granuleId": granule_id,
+                    "keys": [{"key": file_key, "destBucket": target_bucket}],
+                    "recoverFiles": [
+                        {
+                            "success": True,
+                            "filename": file_name,
+                            "keyPath": file_key,
+                            "restoreDestination": target_bucket,
+                            "s3MultipartChunksizeMb": None,
+                            "statusId": 1,
+                            "requestTime": mock.ANY,
+                            "lastUpdate": mock.ANY,
+                        }
+                    ],
+                }
+            ],
+            "asyncOperationId": mock.ANY,
+        }
+        actual_output = json.loads(step_function_results["output"])
+        self.assertEqual(
+            expected_output,
+            actual_output,
+            "Expected recovery step function output not returned.",
+        )
 
-    #     recovery_request_record.async_operation_id = actual_output["asyncOperationId"]
+        recovery_request_record.async_operation_id = actual_output["asyncOperationId"]
 
-    #     helpers.create_recovery_request_record(
-    #         recovery_request_record_happy_path_filename, recovery_request_record
-    #     )
+        helpers.create_recovery_request_record(
+            recovery_request_record_happy_path_filename, recovery_request_record
+        )
 
-    # @staticmethod
-    # def initiate_recovery(
-    #     boto3_session,
-    #     recovery_request_record: helpers.RecoveryRequestRecord,
-    #     file_bucket_maps: List[Dict],
-    # ):
-    #     recovery_step_function_input = {
-    #         "payload": {
-    #             "granules": [
-    #                 {
-    #                     "collectionId": granule.collection_id,
-    #                     "granuleId": granule.granule_id,
-    #                     "files": [
-    #                         {
-    #                             "fileName": file.file_name,
-    #                             "key": file.file_key,
-    #                             "bucket": file.orca_bucket_name,
-    #                         }
-    #                         for file in granule.files
-    #                     ],
-    #                 }
-    #                 for granule in recovery_request_record.granules
-    #             ],
-    #         },
-    #         "config": {
-    #             "buckets": helpers.buckets,
-    #             "fileBucketMaps": file_bucket_maps,
-    #             "excludedFileExtensions": [],
-    #             "asyncOperationId": None,
-    #             "s3MultipartChunksizeMb": None,
-    #             "defaultBucketOverride": None,
-    #             "defaultRecoveryTypeOverride": None,
-    #         },
-    #     }
+    @staticmethod
+    def initiate_recovery(
+        boto3_session,
+        recovery_request_record: helpers.RecoveryRequestRecord,
+        file_bucket_maps: List[Dict],
+    ):
+        recovery_step_function_input = {
+            "payload": {
+                "granules": [
+                    {
+                        "collectionId": granule.collection_id,
+                        "granuleId": granule.granule_id,
+                        "files": [
+                            {
+                                "fileName": file.file_name,
+                                "key": file.file_key,
+                                "bucket": file.orca_bucket_name,
+                            }
+                            for file in granule.files
+                        ],
+                    }
+                    for granule in recovery_request_record.granules
+                ],
+            },
+            "config": {
+                "buckets": helpers.buckets,
+                "fileBucketMaps": file_bucket_maps,
+                "excludedFileExtensions": [],
+                "asyncOperationId": None,
+                "s3MultipartChunksizeMb": None,
+                "defaultBucketOverride": None,
+                "defaultRecoveryTypeOverride": None,
+            },
+        }
 
-    #     logger.info(f"Sending event to recovery step function")
-    #     logger.info(recovery_step_function_input)
+        logger.info(f"Sending event to recovery step function")
+        logger.info(recovery_step_function_input)
 
-    #     execution_info = boto3_session.client("stepfunctions").start_execution(
-    #         stateMachineArn=helpers.orca_recovery_step_function_arn,
-    #         input=json.dumps(recovery_step_function_input, indent=4),
-    #     )
+        execution_info = boto3_session.client("stepfunctions").start_execution(
+            stateMachineArn=helpers.orca_recovery_step_function_arn,
+            input=json.dumps(recovery_step_function_input, indent=4),
+        )
 
-    #     step_function_results = helpers.get_state_machine_execution_results(
-    #         boto3_session, execution_info["executionArn"]
-    #     )
+        step_function_results = helpers.get_state_machine_execution_results(
+            boto3_session, execution_info["executionArn"]
+        )
 
-    #     return step_function_results
+        return step_function_results
