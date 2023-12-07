@@ -271,5 +271,5 @@ def post_entry_to_standard_queue(
 
 
 def get_request_method(request_method: RequestMethod):
-    if request_method != "new_job":
+    if request_method != "new_job" or request_method != "update_file":
         raise Exception(f"{request_method}")
