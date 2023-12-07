@@ -44,6 +44,7 @@ and includes an additional section for migration notes.
 ### Fixed
 
 - *ORCA-731* Updated boto3 library used for unit tests to version 1.28.76 from version 1.18.40 to fix unit test warnings.
+- *ORCA-722* Fixed multiple granules happy path integration tests by randomizing large file name to avoid duplicate data being ingested.
 
 ### Security
 
