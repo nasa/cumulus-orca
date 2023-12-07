@@ -94,7 +94,7 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                         }
                     ]
                 )
-                # Verifies that request_method is set properly to new_job or update_file, if not set to either value test will fail
+                # Verifies that request_method is set properly to new_job or update_file
                 self.assertTrue(
                     request_method.value == "new_job"
                     or request_method.value == "update_file",
@@ -287,3 +287,9 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                     uuid.uuid4().__str__(),
                 )
             self.assertEqual("Error message is required.", str(cm.exception))
+
+    def test_request_method_raises_error(self):
+        for request_method in self.request_methods:
+            with self.assertRaises(ValueError) as cm:
+                shared_recovery.get_request_method(request_method.value)
+            self.assertEqual(str(cm.exception), "new_job")
