@@ -287,9 +287,3 @@ class TestSharedRecoveryLibraries(unittest.TestCase):
                     uuid.uuid4().__str__(),
                 )
             self.assertEqual("Error message is required.", str(cm.exception))
-
-    def test_request_method_raises_error(self):
-        for request_method in self.request_methods:
-            with self.assertRaises(ValueError) as cm:
-                shared_recovery.get_request_method(request_method.value)
-            self.assertEqual(str(cm.exception), "new_job")

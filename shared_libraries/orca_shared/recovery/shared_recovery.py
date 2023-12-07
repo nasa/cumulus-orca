@@ -268,8 +268,3 @@ def post_entry_to_standard_queue(
         raise Exception(
             f"Calculated MD5 of {md5_body} does not match SQS MD5 of {sqs_md5}"
         )
-
-
-def get_request_method(request_method: RequestMethod):
-    if request_method != "new_job" or request_method != "update_file":
-        raise Exception(f"{request_method}")
