@@ -162,11 +162,11 @@ class TestMultipleGranulesHappyPath(TestCase):
                 step_function_results["status"],
                 "Error occurred while starting step function.",
             )
-            # self.assertEqual(
-            #     expected_output,
-            #     json.loads(step_function_results["output"]),
-            #     "Expected ingest step function output not returned.",
-            # )
+            self.assertEqual(
+                expected_output,
+                json.loads(step_function_results["output"]),
+                "Expected ingest step function output not returned.",
+            )
             s3_versions = []
             # verify that the objects exist in recovery bucket
             try:
@@ -274,15 +274,15 @@ class TestMultipleGranulesHappyPath(TestCase):
                 f"Expected API output granules not returned. Request: {catalog_input}",
             )
 
-            recovery check
-                self.partial_test_recovery_happy_path(
-                    boto3_session,
-                    collection_id,
-                    granule_id_1,
-                    name_1,
-                    key_name_1,
-                    recovery_bucket_name,
-                )
+            # recovery check
+            self.partial_test_recovery_happy_path(
+                boto3_session,
+                collection_id,
+                granule_id_1,
+                name_1,
+                key_name_1,
+                recovery_bucket_name,
+            )
         except Exception as ex:
             logger.error(ex)
             raise
