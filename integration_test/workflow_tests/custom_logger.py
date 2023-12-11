@@ -11,7 +11,6 @@ class CustomLoggerAdapter(logging.LoggerAdapter):
     @staticmethod
     def set_logger(group_name):
         logger = logging.getLogger(__name__)
-        #logger.propagate = False
         logger_adapter = CustomLoggerAdapter(logger, {"my_context": group_name})
         if not logger.handlers:
             syslog = logging.StreamHandler()
