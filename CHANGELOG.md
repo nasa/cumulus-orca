@@ -14,15 +14,17 @@ and includes an additional section for migration notes.
 - *Security* - Vulnerabilities fixes and changes.
 
 ## [Unreleased]
-- *ORCA-366* Adding unit test for request_method
 
 ### Migration Notes
 
 ### Added
 
+- *ORCA-366* Adding unit test for request_method
+
 ### Changed
 
 - *ORCA-361* Removed hardcoded test values from `extract_file_paths_for_granule` unit tests.
+- *ORCA-710* Removing duplicate logging messages in `integration_test/workflow_tests/custom_logger.py`
 
 ### Deprecated
 
