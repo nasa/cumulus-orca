@@ -25,6 +25,7 @@ and includes an additional section for migration notes.
 
 - *ORCA-361* Removed hardcoded test values from `extract_file_paths_for_granule` unit tests.
 - *ORCA-710* Removing duplicate logging messages in `integration_test/workflow_tests/custom_logger.py`
+- *ORCA-784* Changed documentation to replace restore with copy based on task's naming.
 
 ### Deprecated
 
