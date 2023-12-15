@@ -56,13 +56,12 @@ The following is an input event example that an operator might set up while runn
   "payload": {
     "granules": [
       {
+        "collectionId": "1234",
         "granuleId": "integrationGranuleId",
-        "version": "integrationGranuleVersion",
         "files": [
           {
             "fileName": "MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
             "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
-            "bucket": "test-orca-primary"
           }
         ]
       }
@@ -111,10 +110,6 @@ The following is an input event example that an operator might set up while runn
       ]
     }
   },
-  "cumulus_meta": {
-    "system_bucket": "test-internal",
-    "asyncOperationId": "1234"
-  }
 }
 ```
 
@@ -125,13 +120,13 @@ The following is the corresponding output that the workflow will return if succe
 {
   "granules": [
     {
+      "collectionId": "integrationCollectionId",
       "granuleId": "integrationGranuleId",
       "version": "integrationGranuleVersion",
       "files": [
         {
           "fileName": "MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
           "key": "MOD09GQ/006/MOD09GQ.A2017025.h21v00.006.2017034065104.hdf",
-          "bucket": "test-orca-primary"
         }
       ],
       "keys": [
