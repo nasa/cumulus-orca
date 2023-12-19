@@ -9,10 +9,10 @@ import uuid
 from test.helpers import create_handler_event, create_task_event
 from unittest.mock import MagicMock, Mock, patch
 
+import extract_filepaths_for_granule
+
 # noinspection PyPackageRequirements
 import fastjsonschema as fastjsonschema
-
-import extract_filepaths_for_granule
 
 # Generating schema validators can take time, so do it once and reuse.
 with open("schemas/input.json", "r") as raw_schema:

@@ -8,9 +8,10 @@ import json
 import re
 from typing import Any, Dict, List
 
-import fastjsonschema as fastjsonschema
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
+
+import fastjsonschema as fastjsonschema
 from fastjsonschema import JsonSchemaException
 
 # Set AWS powertools logger
@@ -110,7 +111,7 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any]):
                 else:
                     matching_regex = next(
                         filter(
-                            lambda key: re.compile(key).match(file_name), regex_buckets
+                            lambda key: re.compile(key).search(file_name), regex_buckets
                         ),
                         None,
                     )
