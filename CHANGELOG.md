@@ -26,6 +26,7 @@ and includes an additional section for migration notes.
 - *ORCA-361* Removed hardcoded test values from `extract_file_paths_for_granule` unit tests.
 - *ORCA-710* Removing duplicate logging messages in `integration_test/workflow_tests/custom_logger.py`
 - *ORCA-784* Changed documentation to replace restore with copy based on task's naming as well as changed file name from `website/docs/operator/restore-to-orca.mdx` to `website/docs/operator/reingest-to-orca.mdx`.
+- *ORCA-724* Updated ORCA recovery documentation to include recovery workflow process and relevant inputs and outputs in `website/docs/operator/data-recovery.md`.
 - *ORCA-789* Updated `extract_filepaths_for_granule` to more flexibly match file-regex values to keys.
 
 ### Deprecated

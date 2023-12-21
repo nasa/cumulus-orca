@@ -7,6 +7,10 @@ description: Provides documentation for Operators to recover missing data.
 import MyImage from '@site/docs/templates/pan-zoom-image.mdx';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 
+:::important
+As of ORCA v8.1 the Cumulus Message Adapter is no longer used. Users will need to deploy the recovery adapter before the recovery can be ran. Reference [Deployment with Cumulus](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-with-cumulus#modify-the-recovery-workflow)
+:::
+
 ## Recovery via Cumulus Dashboard
 
 Recovery processes are kicked off manually by an operator through the Cumulus Dashboard. 
@@ -56,6 +60,7 @@ The following is an input event example that an operator might set up while runn
   "payload": {
     "granules": [
       {
+        "collectionId": "1234",
         "granuleId": "integrationGranuleId",
         "version": "integrationGranuleVersion",
         "files": [
@@ -125,6 +130,7 @@ The following is the corresponding output that the workflow will return if succe
 {
   "granules": [
     {
+      "collectionId": "integrationCollectionId",
       "granuleId": "integrationGranuleId",
       "version": "integrationGranuleVersion",
       "files": [
