@@ -7,7 +7,7 @@ ENV NODE_VERSION="20.x"
 ENV TERRAFORM_VERSION "1.5.5"
 ENV PYTHON_VERSION "3.9.17"
 
-# Add repos & update package index
+# Add YARN repos & update package index
 RUN \
 curl -sL https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo && \
 curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm" -o "session-manager-plugin.rpm" && \
