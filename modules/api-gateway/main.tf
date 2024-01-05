@@ -233,10 +233,17 @@ resource "aws_lambda_permission" "request_status_for_job_api_permission" {
   source_arn    = "${aws_api_gateway_rest_api.orca_api.execution_arn}/*/${aws_api_gateway_method.request_status_for_job_api_method.http_method}${aws_api_gateway_resource.request_status_for_job_api_resource_recovery_jobs.path}"
 }
 
+## API resource for pathing orca/
+resource "aws_api_gateway_resource" "orca_api_resource" {
+  path_part   = "orca"
+  parent_id   = aws_api_gateway_rest_api.orca_api.root_resource_id
+  rest_api_id = aws_api_gateway_rest_api.orca_api.id
+}
+
 ## API resource for pathing orca/datamanagement
 resource "aws_api_gateway_resource" "orca_datamanagement_api_resource" {
   path_part   = "datamanagement"
-  parent_id   = aws_api_gateway_rest_api.orca_api.root_resource_id
+  parent_id   = aws_api_gateway_resource.orca_api_resource.id
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
 }
 
