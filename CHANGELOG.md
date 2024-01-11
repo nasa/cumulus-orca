@@ -27,6 +27,7 @@ and includes an additional section for migration notes.
 - *ORCA-724* Updated ORCA recovery documentation to include recovery workflow process and relevant inputs and outputs in `website/docs/operator/data-recovery.md`.
 - *ORCA-789* Updated `extract_filepaths_for_granule` to more flexibly match file-regex values to keys.
 - *ORCA-787* Modified `modules/api-gateway/main.tf` api gateway stage name to remove the extra orca from the data management URL path
+- *ORCA-805* Changed `modules/security_groups/main.tf` security group resource name from `vpc_postgres_ingress_all_egress` to `vpc-postgres-ingress-all-egress` to resolve errors when upgrading from ORCA v8 to v9. Also removed graphql_1 dependency `module.orca_lambdas` since this module does not depend on the lambda module in `modules/orca/main.tf`
 
 ### Deprecated
 
