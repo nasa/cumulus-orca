@@ -90,6 +90,7 @@ The lambda handler event expects a dictionary having a list of granules as input
       "granules":[
          {
             "granuleId":"MOD09GQ.A0219114.N5aUCG.006.0656338553321",
+            "collectionId": "MOD14A1___061",
             "dataType":"MOD09GQ_test-jk2-IngestGranuleSuccess-1558420117156",
             "version":"006",
             "files":[
@@ -158,6 +159,7 @@ The output of lambda handler returns a dictionary having a list of granules that
    "granules":[
       {
          "granuleId":"MOD09GQ.A0219114.N5aUCG.006.0656338553321",
+         "collectionId": "MOD14A1___061",
          "keys":[
             {
                 "key": "MOD09GQ___006/2017/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.h5",

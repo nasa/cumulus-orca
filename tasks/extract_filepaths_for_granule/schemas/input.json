@@ -14,7 +14,7 @@
               "description": "The user specified recovery S3 bucket to store recovered files",
               "type": ["string", "null"]
             },
-              "collectionId": {
+            "collectionId": {
               "description": "The id of the collection containing the granule.",
               "type": "string"
             },
