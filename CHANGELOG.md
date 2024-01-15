@@ -34,6 +34,8 @@ and includes an additional section for migration notes.
 
 - *ORCA-361* Removed hardcoded test values from `extract_file_paths_for_granule` unit tests.
 - *ORCA-710* Removed duplicate logging messages in `integration_test/workflow_tests/custom_logger.py`
+- *ORCA-815* Removed steps for creating buckets using NGAP form in ORCA archive bucket documentation.
+
 
 ### Fixed
 
