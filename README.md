@@ -1,6 +1,6 @@
 # Overview
 
-The Operational Recovery Cloud Archive (ORCA) provides a baseline solution for creating, and managing operational backups in the cloud. In addition, best practices and recovery code that manages common baseline recovery scenarios is also maintained. Requirements and use cases for ORCA are derived from the ORCA Working Group.
+The Operational Recovery Cloud Archive (ORCA) provides a baseline solution for creating, storing, and managing operational backups in the cloud. In addition, best practices and recovery code that manages common baseline recovery scenarios is also maintained. Requirements and use cases for ORCA are derived from the ORCA Working Group.
 
 ## ORCA Static Documentation
 
