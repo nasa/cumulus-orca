@@ -41,6 +41,7 @@ and includes an additional section for migration notes.
 
 - *ORCA-811* Fixed `cumulus_orca` docker image by updating nodejs installation process.
 - *ORCA-802* Fixed `extract_file_for_granule` documentation and schemas to include `collectionId` in input.
+- *ORCA-785* Fixed checksum integrity issue in ORCA documentation bamboo pipeline.
 
 
 ### Security
