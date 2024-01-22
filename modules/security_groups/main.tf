@@ -2,7 +2,7 @@
 
 ## vpc_postgres_ingress_all_egress - PostgreSQL Security Group
 ## ==============================================================================
-resource "aws_security_group" "vpc-postgres-ingress-all-egress" {
+resource "aws_security_group" "vpc_postgres_ingress_all_egress" {
   ## OPTIONAL
   description = "ORCA security group to allow PostgreSQL access."
   name        = "${var.prefix}-vpc-ingress-all-egress"
