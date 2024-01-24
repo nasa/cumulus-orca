@@ -537,10 +537,6 @@ resource "aws_api_gateway_deployment" "orca_api_deployment" {
     aws_api_gateway_integration.internal_reconcile_report_phantom_api_integration,
     aws_api_gateway_integration.internal_reconcile_report_mismatch_api_integration
   ]
-
-  lifecycle {
-    create_before_destroy = true
-  }
 }
 
 # Stage for API Gateway
