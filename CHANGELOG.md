@@ -26,6 +26,7 @@ and includes an additional section for migration notes.
 ### Added
 
 - *ORCA-366* Added unit test for shared libraries.
+- *ORCA-769* Added API Gateway Stage resource to `modules/api-gateway/main.tf`
 
 ### Changed
 
