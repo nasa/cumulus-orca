@@ -27,6 +27,7 @@ and includes an additional section for migration notes.
 
 - *ORCA-366* Added unit test for shared libraries.
 - *ORCA-769* Added API Gateway Stage resource to `modules/api-gateway/main.tf`
+- *ORCA-369* Added DR S3 bucket template to `modules/dr_buckets/dr_buckets.tf` and updated S3 deployment documentation with steps.
 
 ### Changed
 
