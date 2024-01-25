@@ -93,6 +93,25 @@ aws cloudformation deploy --stack-name <PREFIX>-orca-bucket-stack --template-fil
 ```
 This will create archive and reports buckets with the necessary bucket policies giving the Cumulus Account permission to write data to the archive bucket.
 
+### Via Terraform
+
+The Terraform template for creating the ORCA DR buckets can be found [here](https://github.com/nasa/cumulus-orca/blob/master/modules/dr_buckets/dr_buckets.tf). Make sure have AWS CLI installed and a DR profile for the DR account configured before deploying this template. More information on how to configure an AWS CLI profile can be found [here](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-options.html#cli-configure-options-list:~:text=as%20programmatically%20useful.-,%2D%2Dprofile%20%3Cstring%3E,-Specifies%20the%20named).
+
+From your terminal, first run `terraform init` followed by `terraform apply`. When running the apply Terraform will ask for the following inputs:
+1. `aws_profile` - This is the profile configured for the DR AWS account.
+2. `cumulus_account_id` - This is the account ID of the Cumulus AWS account.
+3. `prefix` - This is the prefix to use for the bucket names.
+
+Tags are an optional variable that can be set if you wish to have the DR buckets tagged.
+
+Optionally you can provide Terraform the required inputs through the terminal with the following:
+```
+terraform apply \
+-var=aws_profile="<AWS_DR_PROFILE>" \
+-var=cumulus_account_id="<CUMULUS_ACCOUNT_ID>" \
+-var=prefix="PREFIX"
+```
+
 ### Via AWS GUI
 
 For each of the buckets listed below
