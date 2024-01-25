@@ -19,6 +19,24 @@ and includes an additional section for migration notes.
 
 ### Added
 
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [9.0.2] 2024-01-26
+
+### Migration Notes
+
+If you are migrating from ORCA v8.x.x to this version, see the migration notes under v9.0.0.
+
+### Added
+
 - *ORCA-366* Added unit test for shared libraries.
 
 ### Changed
