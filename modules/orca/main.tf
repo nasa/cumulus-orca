@@ -242,7 +242,7 @@ module "orca_ecs" {
 ## =============================
 module "orca_graphql_1" {
   source     = "../graphql_1"
-  depends_on = [module.orca_lambdas, module.orca_ecs, module.orca_graphql_0, module.orca_secretsmanager] ## secretsmanager sets up db connection secrets.
+  depends_on = [module.orca_ecs, module.orca_graphql_0, module.orca_secretsmanager] ## secretsmanager sets up db connection secrets.
   ## --------------------------
   ## Cumulus Variables
   ## --------------------------
