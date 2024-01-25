@@ -17,12 +17,6 @@ and includes an additional section for migration notes.
 
 ### Migration Notes
 
-- For users upgrading from ORCA v8.x.x to v9.x.x follow the below steps before deploying:
-    1. Run the Lambda deletion script found in `python3 bin/delete_lambda.py` this will delete all of the ORCA Lambdas with a provided prefix. Or delete them manually in the AWS console.
-    2. Navigate to the AWS console and search for the Cumulus RDS security group.
-    3. Remove the inbound rule with the source of `PREFIX-vpc-ingress-all-egress` in Cumulus RDS security group.
-    4. Search for `PREFIX-vpc-ingress-all-egress` and delete the security group **NOTE:** Due to the Lambdas using ENIs, when deleting the securty groups it may say they are still associated with a Lambda that was deleted by the script. AWS may need a few minutes to refresh to fully disassociate the ENIs completely, if this error appears wait a few minutes and then try again.
-
 ### Added
 
 ### Changed
@@ -99,7 +93,7 @@ If you are migrating from ORCA v8.x.x to this version, see the migration notes u
 ### Migration Notes
 
 - Update terraform to the latest 1.5 version
-- For users upgrading from ORCA v8.x.x to v9.x.x follow the below steps before deploying:
+- For users upgrading from ORCA v8.x.x to v9.x.x, follow the below steps before deploying:
     1. Run the Lambda deletion script found in `python3 bin/delete_lambda.py` this will delete all of the ORCA Lambdas with a provided prefix. Or delete them manually in the AWS console.
     2. Navigate to the AWS console and search for the Cumulus RDS security group.
     3. Remove the inbound rule with the source of `PREFIX-vpc-ingress-all-egress` in Cumulus RDS security group.
