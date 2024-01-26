@@ -14,11 +14,6 @@ variable "cumulus_account_id" {
   description = "Account ID of the Cumulus Account"
 }
 
-variable "aws_profile" {
-  type    = string
-  description = "AWS CLI profile to use for installation and monitoring of AWS objects."
-}
-
 ## Terraform Configuration
 terraform {
   required_version = ">= 1.5"
@@ -27,14 +22,6 @@ terraform {
       source  = "hashicorp/aws"
       version = ">= 5.0.0"
     }
-  }
-}
-
-provider "aws" {
-  profile = var.aws_profile
-
-  ignore_tags {
-    key_prefixes = ["gsfc-ngap"]
   }
 }
 
