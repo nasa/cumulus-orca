@@ -44,13 +44,12 @@ and includes an additional section for migration notes.
 - *ORCA-710* Removed duplicate logging messages in `integration_test/workflow_tests/custom_logger.py`
 - *ORCA-815* Removed steps for creating buckets using NGAP form in ORCA archive bucket documentation.
 
-
 ### Fixed
 
 - *ORCA-811* Fixed `cumulus_orca` docker image by updating nodejs installation process.
 - *ORCA-802* Fixed `extract_file_for_granule` documentation and schemas to include `collectionId` in input.
 - *ORCA-785* Fixed checksum integrity issue in ORCA documentation bamboo pipeline.
-
+- *ORCA-820* Updated bandit and moto libraries to fix some snyk vulnerabilities.
 
 ### Security
 
