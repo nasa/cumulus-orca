@@ -1,4 +1,3 @@
-# ORCA DR S3 Variables
 variable "prefix" {
   type        = string
   description = "Prefix used to prepend to all object names and tags."
@@ -20,15 +19,18 @@ variable "aws_profile" {
   description = "AWS CLI profile to use for installation and monitoring of AWS objects."
 }
 
-variable "aws_region" {
-  type        = string
-  description = "AWS Region to create resources in."
-  default = "us-west-2"
+## Terraform Configuration
+terraform {
+  required_version = ">= 1.5"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 5.0.0"
+    }
+  }
 }
 
-# Provider Config
 provider "aws" {
-  region  = var.aws_region
   profile = var.aws_profile
 
   ignore_tags {
