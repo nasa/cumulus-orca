@@ -81,55 +81,6 @@ Error: Error putting S3 notification configuration: AccessDenied: Access Denied
 
 :::
 
-### Via NGAP form
-
-If your accounts are both within EDC, you may skip to [the primary method](#via-aws-gui).
-Otherwise, create a NASD ticket for cross account bucket access.
-This is a turn key request to NGAP. The link to create a ticket is available
-[here](https://bugs.earthdata.nasa.gov/servicedesk/customer/portal/7/create/85).
-
-The sections below provide information on the data needed
-for each of the fields and where to look for information.
-
-#### Project Name
-
-This is the name of the Disaster Recover OU where the ORCA archive bucket resides.
-The project name can be found in your [Cloud Tamer](http://cloud.earthdata.nasa.gov/)
-account and is usually in the format of \[project name\]-app-\[application name\]-\[environment\]-\[4 digit number\].
-For example, an ORCA disaster recovery OU project name may look like the following
-orca-app-dr-sandbox-1234.
-
-#### Account Type:
-
-This is the OU environment the bucket resides in. Typical values for this field
-are Sandbox, SIT, UAT, and Production.
-
-#### Business Justification:
-
-This is the business justification for the cross account bucket access. Below is
-an example of a justification.
-
-> The ORCA Cumulus application in the Cumulus Sandbox OU needs to read/write to
-> the ORCA DR account S3 buckets in order to create an operational archive copy of
-> ORCA data and recover data back to the primary Cumulus data holdings in case
-> of a failure. Note that only `GLACIER` and `DEEP_ARCHIVE` storage types are allowed for objects written to the bucket. This cross account access will allow the Cumulus application to
-> seamlessly perform these functions and provide operators with the capability to
-> test and verify disaster recovery scenarios.
-
-#### Bucket Names(s):
-
-This is the name of the ORCA archive bucket created in the Disaster Recover OU.
-Below is an example name of an ORCA archive bucket and ORCA report bucket.
-
-> PREFIX-orca-archive
-> PREFIX-orca-reports
-
-#### Policy:
-
-The policy section is the JSON policy requested for the ORCA archive bucket in
-the Disaster Recovery OU.
-See [the section below](#via-aws-gui) for policy document examples.
-
 ### Via AWS CloudFormation Template
 
 The AWS Cloudformation template for creating the ORCA DR buckets can be found [here](https://github.com/nasa/cumulus-orca/blob/master/modules/dr_buckets_cloudformation/dr-buckets.yaml). Make sure you have AWS CLI installed before deploying this template.
@@ -141,6 +92,23 @@ aws cloudformation deploy --stack-name <PREFIX>-orca-bucket-stack --template-fil
 
 ```
 This will create archive and reports buckets with the necessary bucket policies giving the Cumulus Account permission to write data to the archive bucket.
+
+### Via Terraform
+
+The Terraform template for creating the ORCA DR buckets can be found [here](https://github.com/nasa/cumulus-orca/blob/master/modules/dr_buckets/dr_buckets.tf). Make sure you have AWS CLI installed and AWS configured to deploy to your DR account.
+
+From your terminal, first run `terraform init` followed by `terraform apply`. When running the apply, Terraform will ask for the following inputs:
+1. `cumulus_account_id` - This is the account ID of the Cumulus AWS account.
+2. `prefix` - This is the prefix to use for the bucket names.
+
+Tags are an optional variable that can be set if you wish to have the DR buckets tagged.
+
+Optionally you can provide Terraform the required inputs through the terminal with the following:
+```
+terraform apply \
+-var=cumulus_account_id="<CUMULUS_ACCOUNT_ID>" \
+-var=prefix="PREFIX"
+```
 
 ### Via AWS GUI
 

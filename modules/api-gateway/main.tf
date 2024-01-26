@@ -527,7 +527,7 @@ resource "aws_lambda_permission" "internal_reconcile_report_mismatch_api_permiss
 #deployment for the API
 resource "aws_api_gateway_deployment" "orca_api_deployment" {
   rest_api_id = aws_api_gateway_rest_api.orca_api.id
-  stage_name  = var.api_gateway_stage_name
+
   depends_on = [
     aws_api_gateway_integration.orca_catalog_reporting_api_integration,
     aws_api_gateway_integration.request_status_for_job_api_integration,
@@ -537,4 +537,11 @@ resource "aws_api_gateway_deployment" "orca_api_deployment" {
     aws_api_gateway_integration.internal_reconcile_report_phantom_api_integration,
     aws_api_gateway_integration.internal_reconcile_report_mismatch_api_integration
   ]
+}
+
+# Stage for API Gateway
+resource "aws_api_gateway_stage" "orca_api_stage" {
+  deployment_id = aws_api_gateway_deployment.orca_api_deployment.id
+  rest_api_id   = aws_api_gateway_rest_api.orca_api.id
+  stage_name    = var.api_gateway_stage_name
 }

@@ -9,10 +9,10 @@ import uuid
 from test.helpers import create_handler_event, create_task_event
 from unittest.mock import MagicMock, Mock, patch
 
+import extract_filepaths_for_granule
+
 # noinspection PyPackageRequirements
 import fastjsonschema as fastjsonschema
-
-import extract_filepaths_for_granule
 
 # Generating schema validators can take time, so do it once and reuse.
 with open("schemas/input.json", "r") as raw_schema:
@@ -27,8 +27,16 @@ class TestExtractFilePaths(unittest.TestCase):
     """
 
     def setUp(self):
-        # todo: Remove hardcoded and imported values.
         self.task_input_event = create_task_event()
+        self.granuleId = uuid.uuid4().__str__()
+        self.collectionId = uuid.uuid4().__str__()
+        self.input_bucket = "cumulus-test-sandbox-protected-2"
+        self.protected_bucket = "sndbx-cumulus-protected"
+        self.internal_bucket = "sndbx-cumulus-internal"
+        self.private_bucket = "sndbx-cumulus-private"
+        self.public_bucket = "sndbx-cumulus-public"
+        self.sampleFileName1 = "L0A_HR_RAW_product_0010-of-0420"
+        self.sampleFileName2 = "L0A_HR_RAW_product_0001-of-0019"
 
     @patch("extract_filepaths_for_granule.task")
     @patch("extract_filepaths_for_granule.set_optional_event_property")
@@ -43,41 +51,41 @@ class TestExtractFilePaths(unittest.TestCase):
             extract_filepaths_for_granule.CONFIG_FILE_BUCKETS_KEY: [
                 {
                     "regex": ".*.h5$",
-                    "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.h5",
+                    "sampleFileName": self.sampleFileName1 + ".h5",
                     "bucket": "protected",
                 },
                 {
                     "regex": ".*.cmr.xml$",
-                    "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.iso.xml",
+                    "sampleFileName": self.sampleFileName1 + ".iso.xml",
                     "bucket": "protected",
                 },
                 {
                     "regex": ".*.h5.mp$",
-                    "sampleFileName": "L0A_HR_RAW_product_0001-of-0019.h5.mp",
+                    "sampleFileName": self.sampleFileName2 + ".h5.mp",
                     "bucket": "public",
                 },
                 {
                     "regex": ".*.cmr.json$",
-                    "sampleFileName": "L0A_HR_RAW_product_0001-of-0019.cmr.json",
+                    "sampleFileName": self.sampleFileName2 + ".cmr.json",
                     "bucket": "public",
                 },
             ],
             "buckets": {
-                "protected": {"name": "sndbx-cumulus-protected", "type": "protected"},
-                "internal": {"name": "sndbx-cumulus-internal", "type": "internal"},
-                "private": {"name": "sndbx-cumulus-private", "type": "private"},
-                "public": {"name": "sndbx-cumulus-public", "type": "public"},
+                "protected": {"name": self.protected_bucket, "type": "protected"},
+                "internal": {"name": self.internal_bucket, "type": "internal"},
+                "private": {"name": self.private_bucket, "type": "private"},
+                "public": {"name": self.public_bucket, "type": "public"},
             },
         }
 
         mock_task.return_value = {
             "granules": [
                 {
-                    "collectionId": uuid.uuid4().__str__(),
-                    "granuleId": "L0A_HR_RAW_product_0003-of-0420",
+                    "collectionId": self.collectionId,
+                    "granuleId": self.granuleId,
                     "keys": [
-                        "L0A_HR_RAW_product_0003-of-0420.h5",
-                        "L0A_HR_RAW_product_0003-of-0420.cmr.json",
+                        self.granuleId + ".h5",
+                        self.granuleId + ".cmr.json",
                     ],
                 }
             ]
@@ -101,27 +109,27 @@ class TestExtractFilePaths(unittest.TestCase):
         handler_input_event["config"] = {
             extract_filepaths_for_granule.CONFIG_FILE_BUCKETS_KEY: [
                 {
-                    "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.h5",
+                    "sampleFileName": self.sampleFileName1 + ".h5",
                     "bucket": "protected",
                 },
                 {
-                    "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.iso.xml",
+                    "sampleFileName": self.sampleFileName1 + ".iso.xml",
                     "bucket": "protected",
                 },
                 {
-                    "sampleFileName": "L0A_HR_RAW_product_0001-of-0019.h5.mp",
+                    "sampleFileName": self.sampleFileName2 + ".h5.mp",
                     "bucket": "public",
                 },
                 {
-                    "sampleFileName": "L0A_HR_RAW_product_0001-of-0019.cmr.json",
+                    "sampleFileName": self.sampleFileName2 + ".cmr.json",
                     "bucket": "public",
                 },
             ],
             "buckets": {
-                "protected": {"name": "sndbx-cumulus-protected", "type": "protected"},
-                "internal": {"name": "sndbx-cumulus-internal", "type": "internal"},
-                "private": {"name": "sndbx-cumulus-private", "type": "private"},
-                "public": {"name": "sndbx-cumulus-public", "type": "public"},
+                "protected": {"name": self.protected_bucket, "type": "protected"},
+                "internal": {"name": self.internal_bucket, "type": "internal"},
+                "private": {"name": self.private_bucket, "type": "private"},
+                "public": {"name": self.public_bucket, "type": "public"},
             },
         }
         context = Mock()
@@ -143,15 +151,15 @@ class TestExtractFilePaths(unittest.TestCase):
             "input": {
                 "granules": [
                     {
-                        "collectionId": uuid.uuid4().__str__(),
+                        "collectionId": self.collectionId,
                         "status": "completed",
                         "files": [
                             {
                                 "checksumType": "md5",
-                                "bucket": "podaac-ngap-dev-cumulus-test-input",
+                                "bucket": self.internal_bucket,
                                 "type": "data",
-                                "fileName": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
-                                "key": "L0A_HR_RAW_product_0003-of-0420.cmr.json",
+                                "fileName": self.sampleFileName1 + ".cmr.json",
+                                "key": self.sampleFileName1 + ".cmr.json",
                                 "size": 2154070040,
                             }
                         ],
@@ -183,37 +191,35 @@ class TestExtractFilePaths(unittest.TestCase):
             extract_filepaths_for_granule.CONFIG_FILE_BUCKETS_KEY: [
                 {
                     "regex": ".*.h5$",
-                    "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.h5",
+                    "sampleFileName": self.sampleFileName1 + ".h5",
                     "bucket": "protected",
                 },
                 {
                     "regex": ".*.cmr.xml$",
-                    "sampleFileName": "L0A_HR_RAW_product_0010-of-0420.iso.xml",
+                    "sampleFileName": self.sampleFileName1 + ".iso.xml",
                     "bucket": "protected",
                 },
                 {
                     "regex": ".*.h5.mp$",
-                    "sampleFileName": "L0A_HR_RAW_product_0001-of-0019.h5.mp",
+                    "sampleFileName": self.sampleFileName2 + ".h5.mp",
                     "bucket": "public",
                 },
                 {
                     "regex": ".*.cmr.json$",
-                    "sampleFileName": "L0A_HR_RAW_product_0001-of-0019.cmr.json",
+                    "sampleFileName": self.sampleFileName2 + ".cmr.json",
                     "bucket": "public",
                 },
             ],
             "buckets": {
-                "protected": {"name": "sndbx-cumulus-protected", "type": "protected"},
-                "internal": {"name": "sndbx-cumulus-internal", "type": "internal"},
-                "private": {"name": "sndbx-cumulus-private", "type": "private"},
-                "public": {"name": "sndbx-cumulus-public", "type": "public"},
+                "protected": {"name": self.protected_bucket, "type": "protected"},
+                "internal": {"name": self.internal_bucket, "type": "internal"},
+                "private": {"name": self.private_bucket, "type": "private"},
+                "public": {"name": self.public_bucket, "type": "public"},
             },
         }
 
         mock_task.return_value = {
-            "granules": [
-                {"collectionId": uuid.uuid4().__str__(), "keys": ["key1", "key2"]}
-            ]
+            "granules": [{"collectionId": self.collectionId, "keys": ["key1", "key2"]}]
         }
         context = Mock()
         with self.assertRaises(Exception) as ex:
@@ -238,19 +244,19 @@ class TestExtractFilePaths(unittest.TestCase):
             extract_filepaths_for_granule.OUTPUT_KEY_KEY: self.task_input_event[
                 "input"
             ]["granules"][0]["files"][0]["key"],
-            extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: "sndbx-cumulus-protected",
+            extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: self.protected_bucket,
         }
         exp_key2 = {
             extract_filepaths_for_granule.OUTPUT_KEY_KEY: self.task_input_event[
                 "input"
             ]["granules"][0]["files"][1]["key"],
-            extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: "sndbx-cumulus-public",
+            extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: self.public_bucket,
         }
         exp_key3 = {
             extract_filepaths_for_granule.OUTPUT_KEY_KEY: self.task_input_event[
                 "input"
             ]["granules"][0]["files"][2]["key"],
-            extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: "sndbx-cumulus-public",
+            extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: self.public_bucket,
         }
         exp_gran = {
             "collectionId": self.task_input_event["input"]["granules"][0][
@@ -271,16 +277,15 @@ class TestExtractFilePaths(unittest.TestCase):
         """
         Test with one valid file in input.
         """
-        collection_id = uuid.uuid4().__str__()
         self.task_input_event["input"]["granules"] = [
             {
-                "collectionId": collection_id,
-                "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
+                "collectionId": self.collectionId,
+                "granuleId": self.granuleId,
                 "files": [
                     {
                         "key": "MOD09GQ___006/MOD/MOD09GQ.A0219114."
                         "N5aUCG.006.0656338553321.cmr.xml",
-                        "bucket": "cumulus-test-sandbox-protected-2",
+                        "bucket": self.input_bucket,
                         "fileName": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
                     }
                 ],
@@ -293,11 +298,11 @@ class TestExtractFilePaths(unittest.TestCase):
                         {
                             extract_filepaths_for_granule.OUTPUT_KEY_KEY: "MOD09GQ___006/MOD/MOD09GQ."  # noqa: E501
                             "A0219114.N5aUCG.006.0656338553321.cmr.xml",
-                            extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: "sndbx-cumulus-protected",  # noqa: E501
+                            extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: self.protected_bucket,  # noqa: E501
                         }
                     ],
-                    "collectionId": collection_id,
-                    "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
+                    "collectionId": self.collectionId,
+                    "granuleId": self.granuleId,
                 }
             ]
         }
@@ -314,12 +319,12 @@ class TestExtractFilePaths(unittest.TestCase):
         """
         self.task_input_event["input"]["granules"] = [
             {
-                "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
+                "granuleId": self.granuleId,
                 "files": [
                     {
                         "key": "MOD09GQ___006/MOD/MOD09GQ.A0219114."
                         "N5aUCG.006.0656338553321.cmr.blah",
-                        "bucket": "cumulus-test-sandbox-protected-2",
+                        "bucket": self.input_bucket,
                         "fileName": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.blah",
                     }
                 ],
@@ -345,15 +350,14 @@ class TestExtractFilePaths(unittest.TestCase):
         "extract_filepaths_for_granule/test/unit_tests/testevents/task_event.json" includes
         "excludedFileExtensions": [".cmr"]
         """
-        collection_id = uuid.uuid4().__str__()
         self.task_input_event["input"]["granules"] = [
             {
-                "collectionId": collection_id,
-                "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
+                "collectionId": self.collectionId,
+                "granuleId": self.granuleId,
                 "files": [
                     {
                         "key": "MOD09GQ___006/MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr",
-                        "bucket": "cumulus-test-sandbox-protected-2",
+                        "bucket": self.input_bucket,
                         "fileName": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr",
                     }
                 ],
@@ -363,8 +367,8 @@ class TestExtractFilePaths(unittest.TestCase):
             "granules": [
                 {
                     "keys": [],  # this will be empty since the filetype is .cmr
-                    "collectionId": collection_id,
-                    "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
+                    "collectionId": self.collectionId,
+                    "granuleId": self.granuleId,
                 }
             ]
         }
@@ -385,23 +389,23 @@ class TestExtractFilePaths(unittest.TestCase):
         self.task_input_event["input"]["granules"] = [
             {
                 "collectionId": collection_id0,
-                "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
+                "granuleId": self.granuleId,
                 "files": [
                     {
                         "fileName": "MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
                         "key": "MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",
-                        "bucket": "cumulus-test-sandbox-protected-2",
+                        "bucket": self.input_bucket,
                     }
                 ],
             },
             {
                 "collectionId": collection_id1,
-                "granuleId": "MOD09GQ.A0219115.N5aUCG.006.0656338553321",
+                "granuleId": self.granuleId,
                 "files": [
                     {
                         "fileName": "MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml",
                         "key": "MOD/MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml",
-                        "bucket": "cumulus-test-sandbox-protected-2",
+                        "bucket": self.input_bucket,
                     }
                 ],
             },
@@ -413,21 +417,21 @@ class TestExtractFilePaths(unittest.TestCase):
                     "keys": [
                         {
                             extract_filepaths_for_granule.OUTPUT_KEY_KEY: "MOD/MOD09GQ.A0219114.N5aUCG.006.0656338553321.cmr.xml",  # noqa: E501
-                            extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: "sndbx-cumulus-protected",  # noqa: E501
+                            extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: self.protected_bucket,  # noqa: E501
                         }
                     ],
                     "collectionId": collection_id0,
-                    "granuleId": "MOD09GQ.A0219114.N5aUCG.006.0656338553321",
+                    "granuleId": self.granuleId,
                 },
                 {
                     "keys": [
                         {
                             extract_filepaths_for_granule.OUTPUT_KEY_KEY: "MOD/MOD09GQ.A0219115.N5aUCG.006.0656338553321.cmr.xml",  # noqa: E501
-                            extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: "sndbx-cumulus-protected",  # noqa: E501
+                            extract_filepaths_for_granule.OUTPUT_DESTINATION_BUCKET_KEY: self.protected_bucket,  # noqa: E501
                         }
                     ],
                     "collectionId": collection_id1,
-                    "granuleId": "MOD09GQ.A0219115.N5aUCG.006.0656338553321",
+                    "granuleId": self.granuleId,
                 },
             ]
         }
