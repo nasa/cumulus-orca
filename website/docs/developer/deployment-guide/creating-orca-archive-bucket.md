@@ -95,7 +95,7 @@ This will create archive and reports buckets with the necessary bucket policies 
 
 ### Via Terraform
 
-The Terraform template for creating the ORCA DR buckets can be found [here](https://github.com/nasa/cumulus-orca/blob/master/modules/dr_buckets/dr_buckets.tf). Make sure you have AWS CLI installed and a DR profile for the DR account configured before deploying this template. More information on how to configure an AWS CLI profile can be found [here](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-options.html#cli-configure-options-list:~:text=as%20programmatically%20useful.-,%2D%2Dprofile%20%3Cstring%3E,-Specifies%20the%20named).
+The Terraform template for creating the ORCA DR buckets can be found [here](https://github.com/nasa/cumulus-orca/blob/master/modules/dr_buckets/dr_buckets.tf). Make sure you have AWS CLI installed and AWS configured to deploy to your DR account.
 
 From your terminal, first run `terraform init` followed by `terraform apply`. When running the apply, Terraform will ask for the following inputs:
 1. `cumulus_account_id` - This is the account ID of the Cumulus AWS account.

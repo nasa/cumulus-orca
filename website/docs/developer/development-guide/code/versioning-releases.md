@@ -1,7 +1,6 @@
-
 ---
 id: versioning-releases
-title:  ORCA Versioning and Releases
+title: ORCA Versioning and Releases
 description: Provides information to developers on semantic versioning and the release process.
 ---
 
