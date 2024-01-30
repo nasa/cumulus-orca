@@ -29,6 +29,16 @@ and includes an additional section for migration notes.
 
 ### Security
 
+## [9.0.3] 2024-01-30
+
+### Migration Notes
+
+If you are migrating from ORCA v8.x.x to this version, see the migration notes under v9.0.0.
+
+### Fixed
+
+- *ORCA-823* Fixed security group errors of incorrect referenced resources in `modules/security-groups/main.tf` and `modules/security-groups/outputs.tf`. This fixes the deployment errors seen in ORCA v9.0.2.
+
 ## [9.0.2] 2024-01-26
 
 ### Migration Notes

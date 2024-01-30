@@ -38,6 +38,6 @@ resource "aws_security_group_rule" "rds_allow_lambda_access" {
   to_port                  = 5432
   protocol                 = "TCP"
   description              = "Allows ${var.prefix} Orca lambda access."
-  source_security_group_id = aws_security_group.vpc-postgres-ingress-all-egress.id
+  source_security_group_id = aws_security_group.vpc_postgres_ingress_all_egress.id
   security_group_id        = var.rds_security_group_id
 }
