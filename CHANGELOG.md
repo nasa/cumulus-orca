@@ -27,6 +27,8 @@ and includes an additional section for migration notes.
 
 ### Fixed
 
+- *ORCA-823* Fixed security group errors of incorrect referenced resources in `modules/security-groups/main.tf` and `modules/security-groups/outputs.tf`
+
 ### Security
 
 ## [9.0.2] 2024-01-26
