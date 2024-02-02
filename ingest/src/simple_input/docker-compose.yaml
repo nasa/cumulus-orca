@@ -1,0 +1,11 @@
+version: '2.4'
+
+services:
+  builder:
+    build:
+      context: .
+      dockerfile: Dockerfile.build
+    platform: linux/arm64/v8
+    volumes:
+      - ./:/lambda
+    working_dir: /lambda

@@ -1,0 +1,15 @@
+# lambda base image for Docker from AWS
+FROM --platform=linux/arm64/v8 arm64v8/amazonlinux:2023
+
+RUN dnf update -y && \
+    dnf install -y \
+      zip \
+      "@Development tools" \
+      blas-devel gcc-gfortran lapack-devel make \
+      python3.11 python3.11-devel python3.11-pip \
+      rust rust-toolset rust-packaging cargo && \
+    ln -f /usr/bin/python3.11 /usr/bin/python && \
+    ln -f /usr/bin/pip3.11 /usr/bin/pip && \
+    pip install --user --upgrade pip && \
+    curl -sSL https://install.python-poetry.org | python -
+ENV PATH="/root/.local/bin:$PATH"
