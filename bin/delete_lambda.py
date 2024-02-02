@@ -1,7 +1,7 @@
 import subprocess
 import json
 
-# Gets user input for the prefix of ORCA lambdas to delete
+# Gets user input for the prefix of lambdas to delete
 prefix = input("Enter Prefix: ")
 
 # Gets ORCA lambda functions with given prefix
@@ -19,11 +19,13 @@ for sub in convert:
     try:
         # Finds lambdas with the tag application set to ORCA and deletes the ORCA Lambdas
         for tag in tag_convert:
-            if tag_convert[tag]['application'] == 'ORCA':
-                print("Deleting " + sub['FunctionName'])
-                del_lambda = sub['FunctionName']
-                delete_function = f"aws lambda delete-function --function-name {del_lambda}"
-                subprocess.run(delete_function, shell=True, capture_output=True)
-    # If the lambda with the provided prefix does not match the tag for deletion it is skipped and is not deleted
-    except KeyError:
-        pass
+            for attr in tag_convert[tag]:
+                if attr == 'application':
+                    if tag_convert[tag]['application'] == 'ORCA':
+                        print("Deleting " + sub['FunctionName'])
+                        del_lambda = sub['FunctionName']
+                        delete_function = f"aws lambda delete-function --function-name {del_lambda}"
+                        subprocess.run(delete_function, shell=True, capture_output=True)
+    # Throws an error if deletion is interrupted
+    except KeyError as ke:
+        raise ke
