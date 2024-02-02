@@ -21,6 +21,8 @@ and includes an additional section for migration notes.
 
 ### Changed
 
+- *ORCA-826* - Changed bin/delete_lambda.py to delete ORCA lambdas based on their tags.
+
 ### Deprecated
 
 ### Removed
