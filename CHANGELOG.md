@@ -27,6 +27,8 @@ and includes an additional section for migration notes.
 
 ### Fixed
 
+- *ORCA-827* Fixed API gateway URL issue seen in ORCA v9.0.3.
+
 ### Security
 
 ## [9.0.3] 2024-01-30
