@@ -29,6 +29,8 @@ and includes an additional section for migration notes.
 
 ### Fixed
 
+- *ORCA-827* Fixed API gateway URL not found issue seen in ORCA v9.0.3. Changed ORCA API gateway stage name from `orca` to `orca_api`. The new ORCA API URL will be `https://<API_ID>.execute-api.<AWS_REGION>.amazonaws.com/orca_api`.
+
 ### Security
 
 ## [9.0.3] 2024-01-30
