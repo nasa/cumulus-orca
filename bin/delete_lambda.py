@@ -10,9 +10,22 @@ completed_process = subprocess.run(get_functions, shell=True, capture_output=Tru
 output = completed_process.stdout
 convert = json.loads(output.decode("utf-8").replace("'","'"))
 
-# Deletes ORCA lambda functions with the given prefix
 for sub in convert:
-    print("Deleting " + sub['FunctionName'])
-    lambda_output = sub['FunctionName']
-    delete_function = f"aws lambda delete-function --function-name {lambda_output}"
-    subprocess.run(delete_function, shell=True, capture_output=True)
+    lambda_output = sub['FunctionArn']
+    get_tags = f"aws lambda list-tags --resource {lambda_output}"
+    tags_process = subprocess.run(get_tags, shell=True, capture_output=True)
+    tag_output = tags_process.stdout
+    tag_convert = json.loads(tag_output.decode("utf-8").replace("'","'"))
+    try:
+        # Finds lambdas with the tag application set to ORCA and deletes the ORCA Lambdas
+        for tag in tag_convert:
+            for attr in tag_convert[tag]:
+                if attr == 'application':
+                    if tag_convert[tag]['application'] == 'ORCA':
+                        print("Deleting " + sub['FunctionName'])
+                        del_lambda = sub['FunctionName']
+                        delete_function = f"aws lambda delete-function --function-name {del_lambda}"
+                        subprocess.run(delete_function, shell=True, capture_output=True)
+    # Throws an error if deletion is interrupted
+    except KeyError as ke:
+        raise ke
