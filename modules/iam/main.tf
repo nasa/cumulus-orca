@@ -76,8 +76,9 @@ data "aws_iam_policy_document" "restore_object_role_policy_document" {
   statement {
     actions = [
       "s3:AbortMultipartUpload",
-      "s3:GetObject*",
-      "s3:PutObject*",
+      "s3:GetObject",
+      "s3:GetObjectVersion",
+      "s3:PutObject",
       "s3:ListMultipartUploadParts",
       "s3:DeleteObject",
       "s3:DeleteObjectVersion"
@@ -87,7 +88,8 @@ data "aws_iam_policy_document" "restore_object_role_policy_document" {
   statement {
     actions = [
       "s3:RestoreObject",
-      "s3:GetObject"
+      "s3:GetObject",
+      "s3:GetObjectVersion"
     ]
     resources = concat(local.orca_bucket_arns, local.orca_bucket_paths)
   }
@@ -123,9 +125,8 @@ data "aws_iam_policy_document" "restore_object_role_policy_document" {
   }
   statement {
     actions = [
-      "s3:GetObject*",  # Get the manifest
-      "s3:PutObject",  # Copy the gzip to add missing metadata
-      "s3:PutObjectAcl"  # Copy the gzip to add missing metadata
+      "s3:GetObject",  # Get the manifest
+      "s3:PutObject"  # Copy the gzip to add missing metadata
     ]
     resources = ["arn:aws:s3:::${var.orca_reports_bucket_name}/*"]
   }

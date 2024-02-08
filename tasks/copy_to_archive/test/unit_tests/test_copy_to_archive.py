@@ -322,7 +322,6 @@ class TestCopyToArchive(TestCase):
                         "StorageClass": mock_get_storage_class.return_value,
                         "MetadataDirective": "COPY",
                         "ContentType": content_type,
-                        "ACL": "bucket-owner-full-control",
                     },
                     Config=unittest.mock.ANY,  # Checked by ConfigCheck.
                     # Equality checkers do not work.
@@ -592,7 +591,6 @@ class TestCopyToArchive(TestCase):
                         "StorageClass": mock_get_storage_class.return_value,
                         "MetadataDirective": "COPY",
                         "ContentType": content_type,
-                        "ACL": "bucket-owner-full-control",
                     },
                     Config=unittest.mock.ANY,  # Checked by ConfigCheck.
                     # Equality checkers do not work.
@@ -695,7 +693,6 @@ class TestCopyToArchive(TestCase):
                         "StorageClass": mock_get_storage_class.return_value,
                         "MetadataDirective": "COPY",
                         "ContentType": content_type,
-                        "ACL": "bucket-owner-full-control",
                     },
                     Config=unittest.mock.ANY,  # Checked by ConfigCheck.
                     # Equality checkers do not work.

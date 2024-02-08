@@ -161,7 +161,6 @@ modifications, which will be detailed below.
          ],
          "Condition": {
             "StringEquals": {
-               "s3:x-amz-acl": "bucket-owner-full-control",
                "s3:x-amz-storage-class": [
                   "GLACIER",
                   "DEEP_ARCHIVE"
@@ -216,7 +215,6 @@ modifications, which will be detailed below.
         "s3:GetBucket*",
         "s3:ListBucket",
         "s3:PutObject",
-        "s3:PutObjectAcl",
         "s3:PutBucketNotification"
       ],
       "Resource": [
@@ -234,7 +232,6 @@ modifications, which will be detailed below.
       "Resource": "arn:aws:s3:::PREFIX-orca-reports/*",
       "Condition": {
         "StringEquals": {
-      	  "s3:x-amz-acl": "bucket-owner-full-control",
       	  "aws:SourceAccount": "000000000000"
         },
       	"ArnLike": {

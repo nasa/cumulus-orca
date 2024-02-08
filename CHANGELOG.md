@@ -19,7 +19,11 @@ and includes an additional section for migration notes.
 
 ### Added
 
+- *ORCA-450* - Removed ACL requirement and added BucketOwnerEnforced to ORCA bucket objects.
+
 ### Changed
+
+- *ORCA-441* - Updated policies for ORCA buckets and copy_to_archive to give them only the permissions needed to restrict unwanted/unintended actions.
 
 ### Deprecated
 
