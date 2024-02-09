@@ -127,7 +127,6 @@ def copy_granule_between_buckets(
             "ContentType": s3.head_object(Bucket=source_bucket_name, Key=source_key)[
                 "ContentType"
             ],
-            "ACL": "bucket-owner-full-control",  # Sets the x-amz-acl URI Request Parameter.
             # Needed for cross-OU copies.
         },
         Config=TransferConfig(multipart_chunksize=multipart_chunksize_mb * MB),

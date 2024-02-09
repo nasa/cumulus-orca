@@ -14,6 +14,9 @@ Resources:
     Type: 'AWS::S3::Bucket'
     Properties:
       BucketName: !Sub '${PREFIX}-orca-archive'
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
   S3ARCHBUCKETPOL:
     Type: 'AWS::S3::BucketPolicy'
     Properties:
@@ -24,9 +27,11 @@ Resources:
         Statement:
           - Sid: CrossAccPolicyDoc
             Action: [
-              "s3:GetObject*",
+              "s3:GetObject",
+              "s3:GetObjectVersion",
               "s3:RestoreObject",
-              "s3:GetBucket*",
+              "s3:GetBucketVersioning",
+              "s3:GetBucketNotification",
               "s3:ListBucket",
               "s3:PutBucketNotification",
               "s3:GetInventoryConfiguration",
@@ -41,15 +46,14 @@ Resources:
             Principal:
               AWS: !Join ['', ["arn:aws:iam::", !Ref CumulusAccountID, ":root"]]
           - Sid: "Cross Account Write Access"
-            Action: "s3:PutObject*"
+            Action: "s3:PutObject"
             Effect: Allow
             Resource: !Sub 'arn:aws:s3:::${S3ARCHBUCKET}/*'
             Condition:
-              StringNotEquals:
+              StringEquals:
                 's3:x-amz-storage-class':
                   - 'GLACIER'
                   - 'DEEP_ARCHIVE'
-                's3:x-amz-acl': 'bucket-owner-full-control'
             Principal:
               AWS: !Join ['', ["arn:aws:iam::", !Ref CumulusAccountID, ":root"]]
     DependsOn: S3ARCHBUCKET
@@ -57,6 +61,9 @@ Resources:
     Type: 'AWS::S3::Bucket'
     Properties:
       BucketName: !Sub '${PREFIX}-orca-reports'
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
   S3REPBUCKETPOL:
     Type: 'AWS::S3::BucketPolicy'
     Properties:
@@ -67,11 +74,10 @@ Resources:
         Statement:
           - Sid: CrossAccPolicyDoc
             Action: [
-              "s3:GetObject*",
-              "s3:GetBucket*",
+              "s3:GetObject",
+              "s3:GetBucketNotification",
               "s3:ListBucket",
               "s3:PutObject",
-              "s3:PutObjectAcl",
               "s3:PutBucketNotification"
             ]
             Effect: Allow
