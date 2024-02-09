@@ -19,7 +19,7 @@ and includes an additional section for migration notes.
 
 ### Added
 
-- *ORCA-450* - Removed ACL requirement and added BucketOwnerEnforced to ORCA bucket objects.
+- *ORCA-450* - Removed Access Control List (ACL) requirement and added BucketOwnerEnforced to ORCA bucket objects.
 
 ### Changed
 
