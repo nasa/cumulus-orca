@@ -116,12 +116,16 @@ Versioning is not used, and in general no changes are required beyond updating t
         "AWS": "arn:aws:iam::012345678912:root"
       },
       "Action": [
-        "s3:GetObject*",
-        "s3:GetBucket*",
+        "s3:GetObject",
+        "s3:GetObjectVersion",
+        "s3:RestoreObject",
+        "s3:GetBucketVersioning",
+        "s3:GetBucketNotification",
         "s3:ListBucket",
-        "s3:PutObject",
-        "s3:PutObjectAcl",
-        "s3:PutBucketNotification"
+        "s3:PutBucketNotification",
+        "s3:GetInventoryConfiguration",
+        "s3:PutInventoryConfiguration",
+        "s3:ListBucketVersions"
       ],
       "Resource": [
         "arn:aws:s3:::PREFIX-orca-archive-versioned",
@@ -138,7 +142,6 @@ Versioning is not used, and in general no changes are required beyond updating t
       "Resource": "arn:aws:s3:::PREFIX-orca-archive-versioned/*",
       "Condition": {
         "StringEquals": {
-      	  "s3:x-amz-acl": "bucket-owner-full-control",
       	  "aws:SourceAccount": "0000000000000"
         },
       	"ArnLike": {
@@ -156,7 +159,6 @@ Versioning is not used, and in general no changes are required beyond updating t
       "Resource": "arn:aws:s3:::PREFIX-orca-archive-worm/*",
       "Condition": {
         "StringEquals": {
-      	  "s3:x-amz-acl": "bucket-owner-full-control",
       	  "aws:SourceAccount": "000000000000"
         },
       	"ArnLike": {
