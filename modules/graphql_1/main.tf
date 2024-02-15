@@ -14,7 +14,7 @@ data "aws_ssm_parameter" "private_ca" {
   name = "ngap_private_ca_arn"
 }
  
-resource "aws_acm_certificate" "lb_cert" {
+resource "aws_acm_certificate" "orca_lb_cert" {
   domain_name       = "*.us-west-2.elb.amazonaws.com"
  
   certificate_authority_arn = data.aws_ssm_parameter.private_ca.value
@@ -142,7 +142,7 @@ resource "aws_lb_listener" "gql_app_lb_listener" {
   port              = local.graphql_port
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
-  certificate_arn   = aws_acm_certificate.lb_cert.arn
+  certificate_arn   = aws_acm_certificate.orca_lb_cert.arn
 
   default_action {
     type             = "forward"
