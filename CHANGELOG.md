@@ -24,6 +24,8 @@ and includes an additional section for migration notes.
 ### Changed
 
 - *ORCA-441* - Updated policies for ORCA buckets and copy_to_archive to give them only the permissions needed to restrict unwanted/unintended actions.
+- *ORCA-746* - Enabled HTTPS listener in application load balancer for GraphQL server using AWS Certificate Manager.
+
 
 ### Deprecated
 
