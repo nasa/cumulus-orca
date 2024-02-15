@@ -25,6 +25,19 @@ Resources:
         Id: "Cross Account Access"
         Version: "2012-10-17"
         Statement:
+          - Sid: denyInsecureTransport
+            Action: [
+              "s3:*"
+            ]
+            Effect: Deny
+            Resource: [
+              !Sub 'arn:aws:s3:::${S3ARCHBUCKET}',
+              !Sub 'arn:aws:s3:::${S3ARCHBUCKET}/*'
+            ]
+            Principal: "*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": false
           - Sid: CrossAccPolicyDoc
             Action: [
               "s3:GetObject",
@@ -72,6 +85,19 @@ Resources:
         Id: "Cross Account Access"
         Version: "2012-10-17"
         Statement:
+          - Sid: denyInsecureTransport
+            Action: [
+              "s3:*"
+            ]
+            Effect: Deny
+            Resource: [
+              !Sub 'arn:aws:s3:::${S3REPBUCKET}',
+              !Sub 'arn:aws:s3:::${S3REPBUCKET}/*'
+            ]
+            Principal: "*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": false
           - Sid: CrossAccPolicyDoc
             Action: [
               "s3:GetObject",
@@ -93,7 +119,6 @@ Resources:
             Resource: !Sub 'arn:aws:s3:::${S3REPBUCKET}/*'
             Condition:
               StringEquals:
-                's3:x-amz-acl': 'bucket-owner-full-control'
                 'aws:SourceAccount': !Ref AWS::AccountId
               ArnLike:
                 aws:SourceArn: !Sub 'arn:aws:s3:::${PREFIX}-orca-reports'

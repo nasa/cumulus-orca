@@ -20,6 +20,7 @@ and includes an additional section for migration notes.
 ### Added
 
 - *ORCA-450* - Removed Access Control List (ACL) requirement and added BucketOwnerEnforced to ORCA bucket objects.
+- *ORCA-452* - Added Deny non SSL policy to S3 buckets in `modules/dr_buckets/dr_buckets.tf` and `modules/dr_buckets_cloudformation/ dr-buckets.yaml`
 
 ### Changed
 

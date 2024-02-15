@@ -127,6 +127,21 @@ modifications, which will be detailed below.
    "Version": "2012-10-17",
    "Statement": [
       {
+        "Sid": "denyInsecureTransport",
+        "Effect": "Deny",
+        "Principal": "*",
+        "Action": "s3:*",
+        "Resource": [
+          "arn:aws:s3:::PREFIX-orca-archive",
+          "arn:aws:s3:::PREFIX-orca-archive/*"
+        ],
+         "Condition": {
+         "Bool": {
+           "aws:SecureTransport": "false"
+           }
+         }
+      },
+      {
          "Sid": "Cross Account Access",
          "Effect": "Allow",
          "Principal": {
@@ -204,6 +219,21 @@ modifications, which will be detailed below.
 {
   "Version": "2012-10-17",
   "Statement": [
+   {
+     "Sid": "denyInsecureTransport",
+     "Effect": "Deny",
+     "Principal": "*",
+     "Action": "s3:*",
+     "Resource": [
+          "arn:aws:s3:::PREFIX-orca-reports",
+          "arn:aws:s3:::PREFIX-orca-reports/*"
+        ],
+     "Condition": {
+     "Bool": {
+       "aws:SecureTransport": "false"
+        }
+      }
+    },
     {
       "Sid": "Cross Account Access",
       "Effect": "Allow",

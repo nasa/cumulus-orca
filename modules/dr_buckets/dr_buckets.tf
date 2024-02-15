@@ -58,6 +58,24 @@ resource "aws_s3_bucket_policy" "orca_archive_cross_account_access" {
 
 data "aws_iam_policy_document" "orca_archive_cross_account_access_policy" {
   statement {
+    sid = "denyInsecureTransport"
+    effect = "Deny"
+    principals {
+      type = "*"
+      identifiers = ["*"]
+    }
+    actions = ["s3:*"]
+    resources = [
+      aws_s3_bucket.orca_archive_bucket.arn,
+      "${aws_s3_bucket.orca_archive_bucket.arn}/*",
+    ]
+     condition {
+      test = "Bool"
+      variable = "aws:SecureTransport"
+      values = ["false"]
+    }
+  }
+  statement {
     sid = "CrossAccPolicyDoc"
     principals {
       type        = "AWS"
@@ -152,6 +170,24 @@ resource "aws_s3_bucket_policy" "orca_archive_worm_cross_account_access" {
 
 data "aws_iam_policy_document" "orca_archive_worm_cross_account_access_policy" {
   statement {
+    sid = "denyInsecureTransport"
+    effect = "Deny"
+    principals {
+      type = "*"
+      identifiers = ["*"]
+    }
+    actions = ["s3:*"]
+    resources = [
+      aws_s3_bucket.orca_archive_worm_bucket.arn,
+      "${aws_s3_bucket.orca_archive_worm_bucket.arn}/*",
+    ]
+     condition {
+      test = "Bool"
+      variable = "aws:SecureTransport"
+      values = ["false"]
+    }
+  }
+  statement {
     sid = "Cross Account Access"
     principals {
       type        = "AWS"
@@ -210,6 +246,24 @@ resource "aws_s3_bucket_ownership_controls" "orca_reports_bucket_ownership" {
 }
 
 data "aws_iam_policy_document" "orca_reports_cross_account_access_policy" {
+  statement {
+    sid = "denyInsecureTransport"
+    effect = "Deny"
+    principals {
+      type = "*"
+      identifiers = ["*"]
+    }
+    actions = ["s3:*"]
+    resources = [
+      aws_s3_bucket.orca_reports_bucket.arn,
+      "${aws_s3_bucket.orca_reports_bucket.arn}/*",
+    ]
+     condition {
+      test = "Bool"
+      variable = "aws:SecureTransport"
+      values = ["false"]
+    }
+  }
   statement {
     sid = "Reports Cross Account Access"
     principals {
