@@ -186,7 +186,6 @@ See example below.
   prefix                   = var.prefix
   system_bucket            = var.system_bucket
   vpc_id                   = var.vpc_id
-  workflow_config          = module.cumulus.workflow_config
 
   ## OPTIONAL
   tags        = local.tags
