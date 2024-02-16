@@ -17,6 +17,16 @@ and includes an additional section for migration notes.
 
 ### Migration Notes
 
+If you are deploying ORCA for the first time or migrating from v6, no changes are needed. 
+ 
+If you are currently on v8 or v9, this means you already have load balancer deployed and you need to delete the load balancer target group before deploying this version. This is because terraform cannot delete existing load balancer target groups having a listener attached. Adding a HTTPS to the target group requires replacing the target group. Once the target group is deleted, you should be able to deploy ORCA.
+ 
+ 1. From AWS EC2 console, go to your load balancer named `<prefix-gql-a>` and select the `Listeners and rules` tab. Delete the rule. 
+ 2. Delete your target group `<random_name>-gql-a`. The target group name has been randomized to avoid terraform resource error. 
+ 3. Deploy ORCA.
+
+If deployed correctly, the target group health checks should show as healthy.
+ 
 ### Added
 
 - *ORCA-450* - Removed Access Control List (ACL) requirement and added BucketOwnerEnforced to ORCA bucket objects.
@@ -25,6 +35,8 @@ and includes an additional section for migration notes.
 ### Changed
 
 - *ORCA-441* - Updated policies for ORCA buckets and copy_to_archive to give them only the permissions needed to restrict unwanted/unintended actions.
+- *ORCA-746* - Enabled HTTPS listener in application load balancer for GraphQL server using AWS Certificate Manager.
+
 
 ### Deprecated
 
@@ -174,7 +186,6 @@ See example below.
   prefix                   = var.prefix
   system_bucket            = var.system_bucket
   vpc_id                   = var.vpc_id
-  workflow_config          = module.cumulus.workflow_config
 
   ## OPTIONAL
   tags        = local.tags

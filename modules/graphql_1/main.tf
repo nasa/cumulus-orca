@@ -10,6 +10,19 @@ locals {
   graphql_port = 5000
 }
 
+data "aws_ssm_parameter" "private_ca" {
+  name = "ngap_private_ca_arn"
+}
+ 
+resource "aws_acm_certificate" "orca_lb_cert" {
+  domain_name       = "*.us-west-2.elb.amazonaws.com"
+ 
+  certificate_authority_arn = data.aws_ssm_parameter.private_ca.value
+ 
+  lifecycle {
+    create_before_destroy = true
+  }
+}
 resource "random_id" "lb_name" {
   keepers = {
     # gql_app_lb change requirements
@@ -106,7 +119,7 @@ data "aws_lb" "gql_app_lb_data" {
 resource "aws_lb_target_group" "gql_app_lb_target_group" {
   name        = "${random_id.lb_name.hex}-gql-a" # name must be randomized. Max 32 characters. Some prefixes are 25 characters long.
   vpc_id      = var.vpc_id
-  protocol    = "HTTP"
+  protocol    = "HTTPS"
   port        = local.graphql_port
   target_type = "ip"
 
@@ -127,7 +140,9 @@ resource "aws_lb_target_group" "gql_app_lb_target_group" {
 resource "aws_lb_listener" "gql_app_lb_listener" {
   load_balancer_arn = aws_lb.gql_app_lb.arn
   port              = local.graphql_port
-  protocol          = "HTTP"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  certificate_arn   = aws_acm_certificate.orca_lb_cert.arn
 
   default_action {
     type             = "forward"
