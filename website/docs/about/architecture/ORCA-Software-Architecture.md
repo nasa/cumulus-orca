@@ -6,7 +6,7 @@ id: ORCA-Architecture
 > Template Revision: 7.0 EN (based on asciidoc), January 2017
 >
 > © We acknowledge that this document uses material from the arc 42
-> architecture template, <http://www.arc42.de>. Created by Dr. Peter
+> architecture template, `[http://www.arc42.de](http://www.arc42.de)`. Created by Dr. Peter
 > Hruschka & Dr. Gernot Starke.
 
 
@@ -484,7 +484,7 @@ There are many notations for describing scenarios, e.g.
 
 ## \<Runtime Scenario 2\> {#__runtime_scenario_2}
 
-... {#_}
+... \{#_}
 ---
 
 ## \<Runtime Scenario n\> {#__runtime_scenario_n}

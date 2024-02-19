@@ -71,13 +71,10 @@ To migrate to a different storage class if needed, change `storage_class` under 
 
 A detailed sequence diagram that goes into more depth on the steps and actions needed for manually migrating data to DEEP ARCHIVE is shown below. The sequence diagram uses the recommended steps and approaches called out above.
 
-<MyImage
-    imageSource={useBaseUrl('img/Deep-Archive-Migration-workflow-manual.svg')}
-    imageAlt="System Context"
-    zoomInPic={useBaseUrl('img/zoom-in.png')}
-    zoomOutPic={useBaseUrl('img/zoom-out.png')}
-    resetPic={useBaseUrl('img/zoom-pan-reset.png')}
-/>
+<img src={useBaseUrl('img/Deep-Archive-Migration-workflow-manual.svg')}
+zoomInPic={useBaseUrl('img/zoom-in.svg')}
+zoomOutPic={useBaseUrl('img/zoom-out.svg')}
+resetPic={useBaseUrl('img/zoom-pan-reset.svg')} />
 
 <br />
 <br />
@@ -85,13 +82,10 @@ A detailed sequence diagram that goes into more depth on the steps and actions n
 
 The following is a container level diagram of the proposed architecture for the recommended manual method.
 
-<MyImage
-    imageSource={useBaseUrl('img/ORCA-Deep-Archive-Migration-Architecture-manual.svg')}
-    imageAlt="System Context"
-    zoomInPic={useBaseUrl('img/zoom-in.png')}
-    zoomOutPic={useBaseUrl('img/zoom-out.png')}
-    resetPic={useBaseUrl('img/zoom-pan-reset.png')}
-/>
+<img src={useBaseUrl('img/ORCA-Deep-Archive-Migration-Architecture-manual.svg')}
+zoomInPic={useBaseUrl('img/zoom-in.svg')}
+zoomOutPic={useBaseUrl('img/zoom-out.svg')}
+resetPic={useBaseUrl('img/zoom-pan-reset.svg')} />
 
 <br />
 <br />
@@ -191,49 +185,17 @@ copy succeeded for object test2.xml having E tag "14694ab9e3089a7c29e0dc9add4a82
 
 A detailed sequence diagram that goes into more depth on the steps and actions needed for migrating data to DEEP ARCHIVE is shown below. The sequence diagram uses the recommended steps and approaches called out above.
 
-<MyImage
-    imageSource={useBaseUrl('img/Deep-Archive-Migration-workflow-specific-files.svg')}
-    imageAlt="System Context"
-    zoomInPic={useBaseUrl('img/zoom-in.png')}
-    zoomOutPic={useBaseUrl('img/zoom-out.png')}
-    resetPic={useBaseUrl('img/zoom-pan-reset.png')}
-/>
-
-<br />
-<br />
-<br />
+<img src={useBaseUrl('img/Deep-Archive-Migration-workflow-specific-files.svg')}
+zoomInPic={useBaseUrl('img/zoom-in.svg')}
+zoomOutPic={useBaseUrl('img/zoom-out.svg')}
+resetPic={useBaseUrl('img/zoom-pan-reset.svg')} />
 
 The following is a container level diagram of the proposed architecture for the collection specific use case.
 
-<MyImage
-    imageSource={useBaseUrl('img/ORCA-Deep-Archive-Migration-Architecture-specific-files.svg')}
-    imageAlt="System Context"
-    zoomInPic={useBaseUrl('img/zoom-in.png')}
-    zoomOutPic={useBaseUrl('img/zoom-out.png')}
-    resetPic={useBaseUrl('img/zoom-pan-reset.png')}
-/>
-
-<br />
-<br />
-<br />
-
-:::note 
-The diagrams above are the initial thoughts for how a migration may be implemented. Changes to the workflow and architecture are likely as the migration is prototyped and validated.
-:::
-
-### Cards created
-
-- [Update ORCA archive bucket lifecycle rule to transition to Deep Archive](https://bugs.earthdata.nasa.gov/browse/ORCA-499)
-- [Implement S3 event notification in ORCA archive bucket for s3:LifecycleTransition](https://bugs.earthdata.nasa.gov/browse/ORCA-500)
-- [Implement lambda function for updating ORCA catalog with Deep Archive storage value in the table](https://bugs.earthdata.nasa.gov/browse/ORCA-501)
-- [Research task on S3 batch operations for copying and retrieving objects from archive bucket](https://bugs.earthdata.nasa.gov/browse/ORCA-502)
-- [Research task on choosing best option for File recovery and copy service in Deep Archive migration for specific collections](https://bugs.earthdata.nasa.gov/browse/ORCA-503)
-- [Implement File recovery service for deep archive](https://bugs.earthdata.nasa.gov/browse/ORCA-504)
-- [Implement lambda function or batch operation for copying files to deep archive in S3 and updating the catalog](https://bugs.earthdata.nasa.gov/browse/ORCA-506)
-- [Create SQS and dead letter queue for Deep Archive Migration for specific collections](https://bugs.earthdata.nasa.gov/browse/ORCA-507)
-- [Implement lambda function for creating migration report queue for Deep archive migration for specific collections](https://bugs.earthdata.nasa.gov/browse/ORCA-508)
-- [Create API gateway endpoint for migration report lambda for deep archive migration](https://bugs.earthdata.nasa.gov/browse/ORCA-509)
-
+<img src={useBaseUrl('img/ORCA-Deep-Archive-Migration-Architecture-specific-files.svg')}
+zoomInPic={useBaseUrl('img/zoom-in.svg')}
+zoomOutPic={useBaseUrl('img/zoom-out.svg')}
+resetPic={useBaseUrl('img/zoom-pan-reset.svg')} />
 
 #### Sources
 - https://pages.awscloud.com/Amazon-S3-Glacier-Deep-Archive-The-Cheapest-Storage-in-the-Cloud_2019_0409-STG_OD.html
@@ -244,3 +206,6 @@ The diagrams above are the initial thoughts for how a migration may be implement
 - https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.restore_object
 - https://docs.aws.amazon.com/AmazonS3/latest/userguide/lifecycle-transition-general-considerations.html
 - https://github.com/awslabs/aws-icons-for-plantum
+:::note 
+The diagrams above are the initial thoughts for how a migration may be implemented. Changes to the workflow and architecture are likely as the migration is prototyped and validated.
+:::

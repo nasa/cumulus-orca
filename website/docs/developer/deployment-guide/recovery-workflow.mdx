@@ -27,13 +27,12 @@ has the option to override the default bucket with another restore bucket if des
 Determining the status of the recovery job is done manually by querying the database
 directly or by checking the status on the UI. In addition, you can also check the job status by calling the ORCA API.
 
-<MyImage
-    imageSource={useBaseUrl('img/ORCA-Recovery-Workflow.svg')}
-    imageAlt="ORCA Recovery Workflow Context"
-    zoomInPic={useBaseUrl('img/zoom-in.svg')}
-    zoomOutPic={useBaseUrl('img/zoom-out.svg')}
-    resetPic={useBaseUrl('img/zoom-pan-reset.svg')}
-/>
+<img src={useBaseUrl('img/ORCA-Recovery-Workflow.svg')}
+imageAlt="ORCA Recovery Workflow Context"
+zoomInPic={useBaseUrl('img/zoom-in.svg')}
+zoomOutPic={useBaseUrl('img/zoom-out.svg')}
+resetPic={useBaseUrl('img/zoom-pan-reset.svg')} />
+
 
 See the recovery workflow [Step Function module](https://github.com/nasa/cumulus-orca/tree/master/modules/workflows/OrcaRecoveryWorkflow) 
 for additional details on recovering files belonging to a granule.
