@@ -67,10 +67,10 @@ To view the JSON OpenAPI spec run `make openapi`.
 
 ## TO DO
 
-[] Fix API GW permissions to allow for calling the endpoint from EC2 instance
-[] Determine how to populate the OpenAPI documentation from the Lambda
-[] Update README with additional links and resources
-[] Enhance prototype so that it interacts with AWS event bridge
-[] Add .gitignore file and explain clean functionality.
-[] Add method to stop test container
-[] Add pre-commit and other items for automation with documentation
+- [ ] Fix API GW permissions to allow for calling the endpoint from EC2 instance
+- [ ] Determine how to populate the OpenAPI documentation from the Lambda
+- [ ] Update README with additional links and resources
+- [ ] Enhance prototype so that it interacts with AWS event bridge
+- [ ] Add .gitignore file and explain clean functionality.
+- [ ] Add method to stop test container
+- [ ] Add pre-commit and other items for automation with documentation
