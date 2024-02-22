@@ -46,6 +46,8 @@ If deployed correctly, the target group health checks should show as healthy.
 
 ### Security
 
+- *ORCA-821* - Fixed snyk vulnerabilities from snyk report showing high issues and upgraded docusaurus to v3.1.0.
+
 ## [9.0.4] 2024-02-07
 
 ### Migration Notes
