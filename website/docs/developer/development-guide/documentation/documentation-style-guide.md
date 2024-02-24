@@ -243,7 +243,7 @@ Some text to show that the reference links can follow later.
 ### Direct Links
 
 URLs and URLs in angle brackets will automatically get turned into links.
-`http://www.example.com/` http://example.comm or `<http://www.example.com/>` <http://www.example.com/>
+`[http://www.example.com/](http://www.example.com/)`, `[http://example.com/](http://example.com/)` 
 and sometimes example.com (but not on GitHub, for example).
 
 

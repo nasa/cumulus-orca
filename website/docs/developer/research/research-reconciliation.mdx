@@ -69,13 +69,10 @@ for reconciliation and Operator investigation of discrepancies.
 A draft schema for how the objects would interact and be tied together can be
 seen below.
 
-<MyImage
-    imageSource={useBaseUrl('img/Research-Reconciliation-orca-inventory-schema.png')}
-    imageAlt="System Context"
-    zoomInPic={useBaseUrl('img/zoom-in.svg')}
-    zoomOutPic={useBaseUrl('img/zoom-out.svg')}
-    resetPic={useBaseUrl('img/zoom-pan-reset.svg')}
-/>
+<img src={useBaseUrl('img/Research-Reconciliation-orca-inventory-schema.png')}
+zoomInPic={useBaseUrl('img/zoom-in.svg')}
+zoomOutPic={useBaseUrl('img/zoom-out.svg')}
+resetPic={useBaseUrl('img/zoom-pan-reset.svg')} />
 
 
 :::note Optional Attributes
@@ -249,14 +246,10 @@ underlying data structure or storage engine as ORCA should be able to handle AWS
 PostgreSQL RDS, AWS Aurora PostgreSQL, and AWS Aurora PostgreSQL Serverless
 offerings.
 
-<MyImage
-    imageSource={useBaseUrl('img/Research-Reconciliation-Cumulus-Reconcile.png')}
-    imageAlt="System Context"
-    zoomInPic={useBaseUrl('img/zoom-in.svg')}
-    zoomOutPic={useBaseUrl('img/zoom-out.svg')}
-    resetPic={useBaseUrl('img/zoom-pan-reset.svg')}
-/>
-
+<img src={useBaseUrl('img/Research-Reconciliation-Cumulus-Reconcile.png')}
+zoomInPic={useBaseUrl('img/zoom-in.svg')}
+zoomOutPic={useBaseUrl('img/zoom-out.svg')}
+resetPic={useBaseUrl('img/zoom-pan-reset.svg')} />
 
 ## Populating the metadata
 
@@ -452,14 +445,10 @@ The following is a potential architecture for populating the ORCA catalog under
 normal use cases. Note that the SQS queue and `orca_catalog_ingest` lambda could
 be replaced with a GraphQL server if deemed appropriate.
 
-<MyImage
-    imageSource={useBaseUrl('img/Research-Reconciliation-Catalog-Population.png')}
-    imageAlt="System Context"
-    zoomInPic={useBaseUrl('img/zoom-in.svg')}
-    zoomOutPic={useBaseUrl('img/zoom-out.svg')}
-    resetPic={useBaseUrl('img/zoom-pan-reset.svg')}
-/>
-
+<img src={useBaseUrl('img/Research-Reconciliation-Catalog-Population.png')}
+zoomInPic={useBaseUrl('img/zoom-in.svg')}
+zoomOutPic={useBaseUrl('img/zoom-out.svg')}
+resetPic={useBaseUrl('img/zoom-pan-reset.svg')} />
 
 ## Possible Technologies for Enabling the Work
 
@@ -634,13 +623,10 @@ When returning results through the API, it is recommended that we use a "path" p
 This will allow Cumulus to build values such as collection into a filter so long
 as they construct keys using it.
 
-<MyImage
-    imageSource={useBaseUrl('img/Research-Reconciliation-Internal-Reconcile.png')}
-    imageAlt="System Context"
-    zoomInPic={useBaseUrl('img/zoom-in.svg')}
-    zoomOutPic={useBaseUrl('img/zoom-out.svg')}
-    resetPic={useBaseUrl('img/zoom-pan-reset.svg')}
-/>
+<img src={useBaseUrl('img/Research-Reconciliation-Internal-Reconcile.png')}
+zoomInPic={useBaseUrl('img/zoom-in.svg')}
+zoomOutPic={useBaseUrl('img/zoom-out.svg')}
+resetPic={useBaseUrl('img/zoom-pan-reset.svg')} />
 
 ### S3 Inventory Report
 
@@ -662,13 +648,10 @@ provided in detail below.
 An example schema showing how the objects interact and would be tied together is
 shown below.
 
-<MyImage
-    imageSource={useBaseUrl('img/Research-Reconciliation-orca-internal-reconciliation-schema.png')}
-    imageAlt="System Context"
-    zoomInPic={useBaseUrl('img/zoom-in.svg')}
-    zoomOutPic={useBaseUrl('img/zoom-out.svg')}
-    resetPic={useBaseUrl('img/zoom-pan-reset.svg')}
-/>
+<img src={useBaseUrl('img/Research-Reconciliation-orca-internal-reconciliation-schema.png')}
+zoomInPic={useBaseUrl('img/zoom-in.svg')}
+zoomOutPic={useBaseUrl('img/zoom-out.svg')}
+resetPic={useBaseUrl('img/zoom-pan-reset.svg')} />
 
 #### Status Table reconcile_status
 

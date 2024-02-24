@@ -48,8 +48,7 @@ This application will be used in future steps to authenticate users.
     ```commandline
     aws s3api create-bucket --bucket PREFIX-tf-state --profile default --region us-west-2 --create-bucket-configuration "LocationConstraint=us-west-2"
     ```
-
-## [Cumulus](https://nasa.github.io/cumulus/docs/deployment/deployment-readme)
+## Cumulus
 - If creating a realistic setup with multiple OUs, apply [Create the ORCA Archive Bucket](creating-orca-archive-bucket.md) to your PREFIX-orca-primary and PREFIX-orca-reports.
 - Run
   ```commandline
@@ -63,7 +62,8 @@ This application will be used in future steps to authenticate users.
   VPC and Subnets are created by [NGAP](https://wiki.earthdata.nasa.gov/display/ESKB/AWS+Services+Approval+Status+Page#AWSServicesApprovalStatusPage-VPC).
   It is recommended you copy values from an existing deployment setup.
   :::
-- Go to [this repo](https://git.earthdata.nasa.gov/projects/ORCA/repos/cumulus-orca-deploy-template/browse) and clone it to your machine.
+
+  - Go to [this repo](https://git.earthdata.nasa.gov/projects/ORCA/repos/cumulus-orca-deploy-template/browse) and clone it to your machine.
 :::warning
 It is strongly recommended to use a tested release branch rather than master. These instructions have been tested with `release/v9.4.0-v3.0.1`
 :::
@@ -87,12 +87,10 @@ It is strongly recommended to use a tested release branch rather than master. Th
     - Add `rds_user_password = "CumulusD3faultPassw0rd"` and change as desired.
     - Set `provision_user_database` to `true`
     - Set `cluster_identifier` to `"PREFIX-cumulus-db"`
-
 - In rds-cluster-tf/terraform.tf
     - Set `bucket` to `"PREFIX-tf-state"`
     - Set `key` to `"PREFIX/cumulus/terraform.tfstate"`
     - Set `dynamodb_table` to `"PREFIX-tf-locks"`
-
 - Go to https://github.com/asfadmin/CIRRUS-core/blob/master/Dockerfile and download the file to the same folder as your downloaded repo and orca folder.
   :::tip
   Make sure that no extension is added.
@@ -114,8 +112,7 @@ It is strongly recommended to use a tested release branch rather than master. Th
     - Set `rds_user_access_secret_arn` to the `user_credentials_secret_urn` output from `terraform apply`.
     - Set `rds_security_group` to the `security_group_id` output from `terraform apply`.
     - Set `vpc_id` to your borrowed VPC.
-
-```bash
+  ```bash
 cd ../data-persistence-tf/
 aws configure
 terraform init
@@ -127,11 +124,11 @@ terraform apply
     - Replace 12345 in permissions_boundary_arn with the Account Id.
     - Add to the buckets:
       ```
-      orca_default = {
+      orca_default = \{
         name = "PREFIX-orca-primary"
         type = "orca"
       },
-      provider = {
+      provider = \{
         name = "orca-sandbox-s3-provider"
         type = "provider"
       }
@@ -158,7 +155,6 @@ terraform apply
           ```
           api_users = [
             "bhazuka",
-            "andrew.dorn",
             "rizbi.hassan",
             "scott.saxon",
           ]
@@ -189,7 +185,7 @@ terraform apply
 - In cumulus-tf/orca.tf:
     - Remove the `aws_profile` and `region` variables.
     - Replace the `ORCA Variables` section with the following:
-      ```
+    ```json
       ## --------------------------
       ## ORCA Variables
       ## --------------------------
@@ -229,8 +225,8 @@ cd ../cumulus-tf
 terraform init
 terraform plan
 terraform apply
-```
 
+```
 <a name="redirect-definition"></a>
 
 - Go to https://uat.urs.earthdata.nasa.gov/profile
