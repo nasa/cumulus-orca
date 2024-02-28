@@ -38,9 +38,6 @@ If deployed correctly, the target group health checks should show as healthy.
 - *ORCA-746* - Enabled HTTPS listener in application load balancer for GraphQL server using AWS Certificate Manager.
 - *ORCA-828* - Added prefix to ORCA SNS topic names to avoid `object already exists` errors.
 
-
-
-
 ### Deprecated
 
 ### Removed
