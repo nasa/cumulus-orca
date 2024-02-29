@@ -16,6 +16,22 @@ and includes an additional section for migration notes.
 ## [Unreleased]
 
 ### Migration Notes
+ 
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [9.0.5] 2024-02-29
+
+### Migration Notes
 
 If you are deploying ORCA for the first time or migrating from v6, no changes are needed. 
  
