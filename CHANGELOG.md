@@ -36,7 +36,7 @@ If deployed correctly, the target group health checks should show as healthy.
 
 - *ORCA-441* - Updated policies for ORCA buckets and copy_to_archive to give them only the permissions needed to restrict unwanted/unintended actions.
 - *ORCA-746* - Enabled HTTPS listener in application load balancer for GraphQL server using AWS Certificate Manager.
-
+- *ORCA-828* - Added prefix to ORCA SNS topic names to avoid `object already exists` errors.
 
 ### Deprecated
 
