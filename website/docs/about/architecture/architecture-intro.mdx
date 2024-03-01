@@ -6,6 +6,7 @@ description: High level overview of ORCA architecture.
 
 import MyImage from '@site/docs/templates/pan-zoom-image.mdx';
 import useBaseUrl from '@docusaurus/useBaseUrl';
+import React from 'react';
 
 ORCA relies heavily on Cumulus and integrates with Cumulus messaging,
 functionality, and UI elements. The diagram below provides insight into how the
@@ -20,13 +21,8 @@ A copy of the architecture drawings in this section are available in
 [draw.io](https://app.diagrams.net/) format <a href={useBaseUrl('files/ORCA-Architecture.drawio')} target="_blank" download>here</a>.
 
 
-<MyImage
-    imageSource={useBaseUrl('img/ORCA-Architecture-System-Context.svg')}
-    imageAlt="System Context"
-    zoomInPic={useBaseUrl('img/zoom-in.svg')}
-    zoomOutPic={useBaseUrl('img/zoom-out.svg')}
-    resetPic={useBaseUrl('img/zoom-pan-reset.svg')}
-/>
-
-
-
+<img src={useBaseUrl('/img/ORCA-Architecture-System-Context.svg')}
+imageAlt="System Context"
+zoomInPic={useBaseUrl('img/zoom-in.svg')}
+zoomOutPic={useBaseUrl('img/zoom-out.svg')}
+resetPic={useBaseUrl('img/zoom-pan-reset.svg')} />

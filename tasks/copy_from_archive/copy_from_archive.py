@@ -224,8 +224,6 @@ def copy_object(
                 # 'MetadataDirective': 'COPY',
                 # 'ContentType': s3_cli.head_object(Bucket=src_bucket_name,
                 #  Key=src_object_name)['ContentType'],
-                # 'ACL': 'bucket-owner-full-control'
-                # Sets the x-amz-acl URI Request Parameter. Needed for cross-OU copies.
             },
             Config=TransferConfig(multipart_chunksize=multipart_chunksize_mb * MB),
         )

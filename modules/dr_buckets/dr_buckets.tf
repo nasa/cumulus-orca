@@ -34,6 +34,14 @@ resource "aws_s3_bucket" "orca_archive_bucket" {
   tags = var.tags
 }
 
+resource "aws_s3_bucket_ownership_controls" "orca_archive_bucket_ownership" {
+  bucket = aws_s3_bucket.orca_archive_bucket.id
+
+  rule {
+    object_ownership = "BucketOwnerEnforced"
+  }
+}
+
 # ORCA Archive Bucket Versioning
 resource "aws_s3_bucket_versioning" "orca_archive_versioning" {
   bucket = aws_s3_bucket.orca_archive_bucket.id
@@ -50,6 +58,24 @@ resource "aws_s3_bucket_policy" "orca_archive_cross_account_access" {
 
 data "aws_iam_policy_document" "orca_archive_cross_account_access_policy" {
   statement {
+    sid = "denyInsecureTransport"
+    effect = "Deny"
+    principals {
+      type = "*"
+      identifiers = ["*"]
+    }
+    actions = ["s3:*"]
+    resources = [
+      aws_s3_bucket.orca_archive_bucket.arn,
+      "${aws_s3_bucket.orca_archive_bucket.arn}/*",
+    ]
+     condition {
+      test = "Bool"
+      variable = "aws:SecureTransport"
+      values = ["false"]
+    }
+  }
+  statement {
     sid = "CrossAccPolicyDoc"
     principals {
       type        = "AWS"
@@ -57,9 +83,11 @@ data "aws_iam_policy_document" "orca_archive_cross_account_access_policy" {
     }
 
     actions = [
-      "s3:GetObject*",
+      "s3:GetObject",
+      "s3:GetObjectVersion",
       "s3:RestoreObject",
-      "s3:GetBucket*",
+      "s3:GetBucketVersioning",
+      "s3:GetBucketNotification",
       "s3:ListBucket",
       "s3:PutBucketNotification",
       "s3:GetInventoryConfiguration",
@@ -80,7 +108,7 @@ data "aws_iam_policy_document" "orca_archive_cross_account_access_policy" {
     }
 
     actions = [
-      "s3:PutObject*"
+      "s3:PutObject"
     ]
 
     resources = [
@@ -88,18 +116,11 @@ data "aws_iam_policy_document" "orca_archive_cross_account_access_policy" {
     ]
 
     condition {
-      test = "StringNotEquals"
+      test = "StringEquals"
       variable = "s3:x-amz-storage-class"
       values = [
         "GLACIER",
         "DEEP_ARCHIVE"
-      ]
-    }
-    condition {
-      test = "StringNotEquals"
-      variable = "s3:x-amz-acl"
-      values = [
-        "bucket-owner-full-control"
       ]
     }
   }
@@ -109,6 +130,14 @@ data "aws_iam_policy_document" "orca_archive_cross_account_access_policy" {
 resource "aws_s3_bucket" "orca_archive_worm_bucket" {
   bucket = "${var.prefix}-orca-archive-worm"
   tags = var.tags
+}
+
+resource "aws_s3_bucket_ownership_controls" "orca_archive_worm_bucket_ownership" {
+  bucket = aws_s3_bucket.orca_archive_worm_bucket.id
+
+  rule {
+    object_ownership = "BucketOwnerEnforced"
+  }
 }
 
 # ORCA Archive Worm Bucket Versioning
@@ -140,6 +169,24 @@ resource "aws_s3_bucket_policy" "orca_archive_worm_cross_account_access" {
 }
 
 data "aws_iam_policy_document" "orca_archive_worm_cross_account_access_policy" {
+  statement {
+    sid = "denyInsecureTransport"
+    effect = "Deny"
+    principals {
+      type = "*"
+      identifiers = ["*"]
+    }
+    actions = ["s3:*"]
+    resources = [
+      aws_s3_bucket.orca_archive_worm_bucket.arn,
+      "${aws_s3_bucket.orca_archive_worm_bucket.arn}/*",
+    ]
+     condition {
+      test = "Bool"
+      variable = "aws:SecureTransport"
+      values = ["false"]
+    }
+  }
   statement {
     sid = "Cross Account Access"
     principals {
@@ -190,7 +237,33 @@ resource "aws_s3_bucket_policy" "orca_reports_cross_account_access" {
   policy = data.aws_iam_policy_document.orca_reports_cross_account_access_policy.json
 }
 
+resource "aws_s3_bucket_ownership_controls" "orca_reports_bucket_ownership" {
+  bucket = aws_s3_bucket.orca_reports_bucket.id
+
+  rule {
+    object_ownership = "BucketOwnerEnforced"
+  }
+}
+
 data "aws_iam_policy_document" "orca_reports_cross_account_access_policy" {
+  statement {
+    sid = "denyInsecureTransport"
+    effect = "Deny"
+    principals {
+      type = "*"
+      identifiers = ["*"]
+    }
+    actions = ["s3:*"]
+    resources = [
+      aws_s3_bucket.orca_reports_bucket.arn,
+      "${aws_s3_bucket.orca_reports_bucket.arn}/*",
+    ]
+     condition {
+      test = "Bool"
+      variable = "aws:SecureTransport"
+      values = ["false"]
+    }
+  }
   statement {
     sid = "Reports Cross Account Access"
     principals {
@@ -199,11 +272,10 @@ data "aws_iam_policy_document" "orca_reports_cross_account_access_policy" {
     }
 
     actions = [
-      "s3:GetObject*",
-      "s3:GetBucket*",
+      "s3:GetObject",
+      "s3:GetBucketNotification",
       "s3:ListBucket",
       "s3:PutObject",
-      "s3:PutObjectAcl",
       "s3:PutBucketNotification"
     ]
 
@@ -220,20 +292,12 @@ data "aws_iam_policy_document" "orca_reports_cross_account_access_policy" {
     }
 
     actions = [
-      "s3:PutObject*"
+      "s3:PutObject"
     ]
 
     resources = [
       "${aws_s3_bucket.orca_reports_bucket.arn}/*"
     ]
-
-    condition {
-      test = "StringEquals"
-      variable = "s3:x-amz-acl"
-      values = [
-        "bucket-owner-full-control"
-      ]
-    }
     condition {
       test = "StringEquals"
       variable = "aws:SourceAccount"

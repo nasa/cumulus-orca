@@ -29,13 +29,11 @@ directly or by checking the status on the dashboard.
 
 A screenshot of the Cumulus dashboard used for recovering granules is shown below.
 
-<MyImage
-    imageSource={useBaseUrl('img/Cumulus-Dashboard-Recovery-Workflow.png')}
-    imageAlt="Cumulus Dashboard used for recovery"
-    zoomInPic={useBaseUrl('img/zoom-in.svg')}
-    zoomOutPic={useBaseUrl('img/zoom-out.svg')}
-    resetPic={useBaseUrl('img/zoom-pan-reset.svg')}
-/>
+<img src={useBaseUrl('img/Cumulus-Dashboard-Recovery-Workflow.png')}
+imageAlt="Cumulus Dashboard used for recovery"
+zoomInPic={useBaseUrl('img/zoom-in.svg')}
+zoomOutPic={useBaseUrl('img/zoom-out.svg')}
+resetPic={useBaseUrl('img/zoom-pan-reset.svg')} />
 
 On the dashboard home page, click on `Granules` option and add the granule to recover.
 Then click on the `Options` button and select `Execute`. From the dropdown menu, 
