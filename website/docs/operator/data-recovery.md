@@ -4,7 +4,6 @@ title: Data Recovery
 description: Provides documentation for Operators to recover missing data.
 ---
 
-import MyImage from '@site/docs/templates/pan-zoom-image.mdx';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 
 :::important

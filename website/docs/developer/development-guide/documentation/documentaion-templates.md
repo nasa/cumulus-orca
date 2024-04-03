@@ -27,7 +27,6 @@ title: My Content Page
 desc: Provides information on my content.
 ---
 
-import MyImage from '@site/docs/templates/pan-zoom-image.mdx';¬
 import useBaseUrl from '@docusaurus/useBaseUrl';
 
 The grey fox jumped over the red fern chasing the pink pig.
@@ -46,7 +45,6 @@ When using the template as seen from the example above, you must import both the
 functionality can be found in the [Docusaurus API documentation](https://v2.docusaurus.io/docs/docusaurus-core#usebaseurl).
 
 ```mdx
-import MyImage from '@site/docs/templates/pan-zoom-image.mdx';¬
 import useBaseUrl from '@docusaurus/useBaseUrl';
 ```
 
