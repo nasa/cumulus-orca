@@ -29,6 +29,8 @@ and includes an additional section for migration notes.
 
 ### Security
 
+- *ORCA-851* - Updated bandit libraries to fix Snyk vulnerabilities.
+
 ## [9.0.5] 2024-02-29
 
 ### Migration Notes
