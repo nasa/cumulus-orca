@@ -27,6 +27,8 @@ and includes an additional section for migration notes.
 
 ### Fixed
 
+- *ORCA-835* - Fixed ORCA documentation CI/CD pipeline showing node package import errors.
+
 ### Security
 
 ## [9.0.5] 2024-02-29
