@@ -21,7 +21,7 @@ and includes an additional section for migration notes.
 
 ### Changed
 
-- *ORCA-832* - Modified pyscopg2 installtion to allow for SSL connections to database.
+- *ORCA-832* - Modified pyscopg2 installation to allow for SSL connections to database.
 
 ### Deprecated
 
