@@ -27,6 +27,8 @@ and includes an additional section for migration notes.
 
 ### Fixed
 
+- *ORCA-835* - Fixed ORCA documentation bamboo CI/CD pipeline showing node package import errors.
+
 ### Security
 
 - *ORCA-851* - Updated bandit libraries to fix Snyk vulnerabilities.
