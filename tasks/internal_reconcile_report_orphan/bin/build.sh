@@ -48,27 +48,6 @@ run_and_check_returncode "pip install -q --upgrade pip --trusted-host pypi.org -
 pip install -q -t build -r requirements.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
 check_returncode $? "ERROR: pip install encountered an error."
 
-# Install the aws-lambda psycopg2 libraries
-mkdir -p build/psycopg2
-
-##TODO: Adjust build scripts to put shared packages needed under a task/build/packages directory.
-##      and copy the packages from there.
-if [ ! -d "../package" ]; then
-    run_and_check_returncode "mkdir -p ../package"
-fi
-
-if [ ! -d "../package/awslambda-psycopg2/psycopg2-3.9" ]; then
-  rm -d -f -r "../package/awslambda-psycopg2"
-fi
-if [ ! -d "../package/awslambda-psycopg2" ]; then
-    ## TODO: This should be pulling based on a release version instead of latest
-    run_and_check_returncode "git clone https://github.com/jkehler/awslambda-psycopg2.git ../package/awslambda-psycopg2"
-fi
-
-cp ../package/awslambda-psycopg2/psycopg2-3.9/* build/psycopg2/
-check_returncode $? "ERROR: Unable to install psycopg2."
-
-
 ## Copy the lambda files to build
 echo "INFO: Copying src Python files ..."
 find ./src -name '*.py' | xargs cp --parents -t build/

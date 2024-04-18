@@ -4,7 +4,7 @@ pytest==7.4.0
 
 ## Application libraries needed for testing
 fastjsonschema==2.15.0
-psycopg2-binary==2.8.6
+psycopg2-binary==2.9.9
 
 ## Application libraries
 boto3~=1.18.40

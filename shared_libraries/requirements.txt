@@ -19,7 +19,7 @@ pytest==7.4.0
 coverage==7.2.7
 
 ## Libraries used by database package
-psycopg2-binary==2.9.2
+psycopg2-binary==2.9.9
 
 ## Libraries used by recovery package
 moto[sqs]==4.2.13

@@ -4,7 +4,7 @@ pytest==7.4.0
 moto[sqs]==4.2.13
 
 ## Application libraries needed for testing
-psycopg2-binary==2.8.6
+psycopg2-binary==2.9.9
 
 ## Application libraries
 aws_lambda_powertools==1.31.0
