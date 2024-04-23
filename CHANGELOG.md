@@ -19,6 +19,8 @@ and includes an additional section for migration notes.
  
 ### Added
 
+- *ORCA-845* - Created IAM role for RDS S3 import needed for Aurora v2 upgrade.
+
 ### Changed
 
 - *ORCA-832* - Modified pyscopg2 installation to allow for SSL connections to database.
