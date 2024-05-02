@@ -4,6 +4,10 @@ title: Generating S3 credentials
 description: Provides developer with information on archive storage solutions.
 ---
 
+:::important
+`s3_access_key` and `s3_secret_key` variables will be removed in ORCA v10.0.0 due to the use of IAM role to access the reports bucket with the upgrade of Aurora V2 database. Please ignore these steps starting in ORCA v10.0.0.
+:::
+
 Postgres requires access to the [ORCA Reports bucket](./creating-orca-archive-bucket.md#reports-bucket) to pull in s3 inventory information.
 These values are stored in the [Required Variables](./deployment-with-cumulus.md#orca-required-variables) `s3_access_key` and `s3_secret_key`.
 Note that this only impacts [Internal Reconciliation reports](../api/api.md#internal-reconcile-report-jobs-api), which is not required for ingest or recovery, but is helpful for verifying data integrity.
