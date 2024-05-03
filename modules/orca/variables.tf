@@ -219,12 +219,6 @@ variable "orca_recovery_retry_backoff" {
 }
 
 
-variable "s3_access_key" {
-  type        = string
-  description = "Access key for communicating with Orca S3 buckets."
-}
-
-
 variable "s3_inventory_queue_message_retention_time_seconds" {
   type        = number
   description = "The number of seconds s3-inventory-queue fifo SQS retains a message in seconds. Maximum value is 14 days."
@@ -234,12 +228,6 @@ variable "s3_inventory_queue_message_retention_time_seconds" {
 variable "s3_report_frequency" {
   type        = string
   description = "How often to generate s3 reports for internal reconciliation."
-}
-
-
-variable "s3_secret_key" {
-  type        = string
-  description = "Secret key for communicating with Orca S3 buckets."
 }
 
 

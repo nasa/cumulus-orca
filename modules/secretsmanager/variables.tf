@@ -49,16 +49,6 @@ variable "restore_object_role_arn" {
   description = "AWS ARN of the restore_object_role."
 }
 
-variable "s3_access_key" {
-  type        = string
-  description = "Access key for communicating with Orca S3 buckets."
-}
-
-variable "s3_secret_key" {
-  type        = string
-  description = "Secret key for communicating with Orca S3 buckets."
-}
-
 ## Default variable value is set in ../main.tf to disallow any modification.
 
 variable "db_admin_username" {

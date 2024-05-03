@@ -58,8 +58,3 @@ variable "gql_tasks_role_arn" {
   type        = string
   description = "The ARN of the role used by the code within the Graphql ECS Task."
 }
-
-variable "s3_access_credentials_secret_arn" {
-  type        = string
-  description = "The Amazon Resource Name (ARN) of the s3 credentials secret."
-}

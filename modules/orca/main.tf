@@ -25,7 +25,6 @@ module "orca_lambdas" {
   ## REQUIRED
   db_connect_info_secret_arn                           = module.orca_secretsmanager.secretsmanager_arn
   orca_default_bucket                                  = var.orca_default_bucket
-  orca_secretsmanager_s3_access_credentials_secret_arn = module.orca_secretsmanager.s3_access_credentials_secret_arn
   orca_sqs_archive_recovery_queue_arn                  = module.orca_sqs.orca_sqs_archive_recovery_queue_arn
   orca_sqs_archive_recovery_queue_id                   = module.orca_sqs.orca_sqs_archive_recovery_queue_id
   orca_sqs_internal_report_queue_id                    = module.orca_sqs.orca_sqs_internal_report_queue_id
@@ -182,8 +181,6 @@ module "orca_secretsmanager" {
   db_host_endpoint                = var.db_host_endpoint
   gql_ecs_task_execution_role_arn = module.orca_graphql_0.gql_ecs_task_execution_role_arn
   restore_object_role_arn         = module.orca_iam.restore_object_role_arn
-  s3_access_key                   = var.s3_access_key
-  s3_secret_key                   = var.s3_secret_key
 
   ## OPTIONAL
   db_admin_username = var.db_admin_username
@@ -261,7 +258,6 @@ module "orca_graphql_1" {
   ## --------------------------
   ## REQUIRED
   db_connect_info_secret_arn       = module.orca_secretsmanager.secretsmanager_arn
-  s3_access_credentials_secret_arn = module.orca_secretsmanager.s3_access_credentials_secret_arn
   ecs_cluster_id                   = module.orca_ecs.ecs_cluster_id
   gql_ecs_task_execution_role_arn  = module.orca_graphql_0.gql_ecs_task_execution_role_arn
   gql_ecs_task_execution_role_id   = module.orca_graphql_0.gql_ecs_task_execution_role_id

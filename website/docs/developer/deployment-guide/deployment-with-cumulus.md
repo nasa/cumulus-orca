@@ -88,8 +88,6 @@ module "orca" {
   orca_default_bucket      = var.orca_default_bucket
   orca_reports_bucket_name = var.orca_reports_bucket_name
   rds_security_group_id    = var.rds_security_group_id
-  s3_access_key            = var.s3_access_key
-  s3_secret_key            = var.s3_secret_key
 
   ## OPTIONAL
   # archive_recovery_queue_message_retention_time_seconds = 777600
@@ -137,8 +135,6 @@ optional variables can be found in the [variables section](#orca-variables).
 - db_host_endpoint
 - rds_security_group_id
 - dlq_subscription_email
-- s3_access_key
-- s3_secret_key
 
 #### Required Values Retrieved from Cumulus Variables
 
@@ -205,15 +201,6 @@ variable "rds_security_group_id" {
   description = "Cumulus' RDS Security Group's ID."
 }
 
-variable "s3_access_key" {
-  type = string
-  description = "AWS Access key for communicating with Orca S3 buckets."
-}
-
-variable "s3_secret_key" {
-  type = string
-  description = "AWS Secret key for communicating with Orca S3 buckets."
-}
 ```
 
 ### Modifying `cumulus-tf/terraform.tfvars`
@@ -259,12 +246,6 @@ rds_security_group_id = "sg-01234567890123456"
 ## Dead letter queue SNS topic subscription email.
 dlq_subscription_email = "test@email.com"
 
-## AWS access key to connect to AWS account.
-s3_access_key = "xxxxxxxxxxxxxxxxxxx"
-
-## AWS secret access key to connect to AWS account
-s3_secret_key = "xxxxxxxxxxxx/xxxxx/xxxxxxxxxxxxxxxxxxxxx"
-
 ```
 
 Below describes the type of value expected for each variable.
@@ -278,8 +259,6 @@ Below describes the type of value expected for each variable.
 * `orca_default_bucket` (string) - Default S3 archive bucket to use for ORCA data.
 * `orca_reports_bucket_name` (string) - The name of the bucket to store s3 inventory reports.
 * `rds_security_group_id`(string) - Cumulus' RDS Security Group's ID. Output as `security_group_id` from the rds-cluster deployment.
-* `s3_access_key` (string) - AWS Access key for communicating with Orca S3 buckets.
-* `s3_secret_key`(string) - AWS Secret key for communicating with Orca S3 buckets.
 
 Additional variable definitions can be found in the [ORCA variables](#orca-variables)
 section of the document.
@@ -525,8 +504,6 @@ file. The variables must be set with proper values for your environment in the
 | `orca_default_bucket`      | Default archive bucket to use.                           | "PREFIX-orca-primary"                                       |
 | `orca_reports_bucket_name` | The Name of the bucket to store s3 inventory reports.    | "PREFIX-orca-reports"                                       |
 | `rds_security_group_id`    | Cumulus' RDS Security Group's ID.                        | "sg-01234567890123456"                                      |
-| `s3_access_key`            | Access key for communicating with Orca S3 buckets.       |                                                             |
-| `s3_secret_key`            | Secret key for communicating with Orca S3 buckets.       |                                                             |
 
 ### Optional Variables
 

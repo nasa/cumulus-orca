@@ -17,6 +17,9 @@ and includes an additional section for migration notes.
 
 ### Migration Notes
  
+Remove the `s3_access_key` and `s3_secret_key` variables from your `orca.tf` file.
+
+
 ### Added
 
 - *ORCA-845* - Created IAM role for RDS S3 import needed for Aurora v2 upgrade.
@@ -28,6 +31,8 @@ and includes an additional section for migration notes.
 ### Deprecated
 
 ### Removed
+
+- *ORCA-793* - Removed `s3_access_key` and `s3_secret_key` variables from terraform.
 
 ### Fixed
 
