@@ -23,6 +23,7 @@ Remove the `s3_access_key` and `s3_secret_key` variables from your `orca.tf` fil
 ### Added
 
 - *ORCA-845* - Created IAM role for RDS S3 import needed for Aurora v2 upgrade.
+- *ORCA-792* - Added DB comparison script for the temporary EC2 to compare databases post migration.
 
 ### Changed
 
