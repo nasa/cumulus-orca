@@ -32,6 +32,7 @@ and includes an additional section for migration notes.
 ### Fixed
 
 - *ORCA-835* - Fixed ORCA documentation bamboo CI/CD pipeline showing node package import errors.
+- *ORCA-864* - Updated ORCA archive bucket policy and IAM role to fix access denied error during backup/recovery process.
 
 ### Security
 
@@ -41,7 +42,9 @@ and includes an additional section for migration notes.
 
 ### Migration Notes
 
-If you are deploying ORCA for the first time or migrating from v6, no changes are needed. 
+Remove the`s3:x-amz-acl: bucket-owner-full-control` property from your ORCA archive bucket policy if applicable.
+
+If you are deploying ORCA for the first time or migrating from v6, the changes stated below regarding the load balancer are not required. 
  
 If you are currently on v8 or v9, this means you already have load balancer deployed and you need to delete the load balancer target group before deploying this version. This is because terraform cannot delete existing load balancer target groups having a listener attached. Adding a HTTPS to the target group requires replacing the target group. Once the target group is deleted, you should be able to deploy ORCA.
  
@@ -50,6 +53,7 @@ If you are currently on v8 or v9, this means you already have load balancer depl
  3. Deploy ORCA.
 
 If deployed correctly, the target group health checks should show as healthy.
+
  
 ### Added
 
