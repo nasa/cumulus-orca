@@ -89,6 +89,8 @@ data "aws_iam_policy_document" "restore_object_role_policy_document" {
     actions = [
       "s3:RestoreObject",
       "s3:GetObject",
+      "GetObjectTagging",
+      "PutObjectTagging",
       "s3:GetObjectVersion"
     ]
     resources = concat(local.orca_bucket_arns, local.orca_bucket_paths)
