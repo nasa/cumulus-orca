@@ -28,12 +28,14 @@ Remove the `s3_access_key` and `s3_secret_key` variables from your `orca.tf` fil
 ### Changed
 
 - *ORCA-832* - Modified pyscopg2 installation to allow for SSL connections to database.
+- *ORCA-795* - Modified Graphql task policy to allow for S3 imports.
 
 ### Deprecated
 
 ### Removed
 
 - *ORCA-793* - Removed `s3_access_key` and `s3_secret_key` variables from terraform.
+- *ORCA-795* - Removed `s3_access_key` and `s3_secret_key` variables from Graphql code and from get_current_archive_list task.
 
 ### Fixed
 

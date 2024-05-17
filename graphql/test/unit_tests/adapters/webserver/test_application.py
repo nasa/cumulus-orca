@@ -40,8 +40,6 @@ class TestApplication(unittest.TestCase):
         mock_user_password = uuid.uuid4().__str__()
         mock_host = uuid.uuid4().__str__()
         mock_port = uuid.uuid4().__str__()
-        mock_s3_access_key = uuid.uuid4().__str__()
-        mock_s3_secret_key = uuid.uuid4().__str__()
 
         mock_uvicorn_settings = Mock()
         mock_uvicorn_settings.DB_CONNECT_INFO = json.dumps({
@@ -53,10 +51,6 @@ class TestApplication(unittest.TestCase):
             "user_password": mock_user_password,
             "host": mock_host,
             "port": mock_port,
-        })
-        mock_uvicorn_settings.S3_ACCESS_CREDENTIALS = json.dumps({
-            "s3_access_key": mock_s3_access_key,
-            "s3_secret_key": mock_s3_secret_key,
         })
 
         result = get_application(mock_uvicorn_settings)
@@ -94,8 +88,6 @@ class TestApplication(unittest.TestCase):
         mock_internal_reconciliation_storage_adapter_postgres.assert_called_once_with(
             mock_create_postgres_connection_uri.create_user_uri.return_value,
             mock_create_postgres_connection_uri.create_admin_uri.return_value,
-            mock_s3_access_key,
-            mock_s3_secret_key,
         )
         mock_adapters_storage.assert_called_once_with(
             mock_uuid_word_generation.return_value,
