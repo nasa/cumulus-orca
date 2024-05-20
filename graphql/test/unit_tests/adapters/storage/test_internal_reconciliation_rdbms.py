@@ -33,8 +33,6 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
 
         mock_user_connection_uri = Mock()
         mock_admin_connection_uri = Mock()
-        mock_s3_access_key = Mock()
-        mock_s3_secret_key = Mock()
 
         mock_orca_archive_location = Mock()
         mock_inventory_creation_time = Mock()
@@ -56,8 +54,6 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
         adapter = InternalReconciliationStorageAdapterRDBMS(
             mock_user_connection_uri,
             mock_admin_connection_uri,
-            mock_s3_access_key,
-            mock_s3_secret_key,
         )
 
         result = adapter.create_job(
@@ -101,14 +97,10 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
         """
         mock_user_connection_uri = Mock()
         mock_admin_connection_uri = Mock()
-        mock_s3_access_key = Mock()
-        mock_s3_secret_key = Mock()
 
         adapter = InternalReconciliationStorageAdapterRDBMS(
             mock_user_connection_uri,
             mock_admin_connection_uri,
-            mock_s3_access_key,
-            mock_s3_secret_key,
         )
 
         mock_report_source = Mock()
@@ -154,8 +146,6 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
 
         mock_user_connection_uri = Mock()
         mock_admin_connection_uri = Mock()
-        mock_s3_access_key = Mock()
-        mock_s3_secret_key = Mock()
 
         mock_orca_archive_location = Mock()
         mock_execute = Mock()
@@ -172,8 +162,6 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
         adapter = InternalReconciliationStorageAdapterRDBMS(
             mock_user_connection_uri,
             mock_admin_connection_uri,
-            mock_s3_access_key,
-            mock_s3_secret_key,
         )
 
         adapter.truncate_s3_partition(
@@ -207,14 +195,10 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
     ):
         mock_user_connection_uri = Mock()
         mock_admin_connection_uri = Mock()
-        mock_s3_access_key = Mock()
-        mock_s3_secret_key = Mock()
 
         adapter = InternalReconciliationStorageAdapterRDBMS(
             mock_user_connection_uri,
             mock_admin_connection_uri,
-            mock_s3_access_key,
-            mock_s3_secret_key,
         )
 
         job_id = random.randint(0, 9999999999)  # nosec
@@ -263,8 +247,6 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
 
         mock_user_connection_uri = Mock()
         mock_admin_connection_uri = Mock()
-        mock_s3_access_key = Mock()
-        mock_s3_secret_key = Mock()
 
         mock_report_bucket_name = uuid.uuid4().__str__()
         mock_report_bucket_region = Mock()
@@ -295,8 +277,6 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
         adapter = InternalReconciliationStorageAdapterRDBMS(
             mock_user_connection_uri,
             mock_admin_connection_uri,
-            mock_s3_access_key,
-            mock_s3_secret_key,
         )
 
         adapter.update_job_with_s3_inventory(
@@ -335,8 +315,6 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
                             "report_bucket_name": csv_file_location.bucket_name,
                             "csv_key_path": csv_file_location.key,
                             "report_bucket_region": mock_report_bucket_region,
-                            "s3_access_key": mock_s3_access_key,
-                            "s3_secret_key": mock_s3_secret_key,
                         }
                     ],
                 )
@@ -391,8 +369,6 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
 
         mock_user_connection_uri = Mock()
         mock_admin_connection_uri = Mock()
-        mock_s3_access_key = Mock()
-        mock_s3_secret_key = Mock()
 
         mock_job_id = random.randint(0, 99999999)  # nosec
         mock_orca_archive_location = Mock()
@@ -410,8 +386,6 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
         adapter = InternalReconciliationStorageAdapterRDBMS(
             mock_user_connection_uri,
             mock_admin_connection_uri,
-            mock_s3_access_key,
-            mock_s3_secret_key,
         )
         adapter.perform_orca_reconcile(
             mock_orca_archive_location,
@@ -476,8 +450,6 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
             with self.subTest(direction=direction):
                 mock_user_connection_uri = Mock()
                 mock_admin_connection_uri = Mock()
-                mock_s3_access_key = Mock()
-                mock_s3_secret_key = Mock()
 
                 mock_job_id = Mock()
                 mock_cursor_collection_id = Mock()
@@ -532,8 +504,6 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
                 adapter = InternalReconciliationStorageAdapterRDBMS(
                     mock_user_connection_uri,
                     mock_admin_connection_uri,
-                    mock_s3_access_key,
-                    mock_s3_secret_key,
                 )
 
                 result = adapter.get_phantom_page(
@@ -577,8 +547,6 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
             with self.subTest(direction=direction):
                 mock_user_connection_uri = Mock()
                 mock_admin_connection_uri = Mock()
-                mock_s3_access_key = Mock()
-                mock_s3_secret_key = Mock()
 
                 mock_job_id = Mock()
                 mock_cursor_collection_id = Mock()
@@ -647,8 +615,6 @@ class TestInternalReconciliationStorageAdapterRDBMS(unittest.TestCase):
                 adapter = InternalReconciliationStorageAdapterRDBMS(
                     mock_user_connection_uri,
                     mock_admin_connection_uri,
-                    mock_s3_access_key,
-                    mock_s3_secret_key,
                 )
 
                 result = adapter.get_mismatch_page(

@@ -13,6 +13,20 @@ data "aws_iam_policy_document" "assume_gql_tasks_role_policy_document" {
     }
     actions = ["sts:AssumeRole"]
   }
+  statement {
+    principals {
+      type        = "Service"
+      identifiers = ["rds.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+    condition {
+      test = "StringEquals"
+      variable = "aws:SourceAccount"
+      values = [
+        "${data.aws_caller_identity.current.account_id}"
+      ]
+    }
+  }
 }
 
 resource "aws_iam_role" "gql_tasks_role" {
@@ -53,25 +67,6 @@ resource "aws_iam_role" "orca_ecs_task_execution_role" {
   tags                 = var.tags
 }
 
-## IAM role for internal reconciliation S3 import role
-
-data "aws_iam_policy_document" "assume_rds_role" {
-  statement {
-    principals {
-      type        = "Service"
-      identifiers = ["rds.amazonaws.com"]
-    }
-    actions = ["sts:AssumeRole"]
-    condition {
-      test = "StringEquals"
-      variable = "aws:SourceAccount"
-      values = [
-        "${data.aws_caller_identity.current.account_id}"
-      ]
-    }
-  }
-}
-
 # Policy document for S3 import
 data "aws_iam_policy_document" "rds_s3_import_role_policy_document" {
   statement {
@@ -80,23 +75,13 @@ data "aws_iam_policy_document" "rds_s3_import_role_policy_document" {
       "s3:ListBucket"
     ]
     resources = [
-        "arn:aws:s3:::${var.prefix}_orca-reports",
-        "arn:aws:s3:::${var.prefix}_orca-reports/*"
+        "arn:aws:s3:::${var.prefix}-orca-reports",
+        "arn:aws:s3:::${var.prefix}-orca-reports/*"
     ]
   }
 }
-
-# Role to be associated with the Serverless Cluster for S3 Import
-resource "aws_iam_role" "rds_s3_import_role" {
-  name                 = "${var.prefix}_rds_s3_import_role"
-  assume_role_policy   = data.aws_iam_policy_document.assume_rds_role.json
-  permissions_boundary = var.permissions_boundary_arn
-  tags                 = var.tags
-}
-
-# Policy for the RDS S3 Import Role
 resource "aws_iam_role_policy" "rds_s3_import_role_policy" {
   name   = "${var.prefix}_rds_s3_import_role_policy"
-  role   = aws_iam_role.rds_s3_import_role.id
+  role   = aws_iam_role.gql_tasks_role.id
   policy = data.aws_iam_policy_document.rds_s3_import_role_policy_document.json
 }
