@@ -75,8 +75,8 @@ data "aws_iam_policy_document" "rds_s3_import_role_policy_document" {
       "s3:ListBucket"
     ]
     resources = [
-        "arn:aws:s3:::${var.prefix}_orca-reports",
-        "arn:aws:s3:::${var.prefix}_orca-reports/*"
+        "arn:aws:s3:::${var.prefix}-orca-reports",
+        "arn:aws:s3:::${var.prefix}-orca-reports/*"
     ]
   }
 }
