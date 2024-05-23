@@ -29,6 +29,7 @@ Remove the `s3_access_key` and `s3_secret_key` variables from your `orca.tf` fil
 
 - *ORCA-832* - Modified pyscopg2 installation to allow for SSL connections to database.
 - *ORCA-795* - Modified Graphql task policy to allow for S3 imports.
+- *ORCA-797* - Removed s3 credential variables from `deployment-with-cumulus.md` and `s3-credentials.md` documentations since they are no longer used in Aurora v2 DB..
 
 ### Deprecated
 
