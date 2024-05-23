@@ -3,15 +3,15 @@ id: deployment-s3-credentials
 title: Generating S3 credentials
 description: Provides developer with information on archive storage solutions.
 ---
-
-:::important
-`s3_access_key` and `s3_secret_key` variables will be removed in ORCA v10.0.0 due to the use of IAM role to access the reports bucket with the upgrade of Aurora V2 database. Please ignore these steps starting in ORCA v10.0.0.
+:::note
+Starting in ORCA v10.x which uses Aurora v2, users will use IAM role to access archive buckets. Therefore, no access keys are required and this documentation will be obsolete.
 :::
 
 Postgres requires access to the [ORCA Reports bucket](./creating-orca-archive-bucket.md#reports-bucket) to pull in s3 inventory information.
 These values are stored in the [Required Variables](./deployment-with-cumulus.md#orca-required-variables) `s3_access_key` and `s3_secret_key`.
 Note that this only impacts [Internal Reconciliation reports](../api/api.md#internal-reconcile-report-jobs-api), which is not required for ingest or recovery, but is helpful for verifying data integrity.
 If you are unable to follow these instructions, or wish to avoid generating/managing credentials, blank values may be used and the impact will be isolated to Internal Reconciliation.
+
 
 To generate an access key:
 1. Connect to the NASA VPN.
@@ -26,3 +26,4 @@ To generate an access key:
 
 We are looking into alternatives to this system to remove these manual steps and eliminate the need for manual redeployment of expired keys.
 Once Cumulus updates their RDS instance (or we decouple) IAM roles may be an option. Details in [backlog card](https://bugs.earthdata.nasa.gov/browse/ORCA-667).
+
