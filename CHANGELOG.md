@@ -19,11 +19,12 @@ and includes an additional section for migration notes.
  
 Remove the `s3_access_key` and `s3_secret_key` variables from your `orca.tf` file.
 
-*Post V2 Upgrade Comparison*
+**Post V2 Upgrade Comparison**
+
 Once the Aurora V1 database has been migrated/upgrade to Aurora V2 you can verify data integrity of the ORCA database by deploying the EC2 comparison instance which can be found at `modules/db_compare_instance/main.tf`
 - Deployment Steps
   1. Fill in the variables in `modules/db_compare_instance/scripts/db_config.sh`
-      - archive_bucket - ORCA Archive Bucket Name *IMPORTANT:* use underscores in place of dashes e.g. zrtest_orca_archive  
+      - archive_bucket - ORCA Archive Bucket Name **IMPORTANT:** use underscores in place of dashes e.g. zrtest_orca_archive  
       - v1_endpoint - Endpoint of the V1 cluster e.g. orcaV1.cluster-c1xufm1sp0ux.us-west-2.rds.amazonaws.com 
       - v1_database - Database of the V1 cluster e.g. orca_db
       - v1_user - Username of the V1 cluster e.g orcaV1_user
@@ -35,9 +36,9 @@ Once the Aurora V1 database has been migrated/upgrade to Aurora V2 you can verif
   2. cd to `modules/db_compare_instance`
   3. Run `terraform init`
   4. Run `terraform apply`
-  5. Once the instance is deployed add an *inbound rule* to both the V1 and V2 database security groups with the private IP of the EC2 instance.
+  5. Once the instance is deployed add an **inbound rule** to both the V1 and V2 database security groups with the private IP of the EC2 instance.
       - The private IP of the instance can be found via the console or AWS CLI by running the command: `aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" "Name=instance-id,Values=<INSTANCE_ID>" --query 'Reservations[*].Instances[*].[PrivateIpAddress]' --output text` 
-      - *This needs to be performed on BOTH V1 and V2 Security Groups*The inbound rule can be added via the AWS console or AWS CLI by running the command: `aws ec2 authorize-security-group-ingress --group-id <DB_SECURITY_GROUP_ID> --protocol tcp --port 5432 --cidr <INSTANCE_PRIVATE_IP>/32`
+      - **This needs to be performed on BOTH V1 and V2 Security Groups** The inbound rule can be added via the AWS console or AWS CLI by running the command: `aws ec2 authorize-security-group-ingress --group-id <DB_SECURITY_GROUP_ID> --protocol tcp --port 5432 --cidr <INSTANCE_PRIVATE_IP>/32`
   6. Now you can connect to the EC2 via the AWS console or AWS CLI with the command: `aws ssm start-session --target <INSTANCE_ID>`
   7. Once connected run the command `cd /home`
   8. Once at the `/home` directory run the command: `sh db_compare.sh`
@@ -45,8 +46,8 @@ Once the Aurora V1 database has been migrated/upgrade to Aurora V2 you can verif
       - v1_cluster - This table is count of data in the ORCA database of each table in the V1 cluster.
       - v2_cluster - This table is count of data in the ORCA database of each table in the V2 cluster.
   10. Verify that the output of the V2 database matches that of the V1 database to ensure no data was lost during the migration.
-  11. Once verified the EC2 instance can be destroyed by running `terraform destroy` *Verify you are in the modules/db_compare_instance directory*
-  12. Remove the added inbound rules that were added in step 5 either in the AWS Console or AWS CLI by running the command: `aws ec2 revoke-security-group-ingress --group-id <DB_SECURITY_GROUP_ID> --protocol tcp --port 5432 --cidr <INSTANCE_PRIVATE_IP>/32`
+  11. Once verified the EC2 instance can be destroyed by running `terraform destroy` **Verify you are in the modules/db_compare_instance directory**
+  12. **This needs to be performed on BOTH V1 and V2 Security Groups** Remove the added inbound rules that were added in step 5 either in the AWS Console or AWS CLI by running the command: `aws ec2 revoke-security-group-ingress --group-id <DB_SECURITY_GROUP_ID> --protocol tcp --port 5432 --cidr <INSTANCE_PRIVATE_IP>/32`
 
 
 
