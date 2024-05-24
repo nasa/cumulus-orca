@@ -1,7 +1,7 @@
 #!/bin/sh
-source config.sh
+source /home/db_config.sh
  
-PGPASSWORD=$v1_password psql --host=$v1_endpoint --port=5432 --username=v1_user --dbname=v1_database -c "SELECT 'collections' AS v1_cluster, COUNT(*) AS row_count FROM collections
+PGPASSWORD=$v1_password psql --host=$v1_endpoint --port=5432 --username=$v1_user --dbname=$v1_database -c "SELECT 'collections' AS v1_cluster, COUNT(*) AS row_count FROM collections
 UNION ALL SELECT 'files' AS files, COUNT(*) AS row_count FROM files
 UNION ALL SELECT 'granules' AS granules , COUNT(*) AS row_count FROM granules
 UNION ALL SELECT 'providers' AS providers, COUNT(*) as row_count FROM providers

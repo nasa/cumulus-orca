@@ -42,7 +42,7 @@ data "cloudinit_config" "config" {
   }
 
   part {
-    filename     = "db_compare.sh"
+    filename     = "db_config.sh"
     content_type = "text/x-shellscript"
     content      = "${data.template_file.config.rendered}"
   }
