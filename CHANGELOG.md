@@ -17,17 +17,26 @@ and includes an additional section for migration notes.
 
 ### Migration Notes
  
+Remove the `s3_access_key` and `s3_secret_key` variables from your `orca.tf` file.
+
+
 ### Added
 
 - *ORCA-845* - Created IAM role for RDS S3 import needed for Aurora v2 upgrade.
+- *ORCA-792* - Added DB comparison script at `modules/db_compare_instance/scripts/db_compare.sh` for the temporary EC2 to compare databases post migration.
 
 ### Changed
 
 - *ORCA-832* - Modified pyscopg2 installation to allow for SSL connections to database.
+- *ORCA-795* - Modified Graphql task policy to allow for S3 imports.
+- *ORCA-797* - Removed s3 credential variables from `deployment-with-cumulus.md` and `s3-credentials.md` documentations since they are no longer used in Aurora v2 DB..
 
 ### Deprecated
 
 ### Removed
+
+- *ORCA-793* - Removed `s3_access_key` and `s3_secret_key` variables from terraform.
+- *ORCA-795* - Removed `s3_access_key` and `s3_secret_key` variables from Graphql code and from get_current_archive_list task.
 
 ### Fixed
 

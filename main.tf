@@ -44,8 +44,6 @@ module "orca" {
   dlq_subscription_email   = var.dlq_subscription_email
   orca_default_bucket      = var.orca_default_bucket
   orca_reports_bucket_name = var.orca_reports_bucket_name
-  s3_access_key            = var.s3_access_key
-  s3_secret_key            = var.s3_secret_key
 
   ## OPTIONAL
   archive_recovery_queue_message_retention_time_seconds = var.archive_recovery_queue_message_retention_time_seconds

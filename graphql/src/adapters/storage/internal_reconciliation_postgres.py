@@ -12,14 +12,10 @@ class InternalReconciliationStorageAdapterPostgres(InternalReconciliationStorage
         self,
         user_connection_uri: str,
         admin_connection_uri: str,
-        s3_access_key: str,
-        s3_secret_key: str,
     ):
         super(InternalReconciliationStorageAdapterPostgres, self).__init__(
             user_connection_uri,
             admin_connection_uri,
-            s3_access_key,
-            s3_secret_key
         )
 
     @staticmethod
@@ -78,8 +74,6 @@ class InternalReconciliationStorageAdapterPostgres(InternalReconciliationStorage
                 :report_bucket_name,
                 :csv_key_path,
                 :report_bucket_region,
-                :s3_access_key,
-                :s3_secret_key,
                 ''
             )
             """
