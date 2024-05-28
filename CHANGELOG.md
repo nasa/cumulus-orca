@@ -37,6 +37,7 @@ Remove the `s3_access_key` and `s3_secret_key` variables from your `orca.tf` fil
 
 - *ORCA-793* - Removed `s3_access_key` and `s3_secret_key` variables from terraform.
 - *ORCA-795* - Removed `s3_access_key` and `s3_secret_key` variables from Graphql code and from get_current_archive_list task.
+- *ORCA-798* - Removed `s3_access_key` and `s3_secret_key` variables from integration tests.
 
 ### Fixed
 
@@ -1187,3 +1188,4 @@ None - this is the baseline release.
   * Updated requirements-dev.txt files for each task and moved the testing framework from nosetest (no longer supported) to coverage and pytest. 
   * Support in GitHub for automated build/test/release via Bamboo
   * Use `coverage` and `pytest` for coverage/testing
+

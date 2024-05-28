@@ -64,7 +64,6 @@ function perform_terraform_command_orca () {
     -var "dlq_subscription_email=rhassan@contractor.usgs.gov" \
     -var "orca_default_bucket=$bamboo_PREFIX-orca-primary" \
     -var "orca_reports_bucket_name=$bamboo_PREFIX-orca-reports" \
-    -var "rds_security_group_id=$RDS_SECURITY_GROUP" \
-    -var "s3_access_key=dummy" \
-    -var "s3_secret_key=dummy"
+    -var "rds_security_group_id=$RDS_SECURITY_GROUP"
 }
+
