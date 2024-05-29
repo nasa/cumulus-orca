@@ -29,7 +29,7 @@ Remove the `s3_access_key` and `s3_secret_key` variables from your `orca.tf` fil
 
 - *ORCA-832* - Modified pyscopg2 installation to allow for SSL connections to database.
 - *ORCA-795* - Modified Graphql task policy to allow for S3 imports.
-- *ORCA-797* - Removed s3 credential variables from `deployment-with-cumulus.md` and `s3-credentials.md` documentations since they are no longer used in Aurora v2 DB..
+- *ORCA-797* - Removed s3 credential variables from `deployment-with-cumulus.md` and `s3-credentials.md` documentations since they are no longer used in Aurora v2 DB.
 
 ### Deprecated
 
@@ -37,6 +37,7 @@ Remove the `s3_access_key` and `s3_secret_key` variables from your `orca.tf` fil
 
 - *ORCA-793* - Removed `s3_access_key` and `s3_secret_key` variables from terraform.
 - *ORCA-795* - Removed `s3_access_key` and `s3_secret_key` variables from Graphql code and from get_current_archive_list task.
+- *ORCA-798* - Removed `s3_access_key` and `s3_secret_key` variables from integration tests.
 
 ### Fixed
 
@@ -1187,3 +1188,4 @@ None - this is the baseline release.
   * Updated requirements-dev.txt files for each task and moved the testing framework from nosetest (no longer supported) to coverage and pytest. 
   * Support in GitHub for automated build/test/release via Bamboo
   * Use `coverage` and `pytest` for coverage/testing
+
