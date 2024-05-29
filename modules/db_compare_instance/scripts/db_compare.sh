@@ -1,16 +1,7 @@
 #!/bin/sh
-read -p "Archive Bucket: " archive_bucket
-read -p "V1 DB Endpoint: " v1_endpoint
-read -p "V1 DB Database: " v1_database
-read -p "V1 DB Username: " v1_user
-read -s -p "V1 DB Password: " v1_password
-echo
-read -p "V2 DB Endpoint: " v2_endpoint
-read -p "V2 DB Database: " v2_database
-read -p "V2 DB Username: " v2_user
-read -s -p "V2 DB Password: " v2_password
+source /home/db_config.sh
  
-PGPASSWORD=$v1_password psql --host=$v1_endpoint --port=5432 --username=v1_user --dbname=v1_database -c "SELECT 'collections' AS v1_cluster, COUNT(*) AS row_count FROM collections
+PGPASSWORD=$v1_password psql --host=$v1_endpoint --port=5432 --username=$v1_user --dbname=$v1_database -c "SELECT 'collections' AS v1_cluster, COUNT(*) AS row_count FROM collections
 UNION ALL SELECT 'files' AS files, COUNT(*) AS row_count FROM files
 UNION ALL SELECT 'granules' AS granules , COUNT(*) AS row_count FROM granules
 UNION ALL SELECT 'providers' AS providers, COUNT(*) as row_count FROM providers
