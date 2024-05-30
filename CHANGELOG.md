@@ -48,6 +48,9 @@ Once the Aurora V1 database has been migrated/upgrade to Aurora V2 you can verif
   10. Verify that the output of the V2 database matches that of the V1 database to ensure no data was lost during the migration.
   11. Once verified the EC2 instance can be destroyed by running `terraform destroy` **Verify you are in the modules/db_compare_instance directory**
   12. **This needs to be performed on BOTH V1 and V2 Security Groups** Remove the added inbound rules that were added in step 5 either in the AWS Console or AWS CLI by running the command: `aws ec2 revoke-security-group-ingress --group-id <DB_SECURITY_GROUP_ID> --protocol tcp --port 5432 --cidr <INSTANCE_PRIVATE_IP>/32`
+  13. Delete the V1 database.
+  14. Remove the snapshot identifier from the Terraform (If Applicable)
+  15. In the AWS console navigate to RDS -> Snapshots and delete the snapshot the V2 database was restored from.
 
 
 
