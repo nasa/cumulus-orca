@@ -13,6 +13,10 @@
         "pattern": "\\..+"
       }
     },
+    "fileDestination": {
+      "type": ["string", "null"],
+      "description": "Overrides the destination key of the file to be archived."
+    },
     "s3MultipartChunksizeMb": {
       "type": ["integer", "null"],
       "description": "The collection's maximum size of chunks to use when copying. Defaults to environment variable."
