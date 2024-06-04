@@ -65,6 +65,7 @@ Once the Aurora V1 database has been migrated/upgrade to Aurora V2 you can verif
 - *ORCA-832* - Modified pyscopg2 installation to allow for SSL connections to database.
 - *ORCA-795* - Modified Graphql task policy to allow for S3 imports.
 - *ORCA-797* - Removed s3 credential variables from `deployment-with-cumulus.md` and `s3-credentials.md` documentations since they are no longer used in Aurora v2 DB.
+- *ORCA-873* - Modified build task script to copy schemas into a schema folder to resolve errors.
 
 ### Deprecated
 

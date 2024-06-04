@@ -55,7 +55,7 @@ check_returncode $? "ERROR: Failed to copy lambda files to build directory."
 
 ## Copy the schema files to build
 echo "INFO:  Copying the input, output and config schemas..."
-cp -r schemas/ build/
+cp -r schemas/ build/schemas/
 check_returncode $? "ERROR: Failed to copy schema files to build directory."
 ## Create the zip archive
 cd build
