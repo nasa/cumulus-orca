@@ -202,7 +202,6 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
         multipart_chunksize_mb = int(multipart_chunksize_mb_str)
 
     file_destination_key = config.get(CONFIG_FILE_DESTINATION_KEY, None)
-    LOGGER.debug(f"file_destination_key is set to {file_destination_key}")
 
     try:
         metadata_queue_url = os.environ.get(OS_ENVIRON_METADATA_DB_QUEUE_URL_KEY)
