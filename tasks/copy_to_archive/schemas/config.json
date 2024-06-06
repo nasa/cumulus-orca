@@ -13,7 +13,7 @@
         "pattern": "\\..+"
       }
     },
-    "fileDestination": {
+    "fileDestinationOverride": {
       "type": ["string", "null"],
       "description": "Overrides the destination key of the file to be archived."
     },
