@@ -19,7 +19,7 @@
             "providerName": "$.meta.provider.name",
             "defaultBucketOverride": "$.meta.collection.meta.orca.defaultBucketOverride",
             "defaultStorageClassOverride": "$.meta.collection.meta.orca.defaultStorageClassOverride",
-            "fileDestination": "$.meta.collection.meta.orca.fileDestination"
+            "fileDestinationOverride": "$.meta.collection.meta.orca.fileDestinationOverride"
           }
         }
       },

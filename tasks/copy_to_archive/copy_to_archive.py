@@ -34,7 +34,7 @@ EVENT_OPTIONAL_VALUES_KEY = "optionalValues"
 CONFIG_PROVIDER_NAME_KEY = "providerName"
 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
 CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY = "excludedFileExtensions"
-CONFIG_FILE_DESTINATION_KEY = "fileDestination"
+CONFIG_FILE_DESTINATION_OVERRIDE_KEY = "fileDestinationOverride"
 CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY = "defaultBucketOverride"
 CONFIG_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY = "defaultStorageClassOverride"
 CONFIG_PROVIDER_ID_KEY = "providerId"
@@ -201,7 +201,8 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
     else:
         multipart_chunksize_mb = int(multipart_chunksize_mb_str)
 
-    file_destination_key = config.get(CONFIG_FILE_DESTINATION_KEY, None)
+    file_destination_key = config.get(CONFIG_FILE_DESTINATION_OVERRIDE_KEY, None)
+    LOGGER.info(f"file_destination_key is set to {file_destination_key}")
 
     try:
         metadata_queue_url = os.environ.get(OS_ENVIRON_METADATA_DB_QUEUE_URL_KEY)
@@ -253,6 +254,7 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
         for file in granule["files"]:
             if file_destination_key is None:
                 destination_file_filepath = file[FILE_FILEPATH_KEY]
+                LOGGER.info(f"destination_file_filepath is {destination_file_filepath}")
             else:
                 destination_file_filepath = file_destination_key
             file_filepath = file[FILE_FILEPATH_KEY]
