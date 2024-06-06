@@ -17,7 +17,17 @@ and includes an additional section for migration notes.
 
 ### Migration Notes
  
-Remove the `s3_access_key` and `s3_secret_key` variables from your `orca.tf` file.
+- Remove the `s3_access_key` and `s3_secret_key` variables from your `orca.tf` file.
+- If desired, update collection configurations with the new optional key `fileDestinationOverride` that can be added to override the file destination where it will be archived.
+    ```json
+      "collection": {
+          "meta":{
+              "orca": {
+                "fileDestinationOverride": ""
+            }
+        }
+      }
+      ```
 
 **Post V2 Upgrade Comparison**
 
