@@ -23,7 +23,7 @@ and includes an additional section for migration notes.
       "collection": {
           "meta":{
               "orca": {
-                "fileDestinationOverride": "test/file.hdf""
+                "fileDestinationOverride": "test/file.hdf"
             }
         }
       }

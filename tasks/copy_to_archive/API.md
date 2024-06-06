@@ -9,6 +9,10 @@
   * [set\_optional\_event\_property](#copy_to_archive.set_optional_event_property)
   * [handler](#copy_to_archive.handler)
 * [sqs\_library](#sqs_library)
+  * [MAX\_RETRIES](#sqs_library.MAX_RETRIES)
+  * [BACKOFF\_FACTOR](#sqs_library.BACKOFF_FACTOR)
+  * [INITIAL\_BACKOFF\_IN\_SECONDS](#sqs_library.INITIAL_BACKOFF_IN_SECONDS)
+  * [RT](#sqs_library.RT)
   * [retry\_error](#sqs_library.retry_error)
   * [get\_aws\_region](#sqs_library.get_aws_region)
   * [post\_to\_metadata\_queue](#sqs_library.post_to_metadata_queue)
@@ -237,6 +241,30 @@ METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
 
 Name: sqs_library.py
 Description: library for copy_to_archive lambda function for posting to metadata SQS queue.
+
+<a id="sqs_library.MAX_RETRIES"></a>
+
+#### MAX\_RETRIES
+
+number of times to retry.
+
+<a id="sqs_library.BACKOFF_FACTOR"></a>
+
+#### BACKOFF\_FACTOR
+
+Value of the factor used to backoff
+
+<a id="sqs_library.INITIAL_BACKOFF_IN_SECONDS"></a>
+
+#### INITIAL\_BACKOFF\_IN\_SECONDS
+
+Number of seconds to sleep the first time through.
+
+<a id="sqs_library.RT"></a>
+
+#### RT
+
+return type
 
 <a id="sqs_library.retry_error"></a>
 
