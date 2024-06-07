@@ -441,7 +441,8 @@ The `provider` key should contain an `id` key that returns the provider id from 
 The `cumulus_meta` key should contain an `execution_name` key that returns the step function execution ID from AWS. 
 The `collection` key value should contain a `name` key and a `version` key that return the required collection shortname and collection version from Cumulus respectively.
 The `collection` key value should also contain a `meta` key that includes an `orca` key having an optional `excludedFileExtensions` key that is used to determine file patterns that should not be 
-sent to ORCA. In addition, the `orca` key also contains optional `defaultBucketOverride` key that overrides the `ORCA_DEFAULT_BUCKET` set on deployment and optional `defaultStorageClassOverride` key that overrides the storage class to use when storing files in Orca. 
+sent to ORCA. In addition, the `orca` key also contains optional `defaultBucketOverride` key that overrides the `ORCA_DEFAULT_BUCKET` set on deployment and optional `defaultStorageClassOverride` key that overrides the storage class to use when storing files in Orca.
+The optional `fileDestinationOverride` can be used to override the destination key of the file to be archived.
 The optional `s3MultipartChunksizeMb` is used to override the default setting for the lambda s3 copy maximum multipart chunk size value when copying large files to ORCA.
 These settings can often be derived from the collection configuration in Cumulus.
 See the copy_to_archive_adapter json schema [configuration file](https://github.com/nasa/cumulus/blob/master/tasks/orca-copy-to-archive-adapter/schemas/config.json), [input file](https://github.com/nasa/cumulus/blob/master/tasks/orca-copy-to-archive-adapter/schemas/input.json)  and [output file](https://github.com/nasa/cumulus/blob/master/tasks/orca-copy-to-archive-adapter/schemas/output.json) for more information.

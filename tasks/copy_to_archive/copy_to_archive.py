@@ -254,9 +254,9 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
         for file in granule["files"]:
             if file_destination_key is None:
                 destination_file_filepath = file[FILE_FILEPATH_KEY]
-                LOGGER.info(f"destination_file_filepath is {destination_file_filepath}")
             else:
                 destination_file_filepath = file_destination_key
+            LOGGER.info(f"file destination key is {destination_file_filepath}")
             file_filepath = file[FILE_FILEPATH_KEY]
             file_bucket = file[FILE_BUCKET_KEY]
             file_source_uri = f"s3://{file_bucket}/{file_filepath}"
