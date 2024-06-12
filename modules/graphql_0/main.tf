@@ -85,3 +85,9 @@ resource "aws_iam_role_policy" "rds_s3_import_role_policy" {
   role   = aws_iam_role.gql_tasks_role.id
   policy = data.aws_iam_policy_document.rds_s3_import_role_policy_document.json
 }
+
+resource "aws_rds_cluster_role_association" "example" {
+  db_cluster_identifier = var.db_cluster_identifier
+  feature_name          = "S3_IMPORT"
+  role_arn              = aws_iam_role.gql_tasks_role.arn
+}

@@ -215,7 +215,7 @@ resource "aws_ecs_task_definition" "gql_task" {
 [
   {
     "name": "orca-gql",
-    "image": "ghcr.io/nasa/cumulus-orca/graphql:0.0.32",
+    "image": "ghcr.io/nasa/orca/graphql:0.33",
     "cpu": 512,
     "memory": 256,
     "networkMode": "awsvpc",
