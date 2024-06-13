@@ -74,6 +74,7 @@ Once the Aurora V1 database has been migrated/upgrade to Aurora V2 you can verif
 - *ORCA-793* - Removed `s3_access_key` and `s3_secret_key` variables from terraform.
 - *ORCA-795* - Removed `s3_access_key` and `s3_secret_key` variables from Graphql code and from get_current_archive_list task.
 - *ORCA-798* - Removed `s3_access_key` and `s3_secret_key` variables from integration tests.
+- *ORCA-783* - Removed `tasks/copy_to_archive_adapter` and `tasks/orca_recovery_adapter` as they are handled by Cumulus.
 
 ### Fixed
 
