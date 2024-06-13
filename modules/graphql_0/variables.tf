@@ -24,5 +24,5 @@ variable "tags" {
 
 variable "db_cluster_identifier" {
   type = string
-  description = "DB Cluster Identifier to associate with the IAM Role"
+  description = "DB Cluster Identifier (Cluster Name) to associate with the IAM Role"
 }
