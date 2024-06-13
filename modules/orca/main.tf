@@ -154,6 +154,7 @@ module "orca_graphql_0" {
   permissions_boundary_arn = var.permissions_boundary_arn
   prefix                   = var.prefix
   vpc_id                   = var.vpc_id
+  db_cluster_identifier    = var.db_cluster_identifier 
 
   ## OPTIONAL
   tags = var.tags

@@ -36,6 +36,10 @@ variable "vpc_id" {
   description = "Virtual Private Cloud AWS ID"
 }
 
+variable "db_cluster_identifier" {
+  type = string
+  description = "DB Cluster Identifier to associate with the IAM Role"
+}
 
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
 variable "tags" {

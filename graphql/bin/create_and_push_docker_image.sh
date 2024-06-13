@@ -41,5 +41,5 @@ image_name=graphql
 run_and_check_returncode "cp -r ../shared_libraries shared_libraries"
 trap 'rm -rf shared_libraries' EXIT
 run_and_check_returncode "docker build -t $image_name --build-arg VERSION_NUMBER=$version_number ."
-run_and_check_returncode "docker tag $image_name ghcr.io/nasa/cumulus-orca/$image_name:$version_number"
-run_and_check_returncode "docker push ghcr.io/nasa/cumulus-orca/$image_name:$version_number"
+run_and_check_returncode "docker tag $image_name ghcr.io/nasa/orca/$image_name:$version_number"
+run_and_check_returncode "docker push ghcr.io/nasa/orca/$image_name:$version_number"
