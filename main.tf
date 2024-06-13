@@ -30,6 +30,7 @@ module "orca" {
   rds_security_group_id    = var.rds_security_group_id
   system_bucket            = var.system_bucket
   vpc_id                   = var.vpc_id
+  db_cluster_identifier    = var.db_cluster_identifier 
 
   ## OPTIONAL
   tags = local.tags
