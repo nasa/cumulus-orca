@@ -30,7 +30,7 @@ try:
         _BODY_VALIDATE = fastjsonschema.compile(json.loads(raw_schema.read()))
 except Exception as ex:
     LOGGER.error(f"Could not build schema validator: {ex}")
-    # raise
+    raise
 
 
 # Retry decorator for function
