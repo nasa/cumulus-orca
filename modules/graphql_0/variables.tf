@@ -21,3 +21,8 @@ variable "tags" {
   type        = map(string)
   description = "Tags to be applied to resources that support tags."
 }
+
+variable "db_cluster_identifier" {
+  type = string
+  description = "DB Cluster Identifier (Cluster Name) to associate with the IAM Role"
+}

@@ -77,6 +77,7 @@ Once the Aurora V1 database has been migrated/upgrade to Aurora V2 you can verif
 - *ORCA-795* - Modified Graphql task policy to allow for S3 imports.
 - *ORCA-797* - Removed s3 credential variables from `deployment-with-cumulus.md` and `s3-credentials.md` documentations since they are no longer used in Aurora v2 DB.
 - *ORCA-873* - Modified build task script to copy schemas into a schema folder to resolve errors.
+- *ORCA-872* - Updated grapql version, modified policy in `modules/iam/main.tf` to resolve errors, and added DB role attachment to `modules/graphql_0/main.tf`
 
 ### Deprecated
 
@@ -85,6 +86,7 @@ Once the Aurora V1 database has been migrated/upgrade to Aurora V2 you can verif
 - *ORCA-793* - Removed `s3_access_key` and `s3_secret_key` variables from terraform.
 - *ORCA-795* - Removed `s3_access_key` and `s3_secret_key` variables from Graphql code and from get_current_archive_list task.
 - *ORCA-798* - Removed `s3_access_key` and `s3_secret_key` variables from integration tests.
+- *ORCA-783* - Removed `tasks/copy_to_archive_adapter` and `tasks/orca_recovery_adapter` as they are handled by Cumulus.
 
 ### Fixed
 
