@@ -17,7 +17,7 @@ and includes an additional section for migration notes.
 
 ### Migration Notes
  
-Remove the `s3_access_key` and `s3_secret_key` variables from your `orca.tf` file.
+- Remove the `s3_access_key` and `s3_secret_key` variables from your `orca.tf` file.
 
 **Post V2 Upgrade Comparison**
 
@@ -52,13 +52,24 @@ Once the Aurora V1 database has been migrated/upgrade to Aurora V2 you can verif
   14. Remove the snapshot identifier from the Terraform (If Applicable)
   15. In the AWS console navigate to RDS -> Snapshots and delete the snapshot the V2 database was restored from.
 
-
+- If desired, update collection configurations with the new optional key `fileDestinationOverride` that can be added to override the file destination key where it will be archived.
+    ```json
+      "collection": {
+          "meta":{
+              "orca": {
+                "fileDestinationOverride": "test/file.hdf"
+            }
+        }
+      }
+      ```
 
 ### Added
 
 - *ORCA-845* - Created IAM role for RDS S3 import needed for Aurora v2 upgrade.
 - *ORCA-792* - Added DB comparison script at `modules/db_compare_instance/scripts/db_compare.sh` for the temporary EC2 to compare databases post migration.
 - *ORCA-868* - Added EC2 instance for DB comparison after migration under `modules/db_compare_instance/main.tf`
+- *ORCA-849* - Added optional `fileDestinationOverride` property in copyToArchive workflow that can be used to override the file destination key if desired.
+
 
 ### Changed
 

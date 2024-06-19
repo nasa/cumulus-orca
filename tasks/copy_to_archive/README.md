@@ -226,7 +226,7 @@ The output of this lambda is a dictionary with a `granules` and `copied_to_orca`
 
 The `providerId`, `executionId`, `collectionShortname`, and `collectionVersion` keys must be present under the 
 `config` object as seen below.
-`excludedFileExtensions`, `s3MultipartChunksizeMb`, `providerName`, `defaultBucketOverride`, and `defaultStorageClassOverride` are stored as paths, and will be retrieved in-code, defaulting to `null`.
+`excludedFileExtensions`, `s3MultipartChunksizeMb`, `providerName`, `defaultBucketOverride`, `fileDestinationOverride` and `defaultStorageClassOverride` are stored as paths, and will be retrieved in-code, defaulting to `null`.
 Per the [config schema](https://github.com/nasa/cumulus-orca/blob/master/tasks/copy_to_archive/schemas/config.json), 
 the values of the keys are used the following ways. 
 The `provider` key should contain an `id` key that returns the provider id from Cumulus. 
@@ -236,7 +236,7 @@ The `collection` key value should also contain a `meta` key that includes an `or
 sent to ORCA.
 The `orca` key also contains optional `defaultBucketOverride` key that overrides the `ORCA_DEFAULT_BUCKET` set on deployment,
 and the optional `defaultStorageClassOverride` key that overrides the storage class to use when storing files in Orca.
-The optional `s3MultipartChunksizeMb` is used to override the default setting for the lambda s3 copy maximum multipart chunk size value when copying large files to ORCA.
+The optional `s3MultipartChunksizeMb` is used to override the default setting for the lambda s3 copy maximum multipart chunk size value when copying large files to ORCA. The optional `fileDestinationOverride` can be used to override the destination key of the file to be archived.
 These settings can often be derived from the collection configuration in Cumulus as seen below:
 
 ```
@@ -257,7 +257,8 @@ These settings can often be derived from the collection configuration in Cumulus
             "s3MultipartChunksizeMb": "event.meta.collection.meta.s3MultipartChunksizeMb",
             "providerName": "event.meta.provider.name}",
             "defaultBucketOverride": "event.meta.collection.meta.orca.defaultBucketOverride",
-            "defaultStorageClassOverride": "event.meta.collection.meta.orca.defaultStorageClassOverride"
+            "defaultStorageClassOverride": "event.meta.collection.meta.orca.defaultStorageClassOverride",
+            "fileDestinationOverride": "$event.meta.collection.meta.orca.fileDestinationOverride"
           }
         }
       },
