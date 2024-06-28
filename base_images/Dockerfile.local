@@ -15,8 +15,8 @@ dnf update -y
 
 # Install node, pip, Python 3.9, CLI utilities, session manager and other tools
 RUN \
-dnf install https://rpm.nodesource.com/pub_${NODE_VERSION}/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y && \
-dnf install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1 && \
+curl -fsSL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash - && \
+dnf install -y nodejs && \
 dnf install -y jq gcc git make openssl openssl-devel wget zip unzip bzip2-devel libffi-devel ncurses-devel sqlite-devel readline-devel uuid-devel libuuid-devel gdbm-devel xz-devel tar yarn awscli session-manager-plugin.rpm procps parallel && \
 dnf groupinstall -y "Development Tools" && \
 # Install Python 3.9
