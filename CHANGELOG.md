@@ -97,7 +97,8 @@ Once the Aurora V1 database has been migrated/upgrade to Aurora V2 you can verif
 ### Security
 
 - *ORCA-851* - Updated bandit libraries to fix Snyk vulnerabilities.
-- *ORCA-861* - Updated docusaurus ix Snyk vulnerabilities.
+- *ORCA-861* - Updated docusaurus to fix Snyk vulnerabilities.
+- *ORCA-862* - Updated docusaurus to v3.4.0.
 
 ## [9.0.5] 2024-02-29
 
