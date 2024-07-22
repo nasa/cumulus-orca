@@ -22,6 +22,7 @@ resource "awscc_apigatewayv2_vpc_link" "orca-vpc-link" {
   }
 }
 
-# output "repo_url" {
-#     value = aws_ecr_repository.prototype_repo.repository_url
+# TODO
+# Create network laod balancer for contacting with VPC link ORCA-889
+# Modify/change ORCA API gateway configuration to synk with VPC link ORCA-891
 # }
