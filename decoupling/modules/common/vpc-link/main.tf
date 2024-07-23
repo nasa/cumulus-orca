@@ -23,6 +23,6 @@ resource "awscc_apigatewayv2_vpc_link" "orca-vpc-link" {
 }
 
 # TODO
-# Create network laod balancer for contacting with VPC link ORCA-889
+# Create network load balancer for contacting with VPC link ORCA-889
 # Modify/change ORCA API gateway configuration to synk with VPC link ORCA-891
-# }
+# Work with NGAP to create VPC endpoint ID for api gateway in DR account. ORCA-892
