@@ -126,6 +126,11 @@ variable "internal_report_queue_message_retention_time_seconds" {
   description = "The number of seconds internal-report-queue SQS retains a message in seconds. Maximum value is 14 days."
 }
 
+variable "lambda_runtime" {
+  type        = string
+  description = "Runtime for lambdas."
+}
+
 
 variable "orca_default_recovery_type" {
   type        = string
