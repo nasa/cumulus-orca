@@ -86,6 +86,7 @@ module "orca_lambdas_secondary" {
   vpc_postgres_ingress_all_egress_id            = module.orca_lambdas.vpc_postgres_ingress_all_egress_id
 
   ## OPTIONAL
+  lambda_runtime                         = var.lambda_runtime
   orca_reconciliation_lambda_memory_size = var.orca_reconciliation_lambda_memory_size
   orca_reconciliation_lambda_timeout     = var.orca_reconciliation_lambda_timeout
   s3_report_frequency                    = var.s3_report_frequency
