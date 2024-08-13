@@ -93,6 +93,7 @@ module "orca" {
   # archive_recovery_queue_message_retention_time_seconds = 777600
   # db_admin_username                                     = "postgres"
   # default_multipart_chunksize_mb                        = 250
+  # lambda_runtime                                        = "python3.9"
   # log_level                                             = "INFO"
   # metadata_queue_message_retention_time                 = 777600
   # orca_default_recovery_type                            = "Standard"
@@ -539,8 +540,9 @@ variables is shown in the table below.
 | `metadata_queue_message_retention_time_seconds`        | number       | Number of seconds the metadata-queue fifo SQS retains a message.                                                               | 777600 |
 | `db_name`                                              | string       | The name of the Orca database within the RDS cluster. Any `-` in `prefix` will be replaced with `_`.                           | PREFIX_orca |
 | `db_user_name`                                         | string       | The name of the application user for the Orca database. Any `-` in `prefix` will be replaced with `_`.                         | PREFIX_orcauser |
+| `lambda_runtime`                                       | string       | Runtime for lambdas.                                                                                                           | python3.9|
 | `log_level`                                            | string       | sets the verbose of PowerTools logger. Must be one of 'INFO', 'DEBUG', 'WARN', 'ERROR'. Defaults to 'INFO'.                    | "INFO" |
-| `orca_default_recovery_type`                           | string       | The Tier for the restore request. Valid values are 'Standard', 'Bulk', 'Expedited'                                               | "Standard" |
+| `orca_default_recovery_type`                           | string       | The Tier for the restore request. Valid values are 'Standard', 'Bulk', 'Expedited'                                             | "Standard" |
 | `orca_default_storage_class`                           | string       | The [class of storage](../../operator/storage-classes.md) to use when ingesting files. Can be overridden by collection config. | "GLACIER" |
 | `orca_delete_old_reconcile_jobs_frequency_cron`        | string       | Frequency cron for running the delete_old_reconcile_jobs lambda.                                                               | "cron(0 0 ? * SUN *)" |
 | `orca_ingest_lambda_memory_size`                       | number       | Amount of memory in MB the ORCA copy_to_archive lambda can use at runtime.                                                     | 2240 |
