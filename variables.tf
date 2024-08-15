@@ -140,6 +140,11 @@ variable "internal_report_queue_message_retention_time_seconds" {
   default     = 432000 #5 days
 }
 
+variable "lambda_runtime" {
+  type        = string
+  description = "Runtime for lambdas."
+  default     = "python3.9"
+}
 
 variable "metadata_queue_message_retention_time_seconds" {
   type        = number

@@ -61,8 +61,14 @@ variable "vpc_postgres_ingress_all_egress_id" {
   description = "PostgreSQL security group id"
 }
 
-
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
+
+variable "lambda_runtime" {
+  type        = string
+  description = "Runtime for lambdas."
+}
+
+
 variable "orca_reconciliation_lambda_memory_size" {
   type        = number
   description = "Amount of memory in MB the ORCA reconciliation lambda can use at runtime."

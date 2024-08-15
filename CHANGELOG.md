@@ -69,11 +69,12 @@ Once the Aurora V1 database has been migrated/upgrade to Aurora V2 you can verif
 - *ORCA-792* - Added DB comparison script at `modules/db_compare_instance/scripts/db_compare.sh` for the temporary EC2 to compare databases post migration.
 - *ORCA-868* - Added EC2 instance for DB comparison after migration under `modules/db_compare_instance/main.tf`
 - *ORCA-849* - Added optional `fileDestinationOverride` property in copyToArchive workflow that can be used to override the file destination key if desired.
+- *ORCA-880* - Modified terraform to add an optional variable `lambda_runtime` for lambda runtime.
 
 
 ### Changed
 
-- *ORCA-832* - Modified pyscopg2 installation to allow for SSL connections to database.
+- *ORCA-832* - Modified psycopg2 installation to allow for SSL connections to database.
 - *ORCA-795* - Modified Graphql task policy to allow for S3 imports.
 - *ORCA-797* - Removed s3 credential variables from `deployment-with-cumulus.md` and `s3-credentials.md` documentations since they are no longer used in Aurora v2 DB.
 - *ORCA-873* - Modified build task script to copy schemas into a schema folder to resolve errors.

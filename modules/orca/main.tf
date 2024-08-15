@@ -38,6 +38,7 @@ module "orca_lambdas" {
   restore_object_role_arn                              = module.orca_iam.restore_object_role_arn
 
   ## OPTIONAL
+  lambda_runtime                                = var.lambda_runtime
   orca_delete_old_reconcile_jobs_frequency_cron = var.orca_delete_old_reconcile_jobs_frequency_cron
   orca_default_recovery_type                    = var.orca_default_recovery_type
   orca_default_storage_class                    = var.orca_default_storage_class
@@ -85,6 +86,7 @@ module "orca_lambdas_secondary" {
   vpc_postgres_ingress_all_egress_id            = module.orca_lambdas.vpc_postgres_ingress_all_egress_id
 
   ## OPTIONAL
+  lambda_runtime                         = var.lambda_runtime
   orca_reconciliation_lambda_memory_size = var.orca_reconciliation_lambda_memory_size
   orca_reconciliation_lambda_timeout     = var.orca_reconciliation_lambda_timeout
   s3_report_frequency                    = var.s3_report_frequency
