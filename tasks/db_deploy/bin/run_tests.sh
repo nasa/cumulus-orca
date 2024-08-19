@@ -32,6 +32,9 @@ source ../../bin/common/venv_management.sh
 
 ## MAIN
 ## -----------------------------------------------------------------------------
+echo "Cython<3" > cython_constraint.txt
+PIP_CONSTRAINT=cython_constraint.txt pip install "ai-core-sdk[aicore-content]"
+
 run_and_check_returncode "create_and_activate_venv"
 trap 'deactivate_and_delete_venv' EXIT
 run_and_check_returncode "pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org"
@@ -39,9 +42,6 @@ run_and_check_returncode "pip install -q --upgrade pip --trusted-host pypi.org -
 ## Install the requirements
 pip install -q -r requirements-dev.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
 check_returncode $? "ERROR: pip install encountered an error."
-
-echo "Cython<3" > cython_constraint.txt
-PIP_CONSTRAINT=cython_constraint.txt pip install "ai-core-sdk[aicore-content]"
 
 ## Check code formatting and styling
 echo "INFO: Checking formatting and style of code ..."
