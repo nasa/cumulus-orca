@@ -73,10 +73,10 @@ check_returncode $? "ERROR: Potential security or code issues found."
 ## Run unit tests and check Coverage
 echo "INFO: Running unit and coverage tests ..."
 
-# # Currently just running unit tests until we fix/support large tests
-# coverage run --source=copy_to_archive -m pytest
-# check_returncode $? "ERROR: Unit tests encountered failures."
+# Currently just running unit tests until we fix/support large tests
+coverage run --source=copy_to_archive -m pytest
+check_returncode $? "ERROR: Unit tests encountered failures."
 
-# # Unit tests expected to cover minimum of 80%.
-# coverage report --fail-under=80
-# check_returncode $? "ERROR: Unit tests coverage is less than 80%"
+# Unit tests expected to cover minimum of 80%.
+coverage report --fail-under=80
+check_returncode $? "ERROR: Unit tests coverage is less than 80%"
