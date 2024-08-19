@@ -40,6 +40,9 @@ run_and_check_returncode "pip install -q --upgrade pip --trusted-host pypi.org -
 pip install -q -r requirements-dev.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
 check_returncode $? "ERROR: pip install encountered an error."
 
+echo "Cython<3" > cython_constraint.txt
+PIP_CONSTRAINT=cython_constraint.txt pip install "ai-core-sdk[aicore-content]"
+
 ## Check code formatting and styling
 echo "INFO: Checking formatting and style of code ..."
 echo "INFO: Sorting imports ..."
