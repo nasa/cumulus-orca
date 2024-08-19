@@ -23,10 +23,12 @@ dnf groupinstall -y "Development Tools" && \
 wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz && \
 tar xvf Python-${PYTHON_VERSION}.tgz && \
 cd Python-*/ && \
-./configure --enable-optimizations --enable-loadable-sqlite-extensions --enable-ipv6 && \
+./configure --with-system-ffi --with-computed-gotos --enable-optimizations --enable-loadable-sqlite-extensions --enable-ipv6 && \
 make altinstall && \
-ln -sf /usr/local/bin/python3.10 /usr/local/bin/python3 && \
-ln -sf /url/local/bin/pip3.10 /usr/local/bin/pip3 && \
+# dnf install python3-pip && \
+# ln -sf /usr/local/bin/python3.10 /usr/local/bin/python3 && \
+pip3.10 -V 
+# ln -sf /url/local/bin/pip3.10 /usr/local/bin/pip3 && \
 rm -f Python-${PYTHON_VERSION}.tgz && \
 rm -rf Python-${PYTHON_VERSION}
 # Install Terraform
