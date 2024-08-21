@@ -94,6 +94,7 @@ Once the Aurora V1 database has been migrated/upgrade to Aurora V2 you can verif
 - *ORCA-835* - Fixed ORCA documentation bamboo CI/CD pipeline showing node package import errors.
 - *ORCA-864* - Updated ORCA archive bucket policy and IAM role to fix access denied error during backup/recovery process.
 - *ORCA-822* - Fixed nodejs installation error in bamboo CI/CD ORCA distribution docker image.
+- *ORCA-810* - Fixed `db_deploy` unit test error in bamboo due to wheel installation during python 3.10 upgrade.
 
 ### Security
 
