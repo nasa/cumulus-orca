@@ -1,6 +1,6 @@
 # Build Stage
 # =============================================================================
-FROM python:3.9-slim as builder
+FROM python:3.10-slim as builder
 
 WORKDIR /app
 
@@ -24,7 +24,7 @@ RUN pip wheel --no-cache-dir --wheel-dir /app/wheels -r requirements.txt --trust
 
 # Final Stage
 # =============================================================================
-FROM python:3.9-slim
+FROM python:3.10-slim
 
 # Set variables
 ARG VERSION_NUMBER="test"
