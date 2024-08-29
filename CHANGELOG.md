@@ -18,6 +18,7 @@ and includes an additional section for migration notes.
 ### Migration Notes
  
 ### Added
+- *ORCA-888* - Enabled CloudWatch logs for Aurora Serverless v2 for troubleshooting. 
 
 ### Changed
 
