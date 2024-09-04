@@ -126,3 +126,10 @@ variable "db_parameters" {
     }
   ]
 }
+
+variable "aurora_cloudwatch_logs" {
+  description = "Type of logs to export to CloudWatch"
+  type = list(string)
+  default = [ "postgresql" ]
+  
+}

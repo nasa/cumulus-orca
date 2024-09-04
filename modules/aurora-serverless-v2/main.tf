@@ -58,7 +58,7 @@ resource "aws_rds_cluster" "example" {
   final_snapshot_identifier       = "${var.prefix}-v2-cluster-final-snapshot-${local.timestamp_sanitized}"
   snapshot_identifier             = var.snapshot_identifier
   db_cluster_parameter_group_name = aws_rds_cluster_parameter_group.rds_cluster_group_v13.id
-
+  enabled_cloudwatch_logs_exports = var.aurora_cloudwatch_logs
   serverlessv2_scaling_configuration {
     max_capacity = var.max_capacity
     min_capacity = var.min_capacity
