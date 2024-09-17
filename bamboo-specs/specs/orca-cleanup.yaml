@@ -22,7 +22,7 @@ Clean up ORCA buckets and modules:
   other:
     clean-working-dir: true
   docker:
-    image: maven.earthdata.nasa.gov/cumulus_orca
+    image: maven.earthdata.nasa.gov/cumulus_orca:latest
     volumes:
       ${bamboo.working.directory}: ${bamboo.working.directory}
       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
@@ -43,7 +43,7 @@ Clean up DR ORCA buckets:
   other:
     clean-working-dir: true
   docker:
-    image: maven.earthdata.nasa.gov/cumulus_orca
+    image: maven.earthdata.nasa.gov/cumulus_orca:latest
     volumes:
       ${bamboo.working.directory}: ${bamboo.working.directory}
       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
