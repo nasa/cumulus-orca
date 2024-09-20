@@ -54,7 +54,7 @@ Build and Test:
   other:
     clean-working-dir: true
   docker:
-    image: maven.earthdata.nasa.gov/cumulus_orca
+    image: maven.earthdata.nasa.gov/cumulus_orca:latest
     volumes:
       ${bamboo.working.directory}: ${bamboo.working.directory}
       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}
@@ -170,7 +170,7 @@ Release ORCA Code:
   key: RO
   description: Cleans, creates a GitHub Release and uploads artifacts for release
   docker:
-    image: maven.earthdata.nasa.gov/cumulus_orca
+    image: maven.earthdata.nasa.gov/cumulus_orca:latest
     volumes:
       ${bamboo.working.directory}: ${bamboo.working.directory}
       ${bamboo.tmp.directory}: ${bamboo.tmp.directory}

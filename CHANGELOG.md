@@ -80,6 +80,7 @@ Once the Aurora V1 database has been migrated/upgrade to Aurora V2 you can verif
 - *ORCA-873* - Modified build task script to copy schemas into a schema folder to resolve errors.
 - *ORCA-872* - Updated grapql version, modified policy in `modules/iam/main.tf` to resolve errors, and added DB role attachment to `modules/graphql_0/main.tf`
 - *ORCA-774* - Updated Lambdas and GraphQL to Python 3.10
+- *ORCA-896* - Updated Bamboo files to use `latest` tag on `cumulus_orca` Docker image to resolve Bamboo jobs using old images.
 
 ### Deprecated
 
