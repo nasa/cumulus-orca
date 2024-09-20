@@ -97,6 +97,7 @@ Once the Aurora V1 database has been migrated/upgrade to Aurora V2 you can verif
 - *ORCA-822* - Fixed nodejs installation error in bamboo CI/CD ORCA distribution docker image.
 - *ORCA-810* - Fixed `db_deploy` unit test error in bamboo due to wheel installation during python 3.10 upgrade.
 - *ORCA-890* - Fixed snyk vulnerabilities showing high issues and upgraded docusaurus to v3.5.2
+- *ORCA-902* - Upgraded bandit to version 1.7.9 to fix snyk vulnerabilities.
 
 ### Security
 
