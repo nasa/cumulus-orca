@@ -17,6 +17,22 @@ and includes an additional section for migration notes.
 
 ### Migration Notes
 
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [10.0.0] 2024-10-02
+
+### Migration Notes
+
 Remove the `s3_access_key` and `s3_secret_key` variables from your `orca.tf` file.
 
 **Post V2 Upgrade Comparison**
