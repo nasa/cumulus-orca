@@ -82,7 +82,7 @@ module "stop_ec2_instance_6pm" {
 module "start_autoscaling_instance" {
     source = "diodonfrost/lambda-scheduler-stop-start/aws"
     version = "3.5.0"
-    count = var.create_office_hours ? 1 : 0
+    count = var.create_office_hours_autoscaling ? 1 : 0
     name = "start_autoscaling_instance"
     cloudwatch_schedule_expression = "cron(0 12 ? * MON-FRI *)"
     schedule_action = "start"
@@ -102,7 +102,7 @@ module "start_autoscaling_instance" {
 module "stop_autoscaling_instance" {
     source = "diodonfrost/lambda-scheduler-stop-start/aws"
     version = "3.5.0"
-    count = var.create_office_hours ? 1 : 0
+    count = var.create_office_hours_autoscaling ? 1 : 0
     name = "stop_autoscaling_instance"
     cloudwatch_schedule_expression = "cron(59 23 ? * MON-FRI *)"
     schedule_action = "stop"
@@ -123,7 +123,7 @@ module "stop_autoscaling_instance" {
 module "start_autoscaling_instance_8am" {
     source = "diodonfrost/lambda-scheduler-stop-start/aws"
     version = "3.5.0"
-    count = var.create_office_hours_8_6 ? 1 : 0
+    count = var.create_office_hours_8_6_autoscaling ? 1 : 0
     name = "start_autoscaling_instance_8am"
     cloudwatch_schedule_expression = "cron(0 13 ? * MON-FRI *)"
     schedule_action = "start"
@@ -143,7 +143,7 @@ module "start_autoscaling_instance_8am" {
 module "stop_autoscaling_instance_6pm" {
     source = "diodonfrost/lambda-scheduler-stop-start/aws"
     version = "3.5.0"
-    count = var.create_office_hours_8_6 ? 1 : 0
+    count = var.create_office_hours_8_6_autoscaling ? 1 : 0
     name = "stop_autoscaling_instance_6pm"
     cloudwatch_schedule_expression = "cron(59 22 ? * MON-FRI *)"
     schedule_action = "stop"
