@@ -70,6 +70,7 @@ Once the Aurora V1 database has been migrated/upgrade to Aurora V2 you can verif
 - *ORCA-868* - Added EC2 instance for DB comparison after migration under `modules/db_compare_instance/main.tf`
 - *ORCA-849* - Added optional `fileDestinationOverride` property in copyToArchive workflow that can be used to override the file destination key if desired.
 - *ORCA-880* - Modified terraform to add an optional variable `lambda_runtime` for lambda runtime.
+- *ORCA-128* - Added Scheduler module at `cumulus-orca/modules/scheduler`.
 
 
 ### Changed
