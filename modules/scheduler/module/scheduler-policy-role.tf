@@ -5,7 +5,6 @@ data "aws_iam_policy_document" "aws_instance_scheduler_policydata" {
       "rds:StartDBCluster",
       "rds:StopDBCluster",
       "kms:Decrypt",
-      "ec2:TerminateInstances",
       "autoscaling:ResumeProcesses",
       "lambda:InvokeFunction",
       "autoscaling:SuspendProcesses",
