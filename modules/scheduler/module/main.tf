@@ -5,7 +5,7 @@ module "start_ec2_instance" {
     name = "start_ec2_instance"
     cloudwatch_schedule_expression = "cron(0 12 ? * MON-FRI *)"
     schedule_action = "start"
-    aws_regions = ["us-west-2"]
+    aws_regions = [var.aws_region]
     tags = var.tags
     autoscaling_schedule = "false"
     ec2_schedule = "true"
@@ -25,7 +25,7 @@ module "stop_ec2_instance" {
     name = "stop_ec2_instance"
     cloudwatch_schedule_expression = "cron(59 23 ? * MON-FRI *)"
     schedule_action = "stop"
-    aws_regions = ["us-west-2"]
+    aws_regions = [var.aws_region]
     tags = var.tags
     autoscaling_schedule = "false"
     ec2_schedule = "true"
@@ -46,7 +46,7 @@ module "start_ec2_instance_8am" {
     name = "start_ec2_instance_8am"
     cloudwatch_schedule_expression = "cron(0 13 ? * MON-FRI *)"
     schedule_action = "start"
-    aws_regions = ["us-west-2"]
+    aws_regions = [var.aws_region]
     tags = var.tags
     autoscaling_schedule = "false"
     ec2_schedule = "true"
@@ -66,7 +66,7 @@ module "stop_ec2_instance_6pm" {
     name = "stop_ec2_instance_6pm"
     cloudwatch_schedule_expression = "cron(59 22 ? * MON-FRI *)"
     schedule_action = "stop"
-    aws_regions = ["us-west-2"]
+    aws_regions = [var.aws_region]
     tags = var.tags
     autoscaling_schedule = "false"
     ec2_schedule = "true"
@@ -86,7 +86,7 @@ module "start_autoscaling_instance" {
     name = "start_autoscaling_instance"
     cloudwatch_schedule_expression = "cron(0 12 ? * MON-FRI *)"
     schedule_action = "start"
-    aws_regions = ["us-west-2"]
+    aws_regions = [var.aws_region]
     tags = var.tags
     autoscaling_schedule = "true"
     ec2_schedule = "false"
@@ -106,7 +106,7 @@ module "stop_autoscaling_instance" {
     name = "stop_autoscaling_instance"
     cloudwatch_schedule_expression = "cron(59 23 ? * MON-FRI *)"
     schedule_action = "stop"
-    aws_regions = ["us-west-2"]
+    aws_regions = [var.aws_region]
     tags = var.tags
     autoscaling_schedule = "true"
     ec2_schedule = "false"
@@ -127,7 +127,7 @@ module "start_autoscaling_instance_8am" {
     name = "start_autoscaling_instance_8am"
     cloudwatch_schedule_expression = "cron(0 13 ? * MON-FRI *)"
     schedule_action = "start"
-    aws_regions = ["us-west-2"]
+    aws_regions = [var.aws_region]
     tags = var.tags
     autoscaling_schedule = "true"
     ec2_schedule = "false"
@@ -147,7 +147,7 @@ module "stop_autoscaling_instance_6pm" {
     name = "stop_autoscaling_instance_6pm"
     cloudwatch_schedule_expression = "cron(59 22 ? * MON-FRI *)"
     schedule_action = "stop"
-    aws_regions = ["us-west-2"]
+    aws_regions = [var.aws_region]
     tags = var.tags
     autoscaling_schedule = "true"
     ec2_schedule = "false"
