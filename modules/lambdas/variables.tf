@@ -55,11 +55,6 @@ variable "orca_default_bucket" {
   description = "Default archive bucket to use if no overrides exist."
 }
 
-variable "orca_secretsmanager_s3_access_credentials_secret_arn" {
-  type        = string
-  description = "The Amazon Resource Name (ARN) of the s3 credentials secret."
-}
-
 variable "orca_sqs_archive_recovery_queue_arn" {
   type        = string
   description = "The ARN of the archive-recovery-queue SQS"

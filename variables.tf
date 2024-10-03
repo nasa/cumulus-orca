@@ -42,6 +42,10 @@ variable "vpc_id" {
   description = "Virtual Private Cloud AWS ID"
 }
 
+variable "db_cluster_identifier" {
+  type = string
+  description = "DB Cluster Identifier to associate with the IAM Role"
+}
 
 ## OPTIONAL
 variable "aws_profile" {
@@ -98,16 +102,6 @@ variable "orca_reports_bucket_name" {
 variable "rds_security_group_id" {
   type        = string
   description = "Cumulus' RDS Security Group's ID."
-}
-
-variable "s3_access_key" {
-  type        = string
-  description = "Access key for communicating with Orca S3 buckets."
-}
-
-variable "s3_secret_key" {
-  type        = string
-  description = "Secret key for communicating with Orca S3 buckets."
 }
 
 ## OPTIONAL

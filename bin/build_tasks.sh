@@ -6,18 +6,6 @@ source bin/common/check_returncode.sh
 
 echo "pwd `pwd`"
 
-echo "Pulling awslambda-psycopg2 in preparation for build"
-mkdir -p tasks/package
-cd tasks/package
-if [ ! -d "../package/awslambda-psycopg2/psycopg2-3.9" ]; then
-  rm -d -f -r "../package/awslambda-psycopg2"
-fi
-if [ ! -d "awslambda-psycopg2" ]
-then
-  git clone https://github.com/jkehler/awslambda-psycopg2.git
-fi
-cd ../../
-
 function build_task() {
   echo
   echo "Building $1"

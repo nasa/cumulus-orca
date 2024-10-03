@@ -16,7 +16,7 @@ and includes an additional section for migration notes.
 ## [Unreleased]
 
 ### Migration Notes
- 
+
 ### Added
 
 ### Changed
@@ -29,20 +29,97 @@ and includes an additional section for migration notes.
 
 ### Security
 
+## [10.0.0] 2024-10-02
+
+### Migration Notes
+
+Remove the `s3_access_key` and `s3_secret_key` variables from your `orca.tf` file.
+
+**Post V2 Upgrade Comparison**
+
+Once the Aurora V1 database has been migrated/upgrade to Aurora V2 you can verify data integrity of the ORCA database by deploying the EC2 comparison instance which can be found at `modules/db_compare_instance/main.tf`
+- Deployment Steps
+  1. Fill in the variables in `modules/db_compare_instance/scripts/db_config.sh`
+      - archive_bucket - ORCA Archive Bucket Name **IMPORTANT:** use underscores in place of dashes e.g. zrtest_orca_archive
+      - v1_endpoint - Endpoint of the V1 cluster e.g. orcaV1.cluster-c1xufm1sp0ux.us-west-2.rds.amazonaws.com
+      - v1_database - Database of the V1 cluster e.g. orca_db
+      - v1_user - Username of the V1 cluster e.g orcaV1_user
+      - v1_password - Password for the V1 user e.g. OrcaDBPass_4
+      - v2_endpoint - Endpoint of the V2 cluster e.g. orcaV2.cluster-c1xufm1sp0ux.us-west-2.rds.amazonaws.com
+      - v2_database - Database of the V2 cluster e.g. orca_db2
+      - v2_user - Username of the V2 cluster e.g orcaV2_user
+      - v2_password - Password for the V2 user e.g. OrcaDB2Pass_9
+  2. cd to `modules/db_compare_instance`
+  3. Run `terraform init`
+  4. Run `terraform apply`
+  5. Once the instance is deployed add an **inbound rule** to both the V1 and V2 database security groups with the private IP of the EC2 instance.
+      - The private IP of the instance can be found via the console or AWS CLI by running the command: `aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" "Name=instance-id,Values=<INSTANCE_ID>" --query 'Reservations[*].Instances[*].[PrivateIpAddress]' --output text`
+      - **This needs to be performed on BOTH V1 and V2 Security Groups** The inbound rule can be added via the AWS console or AWS CLI by running the command: `aws ec2 authorize-security-group-ingress --group-id <DB_SECURITY_GROUP_ID> --protocol tcp --port 5432 --cidr <INSTANCE_PRIVATE_IP>/32`
+  6. Now you can connect to the EC2 via the AWS console or AWS CLI with the command: `aws ssm start-session --target <INSTANCE_ID>`
+  7. Once connected run the command `cd /home`
+  8. Once at the `/home` directory run the command: `sh db_compare.sh`
+  9. When the script completes it will output two tables:
+      - v1_cluster - This table is count of data in the ORCA database of each table in the V1 cluster.
+      - v2_cluster - This table is count of data in the ORCA database of each table in the V2 cluster.
+  10. Verify that the output of the V2 database matches that of the V1 database to ensure no data was lost during the migration.
+  11. Once verified the EC2 instance can be destroyed by running `terraform destroy` **Verify you are in the modules/db_compare_instance directory**
+  12. **This needs to be performed on BOTH V1 and V2 Security Groups** Remove the added inbound rules that were added in step 5 either in the AWS Console or AWS CLI by running the command: `aws ec2 revoke-security-group-ingress --group-id <DB_SECURITY_GROUP_ID> --protocol tcp --port 5432 --cidr <INSTANCE_PRIVATE_IP>/32`
+  13. Delete the V1 database.
+  14. Remove the snapshot identifier from the Terraform (If Applicable)
+  15. In the AWS console navigate to RDS -> Snapshots and delete the snapshot the V2 database was restored from.
+
+
+
+### Added
+
+- *ORCA-845* - Created IAM role for RDS S3 import needed for Aurora v2 upgrade.
+- *ORCA-792* - Added DB comparison script at `modules/db_compare_instance/scripts/db_compare.sh` for the temporary EC2 to compare databases post migration.
+- *ORCA-868* - Added EC2 instance for DB comparison after migration under `modules/db_compare_instance/main.tf`
+
+### Changed
+
+- *ORCA-832* - Modified pyscopg2 installation to allow for SSL connections to database.
+- *ORCA-795* - Modified Graphql task policy to allow for S3 imports.
+- *ORCA-797* - Removed s3 credential variables from `deployment-with-cumulus.md` and `s3-credentials.md` documentations since they are no longer used in Aurora v2 DB.
+- *ORCA-873* - Modified build task script to copy schemas into a schema folder to resolve errors.
+- *ORCA-872* - Updated grapql version, modified policy in `modules/iam/main.tf` to resolve errors, and added DB role attachment to `modules/graphql_0/main.tf`
+- *[530](https://github.com/nasa/cumulus-orca/issues/530)* - Added explicit `s3:GetObjectTagging` and `s3:PutObjectTagging` actions to IAM `restore_object_role_policy`
+
+### Deprecated
+
+### Removed
+
+- *ORCA-793* - Removed `s3_access_key` and `s3_secret_key` variables from terraform.
+- *ORCA-795* - Removed `s3_access_key` and `s3_secret_key` variables from Graphql code and from get_current_archive_list task.
+- *ORCA-798* - Removed `s3_access_key` and `s3_secret_key` variables from integration tests.
+- *ORCA-783* - Removed `tasks/copy_to_archive_adapter` and `tasks/orca_recovery_adapter` as they are handled by Cumulus.
+
+### Fixed
+
+- *ORCA-835* - Fixed ORCA documentation bamboo CI/CD pipeline showing node package import errors.
+- *ORCA-864* - Updated ORCA archive bucket policy and IAM role to fix access denied error during backup/recovery process.
+
+### Security
+
+- *ORCA-851* - Updated bandit libraries to fix Snyk vulnerabilities.
+
 ## [9.0.5] 2024-02-29
 
 ### Migration Notes
 
-If you are deploying ORCA for the first time or migrating from v6, no changes are needed. 
- 
+Remove the`s3:x-amz-acl: bucket-owner-full-control` property from your ORCA archive bucket policy if applicable.
+
+If you are deploying ORCA for the first time or migrating from v6, the changes stated below regarding the load balancer are not required.
+
 If you are currently on v8 or v9, this means you already have load balancer deployed and you need to delete the load balancer target group before deploying this version. This is because terraform cannot delete existing load balancer target groups having a listener attached. Adding a HTTPS to the target group requires replacing the target group. Once the target group is deleted, you should be able to deploy ORCA.
- 
- 1. From AWS EC2 console, go to your load balancer named `<prefix-gql-a>` and select the `Listeners and rules` tab. Delete the rule. 
- 2. Delete your target group `<random_name>-gql-a`. The target group name has been randomized to avoid terraform resource error. 
+
+ 1. From AWS EC2 console, go to your load balancer named `<prefix-gql-a>` and select the `Listeners and rules` tab. Delete the rule.
+ 2. Delete your target group `<random_name>-gql-a`. The target group name has been randomized to avoid terraform resource error.
  3. Deploy ORCA.
 
 If deployed correctly, the target group health checks should show as healthy.
- 
+
+
 ### Added
 
 - *ORCA-450* - Removed Access Control List (ACL) requirement and added BucketOwnerEnforced to ORCA bucket objects.
@@ -186,7 +263,7 @@ If deployed correctly, the target group health checks should show as healthy.
 - `collectionId` properties have been added to [Recovery Jobs](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-jobs-api) and [Recovery Granules](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-granules-api) API.
   - For Recovery Jobs, it is only added to [output](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-jobs-api-output).
   - For Recovery Granules, it is now required on [input](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-granules-api-input) and will be returned on [output](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api#recovery-granules-api-output).
-- Update the `orca.tf` file to include `aws_region`. 
+- Update the `orca.tf` file to include `aws_region`.
 See example below.
   ```terraform
   ## ORCA Module
@@ -345,9 +422,9 @@ See example below.
 
 ### Migration Notes
 
-- If utilizing the `copied_to_glacier` [output property](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/tasks/copy_to_glacier/schemas/output.json#L47) of `copy_to_glacier`, 
+- If utilizing the `copied_to_glacier` [output property](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/tasks/copy_to_glacier/schemas/output.json#L47) of `copy_to_glacier`,
   rename to new key `copied_to_orca`.
-- If utilizing the `orca_lambda_copy_to_glacier_arn` [output of Terraform](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/outputs.tf#L8), likely as a means of pulling the lambda into your workflows, 
+- If utilizing the `orca_lambda_copy_to_glacier_arn` [output of Terraform](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/outputs.tf#L8), likely as a means of pulling the lambda into your workflows,
   rename to new key `orca_lambda_copy_to_archive_arn`
 - If utilizing the `orca_lambda_request_files_arn` [output of Terraform](https://github.com/nasa/cumulus-orca/blob/15e5868f2d1eead88fb5cc8f2e055a18ba0f1264/outputs.tf#L28), likely as a means of pulling the lambda into your workflows, rename to new key `orca_lambda_request_from_archive_arn`
 - If desired, use the optional `recoveryBucketOverride` property in `extract_filepaths_for_granule` input schema to override the default recovery bucket. See example below.
@@ -440,7 +517,7 @@ See example below.
   - `excludedFileExtensions`, `defaultBucketOverride` and `defaultStorageClassOverride` keys are now under `collection.meta.orca`. See the example below under `Migration Notes`.
 - *ORCA-519* Enforced schema checks in `request_status_for_granule` and `request_status_for_job`.
   Both lambdas will return proper HTTP error codes for bad inputs of internal server errors.
-  Additionally, corrected error in [API Reference](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api) 
+  Additionally, corrected error in [API Reference](https://nasa.github.io/cumulus-orca/docs/developer/api/orca-api)
   where the `error` status for these lambdas was incorrectly listed as `failed`.
 - *ORCA-437* Requests to API Gateway now use IAM permissions, restricting anonymous access.
 - *ORCA-496* Mitigated SQS security issue. All SQS queues now use default encryption.
@@ -494,7 +571,7 @@ See example below.
 
 - The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following optional variables have been added:
   - orca_default_storage_class
-  
+
 - If desired, update collection configurations with the new optional key `orcaDefaultStorageClassOverride` that can be added to override the default S3 glacier recovery type as shown below.
   ```json
     "meta": {
@@ -581,7 +658,7 @@ See example below.
 - *ORCA-300* Added `OrcaInternalReconciliation` workflow along with an accompanying input queue and dead-letter queue.
     Retention time can be changed by setting `internal_report_queue_message_retention_time_seconds` in your `variables.tf` or `orca_variables.tf` file. Defaults to 432000.
 - *ORCA-161* Added dead letter queue and cloudwatch alarm terraform code to recovery SQS queue.
-- *ORCA-307* Added lambda get_current_archive_list to pull S3 Inventory reports into Postgres. 
+- *ORCA-307* Added lambda get_current_archive_list to pull S3 Inventory reports into Postgres.
     Adds `orca_reconciliation_lambda_memory_size` and `orca_reconciliation_lambda_timeout` to Terraform variables.
 - *ORCA-308* Added lambda perform_orca_reconcile to find differences between S3 Inventory reports and Orca catalog.
 - *ORCA-403* Added lambda post_to_queue_and_trigger_step_function to trigger step function for internal reconciliation.
@@ -606,7 +683,7 @@ See example below.
 - SQS Queue names adjusted to include Orca. For example: `"${var.prefix}-orca-status-update-queue.fifo"`. Queues will be automatically recreated by Terraform.
 - *ORCA-334* Created IAM role for the extract_filepaths_for_granule lambda function, attached the role to the function
 - *ORCA-404* Updated shared_db and relevant lambdas to use secrets manager ARN instead of magic strings.
-- *ORCA-291* Updated request_files lambda and terraform so that the glacier restore type can be set via terraform during deployment. In addition, the glacier retrieval type can now be overridden via a change in the collections configuration using `orcaDefaultRecoveryTypeOverride` key under `meta` tag as shown below. 
+- *ORCA-291* Updated request_files lambda and terraform so that the glacier restore type can be set via terraform during deployment. In addition, the glacier retrieval type can now be overridden via a change in the collections configuration using `orcaDefaultRecoveryTypeOverride` key under `meta` tag as shown below.
   ```json
   "meta": {
     "orcaDefaultRecoveryTypeOverride": "Standard"
@@ -627,7 +704,7 @@ See example below.
   - s3_access_key
   - s3_secret_key
     - For generating these keys, see [documentation](https://nasa.github.io/cumulus-orca/docs/developer/deployment-guide/deployment-s3-credentials/).
-  
+
 - Update the collection configuration with the new optional key `orcaDefaultRecoveryTypeOverride` that can be added to override the default S3 glacier recovery type as shown below.
 
   ```json
@@ -770,7 +847,7 @@ variable "s3_secret_key" {
 
 - *ORCA-217* Lambda inputs now conform to the Cumulus camel case standard.
 - *ORCA-297* Default database name is now PREFIX_orca
-- *ORCA-287* Updated copy_to_glacier and extract_filepaths_for_granule to [new Cumulus file format](https://github.com/nasa/cumulus/blob/master/packages/schemas/files.schema.json). 
+- *ORCA-287* Updated copy_to_glacier and extract_filepaths_for_granule to [new Cumulus file format](https://github.com/nasa/cumulus/blob/master/packages/schemas/files.schema.json).
 - *ORCA-245* Updated resource policies related to KMS keys to provide better security.
 - *ORCA-318* Updated post_to_catalog lambda to match new Cumulus schema changes.
 - *ORCA-317* Updated the db_deploy task, unit tests, manual tests, research pages and SQL to reflect new inventory layout to better align with Cumulus.
@@ -799,10 +876,10 @@ variable "s3_secret_key" {
   - vpc_endpoint_id
 - Adjust workflows/step functions for `extract_filepaths`.
   - `file-buckets` argument in `task_config` is now `fileBucketMaps`.
-- Adjust workflows/step functions for `copy_to_glacier`. 
+- Adjust workflows/step functions for `copy_to_glacier`.
   - `multipart_chunksize_mb` argument in `task_config` is now the Cumulus standard of `s3MultipartChunksizeMb`. See example below.
   - `copy_to_glacier` has new requirements for writing to the orca catalog. See example below. Required properties are `providerId`, `executionId`, `collectionShortname`, and `collectionVersion`. See example below.
-- 
+-
 ```
 "task_config": {
   "s3MultipartChunksizeMb": "{$.meta.collection.meta.s3MultipartChunksizeMb}",
@@ -1001,11 +1078,11 @@ See the documentation for specifics on the various files and changes specified b
     system_bucket            = var.system_bucket
     vpc_id                   = var.vpc_id
     workflow_config          = module.cumulus.workflow_config
-  
+
     ## OPTIONAL
     region = var.region
     tags   = var.tags
-  
+
     ## --------------------------
     ## ORCA Variables
     ## --------------------------
@@ -1013,7 +1090,7 @@ See the documentation for specifics on the various files and changes specified b
     database_app_user_pw = var.database_app_user_pw
     orca_default_bucket  = var.orca_default_bucket
     postgres_user_pw     = var.database_app_user_pw
-  
+
     ## OPTIONAL
     # database_port                        = 5432
     # orca_ingest_lambda_memory_size       = 2240
@@ -1033,7 +1110,7 @@ See the documentation for specifics on the various files and changes specified b
 - *ORCA-149* Added a new workflow, OrcaCopyToGlacierWorkflow, for ingest on-demand.
 - *ORCA-175* Added copy_to_glacier_cumulus_translator for transforming CumulusDashboard input to the proper format.
 - *ORCA-181* Added orca_catalog_reporting_dummy lambda for integration testing.
-- *ORCA-165* Added new lambda function *post_copy_request_to_queue.py* under *tasks/post_copy_request_to_queue/ for querying the DB 
+- *ORCA-165* Added new lambda function *post_copy_request_to_queue.py* under *tasks/post_copy_request_to_queue/ for querying the DB
   and  posting to two queues.
   Added unit tests *test_post_copy_request_to_queue.py* under *tasks/post_copy_request_to_queue/test/unit_tests/* to test the new lambda.
   Added new scripts *run_tests.sh* and *build.sh* under */tasks/post_copy_request_to_queue/bin* to run the unit tests.
@@ -1102,7 +1179,7 @@ See the documentation for specifics on the various files and changes specified b
 
 ### Removed
 
-- The `request_status` lambda under */tasks* is removed since it is replaced by the `requests_status_for_job` 
+- The `request_status` lambda under */tasks* is removed since it is replaced by the `requests_status_for_job`
   and `request_status_for_granule` lambdas. The terraform modules, shell scripts and variables related to the lambda are also removed.
 
 ### Fixed
@@ -1163,6 +1240,7 @@ None - this is the baseline release.
   * We're including a copy lambda in the v1.0.0 release. The use of this lambda function is optional and explained in the task readme/documentation.
 * *ORCA-33* Automated Building/Testing Updates
   * Created some bash scripts for use in the Bamboo build.
-  * Updated requirements-dev.txt files for each task and moved the testing framework from nosetest (no longer supported) to coverage and pytest. 
+  * Updated requirements-dev.txt files for each task and moved the testing framework from nosetest (no longer supported) to coverage and pytest.
   * Support in GitHub for automated build/test/release via Bamboo
   * Use `coverage` and `pytest` for coverage/testing
+

@@ -14,10 +14,6 @@ from src.adapters.storage.postgres import StorageAdapterPostgres
 from src.adapters.webserver.uvicorn_settings import UvicornSettings
 from src.adapters.word_generation.word_generation import UUIDWordGeneration
 
-S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY = "s3_access_key"
-S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY = "s3_secret_key"  # nosec
-
-
 def get_application(uvicorn_settings: UvicornSettings):
     """
     Sets up an application for use with uvicorn.
@@ -54,20 +50,12 @@ def get_application(uvicorn_settings: UvicornSettings):
         db_connect_info, logger, db_connect_info.user_database_name,
     )
 
-    s3_credentials = json.loads(
-        uvicorn_settings.S3_ACCESS_CREDENTIALS
-    )
-    s3_access_key = s3_credentials[S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY]
-    s3_secret_key = s3_credentials[S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY]
-
     adapters_storage = AdaptersStorage(
         UUIDWordGeneration(),
         StorageAdapterPostgres(user_connection_uri),
         InternalReconciliationStorageAdapterPostgres(
             user_connection_uri,
             admin_connection_uri,
-            s3_access_key,
-            s3_secret_key
         ),
         initialized_logger_provider
     )

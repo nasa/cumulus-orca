@@ -61,7 +61,6 @@ data "aws_iam_policy_document" "gql_task_execution_policy_document" {
     ]
     resources = [
       var.db_connect_info_secret_arn,
-      var.s3_access_credentials_secret_arn
     ]
   }
 }
@@ -216,7 +215,7 @@ resource "aws_ecs_task_definition" "gql_task" {
 [
   {
     "name": "orca-gql",
-    "image": "ghcr.io/nasa/cumulus-orca/graphql:0.0.32",
+    "image": "ghcr.io/nasa/orca/graphql:0.33",
     "cpu": 512,
     "memory": 256,
     "networkMode": "awsvpc",
@@ -240,10 +239,6 @@ resource "aws_ecs_task_definition" "gql_task" {
       {
         "name": "DB_CONNECT_INFO",
         "valueFrom": "${var.db_connect_info_secret_arn}"
-      },
-      {
-        "name": "S3_ACCESS_CREDENTIALS",
-        "valueFrom": "${var.s3_access_credentials_secret_arn}"
       }
     ],
     "logConfiguration": {

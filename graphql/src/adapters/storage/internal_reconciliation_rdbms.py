@@ -29,13 +29,9 @@ class InternalReconciliationStorageAdapterRDBMS(
         self,
         user_connection_uri: str,
         admin_connection_uri: str,
-        s3_access_key: str,
-        s3_secret_key: str,
     ):
         self.user_connection_uri = user_connection_uri
         self.admin_connection_uri = admin_connection_uri
-        self.s3_access_key = s3_access_key
-        self.s3_secret_key = s3_secret_key
 
     @shared_db.retry_operational_error()
     def create_job(
@@ -194,8 +190,6 @@ class InternalReconciliationStorageAdapterRDBMS(
                             "report_bucket_name": csv_file_location.bucket_name,
                             "csv_key_path": csv_file_location.key,
                             "report_bucket_region": report_bucket_region,
-                            "s3_access_key": self.s3_access_key,
-                            "s3_secret_key": self.s3_secret_key,
                         }
                     ],
                 )

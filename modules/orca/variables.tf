@@ -36,6 +36,10 @@ variable "vpc_id" {
   description = "Virtual Private Cloud AWS ID"
 }
 
+variable "db_cluster_identifier" {
+  type = string
+  description = "DB Cluster Identifier to associate with the IAM Role"
+}
 
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
 variable "tags" {
@@ -219,12 +223,6 @@ variable "orca_recovery_retry_backoff" {
 }
 
 
-variable "s3_access_key" {
-  type        = string
-  description = "Access key for communicating with Orca S3 buckets."
-}
-
-
 variable "s3_inventory_queue_message_retention_time_seconds" {
   type        = number
   description = "The number of seconds s3-inventory-queue fifo SQS retains a message in seconds. Maximum value is 14 days."
@@ -234,12 +232,6 @@ variable "s3_inventory_queue_message_retention_time_seconds" {
 variable "s3_report_frequency" {
   type        = string
   description = "How often to generate s3 reports for internal reconciliation."
-}
-
-
-variable "s3_secret_key" {
-  type        = string
-  description = "Secret key for communicating with Orca S3 buckets."
 }
 
 

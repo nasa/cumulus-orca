@@ -3,7 +3,7 @@ coverage==7.2.7
 pytest==7.4.0
 
 ## Application libraries needed for testing
-psycopg2-binary==2.8.6
+psycopg2-binary==2.9.9
 
 ## Application libraries
 ../../shared_libraries[database]
@@ -12,7 +12,7 @@ boto3==1.18.40
 
 ## Additional validation libraries
 ## ---------------------------------------------------------------------------
-bandit==1.7.6
+bandit==1.7.7
 flake8==6.1.0
 black==22.3.0
 isort==5.12.0

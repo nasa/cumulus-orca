@@ -4,7 +4,7 @@ pytest==7.4.0
 moto[sqs]==4.2.13
 
 ## Application libraries needed for testing
-psycopg2-binary==2.8.6
+psycopg2-binary==2.9.9
 
 ## Application libraries
 aws_lambda_powertools==1.31.0
@@ -13,7 +13,7 @@ boto3==1.18.40
 
 ## Additional validation libraries
 ## ---------------------------------------------------------------------------
-bandit==1.7.6
+bandit==1.7.7
 flake8==6.1.0
 black==22.3.0
 isort==5.12.0

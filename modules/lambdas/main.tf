@@ -148,7 +148,6 @@ resource "aws_lambda_function" "get_current_archive_list" {
     variables = {
       DB_CONNECT_INFO_SECRET_ARN = var.db_connect_info_secret_arn
       INTERNAL_REPORT_QUEUE_URL  = var.orca_sqs_internal_report_queue_id,
-      S3_CREDENTIALS_SECRET_ARN  = var.orca_secretsmanager_s3_access_credentials_secret_arn
       POWERTOOLS_SERVICE_NAME    = "orca.internal_reconciliation"
       LOG_LEVEL                  = var.log_level
     }
