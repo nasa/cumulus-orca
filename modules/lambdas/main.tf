@@ -331,7 +331,7 @@ resource "aws_lambda_function" "extract_filepaths_for_granule" {
 
   vpc_config {
     subnet_ids         = var.lambda_subnet_ids
-    security_group_ids = [module.lambda_security_group.vpc_postgres_ingress_all_egress_id]
+    security_group_ids = [module.lambda_security_group.vpc_all_egress_id]
   }
   environment {
     variables = {
