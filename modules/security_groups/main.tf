@@ -41,3 +41,24 @@ resource "aws_security_group_rule" "rds_allow_lambda_access" {
   source_security_group_id = aws_security_group.vpc_postgres_ingress_all_egress.id
   security_group_id        = var.rds_security_group_id
 }
+
+
+
+resource "aws_security_group" "vpc_all_egress" {
+  name        = "${var.prefix}-vpc-all-egress"
+  description = "Allow all outbound traffic"
+  tags        = var.tags
+  vpc_id      = var.vpc_id
+}
+
+resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4" {
+  security_group_id = aws_security_group.vpc_all_egress.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1" 
+}
+
+resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv6" {
+  security_group_id = aws_security_group.vpc_all_egress.id
+  cidr_ipv6         = "::/0"
+  ip_protocol       = "-1" 
+}

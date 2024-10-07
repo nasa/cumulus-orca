@@ -87,6 +87,7 @@ Once the Aurora V1 database has been migrated/upgrade to Aurora V2 you can verif
 - *ORCA-849* - Added optional `fileDestinationOverride` property in copyToArchive workflow that can be used to override the file destination key if desired.
 - *ORCA-880* - Modified terraform to add an optional variable `lambda_runtime` for lambda runtime.
 - *ORCA-128* - Added Scheduler module at `cumulus-orca/modules/scheduler` to shutdown specifically tagged resources such as EC2, RDS, ECS, Autoscaling Groups, Redshift, and DocumentDB.
+- *ORCA-752* - Created Security Group for ORCA Lambdas that only need outbound access at `modules/security_groups/main.tf`
 
 
 ### Changed
