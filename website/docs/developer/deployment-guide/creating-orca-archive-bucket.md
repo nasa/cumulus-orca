@@ -331,3 +331,30 @@ Replace `<BUCKET_NAME>` with your `system-bucket` name.
 Replace `<PREFIX>` with your prefix.
 
 Replace `<AWS_ACCOUNT_ID>` with your Cumulus OU account number.
+
+
+For Network Load Balancers you must add the following S3 bucket policy to your `system_bucket`, which will likely be named `<PREFIX>-internal`, to give the load balancer access to write logs to the S3 bucket. Otherwise, the deployment will throw an `Access Denied` error.
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+	    "Effect": "Allow",
+            "Principal": {
+	    "Service": "delivery.logs.amazonaws.com"
+            },
+            "Action": "s3:PutObject",
+            "Resource": "arn:aws:s3:::<BUCKET_NAME>/<PREFIX>-lb-gql-n-logs/AWSLogs/<AWS_ACCOUNT_ID>/*"
+        }
+    ]
+}
+```
+
+:::note 
+
+Replace `<BUCKET_NAME>` with your `system-bucket` name.
+
+Replace `<PREFIX>` with your prefix.
+
+Replace `<AWS_ACCOUNT_ID>` with your Cumulus OU account number.

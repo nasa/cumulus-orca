@@ -151,6 +151,57 @@ resource "aws_lb_listener" "gql_app_lb_listener" {
   tags               = var.tags
 }
 
+# Network Load Balacner
+resource "aws_lb_target_group" "network_lb_tg" {
+  name        = "${random_id.lb_name.hex}-gql-n"
+  target_type = "alb"
+  port        = local.graphql_port
+  protocol    = "TCP"
+  vpc_id      = var.vpc_id
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+data "aws_lb" "gql_net_lb_data" {
+  arn = aws_lb.gql_net_lb.arn
+}
+
+resource "aws_lb" "gql_net_lb" {
+  name               = "${var.prefix}-gql-n"
+  internal           = true
+  load_balancer_type = "network"
+  access_logs {
+    bucket  = var.system_bucket
+    prefix  = "${var.prefix}-lb-gql-n-logs"
+    enabled = true
+  }
+  drop_invalid_header_fields = true
+  security_groups    = [aws_security_group.gql_lb_security_group.id]
+  subnets            = var.lambda_subnet_ids
+  idle_timeout       = 30 # API Gateway locks us to 30 seconds.
+  tags = var.tags
+}
+
+resource "aws_lb_listener" "gql_net_lb_listener" {
+  load_balancer_arn = aws_lb.gql_net_lb.arn
+  port              = local.graphql_port
+  protocol          = "TCP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.network_lb_tg.arn
+  }
+
+  tags               = var.tags
+}
+
+resource "aws_lb_target_group_attachment" "network-tg-attachment" {
+  target_group_arn = aws_lb_target_group.network_lb_tg.arn
+  target_id        = aws_lb.gql_app_lb.arn
+  port             = local.graphql_port
+}
+
 # Pending further research on VPC Link. VPC Link -> NW LB -> App LB -> Service is recommended path, but NGAP requires NGAP involvement for VPC creation. https://eosdis.slack.com/archives/C6KK42ZJP/p1668106098892689
 # # Network load balancer
 # resource "aws_lb" "gql_nw_lb" {
