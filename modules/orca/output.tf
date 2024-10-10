@@ -129,5 +129,5 @@ output "orca_graphql_load_balancer_dns_name" {
 
 output "orca_network_load_balancer_dns_name" {
   value       = module.orca_graphql_1.network_load_balancer_dns_name
-  description = "The DNS Name of the Application Load Balancer that handles access to ORCA GraphQL."
+  description = "The DNS Name of the Network Load Balancer."
 }
