@@ -71,6 +71,7 @@ Once the Aurora V1 database has been migrated/upgrade to Aurora V2 you can verif
 - *ORCA-849* - Added optional `fileDestinationOverride` property in copyToArchive workflow that can be used to override the file destination key if desired.
 - *ORCA-844* - Created initial VPC link to interact with DR ORCA API gateway endpoint with the cumulus account.
 - *ORCA-839* - Created AWS common resources in DR account for decoupling efforts.
+- *ORCA-889* - Added Network Load Balancer and target groups in `modules/graphql_1/main.tf`. As well as updated bucket permission for Network Load Balancer logs to S3 in `website/docs/developer/deployment-guide/creating-orca-archive-bucket.md`.
 
 
 ### Changed
