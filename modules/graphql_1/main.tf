@@ -152,8 +152,8 @@ resource "aws_lb_listener" "gql_app_lb_listener" {
 }
 
 # Network Load Balacner
-resource "aws_lb_target_group" "network_lb_tg" {
-  name        = "${random_id.lb_name.hex}-gql-n"
+resource "aws_lb_target_group" "decoupling_network_lb_target_group" {
+  name        = "${random_id.lb_name.hex}-decoupling-network-tg"
   target_type = "alb"
   port        = local.graphql_port
   protocol    = "TCP"
@@ -163,17 +163,17 @@ resource "aws_lb_target_group" "network_lb_tg" {
   }
 }
 
-data "aws_lb" "gql_net_lb_data" {
-  arn = aws_lb.gql_net_lb.arn
+data "aws_lb" "decoupling_orca_nlb_data" {
+  arn = aws_lb.decoupling_orca_nlb.arn
 }
 
-resource "aws_lb" "gql_net_lb" {
-  name               = "${var.prefix}-gql-n"
+resource "aws_lb" "decoupling_orca_nlb" {
+  name               = "${var.prefix}-decoupling-orca-nlb"
   internal           = true
   load_balancer_type = "network"
   access_logs {
     bucket  = var.system_bucket
-    prefix  = "${var.prefix}-lb-gql-n-logs"
+    prefix  = "${var.prefix}-decoupling-orca-nlb-logs"
     enabled = true
   }
   drop_invalid_header_fields = true
@@ -183,21 +183,21 @@ resource "aws_lb" "gql_net_lb" {
   tags = var.tags
 }
 
-resource "aws_lb_listener" "gql_net_lb_listener" {
-  load_balancer_arn = aws_lb.gql_net_lb.arn
+resource "aws_lb_listener" "decoupling_orca_nlb_listener" {
+  load_balancer_arn = aws_lb.decoupling_orca_nlb.arn
   port              = local.graphql_port
   protocol          = "TCP"
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.network_lb_tg.arn
+    target_group_arn = aws_lb_target_group.decoupling_network_lb_target_group.arn
   }
 
   tags               = var.tags
 }
 
-resource "aws_lb_target_group_attachment" "network-tg-attachment" {
-  target_group_arn = aws_lb_target_group.network_lb_tg.arn
+resource "aws_lb_target_group_attachment" "network_tg_attachment" {
+  target_group_arn = aws_lb_target_group.decoupling_network_lb_target_group.arn
   target_id        = aws_lb.gql_app_lb.arn
   port             = local.graphql_port
 }
