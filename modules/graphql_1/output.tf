@@ -4,5 +4,5 @@ output "graphql_load_balancer_dns_name" {
 }
 
 output "network_load_balancer_dns_name" {
-  value       = data.aws_lb.gql_net_lb_data.dns_name
+  value       = data.aws_lb.decoupling_orca_nlb_data.dns_name
 }
