@@ -1,9 +1,3 @@
-locals {
-  # Used for associating IAM role to the Aurora v2 cluster.
-  # If using multiple deployments using the same RDS cluster, set this to false.
-  deploy_rds_cluster_role_association = true
-}
-
 data "aws_vpc" "primary" {
   id = var.vpc_id
 }
@@ -96,5 +90,5 @@ resource "aws_rds_cluster_role_association" "orca_iam_association" {
   db_cluster_identifier = var.db_cluster_identifier
   feature_name          = "s3Import"
   role_arn              = aws_iam_role.gql_tasks_role.arn
-  count                 = local.deploy_rds_cluster_role_association ? 1 : 0
+  count                 = var.deploy_rds_cluster_role_association ? 1 : 0
 }
