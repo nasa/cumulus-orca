@@ -275,3 +275,8 @@ variable "log_level" {
   type        = string
   description = "sets the verbose of PowerTools logger. Must be one of 'INFO', 'DEBUG', 'WARN', 'ERROR'. Defaults to 'INFO'."
 }
+
+variable "deploy_rds_cluster_role_association" {
+  type        = bool
+  description = "Deploys IAM role for Aurora v2 cluster if true."
+}
