@@ -335,6 +335,6 @@ variable "log_level" {
 
 variable "deploy_rds_cluster_role_association" {
   type        = bool
-  description = "Deploys IAM role for Aurora v2 cluster if true."
+  description = "Attaches IAM role for Aurora v2 cluster if true."
   default = true
 }
