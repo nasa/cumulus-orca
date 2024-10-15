@@ -21,6 +21,8 @@ and includes an additional section for migration notes.
 
 ### Changed
 
+*ORCA-567* - Specified build scripts to use specific version of pip to resolve any future errors/issues that could be caused by using the latest version of pip.
+
 ### Deprecated
 
 ### Removed
