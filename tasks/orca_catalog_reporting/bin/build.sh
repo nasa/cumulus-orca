@@ -41,7 +41,7 @@ trap 'rm -rf build' EXIT
 
 run_and_check_returncode "create_and_activate_venv"
 trap 'deactivate_and_delete_venv;rm -rf build;' EXIT
-run_and_check_returncode "pip install -q --upgrade pip --trusted-host pypi.org --trusted-host files.pythonhosted.org"
+run_and_check_returncode "pip install -q --upgrade pip==24.2 --trusted-host pypi.org --trusted-host files.pythonhosted.org"
 
 ## Install the requirements
 pip install -q -t build -r requirements.txt --trusted-host pypi.org --trusted-host files.pythonhosted.org
