@@ -23,6 +23,15 @@ and includes an additional section for migration notes.
 
 - *ORCA-920* - Fixed ORCA deployment failure for Cumulus when sharing an RDS cluster due to multiple IAM role association attempts. Added a new boolean variable `deploy_rds_cluster_role_association` which can be used to deploy multiple ORCA/cumulus stacks sharing the same RDS cluster in the same account by overwriting it to `false` for 2nd user.
 
+*ORCA-567* - Specified build scripts to use specific version of pip to resolve any future errors/issues that could be caused by using the latest version of pip.
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
 
 ## [10.0.0] 2024-10-02
 
