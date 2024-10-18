@@ -15,19 +15,14 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 
-### Migration Notes
+
+## [10.0.1] 2024-10-18
+
 
 ### Added
 
-### Changed
+- *ORCA-920* - Fixed ORCA deployment failure for Cumulus when sharing an RDS cluster due to multiple IAM role association attempts. Added a new boolean variable `deploy_rds_cluster_role_association` which can be used to deploy multiple ORCA/cumulus stacks sharing the same RDS cluster in the same account by overwriting it to `false` for 2nd user.
 
-### Deprecated
-
-### Removed
-
-### Fixed
-
-### Security
 
 ## [10.0.0] 2024-10-02
 
