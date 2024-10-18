@@ -94,6 +94,7 @@ module "orca" {
   # db_admin_username                                     = "postgres"
   # default_multipart_chunksize_mb                        = 250
   # lambda_runtime                                        = "python3.9"
+  # deploy_rds_cluster_role_association                   = true
   # log_level                                             = "INFO"
   # metadata_queue_message_retention_time                 = 777600
   # orca_default_recovery_type                            = "Standard"
@@ -118,7 +119,6 @@ module "orca" {
   # sqs_maximum_message_size                              = 262144
   # staged_recovery_queue_message_retention_time_seconds  = 432000
   # status_update_queue_message_retention_time_seconds    = 777600
-
 
 }
 ```
@@ -536,6 +536,7 @@ variables is shown in the table below.
 | `archive_recovery_queue_message_retention_time_seconds`| string       | The number of seconds archive-recovery-queue SQS retains a message in seconds.                                                 | 777600     |
 | `db_admin_username`                                    | string       | Username for RDS database administrator authentication.                                                                        | "postgres" |
 | `default_multipart_chunksize_mb`                       | number       | The default maximum size of chunks to use when copying. Can be overridden by collection config.                                | 250 |
+| `deploy_rds_cluster_role_association`                  | boolean      | Attaches IAM role for Aurora v2 cluster if true.                                                                               | true |
 | `internal_report_queue_message_retention_time_seconds` | number       | Number of seconds the internal-report-queue SQS retains a message.                                                             | 432000 |
 | `metadata_queue_message_retention_time_seconds`        | number       | Number of seconds the metadata-queue fifo SQS retains a message.                                                               | 777600 |
 | `db_name`                                              | string       | The name of the Orca database within the RDS cluster. Any `-` in `prefix` will be replaced with `_`.                           | PREFIX_orca |

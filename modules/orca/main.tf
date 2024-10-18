@@ -160,6 +160,7 @@ module "orca_graphql_0" {
 
   ## OPTIONAL
   tags = var.tags
+  deploy_rds_cluster_role_association = var.deploy_rds_cluster_role_association
 }
 
 ## orca_secretsmanager - secretsmanager module

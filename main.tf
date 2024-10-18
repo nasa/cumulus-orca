@@ -79,4 +79,5 @@ module "orca" {
   status_update_queue_message_retention_time_seconds    = var.status_update_queue_message_retention_time_seconds
   vpc_endpoint_id                                       = var.vpc_endpoint_id
   log_level                                             = var.log_level
+  deploy_rds_cluster_role_association                   = var.deploy_rds_cluster_role_association
 }

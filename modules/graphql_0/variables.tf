@@ -26,3 +26,9 @@ variable "db_cluster_identifier" {
   type = string
   description = "DB Cluster Identifier (Cluster Name) to associate with the IAM Role"
 }
+
+## OPTIONAL
+variable "deploy_rds_cluster_role_association" {
+  type        = bool
+  description = "Deploys IAM role for Aurora v2 cluster if true."
+}

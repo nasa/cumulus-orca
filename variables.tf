@@ -337,3 +337,9 @@ variable "log_level" {
     error_message = "Valid values are 'INFO'|'DEBUG'|'WARN'|'ERROR'."
   }
 }
+
+variable "deploy_rds_cluster_role_association" {
+  type        = bool
+  description = "Attaches IAM role for Aurora v2 cluster if true."
+  default = true
+}
