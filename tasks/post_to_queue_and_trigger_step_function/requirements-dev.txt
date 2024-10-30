@@ -7,9 +7,9 @@ moto[sqs]==4.2.13
 psycopg2-binary==2.9.9
 
 ## Application libraries
-aws_lambda_powertools==1.31.0
+aws_lambda_powertools==3.2.0
 fastjsonschema~=2.15.1
-boto3==1.18.40
+boto3==1.28.76
 
 ## Additional validation libraries
 ## ---------------------------------------------------------------------------

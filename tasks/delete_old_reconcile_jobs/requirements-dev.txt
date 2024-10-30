@@ -7,8 +7,8 @@ psycopg2-binary==2.9.9
 
 ## Application libraries
 ../../shared_libraries[database]
-aws_lambda_powertools==1.31.0
-boto3==1.18.40
+aws_lambda_powertools==3.2.0
+boto3==1.28.76
 
 ## Additional validation libraries
 ## ---------------------------------------------------------------------------

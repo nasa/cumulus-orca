@@ -23,7 +23,11 @@ and includes an additional section for migration notes.
 
 - *ORCA-920* - Fixed ORCA deployment failure for Cumulus when sharing an RDS cluster due to multiple IAM role association attempts. Added a new boolean variable `deploy_rds_cluster_role_association` which can be used to deploy multiple ORCA/cumulus stacks sharing the same RDS cluster in the same account by overwriting it to `false` for 2nd user.
 
-*ORCA-567* - Specified build scripts to use specific version of pip to resolve any future errors/issues that could be caused by using the latest version of pip.
+- *ORCA-567* - Specified build scripts to use specific version of pip to resolve any future errors/issues that could be caused by using the latest version of pip.
+
+### Changed
+
+- *ORCA-900* - Updated aws_lambda_powertools to latest version to resolve errors users were experiencing in older version. Updated boto3 as it is a dependecy of aws_lambda_powertools.
 
 ### Deprecated
 
