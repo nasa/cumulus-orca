@@ -31,7 +31,7 @@ moto[sqs]==4.2.13
 ## ---------------------------------------------------------------------------
 
 ## Libraries used by every package/module
-aws_lambda_powertools==1.31.0
+aws_lambda_powertools==3.2.0
 
 ## Libraries used by database package
 boto3~=1.28.76
