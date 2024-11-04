@@ -1,2 +1,2 @@
-aws_lambda_powertools==1.31.0
+aws_lambda_powertools==3.2.0
 fastjsonschema~=2.15.1

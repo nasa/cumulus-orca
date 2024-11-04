@@ -1,4 +1,4 @@
-aws-lambda-powertools==1.31.1
+aws-lambda-powertools==3.2.0
 pytest==7.4.0
 coverage==7.2.7
 fastjsonschema==2.15.0

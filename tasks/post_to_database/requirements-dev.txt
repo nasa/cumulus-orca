@@ -6,7 +6,7 @@ pytest==7.4.0
 psycopg2-binary==2.9.9
 
 ## Application libraries
-aws_lambda_powertools==1.31.0
+aws_lambda_powertools==3.2.0
 fastjsonschema~=2.15.1
 ../../shared_libraries[all]
 
