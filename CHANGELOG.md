@@ -25,6 +25,8 @@ and includes an additional section for migration notes.
 
 - *ORCA-567* - Specified build scripts to use specific version of pip to resolve any future errors/issues that could be caused by using the latest version of pip.
 
+- *ORCA-933* - Added dead letter queue for the Metadata SQS queue in `modules/sqs/main.tf` 
+
 ### Changed
 
 - *ORCA-900* - Updated aws_lambda_powertools to latest version to resolve errors users were experiencing in older version. Updated boto3 as it is a dependecy of aws_lambda_powertools.
