@@ -15,6 +15,9 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 
+### Added
+
+- *ORCA-905* - Added integration test for recovery large file.
 
 ## [10.0.1] 2024-10-18
 
