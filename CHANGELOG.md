@@ -31,6 +31,8 @@ and includes an additional section for migration notes.
 
 - *ORCA-900* - Updated aws_lambda_powertools to latest version to resolve errors users were experiencing in older version. Updated boto3 as it is a dependecy of aws_lambda_powertools.
 
+- *ORCA-927* - Updated archive architecture to include metadata deadletter queue in `website/static/img/ORCA-Architecture-Archive-Container-Component-Updated.svg`
+
 ### Deprecated
 
 ### Removed
