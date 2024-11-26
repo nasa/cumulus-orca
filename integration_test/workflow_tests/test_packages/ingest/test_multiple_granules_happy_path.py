@@ -274,15 +274,25 @@ class TestMultipleGranulesHappyPath(TestCase):
                 f"Expected API output granules not returned. Request: {catalog_input}",
             )
 
-            # recovery check
-            self.partial_test_recovery_happy_path(
-                boto3_session,
-                collection_id,
-                granule_id_1,
-                name_1,
-                key_name_1,
-                recovery_bucket_name,
-            )
+            # recovery test
+            if use_large_file:
+                self.partial_test_recovery_happy_path(
+                    boto3_session,
+                    collection_id,
+                    granule_id_1,
+                    large_file_name,
+                    key_name_2,
+                    recovery_bucket_name,
+                )
+            else:
+                self.partial_test_recovery_happy_path(
+                    boto3_session,
+                    collection_id,
+                    granule_id_1,
+                    name_1,
+                    key_name_1,
+                    recovery_bucket_name,
+                )
         except Exception as ex:
             logger.error(ex)
             raise
