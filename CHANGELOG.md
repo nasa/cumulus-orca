@@ -40,6 +40,8 @@ and includes an additional section for migration notes.
 
 ### Removed
 
+- *ORCA-933* - Removed S3 credential references that were causing errors in `tasks/get_current_archive_list/get_current_archive_list.py` and `tasks/get_current_archive_list/test/unit_tests/test_get_current_archive_list.py`
+
 ### Fixed
 
 ### Security

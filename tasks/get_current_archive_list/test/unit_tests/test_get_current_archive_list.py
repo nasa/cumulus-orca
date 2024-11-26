@@ -42,8 +42,6 @@ class TestGetCurrentArchiveList(
         """
         Happy path that gets the manifest and triggers the various DB tasks.
         """
-        mock_s3_access_key = Mock()
-        mock_s3_secret_key = Mock()
         mock_user_database = Mock()
         manifest_key_path = (
             uuid.uuid4().__str__() + "/" + uuid.uuid4().__str__() + "/manifest.json"
@@ -70,8 +68,6 @@ class TestGetCurrentArchiveList(
             mock_report_bucket_aws_region,
             mock_report_bucket_name,
             manifest_key_path,
-            mock_s3_access_key,
-            mock_s3_secret_key,
             copy.copy(db_connect_info),
         )
 
@@ -91,8 +87,6 @@ class TestGetCurrentArchiveList(
             mock_orca_archive_location, mock_get_admin_connection.return_value
         )
         mock_update_job_with_s3_inventory_in_postgres.assert_called_once_with(
-            mock_s3_access_key,
-            mock_s3_secret_key,
             mock_report_bucket_name,
             mock_report_bucket_aws_region,
             manifest_file_keys,
@@ -129,8 +123,6 @@ class TestGetCurrentArchiveList(
         """
         Only manifest.json files should trigger deeper processing. Otherwise, return {job_id: None}
         """
-        mock_s3_access_key = Mock()
-        mock_s3_secret_key = Mock()
         mock_user_database = Mock()
         manifest_key_path = (
             uuid.uuid4().__str__() + "/" + uuid.uuid4().__str__() + "/blah.json"
@@ -144,8 +136,6 @@ class TestGetCurrentArchiveList(
                 mock_report_bucket_aws_region,
                 mock_report_bucket_name,
                 manifest_key_path,
-                mock_s3_access_key,
-                mock_s3_secret_key,
                 copy.copy(db_connect_info),
             )
         self.assertEqual(
@@ -186,8 +176,6 @@ class TestGetCurrentArchiveList(
         """
         expected_exception = Exception(uuid.uuid4().__str__())
 
-        mock_s3_access_key = Mock()
-        mock_s3_secret_key = Mock()
         mock_user_database = Mock()
         manifest_key_path = (
             uuid.uuid4().__str__() + "/" + uuid.uuid4().__str__() + "/manifest.json"
@@ -216,8 +204,6 @@ class TestGetCurrentArchiveList(
                 mock_report_bucket_aws_region,
                 mock_report_bucket_name,
                 manifest_key_path,
-                mock_s3_access_key,
-                mock_s3_secret_key,
                 copy.copy(db_connect_info),
             )
         self.assertEqual(expected_exception, cm.exception)
@@ -488,8 +474,6 @@ class TestGetCurrentArchiveList(
         Happy path for pulling s3 inventory csv into postgres.
         Should perform each operation in a single transaction.
         """
-        mock_s3_access_key = Mock()
-        mock_s3_secret_key = Mock()
         mock_report_bucket_name = Mock()
         mock_report_bucket_region = Mock()
         mock_csv_key_paths = [
@@ -509,8 +493,6 @@ class TestGetCurrentArchiveList(
         mock_engine.begin = Mock(return_value=mock_enter)
 
         get_current_archive_list.update_job_with_s3_inventory_in_postgres(
-            mock_s3_access_key,
-            mock_s3_secret_key,
             mock_report_bucket_name,
             mock_report_bucket_region,
             mock_csv_key_paths,
@@ -557,8 +539,6 @@ class TestGetCurrentArchiveList(
                             "report_bucket_name": mock_report_bucket_name,
                             "csv_key_path": mock_csv_key_path,
                             "report_bucket_region": mock_report_bucket_region,
-                            "s3_access_key": mock_s3_access_key,
-                            "s3_secret_key": mock_s3_secret_key,
                         }
                     ],
                 )
@@ -599,8 +579,6 @@ class TestGetCurrentArchiveList(
         Exceptions from Postgres should bubble up.
         """
         expected_exception = Exception(uuid.uuid4().__str__())
-        mock_s3_access_key = Mock()
-        mock_s3_secret_key = Mock()
         mock_report_bucket_name = Mock()
         mock_report_bucket_region = Mock()
         mock_csv_key_paths = [
@@ -621,8 +599,6 @@ class TestGetCurrentArchiveList(
 
         with self.assertRaises(Exception) as cm:
             get_current_archive_list.update_job_with_s3_inventory_in_postgres(
-                mock_s3_access_key,
-                mock_s3_secret_key,
                 mock_report_bucket_name,
                 mock_report_bucket_region,
                 mock_csv_key_paths,
@@ -668,8 +644,6 @@ class TestGetCurrentArchiveList(
         """
         If AWS starts giving us non-csv.gz files, we should raise an error.
         """
-        mock_s3_access_key = Mock()
-        mock_s3_secret_key = Mock()
         mock_report_bucket_name = Mock()
         mock_report_bucket_region = Mock()
         bad_csv_key_path = uuid.uuid4().__str__() + ".csv"
@@ -688,8 +662,6 @@ class TestGetCurrentArchiveList(
 
         with self.assertRaises(Exception) as cm:
             get_current_archive_list.update_job_with_s3_inventory_in_postgres(
-                mock_s3_access_key,
-                mock_s3_secret_key,
                 mock_report_bucket_name,
                 mock_report_bucket_region,
                 mock_csv_key_paths,
@@ -776,98 +748,6 @@ class TestGetCurrentArchiveList(
         )
 
     @patch("boto3.client")
-    def test_get_s3_credentials_from_secrets_manager_happy_path(
-        self, mock_client: MagicMock
-    ):
-        """
-        Happy path for pulling secret values from secretsmanager
-        """
-        mock_s3_credentials_secret_arn = Mock()
-        region = uuid.uuid4().__str__()
-        s3_access_key = uuid.uuid4().__str__()
-        s3_secret_key = uuid.uuid4().__str__()
-
-        mock_secrets_manager = mock_client.return_value
-        mock_secrets_manager.get_secret_value.return_value = {
-            "SecretString": json.dumps(
-                {
-                    get_current_archive_list.S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY: s3_access_key,
-                    get_current_archive_list.S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY: s3_secret_key,
-                }
-            )
-        }
-
-        with patch.dict(
-            os.environ,
-            {"AWS_REGION": region},
-        ):
-            (
-                result_access_key,
-                result_secret_key,
-            ) = get_current_archive_list.get_s3_credentials_from_secrets_manager(
-                mock_s3_credentials_secret_arn
-            )
-
-        mock_client.assert_called_once_with("secretsmanager", region_name=region)
-        mock_secrets_manager.get_secret_value.assert_called_once_with(
-            SecretId=mock_s3_credentials_secret_arn
-        )
-        self.assertEqual(s3_access_key, result_access_key)
-        self.assertEqual(s3_secret_key, result_secret_key)
-
-    @patch("boto3.client")
-    def test_get_s3_credentials_from_secrets_manager_missing_values_raises_error(
-        self, mock_client: MagicMock
-    ):
-        """
-        When returns are unset or empty strings, should raise KeyError.
-        """
-        mock_s3_credentials_secret_arn = Mock()
-        s3_access_key = uuid.uuid4().__str__()
-        s3_secret_key = uuid.uuid4().__str__()
-        region = uuid.uuid4().__str__()
-
-        mock_secrets_manager = mock_client.return_value
-
-        with patch.dict(
-            os.environ,
-            {"AWS_REGION": region},
-        ):
-            for secret_key in [
-                get_current_archive_list.S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY,
-                get_current_archive_list.S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY,
-            ]:
-                values = {
-                    get_current_archive_list.S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY: s3_access_key,
-                    get_current_archive_list.S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY: s3_secret_key,
-                }
-                with self.subTest(secret_key=secret_key):
-                    values[secret_key] = ""
-                    mock_secrets_manager.get_secret_value.return_value = {
-                        "SecretString": json.dumps(values)
-                    }
-                    with self.assertRaises(ValueError) as cm:
-                        get_current_archive_list.get_s3_credentials_from_secrets_manager(
-                            mock_s3_credentials_secret_arn
-                        )
-                    self.assertEqual(
-                        f"{secret_key} secret is not set.",
-                        str(cm.exception),
-                    )
-                    values.pop(secret_key)
-                    mock_secrets_manager.get_secret_value.return_value = {
-                        "SecretString": json.dumps(values)
-                    }
-                    with self.assertRaises(ValueError) as cm:
-                        get_current_archive_list.get_s3_credentials_from_secrets_manager(
-                            mock_s3_credentials_secret_arn
-                        )
-                    self.assertEqual(
-                        f"{secret_key} secret is not set.",
-                        str(cm.exception),
-                    )
-
-    @patch("boto3.client")
     def test_get_message_from_queue_happy_path(self, mock_client: MagicMock):
         """
         Happy path for pulling a message from the internal report queue.
@@ -948,7 +828,6 @@ class TestGetCurrentArchiveList(
     # noinspection PyPep8Naming
     @patch("get_current_archive_list.get_message_from_queue")
     @patch("orca_shared.database.shared_db.get_configuration")
-    @patch("get_current_archive_list.get_s3_credentials_from_secrets_manager")
     @patch("get_current_archive_list.LOGGER")
     @patch("get_current_archive_list.task")
     @patch("get_current_archive_list.check_env_variable")
@@ -957,14 +836,12 @@ class TestGetCurrentArchiveList(
         mock_check_env_variable: MagicMock,
         mock_task: MagicMock,
         mock_LOGGER: MagicMock,
-        mock_get_s3_credentials_from_secrets_manager: MagicMock,
         mock_get_configuration: MagicMock,
         mock_get_message_from_queue: MagicMock,
     ):
         """
         Happy path for handler assembling information to call Task.
         """
-        mock_s3_credentials_secret_arn = uuid.uuid4().__str__()
         mock_db_connect_info_secret_arn = uuid.uuid4().__str__()
         mock_report_bucket_aws_region = Mock()
         mock_report_bucket_name = Mock()
@@ -989,31 +866,18 @@ class TestGetCurrentArchiveList(
             receipt_handle,
         )
 
-        s3_access_key = uuid.uuid4().__str__()
-        s3_secret_key = uuid.uuid4().__str__()
-
-        mock_get_s3_credentials_from_secrets_manager.return_value = (
-            s3_access_key,
-            s3_secret_key,
-        )
         event = Mock()
 
         report_queue_url = uuid.uuid4().__str__()
         with patch.dict(
             os.environ,
             {
-                get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY: mock_s3_credentials_secret_arn,  # noqa: E501
                 get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY: report_queue_url,  # noqa: E501
                 get_current_archive_list.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY: mock_db_connect_info_secret_arn,  # noqa: E501
             },
         ):
             result = get_current_archive_list.handler(event, mock_context)
 
-        mock_get_s3_credentials_from_secrets_manager.assert_called_once_with(
-            mock_check_env_variable(
-                get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY
-            )
-        )
         mock_get_configuration.assert_called_once_with(
             mock_check_env_variable(
                 get_current_archive_list.OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY
@@ -1028,15 +892,12 @@ class TestGetCurrentArchiveList(
             mock_report_bucket_aws_region,
             mock_report_bucket_name,
             mock_manifest_key_path,
-            s3_access_key,
-            s3_secret_key,
             mock_get_configuration.return_value,
         )
         self.assertEqual(expected_result, result)
 
     @patch("get_current_archive_list.get_message_from_queue")
     @patch("orca_shared.database.shared_db.get_configuration")
-    @patch("get_current_archive_list.get_s3_credentials_from_secrets_manager")
     @patch("get_current_archive_list.LOGGER")
     @patch("get_current_archive_list.task")
     @patch("get_current_archive_list.check_env_variable")
@@ -1050,14 +911,12 @@ class TestGetCurrentArchiveList(
         mock_check_env_variable: MagicMock,
         mock_task: MagicMock,
         mock_LOGGER: MagicMock,
-        mock_get_s3_credentials_from_secrets_manager: MagicMock,
         mock_get_configuration: MagicMock,
         mock_get_message_from_queue: MagicMock,
     ):
         """
         Violating output.json schema should raise an error.
         """
-        mock_s3_credentials_secret_arn = uuid.uuid4().__str__()
         mock_report_bucket_aws_region = Mock()
         mock_report_bucket_name = Mock()
         mock_manifest_key_path = Mock()
@@ -1073,13 +932,6 @@ class TestGetCurrentArchiveList(
             receipt_handle,
         )
 
-        s3_access_key = uuid.uuid4().__str__()
-        s3_secret_key = uuid.uuid4().__str__()
-
-        mock_get_s3_credentials_from_secrets_manager.return_value = (
-            s3_access_key,
-            s3_secret_key,
-        )
         with self.assertRaises(Exception) as cm:
             event = Mock()
 
@@ -1087,7 +939,6 @@ class TestGetCurrentArchiveList(
             with patch.dict(
                 os.environ,
                 {
-                    get_current_archive_list.OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY: mock_s3_credentials_secret_arn,  # noqa: E501
                     get_current_archive_list.OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY: report_queue_url,  # noqa: E501
                 },
             ):
@@ -1102,8 +953,6 @@ class TestGetCurrentArchiveList(
             mock_report_bucket_aws_region,
             mock_report_bucket_name,
             mock_manifest_key_path,
-            s3_access_key,
-            s3_secret_key,
             mock_get_configuration.return_value,
         )
         self.assertEqual(
