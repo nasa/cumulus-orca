@@ -127,7 +127,7 @@ resource "aws_lambda_permission" "delete_old_reconcile_jobs_allow_cloudwatch_eve
 resource "aws_lambda_function" "get_current_archive_list" {
   ## REQUIRED
   function_name = "${var.prefix}_get_current_archive_list"
-  role          = var.restore_object_role_arn
+  role          = var.gql_tasks_role_arn
 
   ## OPTIONAL
   description      = "Receives a list of s3 events from an SQS queue, and loads the s3 inventory specified into postgres."

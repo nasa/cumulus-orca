@@ -55,3 +55,8 @@ variable "db_admin_username" {
   description = "Username for RDS database administrator authentication"
   type        = string
 }
+
+variable "gql_tasks_role_arn" {
+  type = string
+  description = "The ARN of the role used by GraphQL and get_current_archive_list"  
+}

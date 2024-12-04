@@ -56,6 +56,7 @@ module "orca_lambdas" {
   orca_recovery_retry_interval                  = var.orca_recovery_retry_interval
   orca_recovery_retry_backoff                   = var.orca_recovery_retry_backoff
   log_level                                     = var.log_level
+  gql_tasks_role_arn               = module.orca_graphql_0.gql_tasks_role_arn
 }
 
 ## orca_lambdas_secondary - lambdas module that is dependent on resources that presently are created after most lambdas
@@ -161,6 +162,9 @@ module "orca_graphql_0" {
   ## OPTIONAL
   tags = var.tags
   deploy_rds_cluster_role_association = var.deploy_rds_cluster_role_association
+  orca_recovery_buckets                         = var.orca_recovery_buckets
+  orca_reports_bucket_name                      = var.orca_reports_bucket_name
+  buckets = var.buckets
 }
 
 ## orca_secretsmanager - secretsmanager module
@@ -185,6 +189,7 @@ module "orca_secretsmanager" {
   db_host_endpoint                = var.db_host_endpoint
   gql_ecs_task_execution_role_arn = module.orca_graphql_0.gql_ecs_task_execution_role_arn
   restore_object_role_arn         = module.orca_iam.restore_object_role_arn
+  gql_tasks_role_arn              = module.orca_graphql_0.gql_tasks_role_arn
 
   ## OPTIONAL
   db_admin_username = var.db_admin_username

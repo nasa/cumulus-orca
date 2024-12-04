@@ -36,6 +36,8 @@ and includes an additional section for migration notes.
 
 - *ORCA-927* - Updated archive architecture to include metadata deadletter queue in `website/static/img/ORCA-Architecture-Archive-Container-Component-Updated.svg`
 
+- *ORCA-937* - Updated get_current_archive_list Lambda to use the gql_tasks_role to resolve database errors when trying to S3 import in `modules/lambdas/main.tf`. Updated gql_tasks_role with needed permissions in `modules/graphql_0/main.tf`, as well as updated Secrets Manager permissions to allow the role to get DB secret in `modules/secretsmanager/main.tf`.
+
 ### Deprecated
 
 ### Removed
