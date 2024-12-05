@@ -10,6 +10,10 @@ variable "lambda_subnet_ids" {
   description = "List of subnets the lambda functions have access to."
 }
 
+variable "gql_tasks_role_arn" {
+  type        = string
+  description = "The ARN of the role used by the code within the Graphql ECS Task."
+}
 
 variable "prefix" {
   type        = string
