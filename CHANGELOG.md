@@ -17,34 +17,52 @@ and includes an additional section for migration notes.
 
 ### Added
 
-- *ORCA-905* - Added integration test for recovery large file.
+### Changed
 
-## [10.0.1] 2024-10-18
+### Removed
 
+### Fixed
+
+### Security
+
+## [10.1.0] 2024-XX-XXXX
 
 ### Added
 
-- *ORCA-920* - Fixed ORCA deployment failure for Cumulus when sharing an RDS cluster due to multiple IAM role association attempts. Added a new boolean variable `deploy_rds_cluster_role_association` which can be used to deploy multiple ORCA/cumulus stacks sharing the same RDS cluster in the same account by overwriting it to `false` for 2nd user.
-
+- *ORCA-905* - Added integration test for recovery large file.
+- *ORCA-849* - Added optional `fileDestinationOverride` property in copyToArchive workflow that can be used to override the file destination key if desired.
 - *ORCA-567* - Specified build scripts to use specific version of pip to resolve any future errors/issues that could be caused by using the latest version of pip.
-
 - *ORCA-933* - Added dead letter queue for the Metadata SQS queue in `modules/sqs/main.tf` 
 
 ### Changed
 
 - *ORCA-900* - Updated aws_lambda_powertools to latest version to resolve errors users were experiencing in older version. Updated boto3 as it is a dependecy of aws_lambda_powertools.
-
 - *ORCA-927* - Updated archive architecture to include metadata deadletter queue in `website/static/img/ORCA-Architecture-Archive-Container-Component-Updated.svg`
+- *ORCA-850* - Updated copy_to_archive documentation containing the additional s3 destination property functionality.
+- *ORCA-774* - Updated Lambdas and GraphQL to Python 3.10
+- *ORCA-896* - Updated Bamboo files to use `latest` tag on `cumulus_orca` Docker image to resolve Bamboo jobs using old images.
+- *[530](https://github.com/nasa/cumulus-orca/issues/530)* - Added explicit `s3:GetObjectTagging` and `s3:PutObjectTagging` actions to IAM `restore_object_role_policy`
 
-### Deprecated
+### Fixed
+
+- *ORCA-822* - Fixed nodejs installation error in bamboo CI/CD ORCA distribution docker image.
+- *ORCA-810* - Fixed `db_deploy` unit test error in bamboo due to wheel installation during python 3.10 upgrade.
+- *ORCA-861* - Updated docusaurus to fix Snyk vulnerabilities.
+- *ORCA-862* - Updated docusaurus to v3.4.0.
+- *ORCA-890* - Fixed snyk vulnerabilities showing high issues and upgraded docusaurus to v3.5.2
+- *ORCA-902* - Upgraded bandit to version 1.7.9 to fix snyk vulnerabilities.
 
 ### Removed
 
 - *ORCA-933* - Removed S3 credential references that were causing errors in `tasks/get_current_archive_list/get_current_archive_list.py` and `tasks/get_current_archive_list/test/unit_tests/test_get_current_archive_list.py`
 
-### Fixed
 
-### Security
+## [10.0.1] 2024-10-18
+
+### Added
+
+- *ORCA-920* - Fixed ORCA deployment failure for Cumulus when sharing an RDS cluster due to multiple IAM role association attempts. Added a new boolean variable `deploy_rds_cluster_role_association` which can be used to deploy multiple ORCA/cumulus stacks sharing the same RDS cluster in the same account by overwriting it to `false` for 2nd user.
+
 
 ## [10.0.0] 2024-10-02
 
@@ -85,23 +103,11 @@ Once the Aurora V1 database has been migrated/upgrade to Aurora V2 you can verif
   14. Remove the snapshot identifier from the Terraform (If Applicable)
   15. In the AWS console navigate to RDS -> Snapshots and delete the snapshot the V2 database was restored from.
 
-- If desired, update collection configurations with the new optional key `fileDestinationOverride` that can be added to override the file destination key where it will be archived.
-    ```json
-      "collection": {
-          "meta":{
-              "orca": {
-                "fileDestinationOverride": "test/file.hdf"
-            }
-        }
-      }
-      ```
-
 ### Added
 
 - *ORCA-845* - Created IAM role for RDS S3 import needed for Aurora v2 upgrade.
 - *ORCA-792* - Added DB comparison script at `modules/db_compare_instance/scripts/db_compare.sh` for the temporary EC2 to compare databases post migration.
 - *ORCA-868* - Added EC2 instance for DB comparison after migration under `modules/db_compare_instance/main.tf`
-- *ORCA-849* - Added optional `fileDestinationOverride` property in copyToArchive workflow that can be used to override the file destination key if desired.
 - *ORCA-880* - Modified terraform to add an optional variable `lambda_runtime` for lambda runtime.
 - *ORCA-128* - Added Scheduler module at `cumulus-orca/modules/scheduler` to shutdown specifically tagged resources such as EC2, RDS, ECS, Autoscaling Groups, Redshift, and DocumentDB.
 - *ORCA-752* - Created Security Group for ORCA Lambdas that only need outbound access at `modules/security_groups/main.tf`
@@ -114,9 +120,6 @@ Once the Aurora V1 database has been migrated/upgrade to Aurora V2 you can verif
 - *ORCA-797* - Removed s3 credential variables from `deployment-with-cumulus.md` and `s3-credentials.md` documentations since they are no longer used in Aurora v2 DB.
 - *ORCA-873* - Modified build task script to copy schemas into a schema folder to resolve errors.
 - *ORCA-872* - Updated grapql version, modified policy in `modules/iam/main.tf` to resolve errors, and added DB role attachment to `modules/graphql_0/main.tf`
-- *ORCA-774* - Updated Lambdas and GraphQL to Python 3.10
-- *ORCA-896* - Updated Bamboo files to use `latest` tag on `cumulus_orca` Docker image to resolve Bamboo jobs using old images.
-- *[530](https://github.com/nasa/cumulus-orca/issues/530)* - Added explicit `s3:GetObjectTagging` and `s3:PutObjectTagging` actions to IAM `restore_object_role_policy`
 
 ### Deprecated
 
@@ -131,16 +134,12 @@ Once the Aurora V1 database has been migrated/upgrade to Aurora V2 you can verif
 
 - *ORCA-835* - Fixed ORCA documentation bamboo CI/CD pipeline showing node package import errors.
 - *ORCA-864* - Updated ORCA archive bucket policy and IAM role to fix access denied error during backup/recovery process.
-- *ORCA-822* - Fixed nodejs installation error in bamboo CI/CD ORCA distribution docker image.
-- *ORCA-810* - Fixed `db_deploy` unit test error in bamboo due to wheel installation during python 3.10 upgrade.
-- *ORCA-890* - Fixed snyk vulnerabilities showing high issues and upgraded docusaurus to v3.5.2
-- *ORCA-902* - Upgraded bandit to version 1.7.9 to fix snyk vulnerabilities.
+
 
 ### Security
 
 - *ORCA-851* - Updated bandit libraries to fix Snyk vulnerabilities.
-- *ORCA-861* - Updated docusaurus to fix Snyk vulnerabilities.
-- *ORCA-862* - Updated docusaurus to v3.4.0.
+
 
 ## [9.0.5] 2024-02-29
 
