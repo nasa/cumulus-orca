@@ -32,3 +32,22 @@ variable "deploy_rds_cluster_role_association" {
   type        = bool
   description = "Deploys IAM role for Aurora v2 cluster if true."
 }
+
+variable "buckets" {
+  type        = map(object({ name = string, type = string }))
+  description = "S3 bucket locations for the various storage types being used."
+}
+
+## Variables unique to ORCA
+## REQUIRED
+variable "orca_reports_bucket_name" {
+  type        = string
+  description = "The name of the bucket to store s3 inventory reports."
+}
+
+
+## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
+variable "orca_recovery_buckets" {
+  type        = list(string)
+  description = "List of bucket names that ORCA has permissions to restore data to."
+}

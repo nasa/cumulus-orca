@@ -43,6 +43,7 @@ and includes an additional section for migration notes.
 - *ORCA-896* - Updated Bamboo files to use `latest` tag on `cumulus_orca` Docker image to resolve Bamboo jobs using old images.
 - *[530](https://github.com/nasa/cumulus-orca/issues/530)* - Added explicit `s3:GetObjectTagging` and `s3:PutObjectTagging` actions to IAM `restore_object_role_policy`
 
+<<<<<<< HEAD
 ### Fixed
 
 - *ORCA-822* - Fixed nodejs installation error in bamboo CI/CD ORCA distribution docker image.
@@ -51,6 +52,11 @@ and includes an additional section for migration notes.
 - *ORCA-862* - Updated docusaurus to v3.4.0.
 - *ORCA-890* - Fixed snyk vulnerabilities showing high issues and upgraded docusaurus to v3.5.2
 - *ORCA-902* - Upgraded bandit to version 1.7.9 to fix snyk vulnerabilities.
+=======
+- *ORCA-937* - Updated get_current_archive_list Lambda to use the gql_tasks_role to resolve database errors when trying to S3 import in `modules/lambdas/main.tf`. Updated gql_tasks_role with needed permissions in `modules/graphql_0/main.tf`, as well as updated Secrets Manager permissions to allow the role to get DB secret in `modules/secretsmanager/main.tf`.
+
+### Deprecated
+>>>>>>> develop
 
 ### Removed
 
