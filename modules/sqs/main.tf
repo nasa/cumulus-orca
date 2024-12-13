@@ -306,6 +306,81 @@ resource "aws_sqs_queue" "metadata_queue" {
   tags                        = var.tags
   policy                      = data.aws_iam_policy_document.metadata_queue_policy.json
   visibility_timeout_seconds  = 900 # Set to the lambda max time
+    depends_on = [
+    aws_sqs_queue.metadata_dlq
+  ]
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.metadata_dlq.arn,
+    maxReceiveCount     = 3 #number of times a consumer tries receiving a message from the queue without deleting it before being moved to DLQ.
+  })
+}
+
+# Dead-letter queue
+resource "aws_sqs_queue" "metadata_dlq" {
+  name             = "${var.prefix}-orca-metadata-deadletter-queue.fifo"
+  fifo_queue       = true
+  delay_seconds    = var.sqs_delay_time_seconds
+  max_message_size = var.sqs_maximum_message_size
+  sqs_managed_sse_enabled = true
+  tags             = var.tags
+}
+
+resource "aws_sqs_queue_policy" "metadata_deadletter_queue_policy" {
+  queue_url = aws_sqs_queue.metadata_dlq.id
+  policy    = data.aws_iam_policy_document.metadata_deadletter_queue_policy_document.json
+}
+
+
+data "aws_iam_policy_document" "metadata_deadletter_queue_policy_document" {
+  statement {
+    principals {
+      type        = "Service"
+      identifiers = ["logs.amazonaws.com"]
+    }
+    effect    = "Allow"
+    resources = [aws_sqs_queue.metadata_dlq.arn]
+    actions = [
+      "sqs:ChangeMessageVisibility",
+      "sqs:DeleteMessage",
+      "sqs:GetQueueAttributes",
+      "sqs:GetQueueUrl",
+      "sqs:ListQueueTags",
+      "sqs:ReceiveMessage",
+      "sqs:SendMessage",
+    ]
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "metadata_deadletter_alarm" {
+  alarm_name          = "${aws_sqs_queue.metadata_dlq.name}-not-empty-alarm"
+  alarm_description   = "Items are on the ${aws_sqs_queue.metadata_dlq.name} queue"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "ApproximateNumberOfMessagesVisible"
+  namespace           = "AWS/SQS"
+  period              = 300 #In seconds. Valid values for period are 1, 5, 10, 30, or any multiple of 60. 
+  statistic           = "Sum"
+  threshold           = 1 #alarm will be triggered if number of messages in the DLQ equals to this threshold.
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_sns_topic.metadata_dlq_alarm.arn]
+  tags                = var.tags
+  dimensions = {
+    "QueueName" = aws_sqs_queue.metadata_dlq.name
+  }
+}
+
+# SNS topic needed for cloudwatch alarm
+resource "aws_sns_topic" "metadata_dlq_alarm" {
+  name              = "${var.prefix}-metadata_dlq_alarm_topic"
+  kms_master_key_id = "alias/aws/sns"
+  tags              = var.tags
+}
+
+resource "aws_sns_topic_subscription" "metadata_dlq_alarm_email" {
+  depends_on = [aws_sns_topic.metadata_dlq_alarm]
+  topic_arn  = aws_sns_topic.metadata_dlq_alarm.arn
+  protocol   = "email"
+  endpoint   = var.dlq_subscription_email #todo: ORCA-365
 }
 
 ## s3-inventory-queue - Contains events from s3 inventory report buckets. Triggers post_to_queue_and_trigger_step_function.

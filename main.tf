@@ -53,6 +53,7 @@ module "orca" {
   db_user_name                                          = local.db_user_name
   default_multipart_chunksize_mb                        = var.default_multipart_chunksize_mb
   internal_report_queue_message_retention_time_seconds  = var.internal_report_queue_message_retention_time_seconds
+  lambda_runtime                                        = var.lambda_runtime
   metadata_queue_message_retention_time_seconds         = var.metadata_queue_message_retention_time_seconds
   orca_default_recovery_type                            = var.orca_default_recovery_type
   orca_default_storage_class                            = var.orca_default_storage_class

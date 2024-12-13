@@ -28,11 +28,11 @@ def get_version():
 
 
 # General installation requirements
-install_requirements = ["aws_lambda_powertools==1.31.0"]
+install_requirements = ["aws_lambda_powertools==3.2.0"]
 
 
 # Additional library dependencies
-_dep_boto3 = "boto3~=1.18.40"
+_dep_boto3 = "boto3~=1.28.76"
 _dep_sqlalchemy = "SQLAlchemy~=2.0.5"
 
 

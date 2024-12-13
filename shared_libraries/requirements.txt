@@ -5,7 +5,7 @@ pydoc-markdown>=4.0.0,<5.0.0
 
 ## Additional validation libraries
 ## ---------------------------------------------------------------------------
-bandit==1.7.7
+bandit==1.7.9
 flake8==6.1.0
 black==22.3.0
 isort==5.12.0
@@ -31,7 +31,7 @@ moto[sqs]==4.2.13
 ## ---------------------------------------------------------------------------
 
 ## Libraries used by every package/module
-aws_lambda_powertools==1.31.0
+aws_lambda_powertools==3.2.0
 
 ## Libraries used by database package
 boto3~=1.28.76

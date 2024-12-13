@@ -10,6 +10,10 @@ variable "lambda_subnet_ids" {
   description = "List of subnets the lambda functions have access to."
 }
 
+variable "gql_tasks_role_arn" {
+  type        = string
+  description = "The ARN of the role used by the code within the Graphql ECS Task."
+}
 
 variable "prefix" {
   type        = string
@@ -116,6 +120,12 @@ variable "restore_object_role_arn" {
 }
 
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
+
+variable "lambda_runtime" {
+  type        = string
+  description = "Runtime for lambdas."
+}
+
 variable "orca_default_recovery_type" {
   type        = string
   description = "The Tier for the restore request. Valid values are 'Standard'|'Bulk'|'Expedited'."

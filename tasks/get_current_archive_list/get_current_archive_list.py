@@ -27,11 +27,7 @@ from sqlalchemy import text
 from sqlalchemy.future import Engine
 
 OS_ENVIRON_INTERNAL_REPORT_QUEUE_URL_KEY = "INTERNAL_REPORT_QUEUE_URL"
-OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY = "S3_CREDENTIALS_SECRET_ARN"  # nosec
 OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY = "DB_CONNECT_INFO_SECRET_ARN"  # nosec
-
-S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY = "s3_access_key"
-S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY = "s3_secret_key"  # nosec
 
 MESSAGES_KEY = "Messages"
 RECORD_REPORT_BUCKET_REGION_KEY = "reportBucketRegion"
@@ -66,8 +62,6 @@ def task(
     report_bucket_region: str,
     report_bucket_name: str,
     manifest_key: str,
-    s3_access_key: str,
-    s3_secret_key: str,
     db_connect_info: Dict,
 ) -> Dict[str, Any]:
     """
@@ -79,10 +73,6 @@ def task(
         report_bucket_region: The region the report bucket resides in.
         report_bucket_name: The name of the report bucket.
         manifest_key: The key/path to the manifest within the report bucket.
-        s3_access_key: The access key that, when paired with s3_secret_key,
-        allows postgres to access s3.
-        s3_secret_key: The secret key that, when paired with s3_access_key,
-        allows postgres to access s3.
         db_connect_info: See shared_db.py's get_configuration for further details.
 
     Returns: See output.json for details.
@@ -121,8 +111,6 @@ def task(
         truncate_s3_partition(manifest[MANIFEST_SOURCE_BUCKET_KEY], admin_engine)
         # noinspection PyArgumentList
         update_job_with_s3_inventory_in_postgres(
-            s3_access_key,
-            s3_secret_key,
             report_bucket_name,
             report_bucket_region,
             # There will probably only be one file, but AWS leaves the option open.
@@ -262,8 +250,6 @@ def truncate_s3_partition_sql(partition_name: str) -> text:
 
 @shared_db.retry_operational_error()
 def update_job_with_s3_inventory_in_postgres(
-    s3_access_key: str,
-    s3_secret_key: str,
     report_bucket_name: str,
     report_bucket_region: str,
     csv_key_paths: List[str],
@@ -276,10 +262,6 @@ def update_job_with_s3_inventory_in_postgres(
     triggers load into that table, then moves that data into the proper partition.
 
     Args:
-        s3_access_key: The access key that, when paired with s3_secret_key,
-        allows postgres to access s3.
-        s3_secret_key: The secret key that, when paired with s3_access_key,
-        allows postgres to access s3.
         report_bucket_name: The name of the bucket the csv is located in.
         report_bucket_region: The name of the region the report bucket resides in.
         csv_key_paths: The paths of the csvs within the report bucket.
@@ -312,8 +294,6 @@ def update_job_with_s3_inventory_in_postgres(
                             "report_bucket_name": report_bucket_name,
                             "csv_key_path": csv_key_path,
                             "report_bucket_region": report_bucket_region,
-                            "s3_access_key": s3_access_key,
-                            "s3_secret_key": s3_secret_key,
                         }
                     ],
                 )
@@ -438,8 +418,6 @@ def trigger_csv_load_from_s3_sql() -> text:  # pragma: no cover
             :report_bucket_name,
             :csv_key_path,
             :report_bucket_region,
-            :s3_access_key,
-            :s3_secret_key,
             ''
         )
         """
@@ -476,38 +454,6 @@ def translate_s3_import_to_partitioned_data_sql() -> text:  # pragma: no cover
             WHERE is_latest = TRUE
         """  # nosec    # noqa
     )
-
-
-def get_s3_credentials_from_secrets_manager(s3_credentials_secret_arn: str) -> tuple:
-    """
-    Gets the s3 secret from the given arn and decompiles into two strings.
-    Args:
-        s3_credentials_secret_arn: The arn of the secret containing s3 credentials.
-
-    Returns:
-        A tuple consisting of
-            (str) An access key
-            (str) A secret key
-    """
-    secretsmanager = boto3.client(
-        "secretsmanager", region_name=os.environ["AWS_REGION"]
-    )
-    LOGGER.debug(f"Getting secret '{s3_credentials_secret_arn}'")
-    s3_credentials = json.loads(
-        secretsmanager.get_secret_value(SecretId=s3_credentials_secret_arn)[
-            "SecretString"
-        ]
-    )
-    s3_access_key = s3_credentials.get(S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY, None)
-    if s3_access_key is None or len(s3_access_key) == 0:
-        LOGGER.error(f"{S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY} secret is not set.")
-        raise ValueError(f"{S3_ACCESS_CREDENTIALS_ACCESS_KEY_KEY} secret is not set.")
-    s3_secret_key = s3_credentials.get(S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY, None)
-    if s3_secret_key is None or len(s3_secret_key) == 0:
-        LOGGER.error(f"{S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY} secret is not set.")
-        raise ValueError(f"{S3_ACCESS_CREDENTIALS_SECRET_KEY_KEY} secret is not set.")
-
-    return s3_access_key, s3_secret_key
 
 
 @dataclass(frozen=True)
@@ -590,8 +536,6 @@ def handler(event: Dict[str, List], context: LambdaContext) -> Dict[str, Any]:
     Environment Vars:
         INTERNAL_REPORT_QUEUE_URL (string):
             The URL of the SQS queue the job came from.
-        S3_CREDENTIALS_SECRET_ARN (string):
-            The ARN of the secret containing s3 credentials.
         DB_CONNECT_INFO_SECRET_ARN (string):
             Secret ARN of the AWS secretsmanager secret for connecting to the database.
             See shared_db.py's get_configuration for further details.
@@ -600,9 +544,6 @@ def handler(event: Dict[str, List], context: LambdaContext) -> Dict[str, Any]:
     """
 
     # getting the env variables
-    s3_access_key, s3_secret_key = get_s3_credentials_from_secrets_manager(
-        check_env_variable(OS_ENVIRON_S3_CREDENTIALS_SECRET_ARN_KEY)
-    )
     db_connect_info = shared_db.get_configuration(
         check_env_variable(OS_ENVIRON_DB_CONNECT_INFO_SECRET_ARN_KEY)
     )
@@ -614,8 +555,6 @@ def handler(event: Dict[str, List], context: LambdaContext) -> Dict[str, Any]:
         message_data.report_bucket_region,
         message_data.report_bucket_name,
         message_data.manifest_key,
-        s3_access_key,
-        s3_secret_key,
         db_connect_info,
     )
     result[OUTPUT_RECEIPT_HANDLE_KEY] = message_data.message_receipt_handle

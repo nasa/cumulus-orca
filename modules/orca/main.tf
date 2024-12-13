@@ -23,21 +23,22 @@ module "orca_lambdas" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  db_connect_info_secret_arn                           = module.orca_secretsmanager.secretsmanager_arn
-  orca_default_bucket                                  = var.orca_default_bucket
-  orca_sqs_archive_recovery_queue_arn                  = module.orca_sqs.orca_sqs_archive_recovery_queue_arn
-  orca_sqs_archive_recovery_queue_id                   = module.orca_sqs.orca_sqs_archive_recovery_queue_id
-  orca_sqs_internal_report_queue_id                    = module.orca_sqs.orca_sqs_internal_report_queue_id
-  orca_sqs_metadata_queue_arn                          = module.orca_sqs.orca_sqs_metadata_queue_arn
-  orca_sqs_metadata_queue_id                           = module.orca_sqs.orca_sqs_metadata_queue_id
-  orca_sqs_s3_inventory_queue_id                       = module.orca_sqs.orca_sqs_s3_inventory_queue_id
-  orca_sqs_staged_recovery_queue_id                    = module.orca_sqs.orca_sqs_staged_recovery_queue_id
-  orca_sqs_staged_recovery_queue_arn                   = module.orca_sqs.orca_sqs_staged_recovery_queue_arn
-  orca_sqs_status_update_queue_id                      = module.orca_sqs.orca_sqs_status_update_queue_id
-  orca_sqs_status_update_queue_arn                     = module.orca_sqs.orca_sqs_status_update_queue_arn
-  restore_object_role_arn                              = module.orca_iam.restore_object_role_arn
+  db_connect_info_secret_arn          = module.orca_secretsmanager.secretsmanager_arn
+  orca_default_bucket                 = var.orca_default_bucket
+  orca_sqs_archive_recovery_queue_arn = module.orca_sqs.orca_sqs_archive_recovery_queue_arn
+  orca_sqs_archive_recovery_queue_id  = module.orca_sqs.orca_sqs_archive_recovery_queue_id
+  orca_sqs_internal_report_queue_id   = module.orca_sqs.orca_sqs_internal_report_queue_id
+  orca_sqs_metadata_queue_arn         = module.orca_sqs.orca_sqs_metadata_queue_arn
+  orca_sqs_metadata_queue_id          = module.orca_sqs.orca_sqs_metadata_queue_id
+  orca_sqs_s3_inventory_queue_id      = module.orca_sqs.orca_sqs_s3_inventory_queue_id
+  orca_sqs_staged_recovery_queue_id   = module.orca_sqs.orca_sqs_staged_recovery_queue_id
+  orca_sqs_staged_recovery_queue_arn  = module.orca_sqs.orca_sqs_staged_recovery_queue_arn
+  orca_sqs_status_update_queue_id     = module.orca_sqs.orca_sqs_status_update_queue_id
+  orca_sqs_status_update_queue_arn    = module.orca_sqs.orca_sqs_status_update_queue_arn
+  restore_object_role_arn             = module.orca_iam.restore_object_role_arn
 
   ## OPTIONAL
+  lambda_runtime                                = var.lambda_runtime
   orca_delete_old_reconcile_jobs_frequency_cron = var.orca_delete_old_reconcile_jobs_frequency_cron
   orca_default_recovery_type                    = var.orca_default_recovery_type
   orca_default_storage_class                    = var.orca_default_storage_class
@@ -55,6 +56,7 @@ module "orca_lambdas" {
   orca_recovery_retry_interval                  = var.orca_recovery_retry_interval
   orca_recovery_retry_backoff                   = var.orca_recovery_retry_backoff
   log_level                                     = var.log_level
+  gql_tasks_role_arn                            = module.orca_graphql_0.gql_tasks_role_arn
 }
 
 ## orca_lambdas_secondary - lambdas module that is dependent on resources that presently are created after most lambdas
@@ -85,6 +87,7 @@ module "orca_lambdas_secondary" {
   vpc_postgres_ingress_all_egress_id            = module.orca_lambdas.vpc_postgres_ingress_all_egress_id
 
   ## OPTIONAL
+  lambda_runtime                         = var.lambda_runtime
   orca_reconciliation_lambda_memory_size = var.orca_reconciliation_lambda_memory_size
   orca_reconciliation_lambda_timeout     = var.orca_reconciliation_lambda_timeout
   s3_report_frequency                    = var.s3_report_frequency
@@ -100,8 +103,8 @@ module "orca_workflows" {
   ## Cumulus Variables
   ## --------------------------
   ## REQUIRED
-  prefix          = var.prefix
-  system_bucket   = var.system_bucket
+  prefix        = var.prefix
+  system_bucket = var.system_bucket
 
   ## OPTIONAL
   tags = var.tags
@@ -154,11 +157,14 @@ module "orca_graphql_0" {
   permissions_boundary_arn = var.permissions_boundary_arn
   prefix                   = var.prefix
   vpc_id                   = var.vpc_id
-  db_cluster_identifier    = var.db_cluster_identifier 
+  db_cluster_identifier    = var.db_cluster_identifier
 
   ## OPTIONAL
-  tags = var.tags
+  tags                                = var.tags
   deploy_rds_cluster_role_association = var.deploy_rds_cluster_role_association
+  orca_recovery_buckets               = var.orca_recovery_buckets
+  orca_reports_bucket_name            = var.orca_reports_bucket_name
+  buckets                             = var.buckets
 }
 
 ## orca_secretsmanager - secretsmanager module
@@ -183,6 +189,7 @@ module "orca_secretsmanager" {
   db_host_endpoint                = var.db_host_endpoint
   gql_ecs_task_execution_role_arn = module.orca_graphql_0.gql_ecs_task_execution_role_arn
   restore_object_role_arn         = module.orca_iam.restore_object_role_arn
+  gql_tasks_role_arn              = module.orca_graphql_0.gql_tasks_role_arn
 
   ## OPTIONAL
   db_admin_username = var.db_admin_username
@@ -259,11 +266,11 @@ module "orca_graphql_1" {
   ## ORCA Variables
   ## --------------------------
   ## REQUIRED
-  db_connect_info_secret_arn       = module.orca_secretsmanager.secretsmanager_arn
-  ecs_cluster_id                   = module.orca_ecs.ecs_cluster_id
-  gql_ecs_task_execution_role_arn  = module.orca_graphql_0.gql_ecs_task_execution_role_arn
-  gql_ecs_task_execution_role_id   = module.orca_graphql_0.gql_ecs_task_execution_role_id
-  gql_tasks_role_arn               = module.orca_graphql_0.gql_tasks_role_arn
+  db_connect_info_secret_arn      = module.orca_secretsmanager.secretsmanager_arn
+  ecs_cluster_id                  = module.orca_ecs.ecs_cluster_id
+  gql_ecs_task_execution_role_arn = module.orca_graphql_0.gql_ecs_task_execution_role_arn
+  gql_ecs_task_execution_role_id  = module.orca_graphql_0.gql_ecs_task_execution_role_id
+  gql_tasks_role_arn              = module.orca_graphql_0.gql_tasks_role_arn
 }
 
 ## orca_api_gateway - api gateway module
@@ -293,5 +300,5 @@ module "orca_api_gateway" {
   request_status_for_job_invoke_arn             = module.orca_lambdas.request_status_for_job_invoke_arn
   ## OPTIONAL
   vpc_endpoint_id = var.vpc_endpoint_id
-  tags = var.tags
+  tags            = var.tags
 }

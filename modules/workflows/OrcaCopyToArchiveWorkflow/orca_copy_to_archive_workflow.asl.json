@@ -16,9 +16,10 @@
           "config": {
             "excludedFileExtensions": "$.meta.collection.meta.orca.excludedFileExtensions",
             "s3MultipartChunksizeMb": "$.meta.collection.meta.s3MultipartChunksizeMb",
-            "providerName": "$.meta.provider.name}",
+            "providerName": "$.meta.provider.name",
             "defaultBucketOverride": "$.meta.collection.meta.orca.defaultBucketOverride",
-            "defaultStorageClassOverride": "$.meta.collection.meta.orca.defaultStorageClassOverride"
+            "defaultStorageClassOverride": "$.meta.collection.meta.orca.defaultStorageClassOverride",
+            "fileDestinationOverride": "$.meta.collection.meta.orca.fileDestinationOverride"
           }
         }
       },

@@ -34,6 +34,7 @@ EVENT_OPTIONAL_VALUES_KEY = "optionalValues"
 CONFIG_PROVIDER_NAME_KEY = "providerName"
 CONFIG_MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
 CONFIG_EXCLUDED_FILE_EXTENSIONS_KEY = "excludedFileExtensions"
+CONFIG_FILE_DESTINATION_OVERRIDE_KEY = "fileDestinationOverride"
 CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY = "defaultBucketOverride"
 CONFIG_DEFAULT_STORAGE_CLASS_OVERRIDE_KEY = "defaultStorageClassOverride"
 CONFIG_PROVIDER_ID_KEY = "providerId"
@@ -200,6 +201,9 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
     else:
         multipart_chunksize_mb = int(multipart_chunksize_mb_str)
 
+    file_destination_key = config.get(CONFIG_FILE_DESTINATION_OVERRIDE_KEY, None)
+    LOGGER.info(f"file_destination_key is set to {file_destination_key}")
+
     try:
         metadata_queue_url = os.environ.get(OS_ENVIRON_METADATA_DB_QUEUE_URL_KEY)
         if metadata_queue_url is None or len(metadata_queue_url) == 0:
@@ -248,6 +252,11 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
 
         # Iterate through the files in a granule object
         for file in granule["files"]:
+            if file_destination_key is None:
+                destination_file_filepath = file[FILE_FILEPATH_KEY]
+            else:
+                destination_file_filepath = file_destination_key
+            LOGGER.info(f"file destination key is {destination_file_filepath}")
             file_filepath = file[FILE_FILEPATH_KEY]
             file_bucket = file[FILE_BUCKET_KEY]
             file_source_uri = f"s3://{file_bucket}/{file_filepath}"
@@ -263,7 +272,7 @@ def task(task_input: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
                 source_bucket_name=file_bucket,
                 source_key=file_filepath,
                 destination_bucket=destination_bucket,
-                destination_key=file_filepath,
+                destination_key=destination_file_filepath,
                 multipart_chunksize_mb=multipart_chunksize_mb,
                 storage_class=storage_class,
             )

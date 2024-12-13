@@ -5,7 +5,7 @@ LABEL maintainer="Rizbi Hassan" \
 
 ENV NODE_VERSION="20.x"
 ENV TERRAFORM_VERSION "1.5.5"
-ENV PYTHON_VERSION "3.9.17"
+ENV PYTHON_VERSION "3.10.14"
 
 # Add YARN repos & update package index
 RUN \
@@ -13,20 +13,20 @@ curl -sL https://dl.yarnpkg.com/rpm/yarn.repo | tee /etc/yum.repos.d/yarn.repo &
 curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/linux_64bit/session-manager-plugin.rpm" -o "session-manager-plugin.rpm" && \
 dnf update -y
 
-# Install node, pip, Python 3.9, CLI utilities, session manager and other tools
+# Install node, pip, Python 3.10, CLI utilities, session manager and other tools
 RUN \
-dnf install https://rpm.nodesource.com/pub_${NODE_VERSION}/nodistro/repo/nodesource-release-nodistro-1.noarch.rpm -y && \
-dnf install nodejs -y --setopt=nodesource-nodejs.module_hotfixes=1 && \
+curl -fsSL https://rpm.nodesource.com/setup_${NODE_VERSION} | bash - && \
+dnf install -y nodejs && \
 dnf install -y jq gcc git make openssl openssl-devel wget zip unzip bzip2-devel libffi-devel ncurses-devel sqlite-devel readline-devel uuid-devel libuuid-devel gdbm-devel xz-devel tar yarn awscli session-manager-plugin.rpm procps parallel && \
 dnf groupinstall -y "Development Tools" && \
-# Install Python 3.9
+# Install Python 3.10
 wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz && \
 tar xvf Python-${PYTHON_VERSION}.tgz && \
 cd Python-*/ && \
 ./configure --enable-optimizations --enable-loadable-sqlite-extensions --enable-ipv6 && \
 make altinstall && \
-ln -sf /usr/local/bin/python3.9 /usr/local/bin/python3 && \
-ln -sf /url/local/bin/pip3.9 /usr/local/bin/pip3 && \
+ln -sf /usr/local/bin/python3.10 /usr/local/bin/python3 && \
+ln -sf /url/local/bin/pip3.10 /usr/local/bin/pip3 && \
 rm -f Python-${PYTHON_VERSION}.tgz && \
 rm -rf Python-${PYTHON_VERSION}
 # Install Terraform
