@@ -27,6 +27,7 @@ and includes an additional section for migration notes.
 
 ### Security
 
+
 ## [10.1.0] 2024-XX-XXXX
 
 ### Added
