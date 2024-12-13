@@ -5,8 +5,6 @@ from typing import Dict, List
 from unittest import TestCase, mock
 
 import boto3
-import botocore
-from botocore.errorfactory import ClientError
 
 import helpers
 from custom_logger import CustomLoggerAdapter
