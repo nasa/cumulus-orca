@@ -17,6 +17,8 @@ and includes an additional section for migration notes.
 
 ### Added
 
+- *ORCA-904* - Added to integration tests that verifies recovered objects are in the destination bucket.
+
 ### Changed
 
 ### Removed
@@ -24,6 +26,7 @@ and includes an additional section for migration notes.
 ### Fixed
 
 ### Security
+
 
 ## [10.1.0] 2024-12-13
 
@@ -1285,4 +1288,3 @@ None - this is the baseline release.
   * Updated requirements-dev.txt files for each task and moved the testing framework from nosetest (no longer supported) to coverage and pytest.
   * Support in GitHub for automated build/test/release via Bamboo
   * Use `coverage` and `pytest` for coverage/testing
-
