@@ -19,6 +19,8 @@ and includes an additional section for migration notes.
 
 - *ORCA-905* - Added integration test for recovery large file.
 
+- *ORCA-904* - Added to integration tests that verifies recovered objects are in the destination bucket.
+
 ## [10.0.1] 2024-10-18
 
 
@@ -29,8 +31,6 @@ and includes an additional section for migration notes.
 - *ORCA-567* - Specified build scripts to use specific version of pip to resolve any future errors/issues that could be caused by using the latest version of pip.
 
 - *ORCA-933* - Added dead letter queue for the Metadata SQS queue in `modules/sqs/main.tf`
-
-- *ORCA-904* - Added to integration tests that verifies recovered objects are in the destination bucket.
 
 ### Changed
 
