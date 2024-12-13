@@ -38,8 +38,22 @@ and includes an additional section for migration notes.
 
 - *ORCA-900* - Updated aws_lambda_powertools to latest version to resolve errors users were experiencing in older version. Updated boto3 as it is a dependecy of aws_lambda_powertools.
 - *ORCA-927* - Updated archive architecture to include metadata deadletter queue in `website/static/img/ORCA-Architecture-Archive-Container-Component-Updated.svg`
-
 - *ORCA-937* - Updated get_current_archive_list Lambda to use the gql_tasks_role to resolve database errors when trying to S3 import in `modules/lambdas/main.tf`. Updated gql_tasks_role with needed permissions in `modules/graphql_0/main.tf`, as well as updated Secrets Manager permissions to allow the role to get DB secret in `modules/secretsmanager/main.tf`.
+- *ORCA-942* - Fixed npm tarball error found during ORCA website deployment.
+- *ORCA-850* - Updated copy_to_archive documentation containing the additional s3 destination property functionality.
+- *ORCA-774* - Updated Lambdas and GraphQL to Python 3.10.
+- *ORCA-896* - Updated Bamboo files to use `latest` tag on `cumulus_orca` Docker image to resolve Bamboo jobs using old images.
+- *[530](https://github.com/nasa/cumulus-orca/issues/530)* - Added explicit `s3:GetObjectTagging` and `s3:PutObjectTagging` actions to IAM `restore_object_role_policy`
+
+### Fixed
+
+- *ORCA-822* - Fixed nodejs installation error in bamboo CI/CD ORCA distribution docker image.
+- *ORCA-810* - Fixed db_deploy unit test error in bamboo due to wheel installation during python 3.10 upgrade.
+- *ORCA-861* - Updated docusaurus to fix Snyk vulnerabilities.
+- *ORCA-862* - Updated docusaurus to v3.4.0.
+- *ORCA-890* - Fixed snyk vulnerabilities showing high issues and upgraded docusaurus to v3.5.2
+- *ORCA-902* - Upgraded bandit to version 1.7.9 to fix snyk vulnerabilities.
+- *ORCA-937* - Updated get_current_archive_list Lambda to use the gql_tasks_role to resolve database errors when trying to S3 import in modules/lambdas/main.tf. Updated gql_tasks_role with needed permissions in modules/graphql_0/main.tf, as well as updated Secrets Manager permissions to allow the role to get DB secret in modules/secretsmanager/main.tf.
 - *ORCA-942* - Fixed npm tarball error found during ORCA website deployment.
 
 ### Removed
