@@ -25,6 +25,8 @@ and includes an additional section for migration notes.
 
 ### Fixed
 
+- *ORCA-939* -  Fixed snyk vulnerabilities showing high issues and upgraded docusaurus to v3.6.0.
+
 ### Security
 
 
