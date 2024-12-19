@@ -482,6 +482,9 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: LambdaContext) ->
         DEFAULT_MAX_POOL_CONNECTIONS (int):
             The maximum number of connections to keep in a connection pool.  
             Defaults to 10.
+        DEFAULT_MAX_CONCURRENCY (int):
+            The maximum number of concurrent S3 API transfer operations.
+            Defaults to 10.
 
     Args:
         event: Event passed into the step from the aws workflow.

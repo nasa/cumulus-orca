@@ -472,6 +472,8 @@ resource "aws_lambda_function" "copy_from_archive" {
       RECOVERY_QUEUE_URL             = var.orca_sqs_staged_recovery_queue_id
       POWERTOOLS_SERVICE_NAME        = "orca.recovery"
       LOG_LEVEL                      = var.log_level
+      DEFAULT_MAX_POOL_CONNECTIONS   = var.max_pool_connections
+      DEFAULT_MAX_CONCURRENCY        = var.max_concurrency
     }
   }
 }
