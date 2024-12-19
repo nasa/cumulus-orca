@@ -290,3 +290,8 @@ variable "max_pool_connections" {
   type        = number
   description = "The maximum number of connections to keep in a connection pool. Defaults to 10."
 }
+
+variable "max_concurrency" {
+  type        = number
+  description = "The maximum number of concurrent S3 API transfer operations. Defaults to 10."
+}

@@ -55,6 +55,7 @@ resource "aws_lambda_function" "copy_to_archive" {
       POWERTOOLS_SERVICE_NAME        = "orca.ingest"
       LOG_LEVEL                      = var.log_level
       DEFAULT_MAX_POOL_CONNECTIONS   = var.max_pool_connections
+      DEFAULT_MAX_CONCURRENCY        = var.max_concurrency
     }
   }
 }

@@ -28,6 +28,7 @@ OS_ENVIRON_ORCA_DEFAULT_BUCKET_KEY = "ORCA_DEFAULT_BUCKET"
 OS_ENVIRON_DEFAULT_MULTIPART_CHUNKSIZE_MB_KEY = "DEFAULT_MULTIPART_CHUNKSIZE_MB"
 OS_ENVIRON_METADATA_DB_QUEUE_URL_KEY = "METADATA_DB_QUEUE_URL"
 OS_ENVIRON_DEFAULT_MAX_POOL_CONNECTIONS_KEY = "DEFAULT_MAX_POOL_CONNECTIONS"
+OS_ENVIRON_DEFAULT_MAX_CONCURRENCY_KEY = "DEFAULT_MAX_CONCURRENCY"
 
 EVENT_CONFIG_KEY = "config"
 EVENT_INPUT_KEY = "input"
@@ -123,7 +124,14 @@ def copy_granule_between_buckets(
         os.environ[OS_ENVIRON_DEFAULT_MAX_POOL_CONNECTIONS_KEY])
     LOGGER.info(default_max_pool_connections)
     LOGGER.info(
-    "Using default value of max_pool_connections = {default_max_pool_connections}"
+    "Using default value of max_pool_connections = " + default_max_pool_connections
+    )
+
+    default_max_concurrency = int(
+        os.environ[OS_ENVIRON_DEFAULT_MAX_CONCURRENCY_KEY])
+    LOGGER.info(default_max_concurrency)
+    LOGGER.info(
+    "Using default value of max_concurrency = " + default_max_concurrency
     )
 
     s3 = boto3.client("s3", config=Config(max_pool_connections=default_max_pool_connections))
@@ -140,7 +148,8 @@ def copy_granule_between_buckets(
             ],
             # Needed for cross-OU copies.
         },
-        Config=TransferConfig(multipart_chunksize=multipart_chunksize_mb * MB),
+        Config=TransferConfig(multipart_chunksize=multipart_chunksize_mb * MB,
+            max_concurrency=default_max_concurrency)
     )
     # get metadata info from latest file version
     file_versions = s3.list_object_versions(

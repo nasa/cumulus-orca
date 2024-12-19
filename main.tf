@@ -81,4 +81,5 @@ module "orca" {
   log_level                                             = var.log_level
   deploy_rds_cluster_role_association                   = var.deploy_rds_cluster_role_association
   max_pool_connections                                  = var.max_pool_connections
+  max_concurrency                                       = var.max_concurrency
 }
