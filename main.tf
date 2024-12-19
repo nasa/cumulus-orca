@@ -80,4 +80,5 @@ module "orca" {
   vpc_endpoint_id                                       = var.vpc_endpoint_id
   log_level                                             = var.log_level
   deploy_rds_cluster_role_association                   = var.deploy_rds_cluster_role_association
+  max_pool_connections                                  = var.max_pool_connections
 }

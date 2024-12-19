@@ -54,6 +54,7 @@ resource "aws_lambda_function" "copy_to_archive" {
       METADATA_DB_QUEUE_URL          = var.orca_sqs_metadata_queue_id
       POWERTOOLS_SERVICE_NAME        = "orca.ingest"
       LOG_LEVEL                      = var.log_level
+      DEFAULT_MAX_POOL_CONNECTIONS   = var.max_pool_connections
     }
   }
 }
@@ -782,15 +783,15 @@ resource "aws_lambda_function" "db_deploy" {
   }
 }
 
-## =============================================================================
-## NULL RESOURCES - 1x Use
-## =============================================================================
-data "aws_lambda_invocation" "db_migration" {
-  depends_on    = [aws_lambda_function.db_deploy]
-  function_name = aws_lambda_function.db_deploy.function_name
-  input = jsonencode({
-    replacementTrigger = timestamp()
-    orcaBuckets        = local.orca_buckets
-  })
-}
-## TODO: Should create null resource to handle password changes ORCA-145
+# # =============================================================================
+# # NULL RESOURCES - 1x Use
+# # =============================================================================
+# data "aws_lambda_invocation" "db_migration" {
+#   depends_on    = [aws_lambda_function.db_deploy]
+#   function_name = aws_lambda_function.db_deploy.function_name
+#   input = jsonencode({
+#     replacementTrigger = timestamp()
+#     orcaBuckets        = local.orca_buckets
+#   })
+# }
+# # TODO: Should create null resource to handle password changes ORCA-145

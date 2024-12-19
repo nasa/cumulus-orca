@@ -57,6 +57,7 @@ module "orca_lambdas" {
   orca_recovery_retry_backoff                   = var.orca_recovery_retry_backoff
   log_level                                     = var.log_level
   gql_tasks_role_arn                            = module.orca_graphql_0.gql_tasks_role_arn
+  max_pool_connections                          = var.max_pool_connections
 }
 
 ## orca_lambdas_secondary - lambdas module that is dependent on resources that presently are created after most lambdas

@@ -226,3 +226,8 @@ variable "log_level" {
   type        = string
   description = "sets the verbose of PowerTools logger. Must be one of 'INFO', 'DEBUG', 'WARN', 'ERROR'. Defaults to 'INFO'."
 }
+
+variable "max_pool_connections" {
+  type        = number
+  description = "The maximum number of connections to keep in a connection pool. Defaults to 10."
+}

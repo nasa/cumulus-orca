@@ -343,3 +343,9 @@ variable "deploy_rds_cluster_role_association" {
   description = "Attaches IAM role for Aurora v2 cluster if true."
   default = true
 }
+
+variable "max_pool_connections" {
+  type        = number
+  description = "The maximum number of connections to keep in a connection pool. Defaults to 10."
+  default = 10
+}
