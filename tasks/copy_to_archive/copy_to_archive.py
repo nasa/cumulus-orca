@@ -15,6 +15,7 @@ import fastjsonschema as fastjsonschema
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 from boto3.s3.transfer import MB, TransferConfig
+from botocore.config import Config
 from fastjsonschema import JsonSchemaException
 
 import sqs_library
@@ -120,11 +121,12 @@ def copy_granule_between_buckets(
     """
     default_max_pool_connections = int(
         os.environ[OS_ENVIRON_DEFAULT_MAX_POOL_CONNECTIONS_KEY])
+    LOGGER.info(default_max_pool_connections)
     LOGGER.info(
     "Using default value of max_pool_connections = {default_max_pool_connections}"
     )
 
-    s3 = boto3.client("s3", config=botocore.client.Config(max_pool_connections=default_max_pool_connections))
+    s3 = boto3.client("s3", config=Config(max_pool_connections=default_max_pool_connections))
     copy_source = {"Bucket": source_bucket_name, "Key": source_key}
     s3.copy(
         copy_source,
