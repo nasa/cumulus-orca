@@ -123,16 +123,10 @@ def copy_granule_between_buckets(
     default_max_pool_connections = int(
         os.environ[OS_ENVIRON_DEFAULT_MAX_POOL_CONNECTIONS_KEY])
     LOGGER.info(default_max_pool_connections)
-    LOGGER.info(
-    "Using default value of max_pool_connections = " + default_max_pool_connections
-    )
 
     default_max_concurrency = int(
         os.environ[OS_ENVIRON_DEFAULT_MAX_CONCURRENCY_KEY])
     LOGGER.info(default_max_concurrency)
-    LOGGER.info(
-    "Using default value of max_concurrency = " + default_max_concurrency
-    )
 
     s3 = boto3.client("s3", config=Config(max_pool_connections=default_max_pool_connections))
     copy_source = {"Bucket": source_bucket_name, "Key": source_key}
