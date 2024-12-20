@@ -21,6 +21,8 @@ and includes an additional section for migration notes.
 
 ### Changed
 
+- *ORCA-948* - Changed `versions.tf` file to add `<=5.81.0` to prevent a latest version having a breaking change.
+
 ### Removed
 
 ### Fixed
