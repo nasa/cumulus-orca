@@ -18,6 +18,7 @@ and includes an additional section for migration notes.
 ### Added
 
 - *ORCA-904* - Added to integration tests that verifies recovered objects are in the destination bucket.
+- *ORCA-907* - Added integration test for internal reconciliation at `integration_test/workflow_tests/test_packages/reconciliation` and updated documentation with new variables.
 
 ### Changed
 

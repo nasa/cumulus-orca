@@ -29,7 +29,15 @@ orca_recovery_step_function_arn = os.environ[
 orca_copy_to_archive_step_function_arn = os.environ[
     "orca_COPY_TO_ARCHIVE_STEP_FUNCTION_ARN"
 ]
+orca_internal_reconciliation_step_function_arn = os.environ[
+    "orca_INTERNAL_RECONCILIATION_STEP_FUNCTION_ARN"
+]
+orca_internal_report_sqs_url = os.environ[
+    "orca_INTERNAL_REPORT_SQS_URL"
+]
+
 recovery_bucket_name = os.environ["orca_RECOVERY_BUCKET_NAME"]
+reports_bucket_name = os.environ["orca_REPORTS_BUCKET_NAME"]
 
 # helpful pre-constructed values
 aws_api_name = orca_api_deployment_invoke_url.replace("https://", "")
