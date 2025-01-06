@@ -221,6 +221,12 @@ ORCA_DEFAULT_BUCKET (str):
 Name of the default
 archive bucket that files should be archived to.
 METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
+DEFAULT_MAX_POOL_CONNECTIONS (int):
+The maximum number of connections to keep in a connection pool.
+Defaults to 10.
+DEFAULT_MAX_CONCURRENCY (int):
+The maximum number of concurrent S3 API transfer operations.
+Defaults to 10.
 
 **Arguments**:
 
