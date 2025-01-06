@@ -89,7 +89,6 @@ def copy_granule_between_buckets(
     destination_key: str,
     multipart_chunksize_mb: int,
     storage_class: str,
-
 ) -> Dict[str, str]:
     """
     Copies granule from source bucket to destination.
@@ -121,14 +120,16 @@ def copy_granule_between_buckets(
                     etag of the file object in the archive bucket.
     """
     default_max_pool_connections = int(
-        os.environ[OS_ENVIRON_DEFAULT_MAX_POOL_CONNECTIONS_KEY])
+        os.environ[OS_ENVIRON_DEFAULT_MAX_POOL_CONNECTIONS_KEY]
+    )
     LOGGER.info(default_max_pool_connections)
 
-    default_max_concurrency = int(
-        os.environ[OS_ENVIRON_DEFAULT_MAX_CONCURRENCY_KEY])
+    default_max_concurrency = int(os.environ[OS_ENVIRON_DEFAULT_MAX_CONCURRENCY_KEY])
     LOGGER.info(default_max_concurrency)
 
-    s3 = boto3.client("s3", config=Config(max_pool_connections=default_max_pool_connections))
+    s3 = boto3.client(
+        "s3", config=Config(max_pool_connections=default_max_pool_connections)
+    )
     copy_source = {"Bucket": source_bucket_name, "Key": source_key}
     s3.copy(
         copy_source,
@@ -142,8 +143,10 @@ def copy_granule_between_buckets(
             ],
             # Needed for cross-OU copies.
         },
-        Config=TransferConfig(multipart_chunksize=multipart_chunksize_mb * MB,
-            max_concurrency=default_max_concurrency)
+        Config=TransferConfig(
+            multipart_chunksize=multipart_chunksize_mb * MB,
+            max_concurrency=default_max_concurrency,
+        ),
     )
     # get metadata info from latest file version
     file_versions = s3.list_object_versions(
@@ -474,7 +477,7 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: LambdaContext) ->
             archive bucket that files should be archived to.
         METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
         DEFAULT_MAX_POOL_CONNECTIONS (int):
-            The maximum number of connections to keep in a connection pool.  
+            The maximum number of connections to keep in a connection pool.
             Defaults to 10.
         DEFAULT_MAX_CONCURRENCY (int):
             The maximum number of concurrent S3 API transfer operations.

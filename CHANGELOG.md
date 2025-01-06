@@ -21,6 +21,8 @@ and includes an additional section for migration notes.
 
 ### Changed
 
+- *ORCA-918* - Updated `copy_to_archive` and `copy_from_archive` lambdas to include two new optional ORCA variables `max_pool_connections` and `max_concurrency` that can be used to change parallelism of s3 copy operation.
+
 ### Removed
 
 ### Fixed
