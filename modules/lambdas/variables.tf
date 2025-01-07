@@ -45,6 +45,12 @@ variable "default_multipart_chunksize_mb" {
   description = "The default maximum size of chunks to use when copying. Can be overridden by collection config."
 }
 
+variable "lambda_log_retention_in_days" {
+  type = number
+  description = "Lambda log retention in days"
+  default = 0
+}
+
 
 ## Variables unique to ORCA
 ## REQUIRED
