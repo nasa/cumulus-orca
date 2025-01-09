@@ -946,7 +946,8 @@ resource "aws_cloudwatch_log_group" "db_deploy_log_group" {
 resource "aws_lambda_function" "db_deploy" {
   depends_on = [
     module.lambda_security_group,
-    var.restore_object_role_arn
+    var.restore_object_role_arn,
+    aws_cloudwatch_log_group.db_deploy_log_group
   ]
 
   ## REQUIRED
@@ -975,9 +976,6 @@ resource "aws_lambda_function" "db_deploy" {
       LOG_LEVEL                  = var.log_level
     }
   }
-  depends_on = [
-    aws_cloudwatch_log_group.db_deploy_log_group
-  ]
 }
 
 ## =============================================================================
