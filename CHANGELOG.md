@@ -15,6 +15,12 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 
+### Migration Notes
+
+- The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following   optional variables have been added:
+  - max_pool_connections
+  - max_concurrency
+
 ### Added
 
 - *ORCA-904* - Added to integration tests that verifies recovered objects are in the destination bucket.
