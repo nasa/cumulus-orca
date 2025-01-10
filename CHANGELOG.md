@@ -16,7 +16,7 @@ and includes an additional section for migration notes.
 ## [Unreleased]
 
 ### Migration Notes
-
+The user should update their orca.tf, variables.tf and terraform.tfvars files with new variable. The following optional variable has been added: `lambda_log_retention_in_days`
 **Delete Log Groups**
 ORCA has added the capability to set log retention on ORCA Lambdas e.g. 30 days, 60 days, 90 days, etc.
 - Deployment Steps

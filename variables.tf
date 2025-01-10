@@ -47,13 +47,13 @@ variable "db_cluster_identifier" {
   description = "DB Cluster Identifier to associate with the IAM Role"
 }
 
+## OPTIONAL
+
 variable "lambda_log_retention_in_days" {
   type = number
   description = "Lambda log retention in days"
   default = 0
 }
-
-## OPTIONAL
 variable "aws_profile" {
   type    = string
   default = null

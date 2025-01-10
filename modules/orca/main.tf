@@ -36,9 +36,9 @@ module "orca_lambdas" {
   orca_sqs_status_update_queue_id     = module.orca_sqs.orca_sqs_status_update_queue_id
   orca_sqs_status_update_queue_arn    = module.orca_sqs.orca_sqs_status_update_queue_arn
   restore_object_role_arn             = module.orca_iam.restore_object_role_arn
-  lambda_log_retention_in_days        = var.lambda_log_retention_in_days
 
   ## OPTIONAL
+  lambda_log_retention_in_days                  = var.lambda_log_retention_in_days
   lambda_runtime                                = var.lambda_runtime
   orca_delete_old_reconcile_jobs_frequency_cron = var.orca_delete_old_reconcile_jobs_frequency_cron
   orca_default_recovery_type                    = var.orca_default_recovery_type

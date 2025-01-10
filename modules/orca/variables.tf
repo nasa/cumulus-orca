@@ -53,12 +53,6 @@ variable "default_multipart_chunksize_mb" {
   description = "The default maximum size of chunks to use when copying. Can be overridden by collection config."
 }
 
-variable "lambda_log_retention_in_days" {
-  type = number
-  description = "Lambda log retention in days"
-}
-
-
 ## Variables unique to ORCA
 ## REQUIRED
 
@@ -102,6 +96,11 @@ variable "dlq_subscription_email" {
 }
 
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
+
+variable "lambda_log_retention_in_days" {
+  type = number
+  description = "Lambda log retention in days"
+}
 variable "archive_recovery_queue_message_retention_time_seconds" {
   type        = number
   description = "The number of seconds archive-recovery-queue SQS retains a message in seconds. Maximum value is 14 days."
