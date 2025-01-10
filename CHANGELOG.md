@@ -15,10 +15,22 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 
+### Migration Notes
+The user should update their orca.tf, variables.tf and terraform.tfvars files with new variable. The following optional variable has been added: `lambda_log_retention_in_days`
+**Delete Log Groups**
+ORCA has added the capability to set log retention on ORCA Lambdas e.g. 30 days, 60 days, 90 days, etc.
+- Deployment Steps
+  1. Run the script located at bin/delete_log_groups.py
+     - These must be deleted before a `terraform apply` is ran due to the current log groups being created by AWS by default which retention cannot be modified via Terraform.
+  2. Set the `lambda_log_retention_in_days` variable to the number of days which you would like the logs to be retained. e.g. `lambda_log_retention_in_days = 30`
+     - To set the logs to never expire the variable does not have to be set since it is set to never expire by default, if you would still like the variable to be set to never expire the value can be set at 0 e.g. `lambda_log_retention_in_days = 0`
+  3. Once these steps are completed a `terraform apply` can be executed.
+
 ### Added
 
 - *ORCA-904* - Added to integration tests that verifies recovered objects are in the destination bucket.
 - *ORCA-907* - Added integration test for internal reconciliation at `integration_test/workflow_tests/test_packages/reconciliation` and updated documentation with new variables.
+- *LPCUMULUS-1474* - Added log groups that can have set retention periods in `modules/lambdas/main.tf` with a variable to set the retention in days. As well as added a script to delete the log groups AWS creates by default since those cannot be modified by Terraform.
 
 ### Changed
 

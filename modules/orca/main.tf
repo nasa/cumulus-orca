@@ -38,6 +38,7 @@ module "orca_lambdas" {
   restore_object_role_arn             = module.orca_iam.restore_object_role_arn
 
   ## OPTIONAL
+  lambda_log_retention_in_days                  = var.lambda_log_retention_in_days
   lambda_runtime                                = var.lambda_runtime
   orca_delete_old_reconcile_jobs_frequency_cron = var.orca_delete_old_reconcile_jobs_frequency_cron
   orca_default_recovery_type                    = var.orca_default_recovery_type
