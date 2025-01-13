@@ -16,7 +16,11 @@ and includes an additional section for migration notes.
 ## [Unreleased]
 
 ### Migration Notes
-The user should update their orca.tf, variables.tf and terraform.tfvars files with new variable. The following optional variable has been added: `lambda_log_retention_in_days`
+
+- The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following   optional variables have been added:
+  - max_pool_connections
+  - max_concurrency
+- The user should update their orca.tf, variables.tf and terraform.tfvars files with new variable. The following optional variable has been added: `lambda_log_retention_in_days`
 **Delete Log Groups**
 ORCA has added the capability to set log retention on ORCA Lambdas e.g. 30 days, 60 days, 90 days, etc.
 - Deployment Steps
@@ -33,6 +37,8 @@ ORCA has added the capability to set log retention on ORCA Lambdas e.g. 30 days,
 - *LPCUMULUS-1474* - Added log groups that can have set retention periods in `modules/lambdas/main.tf` with a variable to set the retention in days. As well as added a script to delete the log groups AWS creates by default since those cannot be modified by Terraform.
 
 ### Changed
+
+- *ORCA-918* - Updated `copy_to_archive` and `copy_from_archive` lambdas to include two new optional ORCA variables `max_pool_connections` and `max_concurrency` that can be used to change parallelism of s3 copy operation.
 
 ### Removed
 

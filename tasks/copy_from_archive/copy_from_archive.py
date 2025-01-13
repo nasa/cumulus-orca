@@ -18,12 +18,15 @@ from boto3.s3.transfer import MB, TransferConfig
 
 # noinspection PyPackageRequirements
 from botocore.client import BaseClient
+from botocore.config import Config
 
 # noinspection PyPackageRequirements
 from botocore.exceptions import ClientError
 from orca_shared.recovery import shared_recovery
 
 OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY = "STATUS_UPDATE_QUEUE_URL"
+OS_ENVIRON_DEFAULT_MAX_POOL_CONNECTIONS_KEY = "DEFAULT_MAX_POOL_CONNECTIONS"
+OS_ENVIRON_DEFAULT_MAX_CONCURRENCY_KEY = "DEFAULT_MAX_CONCURRENCY"
 
 # These will determine what the output looks like.
 FILE_SUCCESS_KEY = "success"
@@ -40,6 +43,7 @@ INPUT_TARGET_KEY_KEY = "targetKey"
 INPUT_TARGET_BUCKET_KEY = "restoreDestination"
 INPUT_SOURCE_BUCKET_KEY = "sourceBucket"
 INPUT_MULTIPART_CHUNKSIZE_MB_KEY = "s3MultipartChunksizeMb"
+
 
 # Set AWS powertools logger
 LOGGER = Logger()
@@ -91,7 +95,13 @@ def task(
         CopyRequestError: Thrown if there are errors with the input records or the copy failed.
     """
     files = get_files_from_records(records)
-    s3 = boto3.client("s3")  # pylint: disable-msg=invalid-name
+    default_max_pool_connections = int(
+        os.environ[OS_ENVIRON_DEFAULT_MAX_POOL_CONNECTIONS_KEY]
+    )
+    LOGGER.info(default_max_pool_connections)
+    s3 = boto3.client(
+        "s3", config=Config(max_pool_connections=default_max_pool_connections)
+    )  # pylint: disable-msg=invalid-name
     aws_client_sqs = boto3.client("sqs")
 
     for attempt in range(1, max_retries + 1):
@@ -203,6 +213,8 @@ def copy_object(
     Returns:
         None if object was copied, otherwise contains error message.
     """
+    default_max_concurrency = int(os.environ[OS_ENVIRON_DEFAULT_MAX_CONCURRENCY_KEY])
+    LOGGER.info(default_max_concurrency)
 
     if dest_object_name is None:
         dest_object_name = src_object_name
@@ -225,7 +237,10 @@ def copy_object(
                 # 'ContentType': s3_cli.head_object(Bucket=src_bucket_name,
                 #  Key=src_object_name)['ContentType'],
             },
-            Config=TransferConfig(multipart_chunksize=multipart_chunksize_mb * MB),
+            Config=TransferConfig(
+                multipart_chunksize=multipart_chunksize_mb * MB,
+                max_concurrency=default_max_concurrency,
+            ),
         )
         LOGGER.debug(f"Object {src_object_name} copied.")
     except ClientError as ex:

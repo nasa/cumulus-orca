@@ -15,6 +15,7 @@ import fastjsonschema as fastjsonschema
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.typing import LambdaContext
 from boto3.s3.transfer import MB, TransferConfig
+from botocore.config import Config
 from fastjsonschema import JsonSchemaException
 
 import sqs_library
@@ -26,6 +27,8 @@ OS_ENVIRON_DEFAULT_STORAGE_CLASS_KEY = "DEFAULT_STORAGE_CLASS"
 OS_ENVIRON_ORCA_DEFAULT_BUCKET_KEY = "ORCA_DEFAULT_BUCKET"
 OS_ENVIRON_DEFAULT_MULTIPART_CHUNKSIZE_MB_KEY = "DEFAULT_MULTIPART_CHUNKSIZE_MB"
 OS_ENVIRON_METADATA_DB_QUEUE_URL_KEY = "METADATA_DB_QUEUE_URL"
+OS_ENVIRON_DEFAULT_MAX_POOL_CONNECTIONS_KEY = "DEFAULT_MAX_POOL_CONNECTIONS"
+OS_ENVIRON_DEFAULT_MAX_CONCURRENCY_KEY = "DEFAULT_MAX_CONCURRENCY"
 
 EVENT_CONFIG_KEY = "config"
 EVENT_INPUT_KEY = "input"
@@ -116,7 +119,17 @@ def copy_granule_between_buckets(
                 "etag" (str):
                     etag of the file object in the archive bucket.
     """
-    s3 = boto3.client("s3")
+    default_max_pool_connections = int(
+        os.environ[OS_ENVIRON_DEFAULT_MAX_POOL_CONNECTIONS_KEY]
+    )
+    LOGGER.info(default_max_pool_connections)
+
+    default_max_concurrency = int(os.environ[OS_ENVIRON_DEFAULT_MAX_CONCURRENCY_KEY])
+    LOGGER.info(default_max_concurrency)
+
+    s3 = boto3.client(
+        "s3", config=Config(max_pool_connections=default_max_pool_connections)
+    )
     copy_source = {"Bucket": source_bucket_name, "Key": source_key}
     s3.copy(
         copy_source,
@@ -130,7 +143,10 @@ def copy_granule_between_buckets(
             ],
             # Needed for cross-OU copies.
         },
-        Config=TransferConfig(multipart_chunksize=multipart_chunksize_mb * MB),
+        Config=TransferConfig(
+            multipart_chunksize=multipart_chunksize_mb * MB,
+            max_concurrency=default_max_concurrency,
+        ),
     )
     # get metadata info from latest file version
     file_versions = s3.list_object_versions(
@@ -460,6 +476,12 @@ def handler(event: Dict[str, Union[List[str], Dict]], context: LambdaContext) ->
             Name of the default
             archive bucket that files should be archived to.
         METADATA_DB_QUEUE_URL (string, required): SQS URL of the metadata queue.
+        DEFAULT_MAX_POOL_CONNECTIONS (int):
+            The maximum number of connections to keep in a connection pool.
+            Defaults to 10.
+        DEFAULT_MAX_CONCURRENCY (int):
+            The maximum number of concurrent S3 API transfer operations.
+            Defaults to 10.
 
     Args:
         event: Event passed into the step from the aws workflow.

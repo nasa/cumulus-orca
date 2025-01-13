@@ -243,6 +243,8 @@ class TestCopyToArchive(TestCase):
             "DEFAULT_MULTIPART_CHUNKSIZE_MB": "4",
             "METADATA_DB_QUEUE_URL": "test",
             "AWS_REGION": "us-west-2",
+            copy_to_archive.OS_ENVIRON_DEFAULT_MAX_POOL_CONNECTIONS_KEY: "10",
+            copy_to_archive.OS_ENVIRON_DEFAULT_MAX_CONCURRENCY_KEY: "10",
         },
         clear=True,
     )
@@ -472,6 +474,8 @@ class TestCopyToArchive(TestCase):
             "DEFAULT_MULTIPART_CHUNKSIZE_MB": "4",
             "METADATA_DB_QUEUE_URL": "test",
             "AWS_REGION": "us-west-2",
+            copy_to_archive.OS_ENVIRON_DEFAULT_MAX_POOL_CONNECTIONS_KEY: "10",
+            copy_to_archive.OS_ENVIRON_DEFAULT_MAX_CONCURRENCY_KEY: "10",
         },
         clear=True,
     )
@@ -614,6 +618,8 @@ class TestCopyToArchive(TestCase):
             "DEFAULT_MULTIPART_CHUNKSIZE_MB": "4",
             "METADATA_DB_QUEUE_URL": "test",
             "AWS_REGION": "us-west-2",
+            copy_to_archive.OS_ENVIRON_DEFAULT_MAX_POOL_CONNECTIONS_KEY: "10",
+            copy_to_archive.OS_ENVIRON_DEFAULT_MAX_CONCURRENCY_KEY: "10",
         },
         clear=True,
     )
