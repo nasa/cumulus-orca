@@ -45,7 +45,6 @@ variable "default_multipart_chunksize_mb" {
   description = "The default maximum size of chunks to use when copying. Can be overridden by collection config."
 }
 
-
 ## Variables unique to ORCA
 ## REQUIRED
 
@@ -120,6 +119,11 @@ variable "restore_object_role_arn" {
 }
 
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
+
+variable "lambda_log_retention_in_days" {
+  type = number
+  description = "Lambda log retention in days"
+}
 
 variable "lambda_runtime" {
   type        = string

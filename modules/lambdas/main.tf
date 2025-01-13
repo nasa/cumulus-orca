@@ -24,6 +24,13 @@ module "lambda_security_group" {
 # =============================================================================
 # Ingest Lambdas Definitions and Resources
 # =============================================================================
+# log group for the copy_to_archive function
+resource "aws_cloudwatch_log_group" "copy_to_archive_log_group" {
+  name = "/aws/lambda/${var.prefix}_copy_to_orca"
+  retention_in_days = var.lambda_log_retention_in_days
+
+  tags = var.tags
+}
 
 # copy_to_archive - Copies files to the archive bucket
 resource "aws_lambda_function" "copy_to_archive" {
@@ -58,6 +65,10 @@ resource "aws_lambda_function" "copy_to_archive" {
       DEFAULT_MAX_CONCURRENCY        = var.max_concurrency
     }
   }
+  depends_on = [
+    aws_cloudwatch_log_group.copy_to_archive_log_group
+  ]
+
 }
 
 ## =============================================================================
@@ -66,6 +77,14 @@ resource "aws_lambda_function" "copy_to_archive" {
 
 # delete_old_reconcile_jobs - Deletes old internal reconciliation reports, reducing DB size.
 # ==============================================================================
+# log group for the delete_old_reconcile_jobs function
+resource "aws_cloudwatch_log_group" "delete_old_reconcile_jobs_log_group" {
+  name = "/aws/lambda/${var.prefix}_delete_old_reconcile_jobs"
+  retention_in_days = var.lambda_log_retention_in_days
+
+  tags = var.tags
+}
+
 resource "aws_lambda_function" "delete_old_reconcile_jobs" {
   ## REQUIRED
   function_name = "${var.prefix}_delete_old_reconcile_jobs"
@@ -94,6 +113,9 @@ resource "aws_lambda_function" "delete_old_reconcile_jobs" {
       LOG_LEVEL                               = var.log_level
     }
   }
+  depends_on = [
+    aws_cloudwatch_log_group.delete_old_reconcile_jobs_log_group
+  ]
 }
 
 # rule to run the lambda periodically
@@ -126,6 +148,14 @@ resource "aws_lambda_permission" "delete_old_reconcile_jobs_allow_cloudwatch_eve
 
 # get_current_archive_list - From an s3 event for an s3 inventory report's manifest.json, pulls inventory report into postgres.
 # ==============================================================================
+# log group for the get_current_archive_list function
+resource "aws_cloudwatch_log_group" "get_current_archive_list_log_group" {
+  name = "/aws/lambda/${var.prefix}_get_current_archive_list"
+  retention_in_days = var.lambda_log_retention_in_days
+
+  tags = var.tags
+}
+
 resource "aws_lambda_function" "get_current_archive_list" {
   ## REQUIRED
   function_name = "${var.prefix}_get_current_archive_list"
@@ -154,6 +184,17 @@ resource "aws_lambda_function" "get_current_archive_list" {
       LOG_LEVEL                  = var.log_level
     }
   }
+  depends_on = [
+    aws_cloudwatch_log_group.get_current_archive_list_log_group
+  ]
+}
+
+# log group for the perform_orca_reconcile function
+resource "aws_cloudwatch_log_group" "perform_orca_reconcile_log_group" {
+  name = "/aws/lambda/${var.prefix}_perform_orca_reconcile"
+  retention_in_days = var.lambda_log_retention_in_days
+
+  tags = var.tags
 }
 
 resource "aws_lambda_function" "perform_orca_reconcile" {
@@ -184,10 +225,21 @@ resource "aws_lambda_function" "perform_orca_reconcile" {
       LOG_LEVEL                  = var.log_level
     }
   }
+  depends_on = [
+    aws_cloudwatch_log_group.perform_orca_reconcile_log_group
+  ]
 }
 
 # internal_reconcile_report_job - Receives page index from end user and returns available internal reconciliation jobs from the Orca database.
 # ==============================================================================
+# log group for the internal_reconcile_report_job function
+resource "aws_cloudwatch_log_group" "internal_reconcile_report_job_log_group" {
+  name = "/aws/lambda/${var.prefix}_internal_reconcile_report_job"
+  retention_in_days = var.lambda_log_retention_in_days
+
+  tags = var.tags
+}
+
 resource "aws_lambda_function" "internal_reconcile_report_job" {
   ## REQUIRED
   function_name = "${var.prefix}_internal_reconcile_report_job"
@@ -215,10 +267,21 @@ resource "aws_lambda_function" "internal_reconcile_report_job" {
       LOG_LEVEL                  = var.log_level
     }
   }
+  depends_on = [
+    aws_cloudwatch_log_group.internal_reconcile_report_job_log_group
+  ]
 }
 
 # internal_reconcile_report_mismatch - Receives job id and page index from end user and returns reporting information of files that have records in the S3 bucket but are missing from ORCA catalog.
 # ==============================================================================
+# log group for the internal_reconcile_report_mismatch function
+resource "aws_cloudwatch_log_group" "internal_reconcile_report_mismatch_log_group" {
+  name = "/aws/lambda/${var.prefix}_internal_reconcile_report_mismatch"
+  retention_in_days = var.lambda_log_retention_in_days
+
+  tags = var.tags
+}
+
 resource "aws_lambda_function" "internal_reconcile_report_mismatch" {
   ## REQUIRED
   function_name = "${var.prefix}_internal_reconcile_report_mismatch"
@@ -246,10 +309,21 @@ resource "aws_lambda_function" "internal_reconcile_report_mismatch" {
       LOG_LEVEL                  = var.log_level
     }
   }
+  depends_on = [
+    aws_cloudwatch_log_group.internal_reconcile_report_mismatch_log_group
+  ]
 }
 
 # internal_reconcile_report_orphan - Receives job id and page index from end user and returns reporting information of files that have records in the S3 bucket but are missing from ORCA catalog.
 # ==============================================================================
+# log group for the internal_reconcile_report_orphan function
+resource "aws_cloudwatch_log_group" "internal_reconcile_report_orphan_log_group" {
+  name = "/aws/lambda/${var.prefix}_internal_reconcile_report_orphan"
+  retention_in_days = var.lambda_log_retention_in_days
+
+  tags = var.tags
+}
+
 resource "aws_lambda_function" "internal_reconcile_report_orphan" {
   ## REQUIRED
   function_name = "${var.prefix}_internal_reconcile_report_orphan"
@@ -277,10 +351,21 @@ resource "aws_lambda_function" "internal_reconcile_report_orphan" {
       LOG_LEVEL                  = var.log_level
     }
   }
+  depends_on = [
+    aws_cloudwatch_log_group.internal_reconcile_report_orphan_log_group
+  ]
 }
 
 # internal_reconcile_report_phantom - Receives job id and page index from end user and returns reporting information of files that have records in the ORCA catalog but are missing from S3 bucket.
 # ==============================================================================
+# log group for the internal_reconcile_report_phantom function
+resource "aws_cloudwatch_log_group" "internal_reconcile_report_phantom_log_group" {
+  name = "/aws/lambda/${var.prefix}_internal_reconcile_report_phantom"
+  retention_in_days = var.lambda_log_retention_in_days
+
+  tags = var.tags
+}
+
 resource "aws_lambda_function" "internal_reconcile_report_phantom" {
   ## REQUIRED
   function_name = "${var.prefix}_internal_reconcile_report_phantom"
@@ -308,6 +393,9 @@ resource "aws_lambda_function" "internal_reconcile_report_phantom" {
       LOG_LEVEL                  = var.log_level
     }
   }
+  depends_on = [
+    aws_cloudwatch_log_group.internal_reconcile_report_phantom_log_group
+  ]
 }
 
 ## =============================================================================
@@ -316,6 +404,14 @@ resource "aws_lambda_function" "internal_reconcile_report_phantom" {
 
 # extract_filepaths_for_granule - Translates input for request_from_archive lambda
 # ==============================================================================
+# log group for the extract_filepaths_for_granule function
+resource "aws_cloudwatch_log_group" "extract_filepaths_for_granule_log_group" {
+  name = "/aws/lambda/${var.prefix}_extract_filepaths_for_granule"
+  retention_in_days = var.lambda_log_retention_in_days
+
+  tags = var.tags
+}
+
 resource "aws_lambda_function" "extract_filepaths_for_granule" {
   ## REQUIRED
   function_name = "${var.prefix}_extract_filepaths_for_granule"
@@ -341,6 +437,9 @@ resource "aws_lambda_function" "extract_filepaths_for_granule" {
       LOG_LEVEL               = var.log_level
     }
   }
+  depends_on = [
+    aws_cloudwatch_log_group.extract_filepaths_for_granule_log_group
+  ]
 }
 
 data "aws_iam_policy_document" "assume_lambda_role_extract" {
@@ -405,6 +504,14 @@ resource "aws_iam_role_policy" "extract_filepaths_for_granule_policy" {
 
 # request_from_archive - Requests files from archive
 # ==============================================================================
+# log group for the request_from_archive function
+resource "aws_cloudwatch_log_group" "request_from_archive_log_group" {
+  name = "/aws/lambda/${var.prefix}_request_from_archive"
+  retention_in_days = var.lambda_log_retention_in_days
+
+  tags = var.tags
+}
+
 resource "aws_lambda_function" "request_from_archive" {
   ## REQUIRED
   function_name = "${var.prefix}_request_from_archive"
@@ -438,11 +545,22 @@ resource "aws_lambda_function" "request_from_archive" {
       LOG_LEVEL                  = var.log_level
     }
   }
+  depends_on = [
+    aws_cloudwatch_log_group.request_from_archive_log_group
+  ]
 }
 
 
 # copy_from_archive - Copies files from archive to destination bucket
 # ==============================================================================
+# log group for the copy_from_archive function
+resource "aws_cloudwatch_log_group" "copy_from_archive_log_group" {
+  name = "/aws/lambda/${var.prefix}_copy_from_archive"
+  retention_in_days = var.lambda_log_retention_in_days
+
+  tags = var.tags
+}
+
 resource "aws_lambda_function" "copy_from_archive" {
   ## REQUIRED
   function_name = "${var.prefix}_copy_from_archive"
@@ -476,6 +594,9 @@ resource "aws_lambda_function" "copy_from_archive" {
       DEFAULT_MAX_CONCURRENCY        = var.max_concurrency
     }
   }
+  depends_on = [
+    aws_cloudwatch_log_group.copy_from_archive_log_group
+  ]
 }
 
 # Additional resources needed by copy_from_archive
@@ -499,6 +620,14 @@ resource "aws_lambda_permission" "copy_from_archive_allow_sqs_trigger" {
 
 # post_to_database - Posts entries from SQS queue to database.
 # ==============================================================================
+# log group for the post_to_database function
+resource "aws_cloudwatch_log_group" "post_to_database_log_group" {
+  name = "/aws/lambda/${var.prefix}_post_to_database"
+  retention_in_days = var.lambda_log_retention_in_days
+
+  tags = var.tags
+}
+
 resource "aws_lambda_function" "post_to_database" {
   ## REQUIRED
   function_name = "${var.prefix}_post_to_database"
@@ -526,6 +655,9 @@ resource "aws_lambda_function" "post_to_database" {
       LOG_LEVEL                  = var.log_level
     }
   }
+   depends_on = [
+    aws_cloudwatch_log_group.post_to_database_log_group
+  ]
 }
 
 # Additional resources needed by post_to_database
@@ -549,6 +681,14 @@ resource "aws_lambda_permission" "post_to_database_allow_sqs_trigger" {
 
 # request_status_for_granule - Provides recovery status information on a specific granule
 # ==============================================================================
+# log group for the request_status_for_granule function
+resource "aws_cloudwatch_log_group" "request_status_for_granule_log_group" {
+  name = "/aws/lambda/${var.prefix}_request_status_for_granule"
+  retention_in_days = var.lambda_log_retention_in_days
+
+  tags = var.tags
+}
+
 resource "aws_lambda_function" "request_status_for_granule" {
   ## REQUIRED
   function_name = "${var.prefix}_request_status_for_granule"
@@ -576,11 +716,22 @@ resource "aws_lambda_function" "request_status_for_granule" {
       LOG_LEVEL                  = var.log_level
     }
   }
+  depends_on = [
+    aws_cloudwatch_log_group.request_status_for_granule_log_group
+  ]
 }
 
 
 # request_status_for_job - Provides recovery status information for a job.
 # ==============================================================================
+# log group for the request_status_for_job function
+resource "aws_cloudwatch_log_group" "request_status_for_job_log_group" {
+  name = "/aws/lambda/${var.prefix}_request_status_for_job"
+  retention_in_days = var.lambda_log_retention_in_days
+
+  tags = var.tags
+}
+
 resource "aws_lambda_function" "request_status_for_job" {
   ## REQUIRED
   function_name = "${var.prefix}_request_status_for_job"
@@ -608,10 +759,21 @@ resource "aws_lambda_function" "request_status_for_job" {
       LOG_LEVEL                  = var.log_level
     }
   }
+  depends_on = [
+    aws_cloudwatch_log_group.request_status_for_job_log_group
+  ]
 }
 
 # post_copy_request_to_queue - Posts to two queues for notifying copy_from_archive lambda and updating the DB."
 # ==============================================================================
+# log group for the post_copy_request_to_queue function
+resource "aws_cloudwatch_log_group" "post_copy_request_to_queue_log_group" {
+  name = "/aws/lambda/${var.prefix}_post_copy_request_to_queue"
+  retention_in_days = var.lambda_log_retention_in_days
+
+  tags = var.tags
+}
+
 resource "aws_lambda_function" "post_copy_request_to_queue" {
   ## REQUIRED
   function_name = "${var.prefix}_post_copy_request_to_queue"
@@ -641,6 +803,9 @@ resource "aws_lambda_function" "post_copy_request_to_queue" {
       LOG_LEVEL                  = var.log_level
     }
   }
+  depends_on = [
+    aws_cloudwatch_log_group.post_copy_request_to_queue_log_group
+  ]
 }
 
 # Additional resources needed by post_copy_request_to_queue
@@ -665,6 +830,14 @@ resource "aws_lambda_permission" "post_copy_request_to_queue_allow_sqs_trigger" 
 
 # orca_catalog_reporting - Returns reconcilliation report data
 # ==============================================================================
+# log group for the orca_catalog_reporting function
+resource "aws_cloudwatch_log_group" "orca_catalog_reporting_log_group" {
+  name = "/aws/lambda/${var.prefix}_orca_catalog_reporting"
+  retention_in_days = var.lambda_log_retention_in_days
+
+  tags = var.tags
+}
+
 resource "aws_lambda_function" "orca_catalog_reporting" {
   ## REQUIRED
   function_name = "${var.prefix}_orca_catalog_reporting"
@@ -692,11 +865,22 @@ resource "aws_lambda_function" "orca_catalog_reporting" {
       LOG_LEVEL                  = var.log_level
     }
   }
+  depends_on = [
+    aws_cloudwatch_log_group.orca_catalog_reporting_log_group
+  ]
 }
 
 
 # post_to_catalog - Posts provider/collection/granule/file info from SQS queue to database.
 # ===========================================================================================
+# log group for the post_to_catalog function
+resource "aws_cloudwatch_log_group" "post_to_catalog_log_group" {
+  name = "/aws/lambda/${var.prefix}_post_to_catalog"
+  retention_in_days = var.lambda_log_retention_in_days
+
+  tags = var.tags
+}
+
 resource "aws_lambda_function" "post_to_catalog" {
   ## REQUIRED
   function_name = "${var.prefix}_post_to_catalog"
@@ -724,6 +908,9 @@ resource "aws_lambda_function" "post_to_catalog" {
       LOG_LEVEL                  = var.log_level
     }
   }
+  depends_on = [
+    aws_cloudwatch_log_group.post_to_catalog_log_group
+  ]
 }
 
 # Additional resources needed by post_to_catalog
@@ -752,10 +939,19 @@ resource "aws_lambda_permission" "post_to_catalog_allow_sqs_trigger" {
 
 # db_deploy - Lambda that deploys database resources
 # ==============================================================================
+# log group for the db_deploy function
+resource "aws_cloudwatch_log_group" "db_deploy_log_group" {
+  name = "/aws/lambda/${var.prefix}_db_deploy"
+  retention_in_days = var.lambda_log_retention_in_days
+
+  tags = var.tags
+}
+
 resource "aws_lambda_function" "db_deploy" {
   depends_on = [
     module.lambda_security_group,
-    var.restore_object_role_arn
+    var.restore_object_role_arn,
+    aws_cloudwatch_log_group.db_deploy_log_group
   ]
 
   ## REQUIRED

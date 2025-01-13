@@ -48,6 +48,12 @@ variable "db_cluster_identifier" {
 }
 
 ## OPTIONAL
+
+variable "lambda_log_retention_in_days" {
+  type = number
+  description = "Lambda log retention in days"
+  default = 0
+}
 variable "aws_profile" {
   type    = string
   default = null
