@@ -3,6 +3,7 @@ Name: copy_to_archive.py
 Description: Lambda function that takes a Cumulus message, extracts a list of files,
 and copies those files from their current storage location into a staging/archive location.
 """
+
 import json
 import os
 import re

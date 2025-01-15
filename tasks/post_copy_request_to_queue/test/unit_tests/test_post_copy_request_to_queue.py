@@ -2,6 +2,7 @@
 Name: test_post_copy_request_to_queue.py
 Description: unit tests for post_copy_request_to_queue.py
 """
+
 import copy
 import json
 import os
@@ -252,13 +253,11 @@ class TestPostCopyRequestToQueue(TestCase):
                 with self.subTest(
                     name=name, bad_value=bad_value, good_value=good_value
                 ):
-                    with (
-                        patch.dict(
-                            os.environ,
-                            {
-                                name: bad_value,
-                            },
-                        )
+                    with patch.dict(
+                        os.environ,
+                        {
+                            name: bad_value,
+                        },
                     ):
                         # run the test
                         with self.assertRaises(ValueError) as cm:

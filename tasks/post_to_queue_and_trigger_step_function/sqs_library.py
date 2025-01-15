@@ -3,6 +3,7 @@ Name: sqs_library.py
 Description: library for post_to_queue_and_trigger_step_function lambda
 function for posting to fifo SQS queue. Largely copied from copy_to_archive
 """
+
 # todo: Move to shared lib ORCA-406
 # Standard libraries
 import functools

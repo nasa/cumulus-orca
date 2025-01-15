@@ -5,6 +5,7 @@ Description: Compares entries in reconcile_s3_objects to the Orca catalog,
 writing differences to reconcile_catalog_mismatch_report,
 reconcile_orphan_report, and reconcile_phantom_report.
 """
+
 import functools
 import json
 import os

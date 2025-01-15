@@ -3,6 +3,7 @@ Name: test_extract_filepaths_for_granule.py
 
 Description:  Unit tests for extract_file_paths_for_granule.py.
 """
+
 import json
 import unittest
 import uuid

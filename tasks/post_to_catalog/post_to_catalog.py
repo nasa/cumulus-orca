@@ -3,6 +3,7 @@ Name: post_to_catalog.py
 
 Description:  Pulls entries from a queue and posts them to a DB.
 """
+
 import json
 import os
 from typing import Any, Dict, List, Union
