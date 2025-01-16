@@ -62,3 +62,13 @@ resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv6" {
   cidr_ipv6         = "::/0"
   ip_protocol       = "-1" 
 }
+
+resource "aws_security_group_rule" "rds_allow_s3_import" {
+  type                     = "egress"
+  from_port                = 443
+  to_port                  = 443
+  protocol                 = "TCP"
+  description              = "Allows database to perform S3 Imports."
+  cidr_blocks              = ["0.0.0.0/0"] 
+  security_group_id        = var.rds_security_group_id
+}

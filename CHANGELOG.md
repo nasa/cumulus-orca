@@ -36,6 +36,7 @@ ORCA has added the capability to set log retention on ORCA Lambdas e.g. 30 days,
 - *ORCA-904* - Added to integration tests that verifies recovered objects are in the destination bucket.
 - *ORCA-907* - Added integration test for internal reconciliation at `integration_test/workflow_tests/test_packages/reconciliation` and updated documentation with new variables.
 - *LPCUMULUS-1474* - Added log groups that can have set retention periods in `modules/lambdas/main.tf` with a variable to set the retention in days. As well as added a script to delete the log groups AWS creates by default since those cannot be modified by Terraform.
+- *ORCA-957* Added outbound HTTPS security group rule in order for the Internal Reconciliation Workflow to perform the S3 import successfully at `modules/security_groups/main.tf` 
 
 ### Changed
 
