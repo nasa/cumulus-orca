@@ -4,6 +4,7 @@ Name: get_current_archive_list.py
 Description: Receives a list of s3 events from an SQS queue,
 and loads the s3 inventory specified into postgres.
 """
+
 import json
 import os
 import os.path

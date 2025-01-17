@@ -4,6 +4,7 @@ Description:  lambda function that queries the db for file metadata, updates the
 of recovered file to staged,
 and sends the staged file info to staged_recovery queue for further processing.
 """
+
 import json
 import os
 import random

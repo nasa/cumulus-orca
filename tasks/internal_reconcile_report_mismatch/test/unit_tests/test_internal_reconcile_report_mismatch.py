@@ -2,6 +2,7 @@
 Name: test_internal_reconcile_report_mismatch.py
 Description:  Unit tests for internal_reconcile_report_mismatch.py.
 """
+
 import os
 import random
 import unittest
@@ -431,7 +432,6 @@ class TestInternalReconcileReportMismatch(
         clear=True,
     )
     def test_check_env_variable_happy_path(self):
-
         """
         Happy path for check_env_variable().
         """
@@ -448,7 +448,6 @@ class TestInternalReconcileReportMismatch(
     )
     @patch("internal_reconcile_report_mismatch.LOGGER")
     def test_check_env_variable_empty_and_no_key(self, mock_logger: MagicMock):
-
         """
         Tests that check_env_variable() raises a KeyError if key ENV_VAR is missing or empty.
         """
