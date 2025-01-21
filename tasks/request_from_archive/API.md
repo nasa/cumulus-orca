@@ -1,7 +1,6 @@
 # Table of Contents
 
 * [request\_from\_archive](#request_from_archive)
-  * [GRANULE\_COLLECTION\_ID\_KEY](#request_from_archive.GRANULE_COLLECTION_ID_KEY)
   * [FILE\_PROCESSED\_KEY](#request_from_archive.FILE_PROCESSED_KEY)
   * [RestoreRequestError](#request_from_archive.RestoreRequestError)
   * [task](#request_from_archive.task)
@@ -20,13 +19,11 @@
 Name: request_from_archive.py
 Description:  Lambda function that makes a restore request from archive bucket for each input file.
 
-<a id="request_from_archive.GRANULE_COLLECTION_ID_KEY"></a>
-
-#### GRANULE\_COLLECTION\_ID\_KEY
-
 <a id="request_from_archive.FILE_PROCESSED_KEY"></a>
 
 #### FILE\_PROCESSED\_KEY
+
+todo: Rename key in schema to avoid user confusion
 
 <a id="request_from_archive.RestoreRequestError"></a>
 

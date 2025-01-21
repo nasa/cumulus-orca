@@ -543,6 +543,7 @@ resource "aws_lambda_function" "request_from_archive" {
       ORCA_DEFAULT_BUCKET        = var.orca_default_bucket
       POWERTOOLS_SERVICE_NAME    = "orca.recovery"
       LOG_LEVEL                  = var.log_level
+      max_pool_connections       = var.max_pool_connections
     }
   }
   depends_on = [
