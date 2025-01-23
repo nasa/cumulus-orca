@@ -144,8 +144,10 @@ def task(
     )
 
     # Use the default archive bucket if none is specified for the collection or otherwise given.
-    event[EVENT_CONFIG_KEY][CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY] = (
-        get_default_archive_bucket_name(event[EVENT_CONFIG_KEY])
+    event[EVENT_CONFIG_KEY][
+        CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY
+    ] = get_default_archive_bucket_name(
+        event[EVENT_CONFIG_KEY]
     )  # todo: pass this in as parameter instead of adjusting config dictionary.
 
     # Get number of days to keep before it sinks back down into inactive storage
