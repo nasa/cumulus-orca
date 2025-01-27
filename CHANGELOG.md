@@ -42,6 +42,7 @@ ORCA has added the capability to set log retention on ORCA Lambdas e.g. 30 days,
 
 - *ORCA-918* - Updated `copy_to_archive` and `copy_from_archive` lambdas to include two new optional ORCA variables `max_pool_connections` and `max_concurrency` that can be used to change parallelism of s3 copy operation.
 - *ORCA-958* - Upgraded flake8, isort and black packages to latest versions in ORCA code.
+- *ORCA-947* - Updated `request_from_archive` lambda to include an optional ORCA variable `max_pool_connections` that can be used to change parallelism of s3 copy operation.
 
 ### Removed
 

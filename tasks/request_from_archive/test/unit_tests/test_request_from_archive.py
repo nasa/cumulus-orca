@@ -2099,6 +2099,9 @@ class TestRequestFromArchive(unittest.TestCase):
         os.environ[request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY] = (
             "https://archive.queue.url"
         )
+        os.environ[request_from_archive.OS_ENVIRON_DEFAULT_MAX_POOL_CONNECTIONS_KEY] = (
+            "10"
+        )
         job_id = uuid.uuid4().__str__()
         collection_id = uuid.uuid4().__str__()
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"

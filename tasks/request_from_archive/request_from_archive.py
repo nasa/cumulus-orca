@@ -18,6 +18,7 @@ from aws_lambda_powertools.utilities.typing import LambdaContext
 
 # noinspection PyPackageRequirements
 from botocore.client import BaseClient
+from botocore.config import Config
 
 # noinspection PyPackageRequirements
 from botocore.exceptions import ClientError
@@ -37,6 +38,7 @@ OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY = "DEFAULT_RECOVERY_TYPE"
 OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY = "STATUS_UPDATE_QUEUE_URL"
 OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY = "ARCHIVE_RECOVERY_QUEUE_URL"
 OS_ENVIRON_ORCA_DEFAULT_ARCHIVE_BUCKET_KEY = "ORCA_DEFAULT_BUCKET"
+OS_ENVIRON_DEFAULT_MAX_POOL_CONNECTIONS_KEY = "DEFAULT_MAX_POOL_CONNECTIONS"
 
 EVENT_CONFIG_KEY = "config"
 EVENT_INPUT_KEY = "input"
@@ -142,8 +144,10 @@ def task(
     )
 
     # Use the default archive bucket if none is specified for the collection or otherwise given.
-    event[EVENT_CONFIG_KEY][CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY] = (
-        get_default_archive_bucket_name(event[EVENT_CONFIG_KEY])
+    event[EVENT_CONFIG_KEY][
+        CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY
+    ] = get_default_archive_bucket_name(
+        event[EVENT_CONFIG_KEY]
     )  # todo: pass this in as parameter instead of adjusting config dictionary.
 
     # Get number of days to keep before it sinks back down into inactive storage
@@ -289,8 +293,14 @@ def inner_task(
     # Get the granule array from the event
     granules = event[EVENT_INPUT_KEY][INPUT_GRANULES_KEY]
 
+    # Get default max_pool_connections from env variable
+    default_max_pool_connections = int(
+        os.environ[OS_ENVIRON_DEFAULT_MAX_POOL_CONNECTIONS_KEY]
+    )
     # Create the S3 client
-    s3 = boto3.client("s3")  # pylint: disable-msg=invalid-name
+    s3 = boto3.client(
+        "s3", config=Config(max_pool_connections=default_max_pool_connections)
+    )  # pylint: disable-msg=invalid-name
 
     # Setup additional information and formatting for the event granule files
     # Setup initial array for the granules processed
