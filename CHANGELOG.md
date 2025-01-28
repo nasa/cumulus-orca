@@ -17,6 +17,20 @@ and includes an additional section for migration notes.
 
 ### Migration Notes
 
+### Added
+
+### Changed
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [10.1.1] 2025-01-29
+
+### Migration Notes
+
 - The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following optional variables have been added:
   - max_pool_connections
   - max_concurrency
