@@ -90,6 +90,7 @@ module "orca" {
   rds_security_group_id    = var.rds_security_group_id
 
   ## OPTIONAL
+  # lambda_log_retention_in_days                          = 0
   # archive_recovery_queue_message_retention_time_seconds = 777600
   # db_admin_username                                     = "postgres"
   # default_multipart_chunksize_mb                        = 250
@@ -119,6 +120,8 @@ module "orca" {
   # sqs_maximum_message_size                              = 262144
   # staged_recovery_queue_message_retention_time_seconds  = 432000
   # status_update_queue_message_retention_time_seconds    = 777600
+  # max_pool_connections                                  = 10
+  # max_concurrency                                       = 10
 
 }
 ```
@@ -533,6 +536,7 @@ variables is shown in the table below.
 
 | Variable                                              | Type          | Definition                                                                                                                     | Default
 | ----------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------ | ---------- |
+| `lambda_log_retention_in_days`                         | number       | sets the number of days ORCA Lambda Logs are retained.                                                                     | 0 |
 | `archive_recovery_queue_message_retention_time_seconds`| string       | The number of seconds archive-recovery-queue SQS retains a message in seconds.                                                 | 777600     |
 | `db_admin_username`                                    | string       | Username for RDS database administrator authentication.                                                                        | "postgres" |
 | `default_multipart_chunksize_mb`                       | number       | The default maximum size of chunks to use when copying. Can be overridden by collection config.                                | 250 |
@@ -565,6 +569,8 @@ variables is shown in the table below.
 | `sqs_maximum_message_size`                             | number       | The limit of how many bytes a message can contain before Amazon SQS rejects it.                                                | 262144 |
 | `staged_recovery_queue_message_retention_time_seconds` | number       | Number of seconds the staged-recovery-queue fifo SQS retains a message.                                                        | 432000 |
 | `status_update_queue_message_retention_time_seconds`   | number       | Number of seconds the status_update_queue fifo SQS retains a message.                                                          | 777600 |
+| `max_pool_connections`                                 | number       | The maximum number of connections to keep in a connection pool.                                                                | 10 |
+| `max_concurrency`                                       | number      | The maximum number of concurrent S3 API transfer operations.                                                                   | 10 |
 
 
 ## ORCA Module Outputs

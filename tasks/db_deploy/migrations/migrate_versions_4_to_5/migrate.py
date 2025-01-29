@@ -3,6 +3,7 @@ Name: migrate.py
 
 Description: Migrates the ORCA schema from version 4 to version 5.
 """
+
 from typing import List
 
 import orca_shared

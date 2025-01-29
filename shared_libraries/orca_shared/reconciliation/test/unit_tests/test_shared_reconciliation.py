@@ -2,6 +2,7 @@
 Name: test_shared_reconciliation.py
 Description: Unit tests for shared_reconciliation.py shared library.
 """
+
 import datetime
 import unittest
 import uuid
@@ -57,9 +58,11 @@ class TestSharedReconciliationLibraries(unittest.TestCase):
                     mock_job_id,
                     status,
                     unittest.mock.ANY,
-                    unittest.mock.ANY
-                    if end_time_present.__contains__(status)
-                    else None,
+                    (
+                        unittest.mock.ANY
+                        if end_time_present.__contains__(status)
+                        else None
+                    ),
                     mock_error_message if status == OrcaStatus.ERROR else None,
                     mock_engine,
                 )

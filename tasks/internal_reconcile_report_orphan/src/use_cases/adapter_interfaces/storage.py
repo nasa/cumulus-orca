@@ -10,5 +10,4 @@ class OrphansPageStorageInterface:
 
     def get_orphans_page(
         self, orphan_record_filter: OrphanRecordFilter, LOGGER: logging.Logger
-    ) -> OrphanRecordPage:
-        ...
+    ) -> OrphanRecordPage: ...

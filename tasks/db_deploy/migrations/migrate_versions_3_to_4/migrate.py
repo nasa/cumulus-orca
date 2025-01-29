@@ -3,6 +3,7 @@ Name: migrate.py
 
 Description: Migrates the ORCA schema from version 3 to version 4.
 """
+
 from orca_shared.database.entities import PostgresConnectionInfo
 from orca_shared.database.shared_db import LOGGER
 from orca_shared.database.use_cases import create_admin_uri

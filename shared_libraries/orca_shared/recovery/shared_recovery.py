@@ -3,6 +3,7 @@ Name: shared_recovery.py
 Description: Shared library that combines common functions and classes needed for
              recovery operations.
 """
+
 # Standard libraries
 import hashlib
 import json

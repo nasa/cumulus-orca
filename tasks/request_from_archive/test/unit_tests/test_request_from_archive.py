@@ -3,6 +3,7 @@ Name: test_request_from_archive.py
 
 Description:  Unit tests for request_from_archive.py.
 """
+
 import json
 import os
 import random
@@ -80,24 +81,24 @@ class TestRequestFromArchive(unittest.TestCase):
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
         archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
-        os.environ[
-            request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY
-        ] = db_queue_url
-        os.environ[
-            request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
-        ] = archive_recovery_queue_url
-        os.environ[
-            request_from_archive.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
-        ] = max_retries.__str__()
-        os.environ[
-            request_from_archive.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
-        ] = retry_sleep_secs.__str__()
-        os.environ[
-            request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY
-        ] = recovery_type
-        os.environ[
-            request_from_archive.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
-        ] = exp_days.__str__()
+        os.environ[request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = (
+            db_queue_url
+        )
+        os.environ[request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY] = (
+            archive_recovery_queue_url
+        )
+        os.environ[request_from_archive.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY] = (
+            max_retries.__str__()
+        )
+        os.environ[request_from_archive.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY] = (
+            retry_sleep_secs.__str__()
+        )
+        os.environ[request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY] = (
+            recovery_type
+        )
+        os.environ[request_from_archive.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY] = (
+            exp_days.__str__()
+        )
 
         request_from_archive.task(mock_event)
 
@@ -143,21 +144,21 @@ class TestRequestFromArchive(unittest.TestCase):
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
         archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
-        os.environ[
-            request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY
-        ] = db_queue_url
-        os.environ[
-            request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
-        ] = archive_recovery_queue_url
-        os.environ[
-            request_from_archive.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
-        ] = retry_sleep_secs.__str__()
-        os.environ[
-            request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY
-        ] = recovery_type
-        os.environ[
-            request_from_archive.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
-        ] = exp_days.__str__()
+        os.environ[request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = (
+            db_queue_url
+        )
+        os.environ[request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY] = (
+            archive_recovery_queue_url
+        )
+        os.environ[request_from_archive.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY] = (
+            retry_sleep_secs.__str__()
+        )
+        os.environ[request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY] = (
+            recovery_type
+        )
+        os.environ[request_from_archive.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY] = (
+            exp_days.__str__()
+        )
 
         request_from_archive.task(mock_event)
 
@@ -203,22 +204,22 @@ class TestRequestFromArchive(unittest.TestCase):
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
         archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
-        os.environ[
-            request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
-        ] = archive_recovery_queue_url
-        os.environ[
-            request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY
-        ] = db_queue_url
+        os.environ[request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY] = (
+            archive_recovery_queue_url
+        )
+        os.environ[request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = (
+            db_queue_url
+        )
 
-        os.environ[
-            request_from_archive.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
-        ] = max_retries.__str__()
-        os.environ[
-            request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY
-        ] = recovery_type
-        os.environ[
-            request_from_archive.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
-        ] = exp_days.__str__()
+        os.environ[request_from_archive.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY] = (
+            max_retries.__str__()
+        )
+        os.environ[request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY] = (
+            recovery_type
+        )
+        os.environ[request_from_archive.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY] = (
+            exp_days.__str__()
+        )
 
         request_from_archive.task(mock_event)
 
@@ -264,22 +265,22 @@ class TestRequestFromArchive(unittest.TestCase):
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
         archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
-        os.environ[
-            request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
-        ] = archive_recovery_queue_url
+        os.environ[request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY] = (
+            archive_recovery_queue_url
+        )
 
-        os.environ[
-            request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY
-        ] = db_queue_url
-        os.environ[
-            request_from_archive.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
-        ] = max_retries.__str__()
-        os.environ[
-            request_from_archive.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
-        ] = retry_sleep_secs.__str__()
-        os.environ[
-            request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY
-        ] = recovery_type
+        os.environ[request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = (
+            db_queue_url
+        )
+        os.environ[request_from_archive.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY] = (
+            max_retries.__str__()
+        )
+        os.environ[request_from_archive.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY] = (
+            retry_sleep_secs.__str__()
+        )
+        os.environ[request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY] = (
+            recovery_type
+        )
 
         request_from_archive.task(mock_event)
 
@@ -326,24 +327,24 @@ class TestRequestFromArchive(unittest.TestCase):
         archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
         job_id = uuid.uuid4()
 
-        os.environ[
-            request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY
-        ] = db_queue_url
-        os.environ[
-            request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
-        ] = archive_recovery_queue_url
-        os.environ[
-            request_from_archive.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY
-        ] = max_retries.__str__()
-        os.environ[
-            request_from_archive.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY
-        ] = retry_sleep_secs.__str__()
-        os.environ[
-            request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY
-        ] = recovery_type
-        os.environ[
-            request_from_archive.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY
-        ] = exp_days.__str__()
+        os.environ[request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = (
+            db_queue_url
+        )
+        os.environ[request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY] = (
+            archive_recovery_queue_url
+        )
+        os.environ[request_from_archive.OS_ENVIRON_RESTORE_REQUEST_RETRIES_KEY] = (
+            max_retries.__str__()
+        )
+        os.environ[request_from_archive.OS_ENVIRON_RESTORE_RETRY_SLEEP_SECS_KEY] = (
+            retry_sleep_secs.__str__()
+        )
+        os.environ[request_from_archive.OS_ENVIRON_DEFAULT_RECOVERY_TYPE_KEY] = (
+            recovery_type
+        )
+        os.environ[request_from_archive.OS_ENVIRON_RESTORE_EXPIRE_DAYS_KEY] = (
+            exp_days.__str__()
+        )
 
         with patch.object(uuid, "uuid4", return_value=job_id):
             request_from_archive.task(mock_event)
@@ -435,9 +436,9 @@ class TestRequestFromArchive(unittest.TestCase):
             ],
         }
         expected_input_granule0 = granule0.copy()
-        expected_input_granule0[
-            request_from_archive.GRANULE_RECOVER_FILES_KEY
-        ] = expected_input_granule_files0
+        expected_input_granule0[request_from_archive.GRANULE_RECOVER_FILES_KEY] = (
+            expected_input_granule_files0
+        )
 
         expected_input_granule_files1 = [
             expected_file1_output,
@@ -450,9 +451,9 @@ class TestRequestFromArchive(unittest.TestCase):
             ],
         }
         expected_input_granule1 = granule1.copy()
-        expected_input_granule1[
-            request_from_archive.GRANULE_RECOVER_FILES_KEY
-        ] = expected_input_granule_files1
+        expected_input_granule1[request_from_archive.GRANULE_RECOVER_FILES_KEY] = (
+            expected_input_granule_files1
+        )
 
         event = {
             request_from_archive.EVENT_CONFIG_KEY: {
@@ -644,9 +645,9 @@ class TestRequestFromArchive(unittest.TestCase):
             ],
         }
         expected_input_granule0 = granule0.copy()
-        expected_input_granule0[
-            request_from_archive.GRANULE_RECOVER_FILES_KEY
-        ] = expected_input_granule_files0
+        expected_input_granule0[request_from_archive.GRANULE_RECOVER_FILES_KEY] = (
+            expected_input_granule_files0
+        )
 
         expected_input_granule_files1 = [
             expected_file1_output,
@@ -659,9 +660,9 @@ class TestRequestFromArchive(unittest.TestCase):
             ],
         }
         expected_input_granule1 = granule1.copy()
-        expected_input_granule1[
-            request_from_archive.GRANULE_RECOVER_FILES_KEY
-        ] = expected_input_granule_files1
+        expected_input_granule1[request_from_archive.GRANULE_RECOVER_FILES_KEY] = (
+            expected_input_granule_files1
+        )
 
         event = {
             request_from_archive.EVENT_CONFIG_KEY: {
@@ -848,9 +849,9 @@ class TestRequestFromArchive(unittest.TestCase):
             ],
         }
         expected_input_granule0 = granule0.copy()
-        expected_input_granule0[
-            request_from_archive.GRANULE_RECOVER_FILES_KEY
-        ] = expected_input_granule_files0
+        expected_input_granule0[request_from_archive.GRANULE_RECOVER_FILES_KEY] = (
+            expected_input_granule_files0
+        )
 
         expected_input_granule_files1 = [
             expected_file1_output,
@@ -863,9 +864,9 @@ class TestRequestFromArchive(unittest.TestCase):
             ],
         }
         expected_input_granule1 = granule1.copy()
-        expected_input_granule1[
-            request_from_archive.GRANULE_RECOVER_FILES_KEY
-        ] = expected_input_granule_files1
+        expected_input_granule1[request_from_archive.GRANULE_RECOVER_FILES_KEY] = (
+            expected_input_granule_files1
+        )
 
         event = {
             request_from_archive.EVENT_CONFIG_KEY: {
@@ -975,9 +976,9 @@ class TestRequestFromArchive(unittest.TestCase):
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
         archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
-        os.environ[
-            request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
-        ] = archive_recovery_queue_url
+        os.environ[request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY] = (
+            archive_recovery_queue_url
+        )
         file_0 = {
             request_from_archive.FILE_KEY_KEY: file_key_0,
             request_from_archive.FILE_DEST_BUCKET_KEY: file_dest_bucket_0,
@@ -1040,9 +1041,9 @@ class TestRequestFromArchive(unittest.TestCase):
             ],
         }
         expected_input_granule = granule.copy()
-        expected_input_granule[
-            request_from_archive.GRANULE_RECOVER_FILES_KEY
-        ] = expected_input_granule_files
+        expected_input_granule[request_from_archive.GRANULE_RECOVER_FILES_KEY] = (
+            expected_input_granule_files
+        )
         event = {
             request_from_archive.EVENT_CONFIG_KEY: {
                 request_from_archive.CONFIG_DEFAULT_BUCKET_OVERRIDE_KEY: archive_bucket_name,
@@ -1341,9 +1342,9 @@ class TestRequestFromArchive(unittest.TestCase):
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
         archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
-        os.environ[
-            request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
-        ] = archive_recovery_queue_url
+        os.environ[request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY] = (
+            archive_recovery_queue_url
+        )
 
         granule = {
             request_from_archive.GRANULE_COLLECTION_ID_KEY: collection_id,
@@ -1440,9 +1441,9 @@ class TestRequestFromArchive(unittest.TestCase):
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
         archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
-        os.environ[
-            request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
-        ] = archive_recovery_queue_url
+        os.environ[request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY] = (
+            archive_recovery_queue_url
+        )
 
         granule = {
             request_from_archive.GRANULE_COLLECTION_ID_KEY: collection_id,
@@ -1533,12 +1534,12 @@ class TestRequestFromArchive(unittest.TestCase):
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
         archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
-        os.environ[
-            request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
-        ] = archive_recovery_queue_url
-        os.environ[
-            request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY
-        ] = db_queue_url
+        os.environ[request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY] = (
+            archive_recovery_queue_url
+        )
+        os.environ[request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = (
+            db_queue_url
+        )
 
         granule = {
             request_from_archive.GRANULE_COLLECTION_ID_KEY: collection_id,
@@ -1672,9 +1673,9 @@ class TestRequestFromArchive(unittest.TestCase):
         db_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
         archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
 
-        os.environ[
-            request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
-        ] = archive_recovery_queue_url
+        os.environ[request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY] = (
+            archive_recovery_queue_url
+        )
 
         granule = {
             request_from_archive.GRANULE_COLLECTION_ID_KEY: collection_id,
@@ -1873,9 +1874,9 @@ class TestRequestFromArchive(unittest.TestCase):
         presently be restored again. Will post to archive recovery queue.
         """
         archive_recovery_queue_url = "http://" + uuid.uuid4().__str__() + ".blah"
-        os.environ[
-            request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
-        ] = archive_recovery_queue_url
+        os.environ[request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY] = (
+            archive_recovery_queue_url
+        )
         archive_bucket_name = uuid.uuid4().__str__()
         key = uuid.uuid4().__str__()
         restore_expire_days = randint(0, 99)  # nosec
@@ -2092,12 +2093,15 @@ class TestRequestFromArchive(unittest.TestCase):
             request_from_archive.FILE_DEST_BUCKET_KEY: public_bucket_name,
         }
 
-        os.environ[
-            request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY
-        ] = "https://db.queue.url"
-        os.environ[
-            request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY
-        ] = "https://archive.queue.url"
+        os.environ[request_from_archive.OS_ENVIRON_STATUS_UPDATE_QUEUE_URL_KEY] = (
+            "https://db.queue.url"
+        )
+        os.environ[request_from_archive.OS_ENVIRON_ARCHIVE_RECOVERY_QUEUE_URL_KEY] = (
+            "https://archive.queue.url"
+        )
+        os.environ[request_from_archive.OS_ENVIRON_DEFAULT_MAX_POOL_CONNECTIONS_KEY] = (
+            "10"
+        )
         job_id = uuid.uuid4().__str__()
         collection_id = uuid.uuid4().__str__()
         granule_id = "MOD09GQ.A0219114.N5aUCG.006.0656338553321"

@@ -3,6 +3,7 @@ Name: manual_test.py
 
 Description: Runs the db_deploy Lambda code to perform manual tests.
 """
+
 import os
 import sys
 

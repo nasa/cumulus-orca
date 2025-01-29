@@ -43,6 +43,7 @@ class TestMultipleGranulesHappyPath(TestCase):
             # standard bucket where test files will be copied
             cumulus_bucket_name = "orca-sandbox-s3-provider"
             recovery_bucket_name = helpers.recovery_bucket_name
+            destination_bucket_name = helpers.buckets["private"]["name"]
             excluded_filetype = []
             name_1 = uuid.uuid4().__str__() + ".hdf"  # refers to file1.hdf
             key_name_1 = "test/" + uuid.uuid4().__str__() + "/" + name_1
@@ -292,6 +293,16 @@ class TestMultipleGranulesHappyPath(TestCase):
                     name_1,
                     key_name_1,
                     recovery_bucket_name,
+                )
+
+            # Verify objects are in the destination bucket
+            if use_large_file:
+                head_object_output = boto3_session.client("s3").head_object(
+                    Bucket=destination_bucket_name, Key=key_name_2
+                )
+            else:
+                head_object_output = boto3_session.client("s3").head_object(
+                    Bucket=destination_bucket_name, Key=key_name_1
                 )
         except Exception as ex:
             logger.error(ex)

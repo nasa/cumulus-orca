@@ -3,6 +3,7 @@ Name: migrate_db.py
 
 Description: Migrates the current ORCA schema version to the latest version.
 """
+
 from typing import List
 
 from orca_shared.database.entities import PostgresConnectionInfo

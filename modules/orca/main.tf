@@ -38,6 +38,7 @@ module "orca_lambdas" {
   restore_object_role_arn             = module.orca_iam.restore_object_role_arn
 
   ## OPTIONAL
+  lambda_log_retention_in_days                  = var.lambda_log_retention_in_days
   lambda_runtime                                = var.lambda_runtime
   orca_delete_old_reconcile_jobs_frequency_cron = var.orca_delete_old_reconcile_jobs_frequency_cron
   orca_default_recovery_type                    = var.orca_default_recovery_type
@@ -57,6 +58,8 @@ module "orca_lambdas" {
   orca_recovery_retry_backoff                   = var.orca_recovery_retry_backoff
   log_level                                     = var.log_level
   gql_tasks_role_arn                            = module.orca_graphql_0.gql_tasks_role_arn
+  max_pool_connections                          = var.max_pool_connections
+  max_concurrency                               = var.max_concurrency
 }
 
 ## orca_lambdas_secondary - lambdas module that is dependent on resources that presently are created after most lambdas

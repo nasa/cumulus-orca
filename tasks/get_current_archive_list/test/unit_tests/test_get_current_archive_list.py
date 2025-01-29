@@ -3,6 +3,7 @@ Name: test_get_current_archive_list.py
 
 Description:  Unit tests for test_get_current_archive_list.py.
 """
+
 import copy
 import datetime
 import json
@@ -854,9 +855,9 @@ class TestGetCurrentArchiveList(
             get_current_archive_list.OUTPUT_ORCA_ARCHIVE_LOCATION_KEY: uuid.uuid4().__str__(),  # nosec # noqa: E501
         }
         mock_task.return_value = copy.deepcopy(expected_result)
-        expected_result[
-            get_current_archive_list.OUTPUT_RECEIPT_HANDLE_KEY
-        ] = receipt_handle
+        expected_result[get_current_archive_list.OUTPUT_RECEIPT_HANDLE_KEY] = (
+            receipt_handle
+        )
 
         mock_context = Mock()
         mock_get_message_from_queue.return_value = get_current_archive_list.MessageData(
@@ -969,7 +970,6 @@ class TestGetCurrentArchiveList(
         clear=True,
     )
     def test_check_env_variable_happy_path(self):
-
         """
         Happy path for check_env_variable().
         """
@@ -986,7 +986,6 @@ class TestGetCurrentArchiveList(
     )
     @patch("get_current_archive_list.LOGGER")
     def test_check_env_variable_empty_and_no_key(self, mock_logger: MagicMock):
-
         """
         Tests that check_env_variable() raises a KeyError if key ENV_VAR is missing or empty.
         """

@@ -45,7 +45,6 @@ variable "default_multipart_chunksize_mb" {
   description = "The default maximum size of chunks to use when copying. Can be overridden by collection config."
 }
 
-
 ## Variables unique to ORCA
 ## REQUIRED
 
@@ -120,6 +119,11 @@ variable "restore_object_role_arn" {
 }
 
 ## OPTIONAL - Default variable value is set in ../variables.tf to keep default values centralized.
+
+variable "lambda_log_retention_in_days" {
+  type = number
+  description = "Lambda log retention in days"
+}
 
 variable "lambda_runtime" {
   type        = string
@@ -225,4 +229,14 @@ variable "orca_recovery_retry_backoff" {
 variable "log_level" {
   type        = string
   description = "sets the verbose of PowerTools logger. Must be one of 'INFO', 'DEBUG', 'WARN', 'ERROR'. Defaults to 'INFO'."
+}
+
+variable "max_pool_connections" {
+  type        = number
+  description = "The maximum number of connections to keep in a connection pool. Defaults to 10."
+}
+
+variable "max_concurrency" {
+  type        = number
+  description = "The maximum number of concurrent S3 API transfer operations. Defaults to 10."
 }

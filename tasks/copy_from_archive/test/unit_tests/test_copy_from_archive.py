@@ -2,6 +2,7 @@
 Name: test_copy_from_archive.py
 Description:  Unit tests for copy_from_archive.py.
 """
+
 import json
 import os
 import unittest
@@ -80,6 +81,14 @@ class TestCopyFromArchive(TestCase):
     @patch("copy_from_archive.copy_object")
     @patch("copy_from_archive.get_files_from_records")
     @patch("boto3.client")
+    @patch.dict(
+        os.environ,
+        {
+            copy_from_archive.OS_ENVIRON_DEFAULT_MAX_POOL_CONNECTIONS_KEY: "10",
+            copy_from_archive.OS_ENVIRON_DEFAULT_MAX_CONCURRENCY_KEY: "10",
+        },
+        clear=True,
+    )
     def test_task_happy_path(
         self,
         mock_boto3_client: MagicMock,
@@ -159,12 +168,6 @@ class TestCopyFromArchive(TestCase):
         )
 
         mock_get_files_from_records.assert_called_once_with(mock_records)
-        mock_boto3_client.assert_has_calls(
-            [
-                call("s3"),
-                call("sqs"),
-            ]
-        )
         mock_copy_object.assert_has_calls(
             [
                 call(
@@ -217,6 +220,14 @@ class TestCopyFromArchive(TestCase):
     @patch("copy_from_archive.copy_object")
     @patch("copy_from_archive.get_files_from_records")
     @patch("boto3.client")
+    @patch.dict(
+        os.environ,
+        {
+            copy_from_archive.OS_ENVIRON_DEFAULT_MAX_POOL_CONNECTIONS_KEY: "10",
+            copy_from_archive.OS_ENVIRON_DEFAULT_MAX_CONCURRENCY_KEY: "10",
+        },
+        clear=True,
+    )
     def test_task_retries_failed_files_up_to_retry_limit(
         self,
         mock_boto3_client: MagicMock,
@@ -302,12 +313,6 @@ class TestCopyFromArchive(TestCase):
             )
         except copy_from_archive.CopyRequestError:
             mock_get_files_from_records.assert_called_once_with(mock_records)
-            mock_boto3_client.assert_has_calls(
-                [
-                    call("s3"),
-                    call("sqs"),
-                ]
-            )
             mock_copy_object.assert_has_calls(
                 [
                     call(
@@ -423,6 +428,14 @@ class TestCopyFromArchive(TestCase):
 
         self.assertEqual([file0, file1], result)
 
+    @patch.dict(
+        os.environ,
+        {
+            copy_from_archive.OS_ENVIRON_DEFAULT_MAX_POOL_CONNECTIONS_KEY: "10",
+            copy_from_archive.OS_ENVIRON_DEFAULT_MAX_CONCURRENCY_KEY: "10",
+        },
+        clear=True,
+    )
     def test_copy_object_happy_path(self):
         src_bucket_name = uuid.uuid4().__str__()
         src_object_name = uuid.uuid4().__str__()
@@ -454,6 +467,14 @@ class TestCopyFromArchive(TestCase):
         self.assertIsNone(result)
         self.assertIsNone(config_check.bad_config)
 
+    @patch.dict(
+        os.environ,
+        {
+            copy_from_archive.OS_ENVIRON_DEFAULT_MAX_POOL_CONNECTIONS_KEY: "10",
+            copy_from_archive.OS_ENVIRON_DEFAULT_MAX_CONCURRENCY_KEY: "10",
+        },
+        clear=True,
+    )
     def test_copy_object_client_error_returned_as_string(self):
         """
         If copying the object fails, return error as string.

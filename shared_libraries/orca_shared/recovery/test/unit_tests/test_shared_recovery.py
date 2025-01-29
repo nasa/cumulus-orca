@@ -2,6 +2,7 @@
 Name: test_shared_recovery.py
 Description: Unit tests for shared_recovery.py shared library.
 """
+
 import json
 import os
 import unittest

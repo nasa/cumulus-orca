@@ -2,6 +2,7 @@
 Name: sqs_library.py
 Description: library for copy_to_archive lambda function for posting to metadata SQS queue.
 """
+
 # todo: Move to shared lib ORCA-406
 # Standard libraries
 import functools

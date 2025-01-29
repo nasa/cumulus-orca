@@ -48,6 +48,12 @@ variable "db_cluster_identifier" {
 }
 
 ## OPTIONAL
+
+variable "lambda_log_retention_in_days" {
+  type = number
+  description = "Lambda log retention in days"
+  default = 0
+}
 variable "aws_profile" {
   type    = string
   default = null
@@ -342,4 +348,16 @@ variable "deploy_rds_cluster_role_association" {
   type        = bool
   description = "Attaches IAM role for Aurora v2 cluster if true."
   default = true
+}
+
+variable "max_pool_connections" {
+  type        = number
+  description = "The maximum number of connections to keep in a connection pool. Defaults to 10."
+  default = 10
+}
+
+variable "max_concurrency" {
+  type        = number
+  description = "The maximum number of concurrent S3 API transfer operations. Defaults to 10."
+  default = 10
 }
