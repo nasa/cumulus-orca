@@ -64,8 +64,6 @@ ORCA has added the capability to set log retention on ORCA Lambdas e.g. 30 days,
 
 - *ORCA-939* -  Fixed snyk vulnerabilities showing high issues and upgraded docusaurus to v3.6.0.
 
-### Security
-
 
 ## [10.1.0] 2024-12-13
 
