@@ -16,6 +16,16 @@ and includes an additional section for migration notes.
 ## [Unreleased]
 
 ### Migration Notes
+**Server Access Logging (OPTIONAL)**
+
+Server access logging provides detailed records for the requests that are made to a bucket. Server access logs are useful for many applications. For example, access log information can be useful in security and access audits.
+- To Enable
+  1. Through the AWS Console navigate to S3 and select the bucket you want to enable server access logging on.
+  2. Select **Properties**
+  3. Scroll down to **Server access logging** and select **edit**
+  4. Select **Enable**
+  5. Select a destination bucket that the logs will be sent to. e.g. `s3://PREFIX-internal/PREFIX-internal-logs/`
+  6. Select the preferred log object key format and select **Save Changes**
 
 ### Added
 
