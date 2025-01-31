@@ -5,7 +5,7 @@ fastjsonschema==2.15.0
 
 ## Additional validation libraries
 ## ---------------------------------------------------------------------------
-bandit==1.7.9
+ bandit==1.8.2
 flake8==7.0.0
 black==24.10.0
 isort==5.13.2

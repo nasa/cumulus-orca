@@ -21,6 +21,7 @@ and includes an additional section for migration notes.
 
 ### Changed
 
+- *ORCA-940* - Updated bandit package to latest version 1.8.2.
 ### Removed
 
 ### Fixed
