@@ -32,6 +32,7 @@ Server access logging provides detailed records for the requests that are made t
 ### Changed
 
 - *ORCA-940* - Updated bandit package to latest version 1.8.2.
+- *ORCA-934* - Updated db_comparison instance in `modules/db_compare_instance/main.tf` to use Amazon Linux 2023 AMI.
 ### Removed
 
 ### Fixed
