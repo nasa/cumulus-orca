@@ -149,10 +149,11 @@ Additional logging should be collected during the deletion process to keep recor
 Cloudwatch logs and cloudtrail can be used to collect logging information. In addition, S3 server access logging can be used at the bucket level which would provide detailed records for the requests that are made to a bucket. The log information can be useful in security and access audits. AWS will collect access log records, add the records in log files, and then upload log files to the target bucket as log objects. There is no extra charge for using the service except the cost for storing the log files in S3.
 
 
-## Open Questions yet to be answered
-The following questions should be discussed with the broader team before implementing the work.
+## Open Questions answered after metting with ORCA users on 02/14/2024
 - Regarding user authentication and authorization for deletes, do we have to pass any temporary tokens? How will this integrate with Cumulus calls to our API? Do we utilize an authentication token from API gateway?
+  - Cumulus team mentioned they have used AWS Cognito for something similar. 
 - Since`deleteObjects` boto3 API call is limited to 1000 deletes per call, can we batch this up? Are there better ways to do batch deletes? What are the rules this has to follow?
+  - GES DISC used batch operation but not sure if it can be used for delete operation.
 - What information should we capture from the delete logs? Do we delete the records, move them to an audit table or store them in S3 like in server access logging? How long do we keep them?
 - How do we handle situations like deleting a version of a granule and not the complete granule?
 - When removing versioned data granule, do we remove all the versions or do we remove all but the last and keep the delete marked version for longer?

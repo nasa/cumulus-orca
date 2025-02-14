@@ -32,6 +32,7 @@ Server access logging provides detailed records for the requests that are made t
 ### Changed
 
 - *ORCA-940* - Updated bandit package to latest version 1.8.2.
+- *ORCA-402* - Met with ORCA users to discuss ORCA delete functionality open questions and updated the research webpage.
 ### Removed
 
 ### Fixed
