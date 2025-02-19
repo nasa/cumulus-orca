@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 source /home/db_config.sh
  
 PGPASSWORD=$v1_password psql --host=$v1_endpoint --port=5432 --username=$v1_user --dbname=$v1_database -c "SELECT 'collections' AS v1_cluster, COUNT(*) AS row_count FROM collections

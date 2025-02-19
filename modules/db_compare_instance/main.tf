@@ -48,7 +48,7 @@ data "cloudinit_config" "config" {
   }
  
   part {
-    filename     = "psql.sh"
+    filename     = "a_psql.sh"
     content_type = "text/x-shellscript"
     content      = "${data.template_file.install.rendered}"
   }
@@ -93,7 +93,7 @@ data "aws_ami" "ami" {
  
   filter {
     name   = "name"
-    values = ["edc-app-base-*-amzn-linux2-x86_64"]
+    values = ["edc-app-base-*-al2023-x86_64"]
   }
   owners = ["863143145967"]
 }
