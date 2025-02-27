@@ -44,6 +44,8 @@ Server access logging provides detailed records for the requests that are made t
 
 ### Security
 
+- *ORCA-976* - Added gitpython to `requirements-dev.txt` files and set version to 3.1.41 to resolve snyk vulnerabilities
+
 ## [10.1.1] 2025-01-29
 
 ### Migration Notes
