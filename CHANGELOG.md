@@ -37,6 +37,9 @@ Server access logging provides detailed records for the requests that are made t
 - 
 ### Removed
 
+
+- *ORCA-969* - Removed encryption from all ORCA SNS topics since it was causing issue in sending alert notifications.
+
 ### Fixed
 
 ### Security
