@@ -12,3 +12,4 @@ requests~=2.28.1
 flake8==7.0.0
 black==24.10.0
 isort==5.13.2
+gitpython==3.1.41
