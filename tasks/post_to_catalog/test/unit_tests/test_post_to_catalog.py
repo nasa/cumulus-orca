@@ -235,7 +235,9 @@ class TestPostToDatabase(
         internal_id = random.randint(0, 10000)  # nosec
         mock_engine = Mock()
         mock_execute_result = Mock()
-        mock_execute_result.mappings = Mock(return_value=[{"id": internal_id}])
+        mock_execute_result.mappings.return_value.fetchone.return_value = {
+            "id": internal_id
+        }
         mock_execute = Mock()
         mock_execute.return_value = mock_execute_result
         mock_engine.begin.return_value = Mock()
@@ -283,6 +285,7 @@ class TestPostToDatabase(
                     ],
                 ),
                 call().mappings(),
+                call().mappings().fetchone(),
                 call(
                     mock_create_file_sql.return_value,
                     [
