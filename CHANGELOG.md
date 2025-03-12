@@ -34,7 +34,8 @@ Server access logging provides detailed records for the requests that are made t
 - *ORCA-940* - Updated bandit package to latest version 1.8.2.
 - *ORCA-934* - Updated db_comparison instance in `modules/db_compare_instance/main.tf` to use Amazon Linux 2023 AMI.
 - *ORCA-402* - Met with ORCA users to discuss ORCA delete functionality open questions and updated the research webpage.
-- 
+- *ORCA-966* - Updated `tasks/db_deploy/db_deploy.py` and `tasks/db_deploy/migrations` with `.begin()` for autocommits. As well as updated unit tests.
+
 ### Removed
 
 
