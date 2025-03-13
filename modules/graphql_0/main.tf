@@ -220,8 +220,8 @@ resource "aws_iam_role_policy" "rds_s3_import_role_policy" {
   policy = data.aws_iam_policy_document.rds_s3_import_role_policy_document.json
 }
 
-resource "aws_rds_cluster_role_association" "orca_iam_association" {
-  db_cluster_identifier = var.db_cluster_identifier
+resource "aws_db_instance_role_association" "orca_iam_association" {
+  db_instance_identifier = var.db_cluster_identifier
   feature_name          = "s3Import"
   role_arn              = aws_iam_role.gql_tasks_role.arn
   count                 = var.deploy_rds_cluster_role_association ? 1 : 0
