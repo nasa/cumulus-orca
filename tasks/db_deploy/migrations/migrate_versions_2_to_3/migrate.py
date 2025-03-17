@@ -28,7 +28,7 @@ def migrate_versions_2_to_3(
     )
 
     # Create new objects, users, roles, etc.
-    with user_admin_engine.connect() as connection:
+    with user_admin_engine.begin() as connection:
         # Change to DBO role and set search path
         LOGGER.debug("Changing to the dbo role to modify objects ...")
         connection.execute(sql.text("SET ROLE orca_dbo;"))
@@ -46,5 +46,4 @@ def migrate_versions_2_to_3(
             connection.execute(sql.schema_versions_data_sql())
             LOGGER.info("Data added to the schema_versions table.")
 
-        # Commit if there are no issues
-        connection.commit()
+

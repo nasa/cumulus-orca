@@ -41,7 +41,7 @@ def migrate_versions_4_to_5(
         create_admin_uri(config, LOGGER, config.user_database_name), future=True
     )
 
-    with user_admin_engine.connect() as connection:
+    with user_admin_engine.begin() as connection:
 
         # Create extension for the database as the admin user
         LOGGER.debug("Creating extension aws_s3 ...")
@@ -109,5 +109,4 @@ def migrate_versions_4_to_5(
             connection.execute(sql.schema_versions_data_sql())
             LOGGER.info("Data added to the schema_versions table.")
 
-        # Commit if there are no issues
-        connection.commit()
+

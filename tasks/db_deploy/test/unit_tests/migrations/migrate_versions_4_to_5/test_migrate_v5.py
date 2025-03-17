@@ -158,11 +158,9 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                 else:
                     mock_schema_versions_data.assert_not_called()
 
-                # Add the commit at the end
-                execution_order.append(call.commit())
 
                 # Check that items were called in the proper order
-                mock_conn_enter = mock_create_engine().connect().__enter__()
+                mock_conn_enter = mock_create_engine().begin().__enter__()
                 mock_conn_enter.assert_has_calls(execution_order, any_order=False)
 
             # Reset the mocks for next loop
