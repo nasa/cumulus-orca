@@ -1,6 +1,5 @@
-
-#!/bin/sh
-amazon-linux-extras install -y postgresql13
+#!/bin/bash
+dnf install -y postgresql16
  
 cp /var/lib/cloud/instance/scripts/db_compare.sh /home/db_compare.sh
 chmod 755 /home/db_compare.sh

@@ -42,7 +42,7 @@ def migrate_versions_1_to_2(
     )
 
     # Create all the new objects, users, roles, etc.
-    with user_admin_engine.connect() as connection:
+    with user_admin_engine.begin() as connection:
         # Create the roles first since they are needed by schema and users
         LOGGER.debug("Creating the ORCA dbo role ...")
         connection.execute(
@@ -98,11 +98,10 @@ def migrate_versions_1_to_2(
         connection.execute(sql.recovery_file_table_sql())
         LOGGER.info("recovery_file table created.")
 
-        # Commit if there are no issues
-        connection.commit()
+
 
     # Migrate the data and drop old tables, schema, users, roles
-    with user_admin_engine.connect() as connection:
+    with user_admin_engine.begin() as connection:
         # Change to admin role and set search path
         LOGGER.debug("Changing to the admin role ...")
         connection.execute(sql.text("RESET ROLE;"))
@@ -163,5 +162,4 @@ def migrate_versions_1_to_2(
             connection.execute(sql.schema_versions_data_sql())
             LOGGER.info("Data added to the schema_versions table.")
 
-        # Commit if there are no issues
-        connection.commit()
+

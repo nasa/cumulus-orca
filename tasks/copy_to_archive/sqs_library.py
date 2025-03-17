@@ -11,6 +11,7 @@ import json
 import os
 import random
 import time
+import uuid
 from typing import Any, Callable, Dict, TypeVar
 
 # Third party libraries
@@ -143,7 +144,7 @@ def post_to_metadata_queue(
     response = mysqs.send_message(
         QueueUrl=metadata_queue_url,
         MessageDeduplicationId=deduplication_id,
-        MessageGroupId="metadata_message",
+        MessageGroupId=f"metadata_message-{uuid.uuid4()}",
         MessageBody=body,
     )  # todo: Look at changes in post_to_queue_and_trigger_step_function ORCA-406
     LOGGER.debug(f"SQS Message Response: {json.dumps(response)}")

@@ -16,6 +16,41 @@ and includes an additional section for migration notes.
 ## [Unreleased]
 
 ### Migration Notes
+**Server Access Logging (OPTIONAL)**
+
+Server access logging provides detailed records for the requests that are made to a bucket. Server access logs are useful for many applications. For example, access log information can be useful in security and access audits.
+- To Enable
+  1. Through the AWS Console navigate to S3 and select the bucket you want to enable server access logging on.
+  2. Select **Properties**
+  3. Scroll down to **Server access logging** and select **edit**
+  4. Select **Enable**
+  5. Select a destination bucket that the logs will be sent to. e.g. `s3://PREFIX-internal/PREFIX-internal-logs/`
+  6. Select the preferred log object key format and select **Save Changes**
+
+### Added
+
+### Changed
+
+- *ORCA-940* - Updated bandit package to latest version 1.8.2.
+- *ORCA-934* - Updated db_comparison instance in `modules/db_compare_instance/main.tf` to use Amazon Linux 2023 AMI.
+- *ORCA-402* - Met with ORCA users to discuss ORCA delete functionality open questions and updated the research webpage.
+- *ORCA-966* - Updated `tasks/db_deploy/db_deploy.py` and `tasks/db_deploy/migrations` with `.begin()` for autocommits. As well as updated unit tests.
+- *ORCA-980* - Modified `tasks/copy_to_archive/sqs_library.py` to generate a unique MessageGroupId to enable the `post_to_catalog` lambda to processs SQS messages from the metadata SQS queue faster to prevent build up in the queue.
+
+### Removed
+
+
+- *ORCA-969* - Removed encryption from all ORCA SNS topics since it was causing issue in sending alert notifications.
+
+### Fixed
+
+### Security
+
+- *ORCA-976* - Added gitpython to `requirements-dev.txt` files and set version to 3.1.41 to resolve snyk vulnerabilities
+
+## [10.1.1] 2025-01-29
+
+### Migration Notes
 
 - The user should update their `orca.tf`, `variables.tf` and `terraform.tfvars` files with new variables. The following optional variables have been added:
   - max_pool_connections
@@ -49,8 +84,6 @@ ORCA has added the capability to set log retention on ORCA Lambdas e.g. 30 days,
 ### Fixed
 
 - *ORCA-939* -  Fixed snyk vulnerabilities showing high issues and upgraded docusaurus to v3.6.0.
-
-### Security
 
 
 ## [10.1.0] 2024-12-13

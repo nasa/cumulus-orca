@@ -84,7 +84,7 @@ def task(config: PostgresConnectionInfo, orca_buckets: List[str]) -> None:
     postgres_admin_engine = create_engine(create_admin_uri(config, LOGGER), future=True)
 
     # Connect as admin user to the postgres database
-    with postgres_admin_engine.connect() as connection:
+    with postgres_admin_engine.begin() as connection:
         # Check if database exists. If not, start from scratch.
         if not app_db_exists(connection, config.user_database_name):
             LOGGER.info(
@@ -102,7 +102,7 @@ def task(config: PostgresConnectionInfo, orca_buckets: List[str]) -> None:
     )
 
     # Connect as admin user to config["user_database"] database.
-    with user_admin_engine.connect() as connection:
+    with user_admin_engine.begin() as connection:
         # reset user password
         reset_user_password(connection, config, config.user_username)
         # Determine if we need a fresh install or need a migration based on if
@@ -211,7 +211,7 @@ def reset_user_password(
         connection.execute(
             reset_user_password_sql, {"user_password": config.user_password}
         )
-        connection.commit()
+
         LOGGER.info(f"Password for {config.user_username} has been reset")
 
     else:

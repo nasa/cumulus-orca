@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 archive_bucket=""
 v1_endpoint="" 
 v1_database=""

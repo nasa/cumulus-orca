@@ -176,7 +176,6 @@ resource "aws_cloudwatch_metric_alarm" "archive_recovery_deadletter_alarm" {
 # SNS topic needed for cloudwatch alarm
 resource "aws_sns_topic" "archive_recovery_dlq_alarm" {
   name              = "${var.prefix}-archive_recovery_dlq_alarm_topic"
-  kms_master_key_id = "alias/aws/sns"
   tags              = var.tags
 
 }
@@ -280,7 +279,6 @@ resource "aws_cloudwatch_metric_alarm" "internal_report_deadletter_alarm" {
 # SNS topic needed for cloudwatch alarm
 resource "aws_sns_topic" "internal_report_dlq_alarm" {
   name              = "${var.prefix}-internal_report_dlq_alarm_topic"
-  kms_master_key_id = "alias/aws/sns"
   tags = var.tags
 }
 
@@ -372,7 +370,6 @@ resource "aws_cloudwatch_metric_alarm" "metadata_deadletter_alarm" {
 # SNS topic needed for cloudwatch alarm
 resource "aws_sns_topic" "metadata_dlq_alarm" {
   name              = "${var.prefix}-metadata_dlq_alarm_topic"
-  kms_master_key_id = "alias/aws/sns"
   tags              = var.tags
 }
 
@@ -469,7 +466,6 @@ resource "aws_cloudwatch_metric_alarm" "s3_inventory_deadletter_alarm" {
 # SNS topic needed for cloudwatch alarm
 resource "aws_sns_topic" "s3_inventory_dlq_alarm" {
   name              = "${var.prefix}-s3_inventory_dlq_alarm_topic"
-  kms_master_key_id = "alias/aws/sns"
   tags              = var.tags
 }
 
@@ -557,7 +553,6 @@ resource "aws_cloudwatch_metric_alarm" "staged_recovery_deadletter_alarm" {
 # SNS topic needed for cloudwatch alarm
 resource "aws_sns_topic" "staged_recovery_dlq_alarm" {
   name              = "${var.prefix}-staged_recovery_dlq_alarm_topic"
-  kms_master_key_id = "alias/aws/sns"
   tags              = var.tags
 
 }
@@ -648,7 +643,6 @@ resource "aws_cloudwatch_metric_alarm" "status_update_deadletter_alarm" {
 # SNS topic needed for cloudwatch alarm
 resource "aws_sns_topic" "status_update_dlq_alarm" {
   name              = "${var.prefix}-status_update_dlq_alarm_topic"
-  kms_master_key_id = "alias/aws/sns"
   tags              = var.tags
 }
 
