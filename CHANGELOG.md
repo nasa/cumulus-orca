@@ -18,6 +18,7 @@ and includes an additional section for migration notes.
 ### Migration Notes
 
 **Using RDS dedicated instance instead of cluster**
+
 If you are using an RDS dedicated instance (which is rare) instead of a v2 cluster, then set `deploy_rds_dedicated_instance_role_association` = `true` and `deploy_rds_cluster_role_association` = `false` in your `orca.tf` file while deploying.
 
 **Server Access Logging (OPTIONAL)**
@@ -33,7 +34,7 @@ Server access logging provides detailed records for the requests that are made t
 
 ### Added
 
-ORCA-981 - Added an ORCA optional variable `deploy_rds_dedicated_instance_role_association` that should be set to true if users have RDS dedicated instance instead of a cluster. This addition was done because PODAAC uses an RDS dedicated instance.
+- ORCA-981 - Added an ORCA optional variable `deploy_rds_dedicated_instance_role_association` that should be set to true if users have RDS dedicated instance instead of a cluster. This addition was done because PODAAC uses an RDS dedicated instance.
 
 ### Changed
 
