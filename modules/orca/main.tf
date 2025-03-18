@@ -165,6 +165,7 @@ module "orca_graphql_0" {
   ## OPTIONAL
   tags                                = var.tags
   deploy_rds_cluster_role_association = var.deploy_rds_cluster_role_association
+  deploy_rds_dedicated_instance_role_association = var.deploy_rds_dedicated_instance_role_association
   orca_recovery_buckets               = var.orca_recovery_buckets
   orca_reports_bucket_name            = var.orca_reports_bucket_name
   buckets                             = var.buckets
