@@ -131,12 +131,11 @@ def create_catalog_records(
                 ],
             )
 
-            for (
-                row
-            ) in (
-                results.mappings()
-            ):  # Need loop due to limitations on the underlying object. Welcome alternatives.
-                granule_id = row["id"]
+            sql_result = results.mappings().fetchone()
+            if sql_result:
+                granule_id = sql_result["id"]
+            else:
+                raise ValueError("No job ID found.")
 
             file_parameters = []
             for file in granule["files"]:
