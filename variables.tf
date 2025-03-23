@@ -361,3 +361,9 @@ variable "max_concurrency" {
   description = "The maximum number of concurrent S3 API transfer operations. Defaults to 10."
   default = 10
 }
+
+variable "deploy_rds_dedicated_instance_role_association" {
+  type        = bool
+  description = "Attaches IAM role for RDS dedicated instance"
+  default = false
+}
