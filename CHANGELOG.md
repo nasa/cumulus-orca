@@ -17,6 +17,20 @@ and includes an additional section for migration notes.
 
 ### Migration Notes
 
+### Added
+
+### Changed
+
+### Removed
+
+### Fixed
+
+### Security
+
+## [10.1.2] 2025-03-25
+
+### Migration Notes
+
 **Using RDS dedicated instance instead of cluster**
 
 If you are using an RDS dedicated instance (which is rare) instead of a v2 cluster, then set `deploy_rds_dedicated_instance_role_association` = `true` and `deploy_rds_cluster_role_association` = `false` in your `orca.tf` file while deploying.
