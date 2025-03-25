@@ -191,8 +191,11 @@ def create_job(
                     }
                 ],
             )
-            for sql_result in rows.mappings():
+            sql_result = rows.mappings().fetchone()
+            if sql_result:
                 job_id = sql_result["id"]
+            else:
+                raise ValueError("No job ID found.")
     except Exception as sql_ex:
         LOGGER.error(f"Error while creating job: {sql_ex}")
         raise

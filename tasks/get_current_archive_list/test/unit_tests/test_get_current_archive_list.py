@@ -279,7 +279,7 @@ class TestGetCurrentArchiveList(
         mock_job_id = Mock()
         returned_rows = {"id": mock_job_id}
         mock_execute_result = Mock()
-        mock_execute_result.mappings = Mock(return_value=[returned_rows])
+        mock_execute_result.mappings.return_value.fetchone.return_value = returned_rows
         mock_execute = Mock()
         mock_execute.return_value = mock_execute_result
         mock_connection = Mock()

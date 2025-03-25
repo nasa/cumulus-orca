@@ -88,7 +88,6 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                         call.execute(mock_text("SET search_path TO orca, public;")),
                         call.execute(mock_add_multipart_chunksize_sql()),
                         call.execute(mock_schema_versions_data()),
-                        call.commit(),
                     ]
 
                 else:
@@ -97,10 +96,9 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                         call.execute(mock_text("SET ROLE orca_dbo;")),
                         call.execute(mock_text("SET search_path TO orca, public;")),
                         call.execute(mock_add_multipart_chunksize_sql()),
-                        call.commit(),
                     ]
                 # Check that items were called in the proper order
-                mock_conn_enter = mock_create_engine().connect().__enter__()
+                mock_conn_enter = mock_create_engine().begin().__enter__()
                 mock_conn_enter.assert_has_calls(execution_order, any_order=False)
                 self.assertEqual(
                     len(execution_order), len(mock_conn_enter.method_calls)

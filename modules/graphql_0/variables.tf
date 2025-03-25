@@ -33,6 +33,11 @@ variable "deploy_rds_cluster_role_association" {
   description = "Deploys IAM role for Aurora v2 cluster if true."
 }
 
+variable "deploy_rds_dedicated_instance_role_association" {
+  type        = bool
+  description = "Deploys IAM role for RDS dedicated instance"
+}
+
 variable "buckets" {
   type        = map(object({ name = string, type = string }))
   description = "S3 bucket locations for the various storage types being used."

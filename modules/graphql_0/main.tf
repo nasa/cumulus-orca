@@ -226,3 +226,10 @@ resource "aws_rds_cluster_role_association" "orca_iam_association" {
   role_arn              = aws_iam_role.gql_tasks_role.arn
   count                 = var.deploy_rds_cluster_role_association ? 1 : 0
 }
+
+resource "aws_db_instance_role_association" "orca_iam_association" {
+  db_instance_identifier = var.db_cluster_identifier
+  feature_name          = "s3Import"
+  role_arn              = aws_iam_role.gql_tasks_role.arn
+  count                 = var.deploy_rds_dedicated_instance_role_association ? 1 : 0
+}
