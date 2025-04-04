@@ -21,6 +21,8 @@ and includes an additional section for migration notes.
 
 ### Changed
 
+- *ORCA-992* - Updated moto to version 5.1.2 and updated unit tests.
+
 ### Removed
 
 ### Fixed

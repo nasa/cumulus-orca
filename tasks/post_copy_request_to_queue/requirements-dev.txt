@@ -4,7 +4,7 @@ pytest==7.4.0
 
 ## Libraries needed for testing the application
 boto3==1.28.76
-moto[sqs]==4.2.13
+moto[sqs]==5.1.2
 psycopg2-binary==2.9.9
 
 ## Application libraries
