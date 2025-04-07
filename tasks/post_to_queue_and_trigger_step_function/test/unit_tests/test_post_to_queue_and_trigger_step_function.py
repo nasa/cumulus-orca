@@ -11,7 +11,7 @@ from unittest.mock import MagicMock, Mock, call, patch
 
 import boto3
 from fastjsonschema import JsonSchemaValueException
-from moto import mock_sqs
+from moto import mock_aws
 
 import post_to_queue_and_trigger_step_function
 import sqs_library
@@ -25,7 +25,7 @@ class TestPostToQueueAndTriggerStepFunction(
     """
 
     # Create the mock for SQS unit tests
-    mock_sqs = mock_sqs()
+    mock_sqs = mock_aws()
 
     def setUp(self):
         """
