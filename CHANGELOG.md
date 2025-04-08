@@ -21,6 +21,7 @@ and includes an additional section for migration notes.
 
 ### Changed
 
+- *ORCA-985* - Fixed deprecated argument warning in api-gateway/main.tf by removing `stage_name` from `aws_api_gateway_deployment` resource and deploying `aws_api_gateway_stage ` resource instead.
 - *ORCA-992* - Updated moto to version 5.1.2 and updated unit tests.
 
 ### Removed
