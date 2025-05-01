@@ -240,3 +240,8 @@ variable "max_concurrency" {
   type        = number
   description = "The maximum number of concurrent S3 API transfer operations. Defaults to 10."
 }
+
+variable "lambda_xray" {
+  type = string
+  description = "Enables or disables X-Ray on ORCA Lambdas, value set to Active for enabled and Passthrough for disabled."
+}
