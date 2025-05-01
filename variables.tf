@@ -367,3 +367,9 @@ variable "deploy_rds_dedicated_instance_role_association" {
   description = "Attaches IAM role for RDS dedicated instance"
   default = false
 }
+
+variable "lambda_xray" {
+  type        = string
+  description = "Enables or disables X-Ray on ORCA Lambdas, value set to Active for enabled and Passthrough for disabled."
+  default     = "Passthrough"
+}
