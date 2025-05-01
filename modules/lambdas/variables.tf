@@ -243,5 +243,5 @@ variable "max_concurrency" {
 
 variable "lambda_xray" {
   type = string
-  description = "Enables or disables X-Ray on ORCA Lambdas, value set to Active for enabled and Passthrough for disabled."
+  description = "Enables or disables X-Ray on ORCA Lambdas, value set to Active for enabled and PassThrough for disabled."
 }
