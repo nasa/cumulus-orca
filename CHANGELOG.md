@@ -19,6 +19,8 @@ and includes an additional section for migration notes.
 
 ### Added
 
+- *ORCA-885* - Added X-Ray for `copy_to_orca` lambda and a variable in `variables.tf` to enable/disable it as well as updated IAM permissions for use.
+
 ### Changed
 
 - *ORCA-985* - Fixed deprecated argument warning in api-gateway/main.tf by removing `stage_name` from `aws_api_gateway_deployment` resource and deploying `aws_api_gateway_stage ` resource instead.
