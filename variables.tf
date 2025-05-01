@@ -370,6 +370,6 @@ variable "deploy_rds_dedicated_instance_role_association" {
 
 variable "lambda_xray" {
   type        = string
-  description = "Enables or disables X-Ray on ORCA Lambdas, value set to Active for enabled and Passthrough for disabled."
-  default     = "Passthrough"
+  description = "Enables or disables X-Ray on ORCA Lambdas, value set to Active for enabled and PassThrough for disabled."
+  default     = "PassThrough"
 }
