@@ -60,6 +60,7 @@ module "orca_lambdas" {
   gql_tasks_role_arn                            = module.orca_graphql_0.gql_tasks_role_arn
   max_pool_connections                          = var.max_pool_connections
   max_concurrency                               = var.max_concurrency
+  lambda_xray                                   = var.lambda_xray
 }
 
 ## orca_lambdas_secondary - lambdas module that is dependent on resources that presently are created after most lambdas
