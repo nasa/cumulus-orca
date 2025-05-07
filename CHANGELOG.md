@@ -16,8 +16,11 @@ and includes an additional section for migration notes.
 ## [Unreleased]
 
 ### Migration Notes
+AWS X-Ray functionality has been added for the `copy_to_orca` lambda. For users wanting to utilze X-Ray, set the `lambda_xray` variable in the tfvars file to `Active`
 
 ### Added
+
+- *ORCA-885* - Added X-Ray for `copy_to_orca` lambda and a variable in `variables.tf` to enable/disable it as well as updated IAM permissions for use.
 
 ### Changed
 

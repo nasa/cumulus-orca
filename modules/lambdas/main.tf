@@ -53,6 +53,10 @@ resource "aws_lambda_function" "copy_to_archive" {
     security_group_ids = [module.lambda_security_group.vpc_all_egress_id]
   }
 
+  tracing_config {
+    mode = var.lambda_xray
+  }
+
   environment {
     variables = {
       ORCA_DEFAULT_BUCKET            = var.orca_default_bucket

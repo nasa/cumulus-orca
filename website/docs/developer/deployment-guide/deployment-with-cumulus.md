@@ -123,6 +123,7 @@ module "orca" {
   # status_update_queue_message_retention_time_seconds    = 777600
   # max_pool_connections                                  = 10
   # max_concurrency                                       = 10
+  # lambda_xray                                           = "PassThrough"
 
 }
 ```
@@ -573,6 +574,7 @@ variables is shown in the table below.
 | `status_update_queue_message_retention_time_seconds`   | number       | Number of seconds the status_update_queue fifo SQS retains a message.                                                          | 777600 |
 | `max_pool_connections`                                 | number       | The maximum number of connections to keep in a connection pool.                                                                | 10 |
 | `max_concurrency`                                       | number      | The maximum number of concurrent S3 API transfer operations.                                                                   | 10 |
+| `lambda_xray`                                  | string       | Enables or disables X-Ray on ORCA Lambdas, value set to `Active` for enabled and `PassThrough` for disabled.                                              | PassThrough |
 
 
 ## ORCA Module Outputs
