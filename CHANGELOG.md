@@ -31,6 +31,8 @@ AWS X-Ray functionality has been added for the `copy_to_orca` lambda. For users 
 
 ### Fixed
 
+- *ORCA-990* - Updated docusaurus to v3.7.0.
+
 ### Security
 
 ## [10.1.2] 2025-03-25
