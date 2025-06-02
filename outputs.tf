@@ -105,6 +105,11 @@ output "orca_api_deployment_invoke_url" {
   description = "The URL to invoke the ORCA Cumulus reconciliation API gateway. Excludes the resource path"
 }
 
+output "orca_delete_api_deployment_invoke_url" {
+  value       = module.orca_delete_api_gateway.orca_delete_api_deployment_invoke_url
+  description = "The URL to invoke the ORCA Delete API gateway. Excludes the resource path"
+}
+
 ## GraphQL Module Outputs (graphql_0 and graphql_1)
 ## =============================================================================
 output "orca_graphql_load_balancer_dns_name" {
