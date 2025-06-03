@@ -21,6 +21,7 @@ AWS X-Ray functionality has been added for the `copy_to_orca` lambda. For users 
 ### Added
 
 - *ORCA-885* - Added X-Ray for `copy_to_orca` lambda and a variable in `variables.tf` to enable/disable it as well as updated IAM permissions for use.
+- *ORCA-396* - Added API Gateway and resource paths for delete functionality, added placeholders for future Lmabdas since those are not ready yet and will have to be added at a later date.
 
 ### Changed
 

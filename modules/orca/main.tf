@@ -307,3 +307,27 @@ module "orca_api_gateway" {
   vpc_endpoint_id = var.vpc_endpoint_id
   tags            = var.tags
 }
+
+## orca_delete_api_gateway - api gateway module
+## =============================================================================
+module "orca_delete_api_gateway" {
+  depends_on = [
+    module.orca_lambdas
+  ]
+  source = "../delete_api"
+  ## --------------------------
+  ## Cumulus Variables
+  ## --------------------------
+  ## REQUIRED
+  prefix = var.prefix
+  vpc_id = var.vpc_id
+
+  ## --------------------------
+  ## ORCA Variables
+  ## --------------------------
+  ## REQUIRED
+  <PLACEHOLDER_FOR_LAMBDAS>
+  ## OPTIONAL
+  vpc_endpoint_id = var.vpc_endpoint_id
+  tags            = var.tags
+}
