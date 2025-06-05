@@ -28,7 +28,6 @@ AWS X-Ray functionality has been added for the `copy_to_orca` lambda. For users 
 - *ORCA-992* - Updated moto to version 5.1.2 and updated unit tests.
 - *ORCA-979* - Updated psycopg2 library to 2.9.10
 
-
 ### Removed
 
 ### Fixed
