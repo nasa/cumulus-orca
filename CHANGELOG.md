@@ -26,6 +26,7 @@ AWS X-Ray functionality has been added for the `copy_to_orca` lambda. For users 
 
 - *ORCA-985* - Fixed deprecated argument warning in api-gateway/main.tf by removing `stage_name` from `aws_api_gateway_deployment` resource and deploying `aws_api_gateway_stage ` resource instead.
 - *ORCA-992* - Updated moto to version 5.1.2 and updated unit tests.
+- *ORCA-979* - Updated psycopg2 library to 2.9.10
 
 ### Removed
 

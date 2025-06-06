@@ -3,7 +3,7 @@ coverage==7.2.7
 pytest==7.4.0
 
 ## Application libraries needed for testing
-psycopg2-binary==2.9.9
+psycopg2-binary==2.9.10
 
 ## Application libraries
 ../../shared_libraries[database]
