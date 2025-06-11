@@ -13,6 +13,29 @@ and includes an additional section for migration notes.
 - *Fixed* - Any bug fixes.
 - *Security* - Vulnerabilities fixes and changes.
 
+## [10.1.3] 2025-06-11
+
+### Migration Notes
+AWS X-Ray functionality has been added for the `copy_to_orca` lambda. For users wanting to utilze X-Ray, set the `lambda_xray` variable in the tfvars file to `Active`
+
+### Added
+
+- *ORCA-885* - Added X-Ray for `copy_to_orca` lambda and a variable in `variables.tf` to enable/disable it as well as updated IAM permissions for use.
+
+### Changed
+
+- *ORCA-985* - Fixed deprecated argument warning in api-gateway/main.tf by removing `stage_name` from `aws_api_gateway_deployment` resource and deploying `aws_api_gateway_stage ` resource instead.
+- *ORCA-992* - Updated moto to version 5.1.2 and updated unit tests.
+- *ORCA-979* - Updated psycopg2 library to 2.9.10
+
+### Removed
+
+### Fixed
+
+- *ORCA-990* - Updated docusaurus to v3.7.0.
+
+### Security
+
 ## [Unreleased]
 
 ### Migration Notes

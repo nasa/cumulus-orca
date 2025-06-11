@@ -16,7 +16,7 @@ from unittest.mock import MagicMock, Mock, call, patch
 import boto3
 
 # noinspection PyPackageRequirements
-from moto import mock_sqs
+from moto import mock_aws
 from orca_shared.recovery import shared_recovery
 
 import post_copy_request_to_queue
@@ -29,7 +29,7 @@ class TestPostCopyRequestToQueue(TestCase):
     """
 
     # Create the mock instance for unit tests
-    mock_sqs = mock_sqs()
+    mock_sqs = mock_aws()
 
     def setUp(self):
         """
@@ -41,7 +41,7 @@ class TestPostCopyRequestToQueue(TestCase):
         """
         Perform tear down actions
         """
-        if self.mock_sqs.mocks_active:
+        if self.mock_sqs._mocks_active:
             self.mock_sqs.stop()
 
     def setUpQueues(self):

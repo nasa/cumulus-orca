@@ -20,7 +20,7 @@ coverage==7.2.7
 
 ## Libraries needed for unit tests
 ## ---------------------------------------------------------------------------
-psycopg2-binary==2.9.9
+psycopg2-binary==2.9.10
 
 
 ## Libraries needed by application

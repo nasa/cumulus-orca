@@ -15,7 +15,7 @@ import fastjsonschema as fastjsonschema
 from boto3.s3.transfer import MB
 
 # noinspection PyPackageRequirements
-from moto import mock_sqs
+from moto import mock_aws
 
 import copy_to_archive
 import sqs_library
@@ -37,7 +37,7 @@ class TestCopyToArchive(TestCase):
     """
 
     # Create the mock for SQS unit tests
-    mock_sqs = mock_sqs()
+    mock_sqs = mock_aws()
 
     excluded_file = "s3://test-bucket/this_file_should_be_exclude.example"
     not_excluded_file = "s3://test-bucket/prefix/this_file_should_not_be_exclude.txt"

@@ -84,4 +84,5 @@ module "orca" {
   max_pool_connections                                  = var.max_pool_connections
   max_concurrency                                       = var.max_concurrency
   deploy_rds_dedicated_instance_role_association        = var.deploy_rds_dedicated_instance_role_association
+  lambda_xray                                           = var.lambda_xray
 }
