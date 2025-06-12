@@ -13,7 +13,7 @@ and includes an additional section for migration notes.
 - *Fixed* - Any bug fixes.
 - *Security* - Vulnerabilities fixes and changes.
 
-## [Unreleased]
+## [10.1.3] 2025-06-11
 
 ### Migration Notes
 AWS X-Ray functionality has been added for the `copy_to_orca` lambda. For users wanting to utilze X-Ray, set the `lambda_xray` variable in the tfvars file to `Active`
@@ -33,6 +33,20 @@ AWS X-Ray functionality has been added for the `copy_to_orca` lambda. For users 
 ### Fixed
 
 - *ORCA-990* - Updated docusaurus to v3.7.0.
+
+### Security
+
+## [Unreleased]
+
+### Migration Notes
+
+### Added
+
+### Changed
+
+### Removed
+
+### Fixed
 
 ### Security
 
