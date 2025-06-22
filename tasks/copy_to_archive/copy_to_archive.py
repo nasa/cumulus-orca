@@ -148,6 +148,7 @@ def copy_granule_between_buckets(
             multipart_chunksize=multipart_chunksize_mb * MB,
             max_concurrency=default_max_concurrency,
         ),
+        CopySourceIfNoneMatch='*'
     )
     # get metadata info from latest file version
     file_versions = s3.list_object_versions(
