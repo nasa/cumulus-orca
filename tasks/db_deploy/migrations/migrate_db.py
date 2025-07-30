@@ -13,10 +13,8 @@ from migrations.migrate_versions_2_to_3.migrate import migrate_versions_2_to_3
 from migrations.migrate_versions_3_to_4.migrate import migrate_versions_3_to_4
 from migrations.migrate_versions_4_to_5.migrate import migrate_versions_4_to_5
 from migrations.migrate_versions_5_to_6.migrate import migrate_versions_5_to_6
-from migrations.migrate_versions_6_to_7.migrate import (
-    migrate_versions_6_to_7,
-    migrate_versions_7_to_8,
-)
+from migrations.migrate_versions_6_to_7.migrate import migrate_versions_6_to_7
+from migrations.migrate_versions_7_to_8.migrate import migrate_versions_7_to_8
 
 
 def perform_migration(

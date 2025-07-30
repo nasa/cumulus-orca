@@ -43,9 +43,7 @@ def migrate_versions_7_to_8(
 
         # Create storage_class table
         LOGGER.debug("Adding delete_file column to files table ...")
-        connection.execute(
-            sql.add_delete_file_to_files_table_sql()
-        )
+        connection.execute(sql.add_delete_file_to_files_table_sql())
         LOGGER.info("delete_file column added to files table.")
 
         # If v8 is the latest version, update the schema_versions table.
