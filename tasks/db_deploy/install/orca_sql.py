@@ -666,6 +666,7 @@ def files_table_sql() -> text:  # pragma: no cover
         , hash                      text NULL
         , hash_type                 text NULL
         , storage_class_id          int2 NOT NULL
+        , delete_file               text NULL
         , CONSTRAINT PK_files
             PRIMARY KEY (id)
         , CONSTRAINT FK_granule_file
@@ -707,6 +708,8 @@ def files_table_sql() -> text:  # pragma: no cover
             IS 'Hash type used to hash the object. Supplied by Cumulus.';
         COMMENT ON COLUMN files.storage_class_id
             IS 'Storage class of the file.';
+        COMMENT ON COLUMN files.delete_file
+            IS 'Deletion status of the file. Set to PENDING if marked for deletion.';
         -- Grants
         GRANT SELECT, INSERT, UPDATE, DELETE ON files TO orca_app;
     """

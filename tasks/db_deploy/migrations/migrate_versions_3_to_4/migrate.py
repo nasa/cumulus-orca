@@ -64,5 +64,3 @@ def migrate_versions_3_to_4(
             LOGGER.debug("Populating the schema_versions table with data ...")
             connection.execute(sql.schema_versions_data_sql())
             LOGGER.info("Data added to the schema_versions table.")
-
-

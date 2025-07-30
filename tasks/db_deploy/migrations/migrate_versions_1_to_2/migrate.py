@@ -98,8 +98,6 @@ def migrate_versions_1_to_2(
         connection.execute(sql.recovery_file_table_sql())
         LOGGER.info("recovery_file table created.")
 
-
-
     # Migrate the data and drop old tables, schema, users, roles
     with user_admin_engine.begin() as connection:
         # Change to admin role and set search path
@@ -161,5 +159,3 @@ def migrate_versions_1_to_2(
             LOGGER.debug("Populating the schema_versions table with data ...")
             connection.execute(sql.schema_versions_data_sql())
             LOGGER.info("Data added to the schema_versions table.")
-
-
