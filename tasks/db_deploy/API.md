@@ -102,6 +102,14 @@
   * [add\_files\_storage\_class\_id\_column\_sql](#migrations/migrate_versions_5_to_6/migrate_sql.add_files_storage_class_id_column_sql)
   * [add\_mismatch\_storage\_class\_columns\_sql](#migrations/migrate_versions_5_to_6/migrate_sql.add_mismatch_storage_class_columns_sql)
   * [add\_phantom\_storage\_class\_column\_sql](#migrations/migrate_versions_5_to_6/migrate_sql.add_phantom_storage_class_column_sql)
+* [migrations/migrate\_versions\_6\_to\_7/migrate](#migrations/migrate_versions_6_to_7/migrate)
+  * [migrate\_versions\_6\_to\_7](#migrations/migrate_versions_6_to_7/migrate.migrate_versions_6_to_7)
+* [migrations/migrate\_versions\_6\_to\_7/migrate\_sql](#migrations/migrate_versions_6_to_7/migrate_sql)
+  * [schema\_versions\_data\_sql](#migrations/migrate_versions_6_to_7/migrate_sql.schema_versions_data_sql)
+* [migrations/migrate\_versions\_7\_to\_8/migrate](#migrations/migrate_versions_7_to_8/migrate)
+  * [migrate\_versions\_7\_to\_8](#migrations/migrate_versions_7_to_8/migrate.migrate_versions_7_to_8)
+* [migrations/migrate\_versions\_7\_to\_8/migrate\_sql](#migrations/migrate_versions_7_to_8/migrate_sql)
+  * [schema\_versions\_data\_sql](#migrations/migrate_versions_7_to_8/migrate_sql.schema_versions_data_sql)
 
 <a name="db_deploy"></a>
 # db\_deploy
@@ -1542,4 +1550,97 @@ SQL for adding the orca_storage_class column to the reconcile_phantom_report tab
 New cells will contain '1', the id for GLACIER.
 
 Returns: SQL for adding the column.
+
+<a name="migrations/migrate_versions_6_to_7/migrate"></a>
+# migrations/migrate\_versions\_6\_to\_7/migrate
+
+Name: migrate.py
+
+Description: Migrates the ORCA schema from version 6 to version 7.
+
+<a name="migrations/migrate_versions_6_to_7/migrate.migrate_versions_6_to_7"></a>
+#### migrate\_versions\_6\_to\_7
+
+```python
+migrate_versions_6_to_7(config: PostgresConnectionInfo, is_latest_version: bool) -> None
+```
+
+Performs the migration of the ORCA schema from version 6 to version 7 of
+the ORCA schema. This includes adding the collection_id column to recovery_jobs and
+recovery_files and updating the relevant keys and relations.
+
+**Arguments**:
+
+- `config` - Connection information for the database.
+- `is_latest_version` - Flag to determine if version 7 is the latest
+  schema version.
+
+**Returns**:
+
+  None
+
+<a name="migrations/migrate_versions_6_to_7/migrate_sql"></a>
+# migrations/migrate\_versions\_6\_to\_7/migrate\_sql
+
+Name: migrate_sql.py
+
+Description: All the SQL used for creating and migrating the ORCA schema to version 7.
+
+<a name="migrations/migrate_versions_6_to_7/migrate_sql.schema_versions_data_sql"></a>
+#### schema\_versions\_data\_sql
+
+```python
+schema_versions_data_sql() -> text
+```
+
+Data for the schema_versions table. Inserts the current schema
+version into the table.
+
+Returns: SQL for populating schema_versions table.
+
+<a name="migrations/migrate_versions_7_to_8/migrate"></a>
+# migrations/migrate\_versions\_7\_to\_8/migrate
+
+Name: migrate.py
+
+Description: Migrates the ORCA schema from version 7 to version 8.
+
+<a name="migrations/migrate_versions_7_to_8/migrate.migrate_versions_7_to_8"></a>
+#### migrate\_versions\_7\_to\_8
+
+```python
+migrate_versions_7_to_8(config: PostgresConnectionInfo, is_latest_version: bool) -> None
+```
+
+Performs the migration of the ORCA schema from version 7 to version 8 of
+the ORCA schema. This includes adding the delete_file column to files.
+
+**Arguments**:
+
+- `config` - Connection information for the database.
+- `is_latest_version` - Flag to determine if version 8 is the latest
+  schema version.
+
+**Returns**:
+
+  None
+
+<a name="migrations/migrate_versions_7_to_8/migrate_sql"></a>
+# migrations/migrate\_versions\_7\_to\_8/migrate\_sql
+
+Name: migrate_sql.py
+
+Description: All the SQL used for creating and migrating the ORCA schema to version 8.
+
+<a name="migrations/migrate_versions_7_to_8/migrate_sql.schema_versions_data_sql"></a>
+#### schema\_versions\_data\_sql
+
+```python
+schema_versions_data_sql() -> text
+```
+
+Data for the schema_versions table. Inserts the current schema
+version into the table.
+
+Returns: SQL for populating schema_versions table.
 
