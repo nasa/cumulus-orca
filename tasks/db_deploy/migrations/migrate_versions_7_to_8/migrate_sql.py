@@ -41,7 +41,7 @@ def add_delete_file_to_files_table_sql() -> text:
         """
         -- Add delete_file column to files table
         ALTER TABLE orca.files
-            ADD COLUMN IF NOT EXISTS delete_file text;
+            ADD COLUMN IF NOT EXISTS delete_file boolean;
 
         -- Populate the delete_file column setting
         -- non-matches to a value of "UNKNOWN"
