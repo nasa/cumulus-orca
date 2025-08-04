@@ -45,8 +45,10 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
     @patch("migrations.migrate_db.migrate_versions_4_to_5")
     @patch("migrations.migrate_db.migrate_versions_5_to_6")
     @patch("migrations.migrate_db.migrate_versions_6_to_7")
+    @patch("migrations.migrate_db.migrate_versions_7_to_8")
     def test_perform_migration_happy_path(
         self,
+        mock_migrate_v7_to_v8: MagicMock,
         mock_migrate_v6_to_v7: MagicMock,
         mock_migrate_v5_to_v6: MagicMock,
         mock_migrate_v4_to_v5: MagicMock,
@@ -95,6 +97,10 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
                     mock_migrate_v6_to_v7.assert_called_once_with(self.config, True)
                 else:
                     mock_migrate_v6_to_v7.assert_not_called()
+                if version < 8:
+                    mock_migrate_v7_to_v8.assert_called_once_with(self.config, True)
+                else:
+                    mock_migrate_v7_to_v8.assert_not_called()
 
             # Reset for next loop
             mock_migrate_v1_to_v2.reset_mock()
@@ -103,3 +109,4 @@ class TestMigrateDatabaseLibraries(unittest.TestCase):
             mock_migrate_v4_to_v5.reset_mock()
             mock_migrate_v5_to_v6.reset_mock()
             mock_migrate_v6_to_v7.reset_mock()
+            mock_migrate_v7_to_v8.reset_mock()
