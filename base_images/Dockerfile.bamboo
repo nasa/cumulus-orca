@@ -4,7 +4,7 @@ LABEL maintainer="Rizbi Hassan" \
       description="This image can be used to run unit & validation tests for ORCA in Bamboo."
 
 ENV NODE_VERSION="20.x"
-ENV TERRAFORM_VERSION "1.5.5"
+ENV TERRAFORM_VERSION "1.12.2"
 ENV PYTHON_VERSION "3.10.14"
 
 # Add YARN repos & update package index
