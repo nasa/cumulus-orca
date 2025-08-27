@@ -15,6 +15,10 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 
+### Changed
+
+- *ORCA-1027* - Updated terraform version to 1.12.2 and AWS provider version to >=5.10 to stay compatible with cumulus release v20.3.0
+
 ### Security
 
 - *ORCA-1010* - Fixed snyk high vulnerabilities found on ORCA website.
