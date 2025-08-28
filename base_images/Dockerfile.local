@@ -4,7 +4,7 @@ LABEL maintainer="Rizbi Hassan" \
       description="This image can be used to run unit & validation tests for ORCA locally."
 
 ENV NODE_VERSION "20.x"
-ENV TERRAFORM_VERSION "1.5.5"
+ENV TERRAFORM_VERSION "1.12.2"
 ENV PYTHON_VERSION "3.10.14"
 
 # Add NodeJS and Yarn repos & update package index
