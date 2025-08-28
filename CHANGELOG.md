@@ -13,10 +13,27 @@ and includes an additional section for migration notes.
 - *Fixed* - Any bug fixes.
 - *Security* - Vulnerabilities fixes and changes.
 
+## [Unreleased]
+
+
+## [10.1.4] 2025-08-29
+
+### Migration Notes
+
+In the v20.3.0 release, Cumulus upgraded terraform version to 1.12.2. ORCA also needs to upgrade terraform and AWS provider to stay compatible. To upgrade, follow the instructions provided by Cumulus [here](https://nasa.github.io/cumulus/docs/next/upgrade-notes/upgrade-terraform-1.12/)
+
+### Changed
+
+- *ORCA-1027* - Updated terraform version to 1.12.2 and AWS provider version to >=5.10 to stay compatible with cumulus release v20.3.0
+
+### Security
+
+- *ORCA-1010* - Fixed snyk high vulnerabilities found on ORCA website.
+
 ## [10.1.3] 2025-06-11
 
 ### Migration Notes
-AWS X-Ray functionality has been added for the `copy_to_orca` lambda. For users wanting to utilze X-Ray, set the `lambda_xray` variable in the tfvars file to `Active`
+AWS X-Ray functionality has been added for the `copy_to_orca` lambda. For users wanting to utilize X-Ray, set the `lambda_xray` variable in the tfvars file to `Active`
 
 ### Added
 
