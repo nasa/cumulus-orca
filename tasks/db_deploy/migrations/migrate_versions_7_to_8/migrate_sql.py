@@ -41,6 +41,6 @@ def add_delete_file_to_granules_table_sql() -> text:
         """
         -- Add delete_file column to granules table
         ALTER TABLE orca.granules
-            AADD COLUMN IF NOT EXISTS delete_file boolean NOT NULL DEFAULT FALSE;
+            ADD COLUMN IF NOT EXISTS delete_file boolean NOT NULL DEFAULT FALSE;
         """
     )
