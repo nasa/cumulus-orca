@@ -17,7 +17,7 @@ def migrate_versions_7_to_8(
 ) -> None:
     """
     Performs the migration of the ORCA schema from version 7 to version 8 of
-    the ORCA schema. This includes adding the delete_file column to files.
+    the ORCA schema. This includes adding the delete_file column to granules.
 
     Args:
         config: Connection information for the database.
@@ -42,9 +42,9 @@ def migrate_versions_7_to_8(
         connection.execute(sql.text("SET search_path TO orca, public;"))
 
         # Create storage_class table
-        LOGGER.debug("Adding delete_file column to files table ...")
-        connection.execute(sql.add_delete_file_to_files_table_sql())
-        LOGGER.info("delete_file column added to files table.")
+        LOGGER.debug("Adding delete_file column to granules table ...")
+        connection.execute(sql.add_delete_file_to_granules_table_sql())
+        LOGGER.info("delete_file column added to granules table.")
 
         # If v8 is the latest version, update the schema_versions table.
         if is_latest_version:

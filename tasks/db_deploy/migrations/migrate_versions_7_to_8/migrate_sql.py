@@ -28,7 +28,7 @@ def schema_versions_data_sql() -> text:  # pragma: no cover
         -- Upsert the current version
         INSERT INTO schema_versions
           VALUES
-            (8, 'Added delete_file to files tables.', NOW(), True)
+            (8, 'Added delete_file to granules tables.', NOW(), True)
         ON CONFLICT (version_id)
         DO UPDATE SET is_latest = True;
     """
@@ -41,6 +41,6 @@ def add_delete_file_to_granules_table_sql() -> text:
         """
         -- Add delete_file column to granules table
         ALTER TABLE orca.granules
-            AADD COLUMN IF NOT EXISTS delete_file boolean NOT NULL DEFAULT FALSE;
+            ADD COLUMN IF NOT EXISTS delete_file boolean NOT NULL DEFAULT FALSE;
         """
     )
