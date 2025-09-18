@@ -28,7 +28,7 @@ def schema_versions_data_sql() -> text:  # pragma: no cover
         -- Upsert the current version
         INSERT INTO schema_versions
           VALUES
-            (8, 'Added delete_file to files tables.', NOW(), True)
+            (8, 'Added delete_file to granules tables.', NOW(), True)
         ON CONFLICT (version_id)
         DO UPDATE SET is_latest = True;
     """
