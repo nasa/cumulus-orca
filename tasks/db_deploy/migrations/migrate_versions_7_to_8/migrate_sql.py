@@ -35,19 +35,12 @@ def schema_versions_data_sql() -> text:  # pragma: no cover
     )
 
 
-def add_delete_file_to_files_table_sql() -> text:
+def add_delete_file_to_granules_table_sql() -> text:
     """ """
     return text(  # nosec
         """
-        -- Add delete_file column to files table
-        ALTER TABLE orca.files
-            ADD COLUMN IF NOT EXISTS delete_file boolean;
-
-        -- Populate the delete_file column setting
-        -- non-matches to a value of "UNKNOWN"
-        -- ##############################################
-        UPDATE orca.files
-            SET delete_file = 'UNKNOWN'
-            WHERE delete_file IS NULL;
+        -- Add delete_file column to granules table
+        ALTER TABLE orca.granules
+            AADD COLUMN IF NOT EXISTS delete_file boolean NOT NULL DEFAULT FALSE;
         """
     )
