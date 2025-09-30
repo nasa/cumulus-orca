@@ -15,6 +15,11 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 
+## [10.1.5] 2025-09-30
+
+### Changed
+
+- *ORCA-1036* - Fixed depreciated API gateway resource path in terraform which was improperly creating the orca API URL.
 
 ## [10.1.4] 2025-08-29
 
