@@ -15,6 +15,11 @@ and includes an additional section for migration notes.
 
 ## [Unreleased]
 
+### Security
+
+- *ORCA-1009* - Updated docusaurus to 3.8.1 for ORCA websites.
+
+
 ## [10.1.5] 2025-09-30
 
 ### Changed
