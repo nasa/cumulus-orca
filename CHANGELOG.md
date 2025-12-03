@@ -34,6 +34,13 @@ and includes an additional section for migration notes.
 **Using RDS dedicated instance instead of cluster**
 
 If you are using an RDS dedicated instance (which is rare) instead of a v2 cluster, then set `deploy_rds_dedicated_instance_role_association` = `true` and `deploy_rds_cluster_role_association` = `false` in your `orca.tf` file while deploying.
+If you are getting an `Error: operation error EC2: AuthorizeSecurityGroupEgress` during deployment, there are two options (delete or import existing security group rule) that you can follow for troubleshooting:
+1. import the rds security group rule to your stack (sg-xxx is the rds security group id), the orca terraform state can be different from the following in DAACs' stacks.
+```
+terraform import module.orca.module.orca.module.orca_lambdas.module.lambda_security_group.aws_security_group_rule.rds_allow_s3_import sg-xxx_egress_tcp_443_443_0.0.0.0/0
+```
+2. delete the existing SG rule, and let your stack add it.
+
 
 **Server Access Logging (OPTIONAL)**
 
