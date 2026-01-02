@@ -19,6 +19,10 @@ and includes an additional section for migration notes.
 
 - *ORCA-1009* - Updated docusaurus to 3.8.1 for ORCA websites.
 
+### Changed
+
+- *ORCA-1033* - Upgrade lambda functions, unit tests, integration tests & docker images to use python 3.12
+
 
 ## [10.1.5] 2025-09-30
 
