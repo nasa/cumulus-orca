@@ -18,7 +18,7 @@ and includes an additional section for migration notes.
 ### Security
 
 - *ORCA-1009* - Updated docusaurus to 3.8.1 for ORCA websites.
-
+- *ORCA-1042* - Updated docusaurus to 3.9.1 for ORCA websites to remove snyk vulnerabilities.
 
 ## [10.1.5] 2025-09-30
 
