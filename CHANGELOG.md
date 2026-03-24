@@ -19,6 +19,7 @@ and includes an additional section for migration notes.
 
 - *ORCA-1009* - Updated docusaurus to 3.8.1 for ORCA websites.
 - *ORCA-1042* - Updated docusaurus to 3.9.1 for ORCA websites to remove snyk vulnerabilities.
+- *LPCUMULUS-3254* - Updated ORCA metadata FIFO dead letter queue retention time to 14 days.
 
 ## [10.1.5] 2025-09-30
 

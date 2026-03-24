@@ -321,6 +321,7 @@ resource "aws_sqs_queue" "metadata_dlq" {
   max_message_size = var.sqs_maximum_message_size
   sqs_managed_sse_enabled = true
   tags             = var.tags
+  message_retention_seconds = 1209600 #14 days
 }
 
 resource "aws_sqs_queue_policy" "metadata_deadletter_queue_policy" {
